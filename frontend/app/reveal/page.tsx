@@ -222,7 +222,7 @@ function OutfitCard({ outfit, user, index }: { outfit: any; user: string; index:
       <div className="bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-4 md:p-6 mb-5 md:mb-6 shadow-sm">
         <h3 className="text-lg md:text-xl font-semibold mb-4">What's the main issue?</h3>
         <div className="space-y-2.5 md:space-y-3 mb-4">
-          {['Won't look good on me', "Doesn't match my occasions", 'Not my style', "The outfit doesn't make sense", 'Other'].map(option => (
+          {["Won't look good on me", "Doesn't match my occasions", "Not my style", "The outfit doesn't make sense", "Other"].map(option => (
             <label key={option} className="flex items-center space-x-3 cursor-pointer min-h-[44px] py-1">
               <input
                 type="radio"
@@ -270,7 +270,7 @@ function OutfitCard({ outfit, user, index }: { outfit: any; user: string; index:
       <div className="grid grid-cols-3 gap-2 mb-4">
         {outfit.items.map((item: any, idx: number) => (
           <div key={idx} className="relative aspect-square rounded overflow-hidden bg-sand">
-            {item.image_path && (
+            {item.image_path ? (
               item.image_path.startsWith('http') ? (
                 <img
                   src={item.image_path}
@@ -285,7 +285,7 @@ function OutfitCard({ outfit, user, index }: { outfit: any; user: string; index:
                   className="object-cover"
                 />
               )
-            )}
+            ) : null}
           </div>
         ))}
       </div>
