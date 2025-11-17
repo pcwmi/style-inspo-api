@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+style_env/
+
+# Environment variables
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+_staging/
+*.upload
+
+# Next.js
+frontend/.next/
+frontend/out/
+frontend/node_modules/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+

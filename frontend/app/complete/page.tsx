@@ -1,0 +1,196 @@
+'use client'
+
+import { useSearchParams, useRouter } from 'next/navigation'
+import { Suspense } from 'react'
+import { useState, useEffect } from 'react'
+import { api } from '@/lib/api'
+import Link from 'next/link'
+import Image from 'next/image'
+
+function CompletePageContent() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const user = searchParams.get('user') || 'default'
+  
+  const [wardrobe, setWardrobe] = useState<any>(null)
+  const [selectedItems, setSelectedItems] = useState<string[]>([])
+  const [weather, setWeather] = useState({ condition: 'Sunny', temp: 'Cool (50-65°F)' })
+  const [generating, setGenerating] = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchWardrobe() {
+      try {
+        const data = await api.getWardrobe(user)
+        setWardrobe(data)
+      } catch (error) {
+        console.error('Error fetching wardrobe:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchWardrobe()
+  }, [user])
+
+  const handleGenerate = async () => {
+    if (selectedItems.length === 0) {
+      alert('Please select at least one item to start with')
+      return
+    }
+    
+    setGenerating(true)
+    try {
+      const { job_id } = await api.generateOutfits({
+        user_id: user,
+        anchor_items: selectedItems,
+        weather_condition: weather.condition,
+        temperature_range: weather.temp,
+        mode: 'complete'
+      })
+      
+      router.push(`/reveal?user=${user}&job=${job_id}`)
+    } catch (error) {
+      console.error('Error generating outfits:', error)
+      alert('Failed to generate outfits. Please try again.')
+      setGenerating(false)
+    }
+  }
+
+  const toggleItem = (itemId: string) => {
+    if (selectedItems.includes(itemId)) {
+      setSelectedItems(selectedItems.filter(id => id !== itemId))
+    } else {
+      setSelectedItems([...selectedItems, itemId])
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-bone flex items-center justify-center page-container">
+        <div className="text-center px-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-sand border-t-terracotta mx-auto mb-4"></div>
+          <p className="text-ink text-base font-medium">Loading your wardrobe...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!wardrobe || wardrobe.count === 0) {
+    return (
+      <div className="min-h-screen bg-bone page-container">
+        <div className="max-w-2xl mx-auto px-4 py-8">
+          <Link href={`/?user=${user}`} className="text-terracotta mb-4 inline-block min-h-[44px] flex items-center">
+            ← Back
+          </Link>
+          <p className="text-muted">No wardrobe items found. Please upload some items first.</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-bone page-container">
+      <div className="max-w-2xl mx-auto px-4 py-4 md:py-8">
+        <Link href={`/?user=${user}`} className="text-terracotta mb-4 inline-block min-h-[44px] flex items-center">
+          ← Back
+        </Link>
+        
+        <h1 className="text-2xl md:text-3xl font-bold mb-2">
+          Start with a piece you want to wear
+        </h1>
+        <p className="text-muted mb-5 md:mb-8 text-base leading-relaxed">
+          Select 1-2 items you want to wear today, and we'll complete the outfit
+        </p>
+
+        {/* Item selection grid */}
+        <div className="grid grid-cols-2 gap-3 md:gap-4 mb-5 md:mb-6">
+          {wardrobe.items.map((item: any) => {
+            const isSelected = selectedItems.includes(item.id)
+            const imagePath = item.system_metadata?.image_path || item.image_path
+            
+            return (
+              <button
+                key={item.id}
+                onClick={() => toggleItem(item.id)}
+                className={`border-2 rounded-lg p-2.5 md:p-3 text-left transition min-h-[44px] ${
+                  isSelected
+                    ? 'border-terracotta bg-terracotta text-white'
+                    : 'border-[rgba(26,22,20,0.12)] bg-white hover:border-terracotta/50'
+                }`}
+              >
+            {imagePath && (
+              <div className="relative w-full aspect-square mb-2 rounded overflow-hidden bg-sand">
+                {imagePath.startsWith('http') ? (
+                  <img
+                    src={imagePath}
+                    alt={item.styling_details?.name || 'Item'}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <Image
+                    src={`/${imagePath}`}
+                    alt={item.styling_details?.name || 'Item'}
+                    fill
+                    className="object-cover"
+                  />
+                )}
+              </div>
+            )}
+                <p className="text-sm font-medium truncate leading-tight">
+                  {item.styling_details?.name || 'Unnamed Item'}
+                </p>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Weather section */}
+        <div className="mb-5 md:mb-6">
+          <label className="block text-sm font-medium mb-2 text-ink">Weather</label>
+          <select
+            value={weather.condition}
+            onChange={(e) => setWeather({ ...weather, condition: e.target.value })}
+            className="w-full px-4 py-3 border border-[rgba(26,22,20,0.12)] rounded-lg focus:outline-none focus:ring-2 focus:ring-terracotta mb-3 text-base bg-white"
+          >
+            <option>Sunny</option>
+            <option>Cloudy</option>
+            <option>Rainy</option>
+            <option>Snowy</option>
+          </select>
+          <select
+            value={weather.temp}
+            onChange={(e) => setWeather({ ...weather, temp: e.target.value })}
+            className="w-full px-4 py-3 border border-[rgba(26,22,20,0.12)] rounded-lg focus:outline-none focus:ring-2 focus:ring-terracotta text-base bg-white"
+          >
+            <option>Cool (50-65°F)</option>
+            <option>Warm (65-75°F)</option>
+            <option>Hot (75°F+)</option>
+            <option>Cold (Below 50°F)</option>
+          </select>
+        </div>
+
+        {/* Generate button */}
+        <button
+          onClick={handleGenerate}
+          disabled={selectedItems.length === 0 || generating}
+          className="w-full bg-terracotta text-white py-3.5 md:py-4 px-6 rounded-lg font-medium hover:opacity-90 active:opacity-80 transition disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] flex items-center justify-center button-container"
+        >
+          {generating ? 'Creating Outfits...' : `Complete My Look (${selectedItems.length} selected)`}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+export default function CompletePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-bone">
+        <p className="text-muted">Loading...</p>
+      </div>
+    }>
+      <CompletePageContent />
+    </Suspense>
+  )
+}
+

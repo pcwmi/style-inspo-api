@@ -1,0 +1,153 @@
+'use client'
+
+import { useSearchParams, useRouter } from 'next/navigation'
+import { Suspense } from 'react'
+import { useState } from 'react'
+import { api } from '@/lib/api'
+import Link from 'next/link'
+
+const OCCASIONS = [
+  'School drop-off',
+  'Weekend errands',
+  'Business meeting',
+  'Date night',
+  'Coffee meeting',
+  'Formal event',
+  'Working from home',
+  'Brunch'
+]
+
+function OccasionPageContent() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const user = searchParams.get('user') || 'default'
+  
+  const [selectedOccasions, setSelectedOccasions] = useState<string[]>([])
+  const [customOccasion, setCustomOccasion] = useState('')
+  const [weather, setWeather] = useState({ condition: 'Sunny', temp: 'Cool (50-65°F)' })
+  const [generating, setGenerating] = useState(false)
+
+  const handleGenerate = async () => {
+    setGenerating(true)
+    try {
+      const { job_id } = await api.generateOutfits({
+        user_id: user,
+        occasions: [...selectedOccasions, customOccasion].filter(Boolean),
+        weather_condition: weather.condition,
+        temperature_range: weather.temp,
+        mode: 'occasion'
+      })
+      
+      router.push(`/reveal?user=${user}&job=${job_id}`)
+    } catch (error) {
+      console.error('Error generating outfits:', error)
+      alert('Failed to generate outfits. Please try again.')
+      setGenerating(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-bone page-container">
+      <div className="max-w-2xl mx-auto px-4 py-4 md:py-8">
+        <Link href={`/?user=${user}`} className="text-terracotta mb-4 inline-block min-h-[44px] flex items-center">
+          ← Back
+        </Link>
+        
+        <h1 className="text-2xl md:text-3xl font-bold mb-2">
+          What does this ONE outfit need to do today?
+        </h1>
+        <p className="text-muted mb-5 md:mb-8 text-base leading-relaxed">
+          Pick everything you're doing—we'll find pieces that transition across all of it
+        </p>
+
+        {/* Occasion checkboxes */}
+        <div className="space-y-2.5 md:space-y-3 mb-5 md:mb-6">
+          {OCCASIONS.map(occ => (
+            <label key={occ} className="flex items-center space-x-3 cursor-pointer min-h-[44px] py-1">
+              <input
+                type="checkbox"
+                checked={selectedOccasions.includes(occ)}
+                onChange={(e) => {
+                  if (e.target.checked) {
+                    setSelectedOccasions([...selectedOccasions, occ])
+                  } else {
+                    setSelectedOccasions(selectedOccasions.filter(o => o !== occ))
+                  }
+                }}
+                className="w-5 h-5 rounded border-[rgba(26,22,20,0.12)] flex-shrink-0"
+              />
+              <span className="text-base leading-relaxed flex-1">{occ}</span>
+            </label>
+          ))}
+        </div>
+
+        {/* Custom occasion */}
+        <div className="mb-5 md:mb-6">
+          <input
+            type="text"
+            placeholder="Or describe your day..."
+            value={customOccasion}
+            onChange={(e) => setCustomOccasion(e.target.value)}
+            className="w-full px-4 py-3 text-base border border-[rgba(26,22,20,0.12)] rounded-lg focus:outline-none focus:ring-2 focus:ring-terracotta bg-white"
+          />
+        </div>
+
+        {/* Weather section */}
+        <div className="mb-5 md:mb-6">
+          <label className="block text-sm font-medium mb-2 text-ink">Weather</label>
+          <select
+            value={weather.condition}
+            onChange={(e) => setWeather({ ...weather, condition: e.target.value })}
+            className="w-full px-4 py-3 border border-[rgba(26,22,20,0.12)] rounded-lg focus:outline-none focus:ring-2 focus:ring-terracotta mb-3 text-base bg-white"
+          >
+            <option>Sunny</option>
+            <option>Cloudy</option>
+            <option>Rainy</option>
+            <option>Snowy</option>
+          </select>
+          <select
+            value={weather.temp}
+            onChange={(e) => setWeather({ ...weather, temp: e.target.value })}
+            className="w-full px-4 py-3 border border-[rgba(26,22,20,0.12)] rounded-lg focus:outline-none focus:ring-2 focus:ring-terracotta text-base bg-white"
+          >
+            <option>Cool (50-65°F)</option>
+            <option>Warm (65-75°F)</option>
+            <option>Hot (75°F+)</option>
+            <option>Cold (Below 50°F)</option>
+          </select>
+        </div>
+
+        {/* Confirmation message */}
+        {selectedOccasions.length > 1 && (
+          <div className="bg-sand/30 border border-terracotta/30 rounded-lg p-3 md:p-4 mb-5 md:mb-6">
+            <p className="text-terracotta text-sm leading-relaxed">
+              💡 You'll get ONE versatile outfit that works for: {selectedOccasions.join(', ')}
+            </p>
+          </div>
+        )}
+
+        {/* Generate button */}
+        <button
+          onClick={handleGenerate}
+          disabled={selectedOccasions.length === 0 && !customOccasion || generating}
+          className="w-full bg-terracotta text-white py-3.5 md:py-4 px-6 rounded-lg font-medium hover:opacity-90 active:opacity-80 transition disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] flex items-center justify-center button-container"
+        >
+          {generating ? 'Creating Outfits...' : 'Create Outfits'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+export default function OccasionPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-bone">
+        <p className="text-muted">Loading...</p>
+      </div>
+    }>
+      <OccasionPageContent />
+    </Suspense>
+  )
+}
+
