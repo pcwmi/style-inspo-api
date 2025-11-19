@@ -13,44 +13,85 @@ This guide covers deploying the Style Inspo application to production.
 
 ### Prerequisites
 - Railway account (https://railway.app)
-- GitHub repository connected
+- GitHub repository: `pcwmi/style-inspo-api` ✅ (Already created!)
 
 ### Steps
 
 1. **Create New Project on Railway**
-   - Go to Railway dashboard
+   - Go to Railway dashboard: https://railway.app
    - Click "New Project"
    - Select "Deploy from GitHub repo"
-   - Choose `style-inspo-api` repository
+   - Choose `pcwmi/style-inspo-api` repository
+   - Railway will create a service automatically
+   
+2. **Set Root Directory** (⚠️ **CRITICAL!**):
+   - Click on the **service** that was created
+   - Go to the **Settings** tab
+   - Scroll to **"Root Directory"** section
+   - Enter: `backend` (without trailing slash)
+   - Click **"Save"**
+   - Railway will redeploy with the correct root directory
 
-2. **Add Redis Service**
+3. **Add Redis Service**
    - In Railway project, click "+ New"
    - Select "Redis"
    - Railway will provision Redis automatically
-   - Copy the Redis URL (will be in environment variables)
+   - **Find the Redis URL**:
+     - Click on the **Redis service** in your project
+     - Go to the **Variables** tab
+     - Look for `REDIS_URL` or `DATABASE_URL`
+     - Click the **👁️ eye icon** to reveal the value
+     - Copy the entire URL (format: `redis://default:password@host:port`)
+     - **Alternative**: Check the **Connect** or **Info** tab in the Redis service
 
-3. **Configure Environment Variables**
-   In Railway project settings, add these environment variables:
+4. **Configure Environment Variables**
+   - Go to your **backend service** → **Variables** tab
+   - Railway may have already added `REDIS_URL` automatically (check first!)
+   - Add these environment variables:
 
+   **Required:**
    ```
    OPENAI_API_KEY=sk-...
-   REDIS_URL=redis://default:...@...railway.app:6379
    STORAGE_TYPE=s3
    AWS_ACCESS_KEY_ID=...
    AWS_SECRET_ACCESS_KEY=...
    AWS_S3_BUCKET=style-inspo-wardrobe
-   RUNWAY_API_KEY=... (optional)
-   RUNWAY_MODEL_DESCRIPTOR=... (optional)
    ```
 
-4. **Deploy Backend**
-   - Railway auto-detects `backend/Procfile`
+   **Optional:**
+   ```
+   RUNWAY_API_KEY=... (for outfit visualization)
+   RUNWAY_MODEL_DESCRIPTOR=... (for outfit visualization)
+   ```
+
+   **Note**: If `REDIS_URL` is not automatically added, you'll need to:
+   - Go to Redis service → Variables tab
+   - Copy the `REDIS_URL` value
+   - Add it to your backend service variables
+
+5. **Deploy Backend**
+   - Railway auto-detects `backend/Procfile` in the root directory
    - It will run:
      - `web`: FastAPI server (uvicorn)
-     - `worker`: RQ worker (separate process)
+     - `worker`: RQ worker (separate process - see step 6)
    - Railway will build and deploy automatically
 
-5. **Get Backend URL**
+6. **Add Worker Process** (for background jobs):
+   - **At the project level** (not inside a service), click **"+ New"** button
+   - Select **"GitHub Repo"** (or "Empty Service" if that's not available)
+   - If "GitHub Repo": Select `pcwmi/style-inspo-api` again
+   - **Configure the worker service:**
+     - Click on the new service
+     - Go to **Settings** tab
+     - Set **Root Directory**: `backend`
+     - Go to **Deploy** section (in Settings)
+     - Set **Start Command**: `rq worker outfits analysis --url $REDIS_URL`
+   - **Set Environment Variables** (same as backend):
+     - Go to **Variables** tab
+     - Add `REDIS_URL` (should auto-populate) and `OPENAI_API_KEY`
+   - This service runs the background job worker separately from your API server
+
+7. **Get Backend URL**
    - Railway provides a URL like: `https://style-inspo-api-production.up.railway.app`
    - Copy this URL for frontend configuration
 
@@ -65,15 +106,15 @@ Should return: `{"status":"healthy","version":"1.0.0"}`
 
 ### Prerequisites
 - Vercel account (https://vercel.com)
-- GitHub repository connected
+- GitHub repository: `pcwmi/style-inspo-api` ✅ (Already created!)
 
 ### Steps
 
 1. **Import Project to Vercel**
-   - Go to Vercel dashboard
+   - Go to Vercel dashboard: https://vercel.com
    - Click "Add New Project"
-   - Import `style-inspo-api` repository
-   - Set root directory to `frontend`
+   - Import `pcwmi/style-inspo-api` repository
+   - **Important**: Set root directory to `frontend` (not root!)
 
 2. **Configure Build Settings**
    - Framework Preset: Next.js

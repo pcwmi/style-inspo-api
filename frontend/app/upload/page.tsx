@@ -1,7 +1,7 @@
 'use client'
 
 import { useSearchParams, useRouter } from 'next/navigation'
-import { useState, useRef } from 'react'
+import { Suspense, useState, useRef } from 'react'
 import { api } from '@/lib/api'
 import Link from 'next/link'
 
@@ -15,7 +15,7 @@ if (typeof window !== 'undefined') {
   }
 }
 
-export default function UploadPage() {
+function UploadPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const user = searchParams.get('user') || 'default'
@@ -199,6 +199,18 @@ export default function UploadPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function UploadPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-bone">
+        <p className="text-muted">Loading...</p>
+      </div>
+    }>
+      <UploadPageContent />
+    </Suspense>
   )
 }
 

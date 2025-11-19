@@ -24,11 +24,14 @@ function RevealPageContent() {
       return
     }
 
+    // TypeScript now knows jobId is string after the check above
+    const validJobId = jobId
+
     let pollInterval: NodeJS.Timeout
 
     async function pollJob() {
       try {
-        const result = await api.getJobStatus(jobId)
+        const result = await api.getJobStatus(validJobId)
         
         if (result.status === 'complete') {
           setOutfits(result.result.outfits || [])
