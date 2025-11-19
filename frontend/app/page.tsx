@@ -61,32 +61,32 @@ function DashboardContent() {
             href={`/occasion?user=${user}`}
             className="block w-full bg-terracotta text-white text-center py-3.5 md:py-4 px-6 rounded-lg font-medium hover:opacity-90 transition active:opacity-80 min-h-[48px] flex items-center justify-center"
           >
-            What should I wear today?
+            Plan my outfit
           </Link>
 
           <Link
             href={`/complete?user=${user}`}
             className="block w-full bg-white border-2 border-ink text-ink text-center py-3.5 md:py-4 px-6 rounded-lg font-medium hover:bg-sand transition active:bg-sand/80 min-h-[48px] flex items-center justify-center"
           >
-            Start with a piece I want to wear
+            Complete my look
           </Link>
         </div>
 
         {/* Wardrobe summary */}
-        <div className="bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-4 md:p-6 mb-5 md:mb-8 shadow-sm">
+        <Link
+          href={`/upload?user=${user}`}
+          className="block bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-4 md:p-6 mb-5 md:mb-8 hover:bg-sand/30 active:bg-sand/50 transition shadow-sm"
+        >
           <div className="flex justify-between items-center mb-3">
             <h2 className="text-lg md:text-xl font-semibold">Your Wardrobe</h2>
-            <Link
-              href={`/upload?user=${user}`}
-              className="text-terracotta hover:underline text-sm md:text-base min-h-[44px] flex items-center px-2 -mr-2"
-            >
+            <span className="text-terracotta text-sm md:text-base">
               Manage Closet
-            </Link>
+            </span>
           </div>
           <p className="text-muted text-base">
             {wardrobe?.count || 0} pieces uploaded
           </p>
-        </div>
+        </Link>
 
         {/* Saved outfits link */}
         <div className="mb-4 md:mb-6">
