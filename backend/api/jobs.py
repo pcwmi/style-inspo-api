@@ -27,20 +27,35 @@ async def get_job_status(job_id: str):
                 "result": job.result
             }
         elif job.is_failed:
+            # Extract error message from exception info
+            error_msg = "Job failed"
+            if job.exc_info:
+                # exc_info is a tuple: (exception_type, exception_value, traceback)
+                if isinstance(job.exc_info, tuple) and len(job.exc_info) >= 2:
+                    error_msg = str(job.exc_info[1])  # exception_value
+                else:
+                    error_msg = str(job.exc_info)
+            elif hasattr(job, "meta") and job.meta.get("error"):
+                error_msg = job.meta.get("error")
+            
             return {
                 "status": "failed",
-                "progress": 0,
-                "error": str(job.exc_info) if job.exc_info else "Job failed"
+                "progress": job.meta.get("progress", 0) if hasattr(job, "meta") else 0,
+                "error": error_msg
             }
         else:
-            # Job is still processing
+            # Job is still processing or queued
             progress = job.meta.get("progress", 0) if hasattr(job, "meta") else 0
+            status = "processing" if job.get_status() == "started" else "queued"
             return {
-                "status": "processing",
+                "status": status,
                 "progress": progress
             }
     except Exception as e:
         logger.error(f"Error getting job status for {job_id}: {e}")
-        raise HTTPException(status_code=404, detail="Job not found")
+        # Check if it's a NoSuchJobError specifically
+        if "NoSuchJobError" in str(type(e).__name__) or "No such job" in str(e):
+            raise HTTPException(status_code=404, detail=f"Job {job_id} not found. It may have expired or never existed.")
+        raise HTTPException(status_code=404, detail=f"Job not found: {str(e)}")
 
 

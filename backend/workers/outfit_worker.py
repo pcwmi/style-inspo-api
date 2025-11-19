@@ -5,6 +5,7 @@ Background workers for outfit generation and image analysis
 import os
 import sys
 import logging
+import datetime
 from rq import get_current_job
 
 # Add backend directory to path for imports
@@ -36,10 +37,43 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
         wardrobe_manager = WardrobeManager(user_id=user_id)
         profile_manager = UserProfileManager(user_id=user_id)
         
-        # Get user profile
-        user_profile = profile_manager.get_profile(user_id)
-        if not user_profile:
-            raise ValueError("User profile not found. Please complete onboarding first.")
+        # Get user profile, create default if none exists
+        raw_profile = profile_manager.get_profile(user_id)
+        if not raw_profile:
+            # Create a default profile so outfit generation can proceed
+            logger.warning(f"No profile found for user {user_id}, creating default profile")
+            try:
+                profile_manager.set_style_words(user_id, ["versatile", "confident", "comfortable"])
+                raw_profile = profile_manager.get_profile(user_id)
+            except Exception as e:
+                logger.error(f"Failed to create default profile: {e}")
+                # Use in-memory default profile if save fails
+                raw_profile = {
+                    "style_words": ["versatile", "confident", "comfortable"],
+                    "created_at": datetime.datetime.now().isoformat(),
+                    "updated_at": datetime.datetime.now().isoformat()
+                }
+        
+        # Convert profile format: style_words array -> three_words dict
+        # UserProfileManager returns style_words as array, but style engine expects three_words as dict
+        user_profile = {}
+        if raw_profile.get("style_words") and len(raw_profile["style_words"]) >= 3:
+            # Convert style_words array to three_words dict format
+            user_profile["three_words"] = {
+                "current": raw_profile["style_words"][0],
+                "aspirational": raw_profile["style_words"][1],
+                "feeling": raw_profile["style_words"][2]
+            }
+        else:
+            # Default fallback if conversion fails
+            user_profile["three_words"] = {
+                "current": "versatile",
+                "aspirational": "confident",
+                "feeling": "comfortable"
+            }
+        
+        # Preserve other profile fields
+        user_profile["daily_emotion"] = raw_profile.get("daily_emotion", {})
         
         if job:
             job.meta['progress'] = 20

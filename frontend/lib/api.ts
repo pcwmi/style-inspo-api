@@ -58,7 +58,13 @@ export const api = {
 
   async getJobStatus(jobId: string) {
     const res = await fetch(`${API_URL}/api/jobs/${jobId}`)
-    if (!res.ok) throw new Error('Failed to get job status')
+    if (!res.ok) {
+      if (res.status === 404) {
+        throw new Error('Job not found (404)')
+      }
+      const errorData = await res.json().catch(() => ({ detail: res.statusText }))
+      throw new Error(errorData.detail || errorData.message || `Failed to get job status: ${res.status}`)
+    }
     return res.json()
   },
 

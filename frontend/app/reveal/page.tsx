@@ -16,6 +16,8 @@ function RevealPageContent() {
   const [outfits, setOutfits] = useState<any[]>([])
   const [status, setStatus] = useState<'loading' | 'complete' | 'error'>('loading')
   const [error, setError] = useState<string>('')
+  const [progress, setProgress] = useState<number>(0)
+  const [pollCount, setPollCount] = useState<number>(0)
 
   useEffect(() => {
     if (!jobId) {
@@ -28,24 +30,50 @@ function RevealPageContent() {
     const validJobId = jobId
 
     let pollInterval: NodeJS.Timeout
+    const MAX_POLLS = 90 // 3 minutes max (90 polls * 2 seconds)
+    let pollCounter = 0
 
     async function pollJob() {
+      pollCounter++
+      setPollCount(pollCounter)
+      
+      // Timeout after max polls
+      if (pollCounter > MAX_POLLS) {
+        setStatus('error')
+        setError('Outfit generation is taking longer than expected. The job may have failed or the worker may be unavailable. Please try again.')
+        clearInterval(pollInterval)
+        return
+      }
+
       try {
         const result = await api.getJobStatus(validJobId)
         
+        // Update progress if available
+        if (result.progress !== undefined) {
+          setProgress(result.progress)
+        }
+        
         if (result.status === 'complete') {
-          setOutfits(result.result.outfits || [])
+          setOutfits(result.result?.outfits || [])
           setStatus('complete')
           clearInterval(pollInterval)
         } else if (result.status === 'failed') {
           setStatus('error')
-          setError(result.error || 'Generation failed')
+          // Extract error message from job.exc_info if it's a string
+          const errorMsg = result.error || 'Generation failed'
+          setError(errorMsg.length > 500 ? errorMsg.substring(0, 500) + '...' : errorMsg)
           clearInterval(pollInterval)
         }
-        // else keep polling (status === 'processing')
+        // else keep polling (status === 'processing' or 'queued')
       } catch (err: any) {
-        setStatus('error')
-        setError(err.message || 'Failed to check job status')
+        // Handle 404 (job not found) specially
+        if (err.message?.includes('404') || err.message?.includes('not found')) {
+          setStatus('error')
+          setError('Job not found. The job may have expired or the worker may not be running. Please try generating outfits again.')
+        } else {
+          setStatus('error')
+          setError(err.message || 'Failed to check job status. Please check your connection and try again.')
+        }
         clearInterval(pollInterval)
       }
     }
@@ -65,7 +93,21 @@ function RevealPageContent() {
         <div className="text-center px-4 max-w-sm">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-sand border-t-terracotta mx-auto mb-4"></div>
           <p className="text-ink text-base font-medium mb-2">Creating your outfits...</p>
-          <p className="text-muted text-sm leading-relaxed">This usually takes 20-30 seconds</p>
+          <p className="text-muted text-sm leading-relaxed mb-2">This usually takes 20-30 seconds</p>
+          {progress > 0 && (
+            <div className="mt-4">
+              <div className="w-full bg-sand rounded-full h-2 mb-2">
+                <div 
+                  className="bg-terracotta h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
+              <p className="text-xs text-muted">{progress}% complete</p>
+            </div>
+          )}
+          {pollCount > 30 && (
+            <p className="text-xs text-muted mt-2">Still processing... ({Math.floor(pollCount * 2)}s elapsed)</p>
+          )}
         </div>
       </div>
     )
