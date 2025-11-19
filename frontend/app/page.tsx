@@ -12,17 +12,23 @@ function DashboardContent() {
   
   const [wardrobe, setWardrobe] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
+  const [savedCount, setSavedCount] = useState<number>(0)
+  const [dislikedCount, setDislikedCount] = useState<number>(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [wardrobeData, profileData] = await Promise.all([
+        const [wardrobeData, profileData, savedData, dislikedData] = await Promise.all([
           api.getWardrobe(user),
-          api.getProfile(user)
+          api.getProfile(user),
+          api.getSavedOutfits(user).catch(() => ({ count: 0 })),
+          api.getDislikedOutfits(user).catch(() => ({ count: 0 }))
         ])
         setWardrobe(wardrobeData)
         setProfile(profileData)
+        setSavedCount(savedData.count || 0)
+        setDislikedCount(dislikedData.count || 0)
       } catch (error) {
         console.error('Error fetching data:', error)
       } finally {
@@ -89,7 +95,9 @@ function DashboardContent() {
             className="block bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-4 md:p-6 hover:bg-sand/30 active:bg-sand/50 transition shadow-sm"
           >
             <h2 className="text-lg md:text-xl font-semibold mb-1.5">Saved Outfits</h2>
-            <p className="text-muted text-sm md:text-base">View your favorite outfit combinations</p>
+            <p className="text-muted text-base">
+              {savedCount} saved outfit{savedCount !== 1 ? 's' : ''}
+            </p>
           </Link>
         </div>
 
@@ -100,7 +108,9 @@ function DashboardContent() {
             className="block bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-4 md:p-6 hover:bg-sand/30 active:bg-sand/50 transition shadow-sm"
           >
             <h2 className="text-lg md:text-xl font-semibold mb-1.5">Disliked Outfits</h2>
-            <p className="text-muted text-sm md:text-base">Review outfits you've passed on</p>
+            <p className="text-muted text-base">
+              {dislikedCount} disliked outfit{dislikedCount !== 1 ? 's' : ''}
+            </p>
           </Link>
         </div>
       </div>
