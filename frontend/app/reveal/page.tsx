@@ -54,7 +54,9 @@ function RevealPageContent() {
         }
         
         if (result.status === 'complete') {
-          setOutfits(result.result?.outfits || [])
+          const outfitsArray = result.result?.outfits || []
+          console.log('Job completed, outfits:', outfitsArray, 'Full result:', result.result)
+          setOutfits(outfitsArray)
           setStatus('complete')
           clearInterval(pollInterval)
         } else if (result.status === 'failed') {
@@ -147,14 +149,30 @@ function RevealPageContent() {
           Here's what could work for your day
         </h1>
 
-        {outfits.map((outfit, idx) => (
-          <OutfitCard
-            key={idx}
-            outfit={outfit}
-            user={user}
-            index={idx + 1}
-          />
-        ))}
+        {outfits.length === 0 ? (
+          <div className="bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-6 md:p-8 mb-6 shadow-sm">
+            <p className="text-muted text-base leading-relaxed mb-4">
+              No outfits were generated. This might happen if:
+            </p>
+            <ul className="text-muted text-sm md:text-base leading-relaxed mb-4 list-disc list-inside space-y-2">
+              <li>Your wardrobe doesn't have enough items for the selected occasions</li>
+              <li>The style engine couldn't find suitable combinations</li>
+              <li>There was an issue during generation</li>
+            </ul>
+            <p className="text-muted text-sm md:text-base leading-relaxed">
+              Try adding more items to your wardrobe or selecting different occasions.
+            </p>
+          </div>
+        ) : (
+          outfits.map((outfit, idx) => (
+            <OutfitCard
+              key={idx}
+              outfit={outfit}
+              user={user}
+              index={idx + 1}
+            />
+          ))
+        )}
 
         <div className="mt-6 md:mt-8">
           <Link
