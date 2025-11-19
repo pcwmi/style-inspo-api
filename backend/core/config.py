@@ -18,7 +18,8 @@ class Settings:
     # AWS S3
     AWS_ACCESS_KEY_ID: Optional[str] = os.getenv("AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY: Optional[str] = os.getenv("AWS_SECRET_ACCESS_KEY")
-    AWS_S3_BUCKET: str = os.getenv("AWS_S3_BUCKET", "style-inspo-wardrobe")
+    # Support both S3_BUCKET_NAME (original) and AWS_S3_BUCKET (alternative)
+    AWS_S3_BUCKET: str = os.getenv("AWS_S3_BUCKET") or os.getenv("S3_BUCKET_NAME", "style-inspo-wardrobe")
     STORAGE_TYPE: str = os.getenv("STORAGE_TYPE", "local")  # "local" or "s3"
     
     # Redis (for RQ job queue)

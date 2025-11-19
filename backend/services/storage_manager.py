@@ -57,17 +57,19 @@ class StorageManager:
         """Initialize AWS S3 client"""
         try:
             import boto3
+            from core.config import settings
 
             self.s3_client = boto3.client(
                 's3',
-                aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-                aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY')
+                aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+                aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY
             )
-            self.bucket_name = os.getenv('S3_BUCKET_NAME')
+            # Support both variable names for backward compatibility
+            self.bucket_name = os.getenv('S3_BUCKET_NAME') or settings.AWS_S3_BUCKET
             self.s3_region = os.getenv('S3_REGION', 'us-east-1')
             
             if not self.bucket_name:
-                raise ValueError("S3_BUCKET_NAME environment variable not set")
+                raise ValueError("S3_BUCKET_NAME or AWS_S3_BUCKET environment variable must be set")
                 
         except ImportError:
             raise ImportError("boto3 not installed. Run: pip install boto3")
