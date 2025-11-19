@@ -55,8 +55,10 @@ This guide covers deploying the Style Inspo application to production.
    STORAGE_TYPE=s3
    AWS_ACCESS_KEY_ID=...
    AWS_SECRET_ACCESS_KEY=...
-   AWS_S3_BUCKET=style-inspo-wardrobe
+   S3_BUCKET_NAME=style-inspo-wardrobe
    ```
+   
+   **Note:** The code supports both `S3_BUCKET_NAME` (primary) and `AWS_S3_BUCKET` (fallback) for backward compatibility.
 
    **Optional:**
    ```

@@ -25,7 +25,7 @@ Required variables:
 - `OPENAI_API_KEY` - OpenAI API key for GPT-4o
 - `AWS_ACCESS_KEY_ID` - AWS credentials for S3
 - `AWS_SECRET_ACCESS_KEY` - AWS secret key
-- `AWS_S3_BUCKET` - S3 bucket name
+- `S3_BUCKET_NAME` - S3 bucket name (or `AWS_S3_BUCKET` as fallback)
 - `REDIS_URL` - Redis connection URL (for job queue)
 
 Optional:

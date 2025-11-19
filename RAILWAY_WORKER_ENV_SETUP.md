@@ -20,8 +20,10 @@ The worker service is using local storage while the API service uses S3 storage,
 STORAGE_TYPE=s3
 AWS_ACCESS_KEY_ID=<your-aws-access-key>
 AWS_SECRET_ACCESS_KEY=<your-aws-secret-key>
-AWS_S3_BUCKET=style-inspo-wardrobe
+S3_BUCKET_NAME=style-inspo-wardrobe
 ```
+
+**Note:** The code supports both `S3_BUCKET_NAME` (primary) and `AWS_S3_BUCKET` (fallback) for backward compatibility, but `S3_BUCKET_NAME` is the preferred variable name.
 
 **Also Required:**
 ```
@@ -51,7 +53,7 @@ Check logs for:
 - [ ] STORAGE_TYPE=s3 is set in Worker service
 - [ ] AWS_ACCESS_KEY_ID matches backend service
 - [ ] AWS_SECRET_ACCESS_KEY matches backend service  
-- [ ] AWS_S3_BUCKET matches backend service
+- [ ] S3_BUCKET_NAME matches backend service (or AWS_S3_BUCKET as fallback)
 - [ ] REDIS_URL is set (should auto-populate)
 - [ ] OPENAI_API_KEY is set
 - [ ] Worker service redeployed after changes
