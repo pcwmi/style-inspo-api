@@ -25,6 +25,12 @@ class StorageManager:
     def __init__(self, storage_type: str = "local", user_id: str = "default"):
         self.user_id = user_id
         
+        # Normalize storage_type: handle empty strings, None, or invalid values
+        if not storage_type or storage_type.strip() == "":
+            storage_type = "local"
+        else:
+            storage_type = storage_type.strip().lower()
+        
         # Try to initialize S3, fallback to local if it fails
         if storage_type == "s3":
             try:

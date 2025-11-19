@@ -24,7 +24,10 @@ class WardrobeManager:
         self.user_id = user_id
         
         # Initialize storage manager (local or S3 based on env var)
+        # Normalize storage_type: handle empty strings or invalid values
         storage_type = os.getenv("STORAGE_TYPE", "local")
+        if not storage_type or storage_type.strip() == "":
+            storage_type = "local"
         self.storage = StorageManager(storage_type=storage_type, user_id=user_id)
         
         # Scope base_path by user_id for multi-user support
