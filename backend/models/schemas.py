@@ -39,6 +39,13 @@ class OutfitItem(BaseModel):
     image_path: Optional[str] = None
 
 
+class OutfitContext(BaseModel):
+    """Context in which the outfit was generated"""
+    occasions: List[str]
+    weather_condition: Optional[str] = None
+    temperature_range: Optional[str] = None
+
+
 class OutfitCombination(BaseModel):
     """A complete outfit combination"""
     items: List[OutfitItem]
@@ -47,6 +54,7 @@ class OutfitCombination(BaseModel):
     confidence_level: str
     vibe_keywords: List[str]
     constitution_principles: Optional[Dict[str, Any]] = None
+    context: Optional[OutfitContext] = None
 
 
 class OutfitGenerationResponse(BaseModel):

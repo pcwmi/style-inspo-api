@@ -64,16 +64,14 @@ class SavedOutfitsManager:
             self._migrate_from_local_if_needed()
             _MIGRATION_FLAG[user_id] = True
 
-    def save_outfit(self, outfit_combo, reason: str = "", occasion: Optional[str] = None) -> bool:
+    def save_outfit(self, outfit_combo, reason: str = "", occasion: Optional[str] = None, context: Optional[Dict] = None) -> bool:
         """Save an outfit combination for the current user.
 
         Args:
             outfit_combo: OutfitCombination object with items, styling_notes, etc.
             reason: Optional user feedback on why they like it
-            occasion: Optional occasion context (e.g., "Business meeting + Coffee")
-
-        Returns:
-            True if saved successfully
+            occasion: Optional occasion context (deprecated, use context dict)
+            context: Optional context dict with occasions, weather, temp
         """
         try:
             data = self._read_json()
@@ -108,6 +106,7 @@ class SavedOutfitsManager:
                 "user_reason": reason.strip(),
                 "challenge_item_id": challenge_item_id,
                 "occasion": occasion.strip() if occasion and occasion.strip() else None,
+                "context": context,
                 "saved_at": _now_iso()
             }
 

@@ -21,6 +21,8 @@ from services.image_analyzer import create_image_analyzer
 logger = logging.getLogger(__name__)
 
 
+from models.schemas import OutfitContext
+
 def generate_outfits_job(user_id, occasions, weather_condition, temperature_range, mode, anchor_items=None):
     """Background job for outfit generation"""
     
@@ -36,6 +38,13 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
         engine = StyleGenerationEngine()
         wardrobe_manager = WardrobeManager(user_id=user_id)
         profile_manager = UserProfileManager(user_id=user_id)
+        
+        # Create context object
+        context = OutfitContext(
+            occasions=occasions if occasions else [],
+            weather_condition=weather_condition,
+            temperature_range=temperature_range
+        )
         
         # Get user profile, create default if none exists
         raw_profile = profile_manager.get_profile(user_id)
@@ -147,7 +156,8 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
                     "why_it_works": combo.why_it_works,
                     "confidence_level": combo.confidence_level,
                     "vibe_keywords": combo.vibe_keywords,
-                    "constitution_principles": combo.constitution_principles or {}
+                    "constitution_principles": combo.constitution_principles or {},
+                    "context": context.model_dump()
                 }
                 for combo in combinations
             ],

@@ -46,6 +46,7 @@ htmlcov/
 
 # Local data (wardrobe photos, metadata)
 backend/wardrobe_photos/
+wardrobe_photos/
 backend/data/
 *.json.bak
 

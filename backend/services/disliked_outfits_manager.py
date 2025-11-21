@@ -64,16 +64,14 @@ class DislikedOutfitsManager:
             self._migrate_from_local_if_needed()
             _MIGRATION_FLAG[user_id] = True
 
-    def dislike_outfit(self, outfit_combo, reason: str = "", occasion: Optional[str] = None) -> bool:
+    def dislike_outfit(self, outfit_combo, reason: str = "", occasion: Optional[str] = None, context: Optional[Dict] = None) -> bool:
         """Dislike an outfit combination for the current user.
 
         Args:
             outfit_combo: OutfitCombination object with items, styling_notes, etc.
             reason: Optional user feedback on where it fell short
-            occasion: Optional occasion context (e.g., "Business meeting + Coffee")
-
-        Returns:
-            True if disliked successfully
+            occasion: Optional occasion context (deprecated)
+            context: Optional context dict
         """
         try:
             data = self._read_json()
@@ -108,6 +106,7 @@ class DislikedOutfitsManager:
                 "user_reason": reason.strip(),
                 "challenge_item_id": challenge_item_id,
                 "occasion": occasion.strip() if occasion and occasion.strip() else None,
+                "context": context,
                 "disliked_at": _now_iso()
             }
 

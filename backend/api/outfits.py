@@ -57,6 +57,7 @@ class OutfitDictWrapper:
         self.why_it_works = outfit_dict.get("why_it_works", "")
         self.confidence_level = outfit_dict.get("confidence_level", "medium")
         self.vibe_keywords = outfit_dict.get("vibe_keywords", [])
+        self.context = outfit_dict.get("context")
 
 
 @router.post("/outfits/save")
@@ -67,7 +68,8 @@ async def save_outfit(request: SaveOutfitRequest):
         outfit_wrapper = OutfitDictWrapper(request.outfit)
         success = manager.save_outfit(
             outfit_combo=outfit_wrapper,
-            reason=", ".join(request.feedback) if request.feedback else ""
+            reason=", ".join(request.feedback) if request.feedback else "",
+            context=outfit_wrapper.context
         )
         
         if not success:
@@ -89,7 +91,8 @@ async def dislike_outfit(request: DislikeOutfitRequest):
         outfit_wrapper = OutfitDictWrapper(request.outfit)
         success = manager.dislike_outfit(
             outfit_combo=outfit_wrapper,
-            reason=request.reason or ""
+            reason=request.reason or "",
+            context=outfit_wrapper.context
         )
         
         if not success:

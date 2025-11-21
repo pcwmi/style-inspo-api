@@ -4,12 +4,14 @@ import { useSearchParams } from 'next/navigation'
 import { Suspense, useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { Tooltip } from '../../components/ui/Tooltip';
+
 import { api } from '@/lib/api'
 
 function DislikedPageContent() {
   const searchParams = useSearchParams()
   const user = searchParams.get('user') || 'default'
-  
+
   const [outfits, setOutfits] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string>('')
@@ -61,10 +63,10 @@ function DislikedPageContent() {
         <Link href={`/?user=${user}`} className="text-terracotta mb-4 inline-block min-h-[44px] flex items-center">
           ← Back
         </Link>
-        
+
         <h1 className="text-2xl md:text-3xl font-bold mb-2">Disliked Outfits</h1>
         <p className="text-muted mb-5 md:mb-8 text-base leading-relaxed">
-          {outfits.length === 0 
+          {outfits.length === 0
             ? "You haven't disliked any outfits yet."
             : `${outfits.length} disliked outfit${outfits.length === 1 ? '' : 's'}`}
         </p>
@@ -131,6 +133,31 @@ function DislikedPageContent() {
                     <div className="mb-3 md:mb-4">
                       <h3 className="font-semibold mb-2 text-base">Your Feedback</h3>
                       <p className="text-muted text-sm md:text-base italic">"{disliked.user_reason}"</p>
+                    </div>
+                  )}
+
+                  {/* Context (Occasion, Weather) */}
+                  {disliked.context && (
+                    <div className="mb-3 md:mb-4 flex flex-wrap gap-2">
+                      {disliked.context.occasions && disliked.context.occasions.length > 0 && (
+                        <Tooltip content={disliked.context.occasions.join(", ")}>
+                          <span
+                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sand text-ink max-w-[200px] truncate cursor-help"
+                          >
+                            {disliked.context.occasions.join(", ")}
+                          </span>
+                        </Tooltip>
+                      )}
+                      {disliked.context.weather_condition && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                          {disliked.context.weather_condition}
+                        </span>
+                      )}
+                      {disliked.context.temperature_range && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100">
+                          {disliked.context.temperature_range}
+                        </span>
+                      )}
                     </div>
                   )}
 
