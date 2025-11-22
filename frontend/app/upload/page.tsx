@@ -166,7 +166,10 @@ function UploadPageContent() {
   return (
     <div className="min-h-screen bg-bone page-container">
       <div className="max-w-2xl mx-auto px-4 py-4 md:py-8">
-        <Link href={`/?user=${user}`} className="text-terracotta mb-4 inline-block min-h-[44px] flex items-center">
+        <Link 
+          href={hasProfile ? `/?user=${user}` : `/welcome?user=${user}`} 
+          className="text-terracotta mb-4 inline-block min-h-[44px] flex items-center"
+        >
           ← Back
         </Link>
         

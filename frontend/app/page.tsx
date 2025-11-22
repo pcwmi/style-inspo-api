@@ -10,14 +10,15 @@ import { isOnboardingComplete, getOnboardingStep } from '@/lib/onboarding'
 function DashboardContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const user = searchParams.get('user') || 'default'
-  
+  const userParam = searchParams.get('user')
+  const user = userParam || 'default'
+
   // Capitalize first letter of username for greeting
   const capitalizeFirst = (str: string) => {
     if (!str) return str
     return str.charAt(0).toUpperCase() + str.slice(1)
   }
-  
+
   const [wardrobe, setWardrobe] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
   const [savedCount, setSavedCount] = useState<number>(0)
@@ -27,6 +28,12 @@ function DashboardContent() {
 
   useEffect(() => {
     async function fetchData() {
+      // If no user parameter in URL, redirect to welcome page
+      if (!userParam) {
+        router.push('/welcome')
+        return
+      }
+
       try {
         const [wardrobeData, profileData, savedData, dislikedData] = await Promise.all([
           api.getWardrobe(user),
@@ -100,7 +107,7 @@ function DashboardContent() {
 
         {/* Wardrobe summary */}
         <Link
-          href={`/upload?user=${user}`}
+          href={`/closet?user=${user}`}
           className="block bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-4 md:p-6 mb-5 md:mb-8 hover:bg-sand/30 active:bg-sand/50 transition shadow-sm"
         >
           <div className="flex justify-between items-center mb-3">
