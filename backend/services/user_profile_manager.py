@@ -124,6 +124,65 @@ class UserProfileManager:
             _safe_stderr_write(error_msg)
             raise RuntimeError(f"Failed to save style words: {e}") from e
 
+    def save_profile(self, profile_data: Dict) -> bool:
+        """Save profile data (accepts three_words dict format from API).
+        
+        Args:
+            profile_data: Dict with optional keys:
+                - three_words: Dict[str, str] with keys "current", "aspirational", "feeling"
+                - daily_emotion: Dict[str, str]
+        
+        Returns:
+            True on success, False on failure
+        """
+        try:
+            profile = self._read_json()
+            now = _now_iso()
+            
+            # Convert three_words dict to style_words array if provided
+            if "three_words" in profile_data and profile_data["three_words"]:
+                three_words = profile_data["three_words"]
+                if isinstance(three_words, dict):
+                    # Extract words in order: current, aspirational, feeling
+                    words = [
+                        three_words.get("current", "").strip(),
+                        three_words.get("aspirational", "").strip(),
+                        three_words.get("feeling", "").strip()
+                    ]
+                    # Validate all three words are present
+                    if not all(words):
+                        raise ValueError("three_words must contain 'current', 'aspirational', and 'feeling' keys with non-empty values")
+                    profile_data["style_words"] = words
+                    # Remove three_words from profile_data since we store as style_words
+                    del profile_data["three_words"]
+            
+            # Update or create profile
+            if not profile or "style_words" not in profile:
+                # New profile
+                profile = {
+                    "created_at": now,
+                    "updated_at": now,
+                }
+            else:
+                # Update existing profile
+                profile["updated_at"] = now
+                # Preserve created_at if it exists
+                if "created_at" not in profile:
+                    profile["created_at"] = now
+            
+            # Merge new data into profile
+            profile.update(profile_data)
+            
+            self._atomic_write(profile)
+            _safe_stderr_write(f"✅ Profile saved for user: {self.user_id}\n")
+            return True
+        except Exception as e:
+            error_msg = f"❌ Failed to save profile for user {self.user_id}: {e}\n"
+            _safe_stderr_write(error_msg)
+            import traceback
+            _safe_stderr_write(f"Traceback: {traceback.format_exc()}\n")
+            return False
+
     # Internal helpers
     def _read_json(self) -> Dict:
         """Read single-user profile JSON from storage (S3 or local) with error handling.

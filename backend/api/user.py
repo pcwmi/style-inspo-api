@@ -28,9 +28,19 @@ async def get_profile(user_id: str):
                 "updated_at": None
             }
         
+        # Convert style_words array to three_words dict format
+        three_words = None
+        style_words = profile.get("style_words")
+        if style_words and isinstance(style_words, list) and len(style_words) >= 3:
+            three_words = {
+                "current": style_words[0],
+                "aspirational": style_words[1],
+                "feeling": style_words[2]
+            }
+        
         return {
             "user_id": user_id,
-            "three_words": profile.get("three_words"),
+            "three_words": three_words,
             "daily_emotion": profile.get("daily_emotion"),
             "created_at": profile.get("created_at"),
             "updated_at": profile.get("updated_at")

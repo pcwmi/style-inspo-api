@@ -1,13 +1,15 @@
 'use client'
 
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { Suspense } from 'react'
 import { useEffect, useState } from 'react'
 import { api } from '@/lib/api'
 import Link from 'next/link'
+import { isOnboardingComplete, getOnboardingStep } from '@/lib/onboarding'
 
 function DashboardContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const user = searchParams.get('user') || 'default'
   
   // Capitalize first letter of username for greeting
@@ -21,6 +23,7 @@ function DashboardContent() {
   const [savedCount, setSavedCount] = useState<number>(0)
   const [dislikedCount, setDislikedCount] = useState<number>(0)
   const [loading, setLoading] = useState(true)
+  const [checkingOnboarding, setCheckingOnboarding] = useState(true)
 
   useEffect(() => {
     async function fetchData() {
@@ -35,16 +38,33 @@ function DashboardContent() {
         setProfile(profileData)
         setSavedCount(savedData.count || 0)
         setDislikedCount(dislikedData.count || 0)
+
+        // Check onboarding status and redirect if needed
+        const onboardingComplete = await isOnboardingComplete(user)
+        if (!onboardingComplete) {
+          const step = await getOnboardingStep(user)
+          const stepMap: Record<string, string> = {
+            welcome: '/welcome',
+            words: '/words',
+            upload: '/upload',
+            complete: '/' // Already complete, shouldn't happen
+          }
+          const redirectPath = stepMap[step] || '/welcome'
+          router.push(`${redirectPath}?user=${user}`)
+          return
+        }
       } catch (error) {
         console.error('Error fetching data:', error)
+        // On error, default to showing dashboard (safer than blocking)
       } finally {
         setLoading(false)
+        setCheckingOnboarding(false)
       }
     }
     if (user) fetchData()
-  }, [user])
+  }, [user, router])
 
-  if (loading) {
+  if (loading || checkingOnboarding) {
     return (
       <div className="min-h-screen bg-bone flex items-center justify-center page-container">
         <div className="text-center px-4">

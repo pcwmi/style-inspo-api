@@ -1,7 +1,7 @@
 'use client'
 
 import { useSearchParams, useRouter } from 'next/navigation'
-import { Suspense, useState, useRef } from 'react'
+import { Suspense, useState, useRef, useEffect } from 'react'
 import { api } from '@/lib/api'
 import Link from 'next/link'
 
@@ -24,6 +24,42 @@ function UploadPageContent() {
   const [uploading, setUploading] = useState(false)
   const [uploadStatus, setUploadStatus] = useState<string>('')
   const [useRealAi, setUseRealAi] = useState(true)
+  const [profile, setProfile] = useState<any>(null)
+  const [wardrobe, setWardrobe] = useState<any>(null)
+  const [loadingProfile, setLoadingProfile] = useState(true)
+
+  // Capitalize first letter of username for greeting
+  const capitalizeFirst = (str: string) => {
+    if (!str) return str
+    return str.charAt(0).toUpperCase() + str.slice(1)
+  }
+
+  // Check if user has profile (partial user)
+  useEffect(() => {
+    async function checkProfile() {
+      try {
+        const [profileData, wardrobeData] = await Promise.all([
+          api.getProfile(user).catch(() => null),
+          api.getWardrobe(user).catch(() => null)
+        ])
+        setProfile(profileData)
+        setWardrobe(wardrobeData)
+      } catch (error) {
+        console.error('Error loading profile:', error)
+      } finally {
+        setLoadingProfile(false)
+      }
+    }
+    checkProfile()
+  }, [user])
+
+  const hasProfile = profile?.three_words && 
+    profile.three_words.current &&
+    profile.three_words.aspirational &&
+    profile.three_words.feeling
+  
+  const wardrobeCount = wardrobe?.count || 0
+  const isPartialUser = hasProfile && wardrobeCount < 10
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -73,9 +109,45 @@ function UploadPageContent() {
       }
       
       setUploadStatus('Upload complete!')
-      setTimeout(() => {
-        router.push(`/?user=${user}`)
-      }, 2000)
+      
+      // Check wardrobe count and profile to determine redirect
+      try {
+        const [wardrobeData, profileData] = await Promise.all([
+          api.getWardrobe(user).catch(() => ({ count: 0 })),
+          api.getProfile(user).catch(() => null)
+        ])
+        
+        const wardrobeCount = wardrobeData?.count || 0
+        const hasProfile = profileData?.three_words && 
+          profileData.three_words.current &&
+          profileData.three_words.aspirational &&
+          profileData.three_words.feeling
+
+        // Redirect based on onboarding status
+        if (wardrobeCount >= 10 && hasProfile) {
+          // Complete onboarding - go to path choice
+          setTimeout(() => {
+            router.push(`/path-choice?user=${user}`)
+          }, 2000)
+        } else if (wardrobeCount >= 10 && !hasProfile) {
+          // Has wardrobe but no profile - go to words
+          setTimeout(() => {
+            router.push(`/words?user=${user}`)
+          }, 2000)
+        } else {
+          // Not enough items yet - stay on upload page
+          // Clear status after showing success
+          setTimeout(() => {
+            setUploadStatus('')
+          }, 3000)
+        }
+      } catch (error) {
+        console.error('Error checking onboarding status:', error)
+        // Fallback: redirect to dashboard
+        setTimeout(() => {
+          router.push(`/?user=${user}`)
+        }, 2000)
+      }
     } catch (error: any) {
       console.error('Upload error (full error object):', error)
       console.error('Error type:', typeof error)
@@ -115,6 +187,17 @@ function UploadPageContent() {
     }
   }
 
+  if (loadingProfile) {
+    return (
+      <div className="min-h-screen bg-bone flex items-center justify-center page-container">
+        <div className="text-center px-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-sand border-t-terracotta mx-auto mb-4"></div>
+          <p className="text-ink text-base font-medium">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-bone page-container">
       <div className="max-w-2xl mx-auto px-4 py-4 md:py-8">
@@ -122,10 +205,21 @@ function UploadPageContent() {
           ← Back
         </Link>
         
-        <h1 className="text-2xl md:text-3xl font-bold mb-2">Upload Wardrobe Items</h1>
-        <p className="text-muted mb-5 md:mb-8 text-base leading-relaxed">
-          Upload photos of your clothing items. We'll analyze them and add them to your wardrobe.
-        </p>
+        {isPartialUser ? (
+          <>
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">Welcome back {capitalizeFirst(user)}!</h1>
+            <p className="text-muted mb-5 md:mb-8 text-base leading-relaxed">
+              Let's add more pieces to your closet. Upload photos of your clothing items and we'll analyze them to help you discover new outfit combinations.
+            </p>
+          </>
+        ) : (
+          <>
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">Upload Wardrobe Items</h1>
+            <p className="text-muted mb-5 md:mb-8 text-base leading-relaxed">
+              Upload photos of your clothing items. We'll analyze them and add them to your wardrobe.
+            </p>
+          </>
+        )}
 
         {/* AI Analysis toggle */}
         <div className="mb-5 md:mb-6">
