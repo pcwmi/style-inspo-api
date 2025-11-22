@@ -1,0 +1,111 @@
+# Style Inspo - Cursor AI Rules
+
+## Project Overview
+A personal AI styling assistant that helps users style challenging wardrobe pieces using generative AI. Built with Next.js (React/TypeScript) frontend, FastAPI backend, OpenAI GPT-4o for outfit generation, and Runway ML for AI-generated outfit visualizations.
+
+## Key Documents
+- **PRODUCT_VISION.md**: Product vision, user needs, and core use cases (mood-based styling, "How Item", inspiration translation)
+- **STYLE_CONSTITUTION.md**: Core styling principles (Style DNA Alignment, Intentional Contrast, Intentional Details)
+- **CLAUDE.md**: Strategic context, roadmap priorities, and development history (READ FIRST for project direction)
+
+## Technical Architecture
+
+### Frontend (Next.js/React/TypeScript)
+- **app/page.tsx**: Main dashboard with onboarding check and navigation
+- **app/welcome/page.tsx**: Onboarding welcome page
+- **app/words/page.tsx**: Three words profile setup
+- **app/upload/page.tsx**: Wardrobe item upload interface
+- **app/path-choice/page.tsx**: Choose between occasion or item-based flows
+- **app/occasion/page.tsx**: Occasion-based outfit generation
+- **app/complete/page.tsx**: Item-based outfit completion
+- **app/reveal/page.tsx**: Outfit reveal with job polling
+- **app/saved/page.tsx**: Saved outfits view
+- **app/disliked/page.tsx**: Disliked outfits view
+- **lib/api.ts**: API client for backend communication
+- **lib/onboarding.ts**: Onboarding check utilities
+- **lib/styleWords.ts**: Style word chips data
+
+### Backend (FastAPI/Python)
+- **main.py**: FastAPI app entry point
+- **api/outfits.py**: Outfit generation endpoints
+- **api/wardrobe.py**: Wardrobe management endpoints
+- **api/user.py**: User profile endpoints
+- **api/jobs.py**: Background job status endpoints
+- **services/style_engine.py**: OpenAI GPT-4o integration for outfit generation using Style Constitution principles
+- **services/wardrobe_manager.py**: Wardrobe management with S3/local storage
+- **services/user_profile_manager.py**: User profile management (three_words, style_words)
+- **services/saved_outfits_manager.py**: Saved outfits persistence
+- **services/disliked_outfits_manager.py**: Disliked outfits persistence
+- **services/image_analyzer.py**: AI image analysis for wardrobe items
+- **services/storage_manager.py**: S3/local storage abstraction
+- **workers/outfit_worker.py**: Background job worker for outfit generation (RQ/Redis)
+- **models/schemas.py**: Pydantic models for API request/response validation
+
+### Data Structures
+- **OutfitCombination**: `items`, `styling_notes`, `why_it_works`, `confidence_level`, `vibe_keywords`, `constitution_principles`
+- **ProfileResponse**: `user_id`, `three_words` (dict: current, aspirational, feeling), `daily_emotion`, `created_at`, `updated_at`
+- **WardrobeResponse**: `items`, `count`
+- **JobStatusResponse**: `status`, `progress`, `result`, `error`
+- **JSON Files**: Persistence for wardrobe (`wardrobe_metadata.json`) and saved outfits (`saved_outfits.json`) stored per-user in S3 or local filesystem
+
+### Important Patterns
+1. **Persistence**: JSON files stored per-user in S3 (production) or local filesystem (development) via StorageManager
+2. **User Isolation**: All data is user-scoped via `user_id` parameter (defaults to "default")
+3. **Background Jobs**: Long-running tasks (outfit generation) use RQ/Redis job queue with polling
+4. **API Format**: Backend stores `style_words` as array `[word1, word2, word3]`, API exposes as `three_words` dict `{current, aspirational, feeling}`
+5. **Onboarding Flow**: Welcome → Words → Upload → Path Choice → (Occasion/Complete) → Reveal → Dashboard
+6. **Styling Notes**: Passed to Runway API to guide visual generation (tuck, layer, drape instructions)
+
+## Key Features
+- **Onboarding Flow**: Guided setup for new users (welcome, three words, upload 10+ items, path choice)
+- **Style Generator**: Generate outfit combinations based on style profile and occasion/items
+- **Complete My Look**: Style challenging/underused wardrobe pieces (item-based)
+- **Plan My Outfit**: Occasion-based outfit generation
+- **Manage Wardrobe**: Upload photos, AI analysis, categorize items
+- **AI Visualization**: See outfits on a person via Runway ML with actual garment photos (max 3 images)
+- **Saved/Disliked Outfits**: Heart/unheart favorite outfits with persistent storage
+- **Styling Principles**: Based on Allison Bornstein's "Wear it Well" methodology
+
+## Development Guidelines
+- All changes should be backward compatible (additive where possible)
+- User-scoped data: Always pass `user_id` parameter for multi-user support
+- Reuse existing API client methods rather than duplicating fetch logic
+- Environment variables in `.env` (API keys, Redis URL, S3 credentials)
+- Graceful degradation when API keys not configured
+- When generating a plan, validate all underlying assumptions and update the plan recursively until all underlying assumptions have been validated
+- Frontend: Use Next.js App Router patterns, client components for interactivity
+- Backend: Use Pydantic models for validation, async/await for I/O operations
+- Error handling: Return appropriate HTTP status codes, provide clear error messages
+
+## Current Status
+- ✅ Onboarding flow implemented (welcome, words, upload, path-choice)
+- ✅ AI outfit generation working with Style Constitution principles
+- ✅ Background job processing with Redis/RQ
+- ✅ Wardrobe management with S3/local storage
+- ✅ User profile management (three_words)
+- ✅ Saved/Disliked outfits persistence
+- ⏸️ Runway AI visualization integration (pending)
+- ⏸️ Mobile-optimized photo upload (pending)
+
+## Project Context Rules
+Before acting on any design or code generation:
+1. Read and respect context from key documents
+2. Use Figma MCP data only within constraints defined there:
+   - Align all UI and API changes with the project purpose
+   - Prioritize roadmap milestones listed in roadmap.md
+3. When conflicts arise between design and roadmap, ask for clarification.
+
+## Workflow Guardrails
+- Validate assumptions with minimal repro scripts before editing complex modules
+- Prefer manual validation for interactions automation cannot reliably target (e.g. file uploads, camera capture)
+- After key UI interactions, confirm state changes explicitly (visual check or console logs)
+- Log verification steps in test notes to avoid repeating failed assumptions
+- After Python code edits, run a quick smoke import (e.g. `python -c "import module"`) alongside `python -m compileall` to catch missing dependencies
+- After TypeScript/React edits, check for linting errors and type safety
+- When merging feature branches into `main`, fully test flows before pushing or redeploying
+- For flows that rely on mobile-specific pickers or gestures (photo upload, camera capture), reproduce on a mobile browser or simulator before sign-off
+- Prior to announcing a deploy complete, verify environment-specific behavior (e.g. S3 storage, background workers, Redis) on the actual deployment (Railway/Vercel) and capture the verification step
+- When background tasks should allow forward progress, test UI availability while jobs are still running to ensure UI gating supports pending analysis
+- Test onboarding flow with different user states (new, partial, complete) before deploying
+- Verify API data format conversions (style_words array ↔ three_words dict) work correctly
+
