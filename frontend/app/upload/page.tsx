@@ -1,6 +1,6 @@
 'use client'
 
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { Suspense, useState, useRef, useEffect } from 'react'
 import { api } from '@/lib/api'
 import Link from 'next/link'
@@ -17,7 +17,6 @@ if (typeof window !== 'undefined') {
 
 function UploadPageContent() {
   const searchParams = useSearchParams()
-  const router = useRouter()
   const user = searchParams.get('user') || 'default'
   const fileInputRef = useRef<HTMLInputElement>(null)
   
@@ -108,46 +107,12 @@ function UploadPageContent() {
         }
       }
       
+      // Show success message and clear after 3 seconds
+      // Let user decide when to navigate away
       setUploadStatus('Upload complete!')
-      
-      // Check wardrobe count and profile to determine redirect
-      try {
-        const [wardrobeData, profileData] = await Promise.all([
-          api.getWardrobe(user).catch(() => ({ count: 0 })),
-          api.getProfile(user).catch(() => null)
-        ])
-        
-        const wardrobeCount = wardrobeData?.count || 0
-        const hasProfile = profileData?.three_words && 
-          profileData.three_words.current &&
-          profileData.three_words.aspirational &&
-          profileData.three_words.feeling
-
-        // Redirect based on onboarding status
-        if (wardrobeCount >= 10 && hasProfile) {
-          // Complete onboarding - go to path choice
-          setTimeout(() => {
-            router.push(`/path-choice?user=${user}`)
-          }, 2000)
-        } else if (wardrobeCount >= 10 && !hasProfile) {
-          // Has wardrobe but no profile - go to words
-          setTimeout(() => {
-            router.push(`/words?user=${user}`)
-          }, 2000)
-        } else {
-          // Not enough items yet - stay on upload page
-          // Clear status after showing success
-          setTimeout(() => {
-            setUploadStatus('')
-          }, 3000)
-        }
-      } catch (error) {
-        console.error('Error checking onboarding status:', error)
-        // Fallback: redirect to dashboard
-        setTimeout(() => {
-          router.push(`/?user=${user}`)
-        }, 2000)
-      }
+      setTimeout(() => {
+        setUploadStatus('')
+      }, 3000)
     } catch (error: any) {
       console.error('Upload error (full error object):', error)
       console.error('Error type:', typeof error)
