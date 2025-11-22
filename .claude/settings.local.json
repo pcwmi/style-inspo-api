@@ -1,0 +1,69 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "WebSearch",
+      "WebFetch(domain:goop.com)",
+      "Bash(python3 -m pip install streamlit)",
+      "Bash(python3:*)",
+      "Bash(source:*)",
+      "Bash(pip install:*)",
+      "Bash(streamlit run:*)",
+      "Bash(python test:*)",
+      "Read(//Users/peichin/Downloads/**)",
+      "Read(//Users/peichin/.claude/**)",
+      "Bash(test:*)",
+      "Bash(say:*)",
+      "Read(//Users/peichin/Projects/**)",
+      "Bash(grep:*)",
+      "Bash(xargs ls:*)",
+      "WebFetch(domain:mywardrobemyself.com)",
+      "WebFetch(domain:www.mamamia.com.au)",
+      "WebFetch(domain:platform.openai.com)",
+      "Bash(git init:*)",
+      "Bash(git config:*)",
+      "Bash(brew install:*)",
+      "Bash(rm:*)",
+      "Bash(python:*)",
+      "WebFetch(domain:www.allisonbornstein.com)",
+      "WebFetch(domain:www.linkedin.com)",
+      "WebFetch(domain:arxiv.org)",
+      "Read(//Users/peichin/**)",
+      "Bash(git log:*)",
+      "SlashCommand(/start-the-day)",
+      "WebFetch(domain:style-inspo.streamlit.app)",
+      "WebFetch(domain:www.myindyx.com)",
+      "WebFetch(domain:www.altadaily.com)",
+      "WebFetch(domain:www.cottoncashmerecathair.com)",
+      "WebFetch(domain:stylewithingrace.com)",
+      "WebFetch(domain:apps.apple.com)",
+      "WebFetch(domain:www.mymikacloset.com)",
+      "WebFetch(domain:appsumo.com)",
+      "WebFetch(domain:sincewen.com)",
+      "WebFetch(domain:rabbitfurcoat.substack.com)",
+      "Bash(for:*)",
+      "Bash(ls:*)",
+      "Bash(done)",
+      "WebFetch(domain:styleinspo.vercel.app)",
+      "WebFetch(domain:style-inspo-api-production.up.railway.app)"
+    ],
+    "deny": [
+      "Bash(gh:*)"
+    ],
+    "ask": []
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "say \"I'm done\""
+          }
+        ]
+      }
+    ]
+  },
+  "outputStyle": "default"
+}

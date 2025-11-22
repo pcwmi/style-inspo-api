@@ -1,0 +1,26 @@
+I need you to implement a new "Closet-First Upload UX" feature for my Next.js app (style-inspo).
+
+This feature addresses the #1 user frustration from activated users: clunky photo upload flow and inability to manage wardrobe items.
+
+Full specification: /Users/peichin/Projects/style-inspo-api/.claude/SPEC-closet-first-ux.md
+
+Key changes:
+1. Create new /closet page (main wardrobe view with category tabs, item grid, floating "+ Add" button)
+2. Convert upload to modal (not separate page)
+3. Add photo guidelines modal (first-time users only)
+4. Create item detail/edit page (tap item to view/edit metadata)
+5. Add delete confirmation modal
+6. Update dashboard navigation (Manage Closet → /closet instead of /upload)
+
+Critical requirements:
+- Mobile-first design (320px-428px width)
+- Client-side EXIF auto-rotation (fix Android sideways photos)
+- Client-side image compression before upload
+- Live upload status ("Analyzing X photos...")
+- No auto-redirect after upload (bug fix)
+
+Repo structure:
+- Frontend: /Users/peichin/Projects/style-inspo-api/frontend (Next.js 13+)
+- Backend: /Users/peichin/Projects/style-inspo-api/backend (FastAPI)
+
+Please read the full spec and let me know if you need any clarification before starting.
