@@ -49,7 +49,9 @@ async def upload_item(
     try:
         # Save file to staging storage (accessible by worker)
         from services.storage_manager import StorageManager
-        storage = StorageManager(user_id=user_id)
+        import os
+        storage_type = os.getenv("STORAGE_TYPE", "local")
+        storage = StorageManager(storage_type=storage_type, user_id=user_id)
         
         # Create a file-like object from the upload
         content = await file.read()

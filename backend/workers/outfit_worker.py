@@ -193,7 +193,8 @@ def analyze_item_job(user_id, file_path, filename, use_real_ai=True):
         
         # Load file from storage (staging)
         from services.storage_manager import StorageManager
-        storage = StorageManager(user_id=user_id)
+        storage_type = os.getenv("STORAGE_TYPE", "local")
+        storage = StorageManager(storage_type=storage_type, user_id=user_id)
         
         image_data = storage.load_file(file_path)
         if not image_data:
