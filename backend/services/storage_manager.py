@@ -135,7 +135,117 @@ class StorageManager:
         # Return public URL
         return f"{self.get_base_url()}/{s3_key}"
     
-    def load_image(self, url_or_path: str) -> Optional[Image.Image]:
+    def save_file(self, file_obj, filename: str) -> str:
+        """
+        Save raw file object and return URL or path
+        
+        Args:
+            file_obj: File-like object (must support read/seek)
+            filename: Target filename
+            
+        Returns:
+            URL (S3) or path (local)
+        """
+        if self.storage_type == "s3":
+            return self._save_file_to_s3(file_obj, filename)
+        else:
+            return self._save_file_to_local(file_obj, filename)
+
+    def _save_file_to_local(self, file_obj, filename: str) -> str:
+        """Save raw file to local filesystem"""
+        # Ensure directory exists
+        file_path = os.path.join(self.items_path, filename)
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        
+        file_obj.seek(0)
+        with open(file_path, 'wb') as f:
+            f.write(file_obj.read())
+        
+        return file_path
+
+    def _save_file_to_s3(self, file_obj, filename: str) -> str:
+        """Upload raw file to S3"""
+        s3_key = f"{self.user_id}/{filename}"
+        
+        file_obj.seek(0)
+        
+        # Upload to S3
+        self.s3_client.upload_fileobj(
+            file_obj,
+            self.bucket_name,
+            s3_key
+        )
+        
+        # Return public URL
+        return f"{self.get_base_url()}/{s3_key}"
+
+    def load_file(self, url_or_path: str) -> Optional[bytes]:
+        """
+        Load raw file content from URL (S3) or path (local)
+        
+        Args:
+            url_or_path: URL (S3) or local file path
+            
+        Returns:
+            bytes or None if not found
+        """
+        try:
+            if self.storage_type == "s3" and url_or_path.startswith("http"):
+                return self._load_file_from_s3(url_or_path)
+            else:
+                return self._load_file_from_local(url_or_path)
+        except Exception as e:
+            print(f"Error loading file {url_or_path}: {e}")
+            return None
+
+    def _load_file_from_local(self, file_path: str) -> bytes:
+        """Load raw file from local filesystem"""
+        with open(file_path, 'rb') as f:
+            return f.read()
+
+    def _load_file_from_s3(self, url: str) -> bytes:
+        """Download raw file from S3"""
+        # Extract S3 key from URL
+        s3_key = url.replace(f"{self.get_base_url()}/", "")
+        
+        # Download from S3
+        response = self.s3_client.get_object(Bucket=self.bucket_name, Key=s3_key)
+        return response['Body'].read()
+
+    def delete_file(self, url_or_path: str) -> bool:
+        """
+        Delete file from storage
+        
+        Args:
+            url_or_path: URL (S3) or local file path
+            
+        Returns:
+            bool: True if successful, False otherwise
+        """
+        try:
+            if self.storage_type == "s3" and url_or_path.startswith("http"):
+                return self._delete_file_from_s3(url_or_path)
+            else:
+                return self._delete_file_from_local(url_or_path)
+        except Exception as e:
+            print(f"Error deleting file {url_or_path}: {e}")
+            return False
+
+    def _delete_file_from_local(self, file_path: str) -> bool:
+        """Delete file from local filesystem"""
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            return True
+        return False
+
+    def _delete_file_from_s3(self, url: str) -> bool:
+        """Delete file from S3"""
+        # Extract S3 key from URL
+        s3_key = url.replace(f"{self.get_base_url()}/", "")
+        
+        self.s3_client.delete_object(Bucket=self.bucket_name, Key=s3_key)
+        return True
+
         """
         Load image from URL (S3) or path (local)
         

@@ -178,7 +178,7 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
         raise
 
 
-def analyze_item_job(user_id, temp_path, filename, use_real_ai=True):
+def analyze_item_job(user_id, file_path, filename, use_real_ai=True):
     """Background job for image analysis"""
     
     job = get_current_job()
@@ -191,8 +191,13 @@ def analyze_item_job(user_id, temp_path, filename, use_real_ai=True):
         # Analyze image
         analyzer = create_image_analyzer(use_real_ai=use_real_ai)
         
-        with open(temp_path, 'rb') as f:
-            image_data = f.read()
+        # Load file from storage (staging)
+        from services.storage_manager import StorageManager
+        storage = StorageManager(user_id=user_id)
+        
+        image_data = storage.load_file(file_path)
+        if not image_data:
+            raise FileNotFoundError(f"Could not load file from {file_path}")
         
         from io import BytesIO
         buffer = BytesIO(image_data)
@@ -222,11 +227,11 @@ def analyze_item_job(user_id, temp_path, filename, use_real_ai=True):
             job.meta['progress'] = 100
             job.save_meta()
         
-        # Clean up temp file
+        # Clean up staged file
         try:
-            os.remove(temp_path)
-        except:
-            pass
+            storage.delete_file(file_path)
+        except Exception as e:
+            logger.warning(f"Failed to cleanup staged file {file_path}: {e}") 
         
         return {
             "item_id": item_data["id"] if item_data else None,
@@ -239,14 +244,6 @@ def analyze_item_job(user_id, temp_path, filename, use_real_ai=True):
         if job:
             job.meta['error'] = str(e)
             job.save_meta()
-        
-        # Clean up temp file on error
-        try:
-            if os.path.exists(temp_path):
-                os.remove(temp_path)
-        except:
-            pass
-        
         raise
 
 

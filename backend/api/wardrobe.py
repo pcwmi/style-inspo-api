@@ -47,23 +47,25 @@ async def upload_item(
 ):
     """Upload new wardrobe item - returns job_id for analysis"""
     try:
-        # Save file temporarily
-        import tempfile
-        import os
+        # Save file to staging storage (accessible by worker)
+        from services.storage_manager import StorageManager
+        storage = StorageManager(user_id=user_id)
         
-        temp_dir = tempfile.gettempdir()
-        temp_path = os.path.join(temp_dir, f"{user_id}_{file.filename}")
+        # Create a file-like object from the upload
+        content = await file.read()
+        from io import BytesIO
+        file_obj = BytesIO(content)
         
-        with open(temp_path, "wb") as f:
-            content = await file.read()
-            f.write(content)
+        # Save to staging area
+        staging_filename = f"staging/{file.filename}"
+        file_path = storage.save_file(file_obj, staging_filename)
         
         # Enqueue analysis job
         analysis_queue = get_analysis_queue()
         job = analysis_queue.enqueue(
             analyze_item_job,
             user_id=user_id,
-            temp_path=temp_path,
+            file_path=file_path,
             filename=file.filename,
             use_real_ai=use_real_ai,
             job_timeout=120  # 2 minutes max
