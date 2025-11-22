@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 from models.schemas import OutfitContext
 
-def generate_outfits_job(user_id, occasions, weather_condition, temperature_range, mode, anchor_items=None):
+def generate_outfits_job(user_id, occasions, weather_condition, temperature_range, mode, anchor_items=None, mock=False):
     """Background job for outfit generation"""
     
     job = get_current_job()
@@ -33,6 +33,81 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
         if job:
             job.meta['progress'] = 10
             job.save_meta()
+            
+        if mock:
+            import time
+            # Simulate some processing time
+            time.sleep(2)
+            if job:
+                job.meta['progress'] = 50
+                job.save_meta()
+            time.sleep(1)
+            
+            # Return mock result
+            result = {
+                "outfits": [
+                    {
+                        "items": [
+                            {
+                                "name": "Mock Shirt",
+                                "category": "top",
+                                "image_path": "https://placehold.co/400x400/png?text=Mock+Shirt"
+                            },
+                            {
+                                "name": "Mock Jeans",
+                                "category": "bottom",
+                                "image_path": "https://placehold.co/400x400/png?text=Mock+Jeans"
+                            },
+                            {
+                                "name": "Mock Shoes",
+                                "category": "shoes",
+                                "image_path": "https://placehold.co/400x400/png?text=Mock+Shoes"
+                            }
+                        ],
+                        "styling_notes": "This is a mock outfit for testing purposes.",
+                        "why_it_works": "It's hardcoded to work perfectly!",
+                        "confidence_level": "high",
+                        "vibe_keywords": ["mock", "test", "fast"],
+                        "constitution_principles": {},
+                        "context": {
+                            "occasions": occasions or ["test"],
+                            "weather_condition": weather_condition,
+                            "temperature_range": temperature_range
+                        }
+                    },
+                    {
+                        "items": [
+                            {
+                                "name": "Mock Dress",
+                                "category": "one-piece",
+                                "image_path": "https://placehold.co/400x400/png?text=Mock+Dress"
+                            },
+                            {
+                                "name": "Mock Jacket",
+                                "category": "outerwear",
+                                "image_path": "https://placehold.co/400x400/png?text=Mock+Jacket"
+                            }
+                        ],
+                        "styling_notes": "Another mock outfit.",
+                        "why_it_works": "Testing multiple outfits.",
+                        "confidence_level": "medium",
+                        "vibe_keywords": ["mock", "alternative"],
+                        "constitution_principles": {},
+                        "context": {
+                            "occasions": occasions or ["test"],
+                            "weather_condition": weather_condition,
+                            "temperature_range": temperature_range
+                        }
+                    }
+                ],
+                "count": 2
+            }
+            
+            if job:
+                job.meta['progress'] = 100
+                job.save_meta()
+                
+            return result
         
         # Initialize services
         engine = StyleGenerationEngine()

@@ -12,7 +12,7 @@ function RevealPageContent() {
   const router = useRouter()
   const user = searchParams.get('user') || 'default'
   const jobId = searchParams.get('job')
-  
+
   const [outfits, setOutfits] = useState<any[]>([])
   const [status, setStatus] = useState<'loading' | 'complete' | 'error'>('loading')
   const [error, setError] = useState<string>('')
@@ -36,7 +36,7 @@ function RevealPageContent() {
     async function pollJob() {
       pollCounter++
       setPollCount(pollCounter)
-      
+
       // Timeout after max polls
       if (pollCounter > MAX_POLLS) {
         setStatus('error')
@@ -47,12 +47,12 @@ function RevealPageContent() {
 
       try {
         const result = await api.getJobStatus(validJobId)
-        
+
         // Update progress if available
         if (result.progress !== undefined) {
           setProgress(result.progress)
         }
-        
+
         if (result.status === 'complete') {
           const outfitsArray = result.result?.outfits || []
           console.log('Job completed, outfits:', outfitsArray, 'Full result:', result.result)
@@ -82,7 +82,7 @@ function RevealPageContent() {
 
     // Initial call
     pollJob()
-    
+
     // Poll every 2 seconds
     pollInterval = setInterval(pollJob, 2000)
 
@@ -99,7 +99,7 @@ function RevealPageContent() {
           {progress > 0 && (
             <div className="mt-4">
               <div className="w-full bg-sand rounded-full h-2 mb-2">
-                <div 
+                <div
                   className="bg-terracotta h-2 rounded-full transition-all duration-300"
                   style={{ width: `${progress}%` }}
                 ></div>
@@ -204,6 +204,7 @@ function OutfitCard({ outfit, user, index }: { outfit: any; user: string; index:
   const [disliking, setDisliking] = useState(false)
   const [selectedFeedback, setSelectedFeedback] = useState<string[]>([])
   const [dislikeReason, setDislikeReason] = useState('')
+  const [otherReasonText, setOtherReasonText] = useState('')
 
   const handleSave = async () => {
     setSaving(true)
@@ -228,7 +229,7 @@ function OutfitCard({ outfit, user, index }: { outfit: any; user: string; index:
       await api.dislikeOutfit({
         user_id: user,
         outfit,
-        reason: dislikeReason
+        reason: dislikeReason === 'Other' ? `Other: ${otherReasonText}` : dislikeReason
       })
       alert('Feedback recorded')
       setDisliking(false)
@@ -239,96 +240,14 @@ function OutfitCard({ outfit, user, index }: { outfit: any; user: string; index:
     }
   }
 
-  if (saving) {
-    return (
-      <div className="bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-4 md:p-6 mb-5 md:mb-6 shadow-sm">
-        <h3 className="text-lg md:text-xl font-semibold mb-4">What do you love about it?</h3>
-        <div className="space-y-2.5 md:space-y-3 mb-4">
-          {['Perfect for my occasions', 'Feels authentic to my style', 'Never thought to combine these pieces', 'Love the vibe'].map(option => (
-            <label key={option} className="flex items-center space-x-3 cursor-pointer min-h-[44px] py-1">
-              <input
-                type="checkbox"
-                checked={selectedFeedback.includes(option)}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setSelectedFeedback([...selectedFeedback, option])
-                  } else {
-                    setSelectedFeedback(selectedFeedback.filter(f => f !== option))
-                  }
-                }}
-                className="w-5 h-5 rounded border-[rgba(26,22,20,0.12)] flex-shrink-0"
-              />
-              <span className="text-base leading-relaxed flex-1">{option}</span>
-            </label>
-          ))}
-        </div>
-        <div className="flex flex-col sm:flex-row gap-3">
-          <button
-            onClick={handleSave}
-            className="flex-1 bg-terracotta text-white py-3 px-6 rounded-lg hover:opacity-90 active:opacity-80 min-h-[48px] flex items-center justify-center"
-          >
-            Save
-          </button>
-          <button
-            onClick={() => setSaving(false)}
-            className="flex-1 bg-sand text-ink py-3 px-6 rounded-lg hover:bg-sand/80 active:bg-sand/70 min-h-[48px] flex items-center justify-center"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    )
-  }
 
-  if (disliking) {
-    return (
-      <div className="bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-4 md:p-6 mb-5 md:mb-6 shadow-sm">
-        <h3 className="text-lg md:text-xl font-semibold mb-4">What's the main issue?</h3>
-        <div className="space-y-2.5 md:space-y-3 mb-4">
-          {["Won't look good on me", "Doesn't match my occasions", "Not my style", "The outfit doesn't make sense", "Other"].map(option => (
-            <label key={option} className="flex items-center space-x-3 cursor-pointer min-h-[44px] py-1">
-              <input
-                type="radio"
-                name="dislike-reason"
-                value={option}
-                checked={dislikeReason === option}
-                onChange={(e) => setDislikeReason(e.target.value)}
-                className="w-5 h-5 flex-shrink-0"
-              />
-              <span className="text-base leading-relaxed flex-1">{option}</span>
-            </label>
-          ))}
-        </div>
-        {dislikeReason === 'Other' && (
-          <input
-            type="text"
-            placeholder="Please specify..."
-            onChange={(e) => setDislikeReason(`Other: ${e.target.value}`)}
-            className="w-full px-4 py-3 border border-[rgba(26,22,20,0.12)] rounded-lg mb-4 text-base bg-white"
-          />
-        )}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <button
-            onClick={handleDislike}
-            className="flex-1 bg-terracotta text-white py-3 px-6 rounded-lg hover:opacity-90 active:opacity-80 min-h-[48px] flex items-center justify-center"
-          >
-            Submit
-          </button>
-          <button
-            onClick={() => setDisliking(false)}
-            className="flex-1 bg-sand text-ink py-3 px-6 rounded-lg hover:bg-sand/80 active:bg-sand/70 min-h-[48px] flex items-center justify-center"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    )
-  }
+
+
 
   return (
     <div className="bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-4 md:p-6 mb-4 md:mb-6 shadow-sm">
       <h2 className="text-lg md:text-xl font-semibold mb-3 md:mb-4">Outfit {index}</h2>
-      
+
       {/* Outfit images */}
       <div className="grid grid-cols-3 gap-2 mb-4">
         {outfit.items.map((item: any, idx: number) => (
@@ -366,20 +285,101 @@ function OutfitCard({ outfit, user, index }: { outfit: any; user: string; index:
       </div>
 
       {/* Actions */}
-      <div className="flex gap-3">
-        <button
-          onClick={() => setSaving(true)}
-          className="flex-1 bg-terracotta text-white py-3 px-6 rounded-lg hover:opacity-90 active:opacity-80 min-h-[48px] flex items-center justify-center"
-        >
-          Save Outfit
-        </button>
-        <button
-          onClick={() => setDisliking(true)}
-          className="px-6 py-3 border border-[rgba(26,22,20,0.12)] rounded-lg hover:bg-sand/30 active:bg-sand/50 min-h-[48px] min-w-[48px] flex items-center justify-center"
-        >
-          👎
-        </button>
-      </div>
+      {!saving && !disliking ? (
+        <div className="flex gap-3">
+          <button
+            onClick={() => setSaving(true)}
+            className="flex-1 bg-terracotta text-white py-3 px-6 rounded-lg hover:opacity-90 active:opacity-80 min-h-[48px] flex items-center justify-center"
+          >
+            Save Outfit
+          </button>
+          <button
+            onClick={() => setDisliking(true)}
+            className="px-6 py-3 border border-[rgba(26,22,20,0.12)] rounded-lg hover:bg-sand/30 active:bg-sand/50 min-h-[48px] min-w-[48px] flex items-center justify-center"
+          >
+            👎
+          </button>
+        </div>
+      ) : saving ? (
+        <div className="mt-4 border-t border-[rgba(26,22,20,0.12)] pt-4">
+          <h3 className="text-lg font-semibold mb-4">What do you love about it?</h3>
+          <div className="space-y-2.5 mb-4">
+            {['Perfect for my occasions', 'Feels authentic to my style', 'Never thought to combine these pieces', 'Love the vibe'].map(option => (
+              <label key={option} className="flex items-center space-x-3 cursor-pointer min-h-[44px] py-1">
+                <input
+                  type="checkbox"
+                  checked={selectedFeedback.includes(option)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setSelectedFeedback([...selectedFeedback, option])
+                    } else {
+                      setSelectedFeedback(selectedFeedback.filter(f => f !== option))
+                    }
+                  }}
+                  className="w-5 h-5 rounded border-[rgba(26,22,20,0.12)] flex-shrink-0"
+                />
+                <span className="text-base leading-relaxed flex-1">{option}</span>
+              </label>
+            ))}
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={handleSave}
+              className="flex-1 bg-terracotta text-white py-3 px-6 rounded-lg hover:opacity-90 active:opacity-80 min-h-[48px] flex items-center justify-center"
+            >
+              Save
+            </button>
+            <button
+              onClick={() => setSaving(false)}
+              className="flex-1 bg-sand text-ink py-3 px-6 rounded-lg hover:bg-sand/80 active:bg-sand/70 min-h-[48px] flex items-center justify-center"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-4 border-t border-[rgba(26,22,20,0.12)] pt-4">
+          <h3 className="text-lg font-semibold mb-4">What's the main issue?</h3>
+          <div className="space-y-2.5 mb-4">
+            {["Won't look good on me", "Doesn't match my occasions", "Not my style", "The outfit doesn't make sense", "Other"].map(option => (
+              <label key={option} className="flex items-center space-x-3 cursor-pointer min-h-[44px] py-1">
+                <input
+                  type="radio"
+                  name="dislike-reason"
+                  value={option}
+                  checked={dislikeReason === option}
+                  onChange={(e) => setDislikeReason(e.target.value)}
+                  className="w-5 h-5 flex-shrink-0"
+                />
+                <span className="text-base leading-relaxed flex-1">{option}</span>
+              </label>
+            ))}
+          </div>
+          {dislikeReason === 'Other' && (
+            <input
+              type="text"
+              placeholder="Please specify..."
+              value={otherReasonText}
+              onChange={(e) => setOtherReasonText(e.target.value)}
+              className="w-full px-4 py-3 border border-[rgba(26,22,20,0.12)] rounded-lg mb-4 text-base bg-white"
+            />
+          )}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={handleDislike}
+              className="flex-1 bg-terracotta text-white py-3 px-6 rounded-lg hover:opacity-90 active:opacity-80 min-h-[48px] flex items-center justify-center"
+            >
+              Submit
+            </button>
+            <button
+              onClick={() => setDisliking(false)}
+              className="flex-1 bg-sand text-ink py-3 px-6 rounded-lg hover:bg-sand/80 active:bg-sand/70 min-h-[48px] flex items-center justify-center"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

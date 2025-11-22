@@ -36,6 +36,7 @@ async def generate_outfits(request: OutfitRequest):
             temperature_range=request.temperature_range,
             mode=request.mode,
             anchor_items=request.anchor_items,
+            mock=request.mock,
             job_timeout=120  # 2 minutes max
         )
         

@@ -30,6 +30,7 @@ class OutfitRequest(BaseModel):
     temperature_range: Optional[str] = None
     mode: str = Field(default="occasion", pattern="^(occasion|complete)$")
     anchor_items: Optional[List[str]] = None  # Item IDs for "complete my look" mode
+    mock: bool = False
 
 
 class OutfitItem(BaseModel):

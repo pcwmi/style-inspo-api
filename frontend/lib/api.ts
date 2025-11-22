@@ -21,12 +21,12 @@ export const api = {
       method: 'POST',
       body: formData
     })
-    
+
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({ detail: res.statusText }))
       throw new Error(errorData.detail || errorData.message || `Upload failed: ${res.status} ${res.statusText}`)
     }
-    
+
     return res.json()
   },
 
@@ -46,6 +46,7 @@ export const api = {
     temperature_range?: string
     mode: 'occasion' | 'complete'
     anchor_items?: string[]
+    mock?: boolean
   }) {
     const res = await fetch(`${API_URL}/api/outfits/generate`, {
       method: 'POST',

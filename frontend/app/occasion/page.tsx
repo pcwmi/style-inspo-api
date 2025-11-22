@@ -21,7 +21,7 @@ function OccasionPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const user = searchParams.get('user') || 'default'
-  
+
   const [selectedOccasions, setSelectedOccasions] = useState<string[]>([])
   const [customOccasion, setCustomOccasion] = useState('')
   const [weather, setWeather] = useState({ condition: 'Sunny', temp: 'Cool (50-65°F)' })
@@ -35,9 +35,10 @@ function OccasionPageContent() {
         occasions: [...selectedOccasions, customOccasion].filter(Boolean),
         weather_condition: weather.condition,
         temperature_range: weather.temp,
-        mode: 'occasion'
+        mode: 'occasion',
+        mock: user === 'test'
       })
-      
+
       router.push(`/reveal?user=${user}&job=${job_id}`)
     } catch (error) {
       console.error('Error generating outfits:', error)
@@ -52,7 +53,7 @@ function OccasionPageContent() {
         <Link href={`/?user=${user}`} className="text-terracotta mb-4 inline-block min-h-[44px] flex items-center">
           ← Back
         </Link>
-        
+
         <h1 className="text-2xl md:text-3xl font-bold mb-2">
           What does this ONE outfit need to do today?
         </h1>
