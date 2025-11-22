@@ -10,6 +10,12 @@ function DashboardContent() {
   const searchParams = useSearchParams()
   const user = searchParams.get('user') || 'default'
   
+  // Capitalize first letter of username for greeting
+  const capitalizeFirst = (str: string) => {
+    if (!str) return str
+    return str.charAt(0).toUpperCase() + str.slice(1)
+  }
+  
   const [wardrobe, setWardrobe] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
   const [savedCount, setSavedCount] = useState<number>(0)
@@ -53,7 +59,7 @@ function DashboardContent() {
     <div className="min-h-screen bg-bone page-container">
       <div className="max-w-2xl mx-auto px-4 py-4 md:py-8">
         <h1 className="text-2xl md:text-3xl font-bold mb-2">Style Inspo</h1>
-        <p className="text-muted mb-5 md:mb-8 text-base leading-relaxed">Welcome back! Ready to discover new outfits?</p>
+        <p className="text-muted mb-5 md:mb-8 text-base leading-relaxed">Welcome back {capitalizeFirst(user)}! Ready to discover new outfits?</p>
 
         {/* Primary CTAs */}
         <div className="space-y-3 md:space-y-4 mb-6 md:mb-8">
