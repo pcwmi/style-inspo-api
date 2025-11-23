@@ -30,6 +30,22 @@ export const api = {
     return res.json()
   },
 
+  async getItem(userId: string, itemId: string) {
+    const res = await fetch(`${API_URL}/api/wardrobe/${userId}/items/${itemId}`)
+    if (!res.ok) throw new Error('Failed to fetch item')
+    return res.json()
+  },
+
+  async updateItem(userId: string, itemId: string, data: any) {
+    const res = await fetch(`${API_URL}/api/wardrobe/${userId}/items/${itemId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+    if (!res.ok) throw new Error('Failed to update item')
+    return res.json()
+  },
+
   async deleteItem(userId: string, itemId: string) {
     const res = await fetch(`${API_URL}/api/wardrobe/${userId}/items/${itemId}`, {
       method: 'DELETE'
@@ -37,6 +53,8 @@ export const api = {
     if (!res.ok) throw new Error('Failed to delete item')
     return res.json()
   },
+
+
 
   // Outfits
   async generateOutfits(request: {

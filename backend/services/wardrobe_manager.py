@@ -136,6 +136,44 @@ class WardrobeManager:
             logger.error(f"Error adding item: {str(e)}")
             return None
 
+    def update_wardrobe_item(self, item_id: str, updates: Dict) -> Optional[Dict]:
+        """Update metadata for an existing wardrobe item"""
+        try:
+            items = self.wardrobe_data.get("items", [])
+            
+            for item in items:
+                if item.get("id") == item_id:
+                    # Update styling details
+                    if "styling_details" not in item:
+                        item["styling_details"] = {}
+                    
+                    # Allow updating specific fields in styling_details
+                    allowed_fields = [
+                        "name", "category", "sub_category", "colors", 
+                        "cut", "texture", "style", "fit", "brand", 
+                        "trend_status", "styling_notes"
+                    ]
+                    
+                    for field in allowed_fields:
+                        if field in updates:
+                            item["styling_details"][field] = updates[field]
+                            
+                    # Update system metadata
+                    if "system_metadata" not in item:
+                        item["system_metadata"] = {}
+                    
+                    item["system_metadata"]["last_updated"] = datetime.datetime.now().isoformat()
+                    self.wardrobe_data["last_updated"] = datetime.datetime.now().isoformat()
+                    
+                    self.save_wardrobe_data()
+                    return item
+            
+            return None
+            
+        except Exception as e:
+            logger.error(f"Error updating item {item_id}: {str(e)}")
+            return None
+
     def get_wardrobe_items(self, filter_type: str = "all") -> List[Dict]:
         """Get wardrobe items with flexible filtering"""
         items = self.wardrobe_data.get("items", [])

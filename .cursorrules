@@ -109,3 +109,4 @@ Before acting on any design or code generation:
 - Test onboarding flow with different user states (new, partial, complete) before deploying
 - Verify API data format conversions (style_words array ↔ three_words dict) work correctly
 
+

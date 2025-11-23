@@ -3,7 +3,8 @@ Wardrobe API endpoints
 """
 
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
-from typing import List
+from typing import List, Optional
+from pydantic import BaseModel
 import logging
 
 from services.wardrobe_manager import WardrobeManager
@@ -119,4 +120,52 @@ async def get_item(user_id: str, item_id: str):
         logger.error(f"Error getting item {item_id} for {user_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.put("/wardrobe/{user_id}/items/{item_id}")
+async def update_item(user_id: str, item_id: str, updates: dict):
+    """Update wardrobe item metadata"""
+    try:
+        manager = WardrobeManager(user_id=user_id)
+        updated_item = manager.update_wardrobe_item(item_id, updates)
+        
+        if not updated_item:
+            raise HTTPException(status_code=404, detail="Item not found")
+        
+        return updated_item
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating item {item_id} for {user_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
+class ItemUpdate(BaseModel):
+    name: Optional[str] = None
+    category: Optional[str] = None
+    sub_category: Optional[str] = None
+    colors: Optional[List[str]] = None
+    cut: Optional[str] = None
+    texture: Optional[str] = None
+    style: Optional[str] = None
+    fit: Optional[str] = None
+    brand: Optional[str] = None
+    trend_status: Optional[str] = None
+    styling_notes: Optional[str] = None
+
+@router.put("/wardrobe/{user_id}/items/{item_id}")
+async def update_item(user_id: str, item_id: str, updates: ItemUpdate):
+    """Update wardrobe item details"""
+    try:
+        manager = WardrobeManager(user_id=user_id)
+        # Convert Pydantic model to dict, excluding None values
+        update_data = {k: v for k, v in updates.dict().items() if v is not None}
+        
+        updated_item = manager.update_wardrobe_item(item_id, update_data)
+        
+        if not updated_item:
+            raise HTTPException(status_code=404, detail="Item not found")
+        
+        return updated_item
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating item {item_id} for {user_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
