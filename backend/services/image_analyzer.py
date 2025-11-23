@@ -146,21 +146,24 @@ class GPTVisionAnalyzer(ImageAnalyzer):
             base64_image, preprocessing_timings = self.encode_image(image_file)
             timings.update(preprocessing_timings)
 
-            # Create detailed prompt for fashion analysis with sub_category inference
+            # Create detailed prompt for fashion analysis with structured physical attributes
             prompt = """
-            Analyze this clothing item as a professional fashion stylist would. Focus on details that help create outfits and understand styling potential.
+            Analyze this clothing item as a professional fashion stylist would. Focus on PHYSICAL ATTRIBUTES that help identify similar items and create outfits.
 
             Return STRICT JSON with these fields (no extra commentary):
             {
               "name": "Clear descriptive name (e.g. 'Burgundy cable-knit oversized sweater')",
               "category": "One of: tops, bottoms, dresses, outerwear, footwear, accessories, bags",
-              "sub_category": "Granular type based on what you SEE (examples: belt, scarf, necklace, earrings, rings, hat, sunglasses, boots, sneakers, loafers, heels, sandals, trousers, culottes, jeans, skirt, shorts, tee, blouse, shirt, knit, tank, camisole, blazer, cardigan, coat, jacket, tote, crossbody, clutch)",
-              "colors": "Dominant colors/patterns (e.g. 'navy blue', 'black and white stripes', 'floral with pink roses')",
+              "sub_category": "Specific subcategory (see options below)",
+              "colors": ["primary color", "secondary color"] (array),
+              "fabric": "Primary fabric (cotton, wool, cashmere, leather, suede, silk, linen, denim, polyester, blend)",
               "cut": "Design/silhouette (e.g. 'cropped', 'A-line', 'wide-leg', 'boyfriend style')",
               "design_details": "Distinctive features: cutouts, slits, keyholes, hardware, embellishments, straps, ties; 'none' if none",
               "texture": "Materials/fabric feel (e.g. 'smooth leather', 'chunky knit', 'distressed denim')",
               "style": "Aesthetic/vibe (e.g. 'minimalist chic', 'boho vintage', 'edgy street style')",
-              "fit": "How it sits on the body (e.g. 'fitted', 'loose', 'oversized', 'structured', 'flowy')",
+              "fit": "Specific fit term: fitted, oversized, relaxed, structured, cropped, flowy",
+              "sleeve_length": "For tops only: short_sleeve, long_sleeve, sleeveless, three_quarter, or null",
+              "waist_level": "For bottoms only: high_waisted, mid_rise, low_rise, or null",
               "brand": "Any visible brand from tags/labels/logos; null if none",
               "trend_status": "'trendy' or 'classic' with 1 short clause of context",
               "styling_notes": "2 sentences on styling potential",
@@ -168,8 +171,21 @@ class GPTVisionAnalyzer(ImageAnalyzer):
               "confidence": {"sub_category": 0.0, "category": 0.0}
             }
 
-            - Infer sub_category visually. If uncertain, choose the closest likely type and lower confidence.
-            - Keep category broad and consistent with sub_category (e.g., belt => accessories, boots => footwear).
+            **Sub-category options** (REQUIRED - choose the most specific match):
+            - Tops: tops_tshirt, tops_buttonup, tops_sweater, tops_cardigan, tops_blouse, tops_tank, tops_sweatshirt
+            - Bottoms: bottoms_jeans, bottoms_trousers, bottoms_skirt, bottoms_shorts, bottoms_leggings
+            - Shoes: shoes_boots, shoes_sneakers, shoes_heels, shoes_flats, shoes_sandals
+            - Accessories: accessories_belt, accessories_scarf, accessories_jewelry, accessories_hat, accessories_sunglasses
+            - Bags: bags_tote, bags_crossbody, bags_clutch
+            - Outerwear: outerwear_jacket, outerwear_coat, outerwear_blazer
+
+            **Important rules**:
+            1. Focus on PHYSICAL attributes (fabric, fit, color) not subjective interpretations (formality, function)
+            2. "colors" must be an ARRAY: ["black"], ["grey", "charcoal"], not a string
+            3. "fabric" must be a single word from the list above
+            4. "fit" must match one of: fitted, oversized, relaxed, structured, cropped, flowy
+            5. For tops, "sleeve_length" is REQUIRED. For bottoms, "waist_level" is REQUIRED.
+            6. If uncertain about sleeve_length or waist_level, use "unknown" rather than null
             """
 
             # API call timing
@@ -227,10 +243,21 @@ class GPTVisionAnalyzer(ImageAnalyzer):
             timings['json_parsing'] = time.time() - start_parse
 
             # Ensure all required fields are present
-            required_fields = ['name', 'category', 'sub_category', 'colors', 'cut', 'design_details', 'texture', 'style', 'fit', 'brand', 'trend_status', 'styling_notes', 'attributes', 'confidence']
+            required_fields = ['name', 'category', 'sub_category', 'colors', 'fabric', 'cut', 'design_details', 'texture', 'style', 'fit', 'sleeve_length', 'waist_level', 'brand', 'trend_status', 'styling_notes', 'attributes', 'confidence']
             for field in required_fields:
                 if field not in analysis:
-                    analysis[field] = 'Not specified' if field not in ['attributes', 'confidence'] else ({ } if field == 'attributes' else {'sub_category': 0.0, 'category': 0.0})
+                    if field in ['attributes', 'confidence']:
+                        analysis[field] = {} if field == 'attributes' else {'sub_category': 0.0, 'category': 0.0}
+                    elif field == 'colors':
+                        analysis[field] = ['unknown']
+                    elif field in ['sleeve_length', 'waist_level']:
+                        analysis[field] = None
+                    else:
+                        analysis[field] = 'Not specified'
+
+            # Ensure colors is an array
+            if isinstance(analysis.get('colors'), str):
+                analysis['colors'] = [analysis['colors']]
 
             # Final timing calculations
             timings['total_analysis'] = time.time() - start_total
