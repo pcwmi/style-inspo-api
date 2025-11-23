@@ -23,6 +23,42 @@ function ClosetContent() {
     const [showGuidelines, setShowGuidelines] = useState(false)
     const [analyzingCount, setAnalyzingCount] = useState(0)
 
+    // Sync activeCategory with URL param on mount and when param changes
+    useEffect(() => {
+        const categoryParam = searchParams.get('category')
+        if (categoryParam) {
+            // Validate category exists in our list (case insensitive check)
+            const matchedCategory = CATEGORIES.find(c => c.toLowerCase() === categoryParam.toLowerCase())
+            if (matchedCategory) {
+                setActiveCategory(matchedCategory)
+            }
+        } else {
+            setActiveCategory('All')
+        }
+    }, [searchParams])
+
+    const handleCategoryClick = (cat: string) => {
+        let newCategory = cat
+
+        // Toggle behavior: if clicking active category, reset to All
+        if (activeCategory === cat) {
+            newCategory = 'All'
+        }
+
+        setActiveCategory(newCategory)
+
+        // Update URL
+        const params = new URLSearchParams(searchParams.toString())
+        if (newCategory === 'All') {
+            params.delete('category')
+        } else {
+            params.set('category', newCategory)
+        }
+
+        // Use push to add to history stack so back button works
+        router.push(`?${params.toString()}`, { scroll: false })
+    }
+
     useEffect(() => {
         fetchWardrobe()
     }, [user])
@@ -123,7 +159,7 @@ function ClosetContent() {
                     {CATEGORIES.map(cat => (
                         <button
                             key={cat}
-                            onClick={() => setActiveCategory(cat)}
+                            onClick={() => handleCategoryClick(cat)}
                             className={`flex-shrink-0 flex items-center whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeCategory === cat
                                 ? 'bg-black text-white'
                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'

@@ -108,7 +108,10 @@ function ItemDetailContent() {
                         Cancel
                     </button>
                 ) : (
-                    <Link href={`/closet?user=${user}`} className="text-gray-500">
+                    <Link
+                        href={`/closet?user=${user}${searchParams.get('category') ? `&category=${searchParams.get('category')}` : ''}`}
+                        className="text-gray-500"
+                    >
                         ← Back to Closet
                     </Link>
                 )}
