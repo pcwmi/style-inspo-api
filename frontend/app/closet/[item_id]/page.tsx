@@ -144,6 +144,41 @@ function ItemDetailContent() {
                     />
                 </div>
 
+                {/* Rotate Button (Edit Mode Only) */}
+                {isEditing && (
+                    <div className="px-6 pt-4">
+                        <button
+                            onClick={async () => {
+                                try {
+                                    setSaving(true)
+                                    const res = await api.rotateItem(user, itemId)
+                                    // Force image refresh by updating item with new path
+                                    setItem((prev: any) => ({
+                                        ...prev,
+                                        system_metadata: {
+                                            ...prev.system_metadata,
+                                            image_path: res.new_image_path
+                                        }
+                                    }))
+                                } catch (err) {
+                                    console.error('Failed to rotate item:', err)
+                                    alert('Failed to rotate image')
+                                } finally {
+                                    setSaving(false)
+                                }
+                            }}
+                            disabled={saving}
+                            className="w-full py-2 text-gray-700 font-medium border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 text-sm"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+                                <path d="M21 3v5h-5" />
+                            </svg>
+                            Rotate Image 90°
+                        </button>
+                    </div>
+                )}
+
                 {/* Content */}
                 <div className="p-6 space-y-6">
                     {isEditing ? (
@@ -203,6 +238,17 @@ function ItemDetailContent() {
                                     placeholder="Optional"
                                 />
                             </div>
+
+                            {/* AI Override Notice */}
+                            {(formData.name !== item.styling_details.name || formData.category !== item.styling_details.category) && (
+                                <div className="bg-yellow-50 p-3 rounded-lg text-sm text-yellow-800 flex gap-2">
+                                    <span>💡</span>
+                                    <div>
+                                        <p className="font-medium">AI detected: "{item.styling_details.name}"</p>
+                                        <p>You are correcting this information.</p>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* AI Override Notice */}
                             {(formData.name !== item.styling_details.name || formData.category !== item.styling_details.category) && (

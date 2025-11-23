@@ -169,3 +169,22 @@ async def update_item(user_id: str, item_id: str, updates: ItemUpdate):
     except Exception as e:
         logger.error(f"Error updating item {item_id} for {user_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/wardrobe/{user_id}/items/{item_id}/rotate")
+async def rotate_item(user_id: str, item_id: str, degrees: int = 90):
+    """Rotate item image by specified degrees (default 90 clockwise)"""
+    try:
+        manager = WardrobeManager(user_id=user_id)
+        new_path = manager.rotate_item_image(item_id, degrees)
+        
+        if not new_path:
+            raise HTTPException(status_code=404, detail="Item not found or rotation failed")
+        
+        return {"success": True, "new_image_path": new_path}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error rotating item {item_id} for {user_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+

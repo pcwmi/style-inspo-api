@@ -264,6 +264,85 @@ class WardrobeManager:
             logger.error(f"Error updating styling challenge status: {str(e)}")
             return False
 
+    def rotate_item_image(self, item_id: str, degrees: int = 90) -> Optional[str]:
+        """
+        Rotate an item's image by the specified degrees (clockwise).
+        Returns the new image path/URL if successful, None otherwise.
+        """
+        try:
+            items = self.wardrobe_data.get("items", [])
+            target_item = None
+
+            for item in items:
+                if item.get("id") == item_id:
+                    target_item = item
+                    break
+            
+            if not target_item:
+                logger.error(f"Item {item_id} not found for rotation")
+                return None
+
+            # Get current image path
+            current_path = target_item.get("system_metadata", {}).get("image_path")
+            if not current_path:
+                logger.error(f"No image path found for item {item_id}")
+                return None
+
+            # Load image using storage manager
+            image_data = self.storage.load_file(current_path)
+            if not image_data:
+                logger.error(f"Could not load image data from {current_path}")
+                return None
+
+            # Rotate image
+            from io import BytesIO
+            img = Image.open(BytesIO(image_data))
+            
+            # Rotate clockwise (negative angle for PIL rotate)
+            # PIL rotate is counter-clockwise, so -90 is 90 degrees clockwise
+            rotated_img = img.rotate(-degrees, expand=True)
+            
+            # Save rotated image
+            # We overwrite the existing file if possible, or create a new one
+            # For S3, we'll generate a new filename to avoid caching issues
+            
+            filename = os.path.basename(current_path)
+            if self.storage.storage_type == "s3":
+                # Generate new filename for cache busting
+                name, ext = os.path.splitext(filename)
+                # Remove old timestamp if present (simple heuristic)
+                if "_" in name and len(name.split("_")[-1]) > 8:
+                    name = "_".join(name.split("_")[:-1])
+                
+                new_filename = f"{name}_{int(datetime.datetime.now().timestamp())}{ext}"
+            else:
+                new_filename = filename
+
+            new_path = self.storage.save_image(rotated_img, new_filename)
+            
+            # Update metadata
+            if "system_metadata" not in target_item:
+                target_item["system_metadata"] = {}
+            
+            target_item["system_metadata"]["image_path"] = new_path
+            target_item["system_metadata"]["last_updated"] = datetime.datetime.now().isoformat()
+            
+            # If S3 and filename changed, try to delete old file
+            if self.storage.storage_type == "s3" and new_path != current_path:
+                try:
+                    self.storage.delete_file(current_path)
+                except Exception as e:
+                    logger.warning(f"Failed to delete old image {current_path}: {e}")
+
+            self.wardrobe_data["last_updated"] = datetime.datetime.now().isoformat()
+            self.save_wardrobe_data()
+            
+            return new_path
+
+        except Exception as e:
+            logger.error(f"Error rotating item image: {str(e)}")
+            return None
+
     def _toggle_legacy_format(self, item_id: str, is_challenge: bool = None, challenge_reason: str = "") -> bool:
         """Handle toggle for legacy format (regular_wear/styling_challenges arrays)"""
         try:

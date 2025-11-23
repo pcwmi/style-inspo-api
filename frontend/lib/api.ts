@@ -54,6 +54,14 @@ export const api = {
     return res.json()
   },
 
+  async rotateItem(userId: string, itemId: string, degrees: number = 90) {
+    const res = await fetch(`${API_URL}/api/wardrobe/${userId}/items/${itemId}/rotate?degrees=${degrees}`, {
+      method: 'POST'
+    })
+    if (!res.ok) throw new Error('Failed to rotate item')
+    return res.json()
+  },
+
 
 
   // Outfits
