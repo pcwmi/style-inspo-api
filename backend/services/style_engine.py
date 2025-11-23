@@ -286,7 +286,8 @@ IMPORTANT: Return ONLY valid JSON. Start with [ and end with ]. Use exact item n
         task_steps.append(f"{next_num}. **Apply Intentional Contrast** (Principle 2): Use at least 2 types of contrast per outfit")
         task_steps.append(f"{next_num + 1}. **Add Intentional Details** (Principle 3): Specify concrete styling gestures")
         task_steps.append(f"{next_num + 2}. **No two pants in the same outfit**: A person can only wear one pair of pants at a time.")
-        task_steps.append(f"{next_num + 3}. **Neck space**: Consider visual balance when styling neck area (scarves, necklaces, tops with details)")
+        task_steps.append(f"{next_num + 3}. **No two shoes in the same outfit**: A person can only wear one pair of shoes at a time.")
+        task_steps.append(f"{next_num + 4}. **Neck space**: Consider visual balance when styling neck area (scarves, necklaces, tops with details)")
 
         # Assemble final task section
         result = f"{task_intro} 3 outfit combinations that:\n\n"
@@ -774,7 +775,13 @@ IMPORTANT: Return ONLY valid JSON. Start with [ and end with ]. Use exact item n
         if bottom_count == 0:
             return False, "Outfit is missing a bottom (needs pants, skirt, or dress)"
 
-        # Rule 3: Check for excessive tops/outerwear (allow max 3 for layering)
+        # Rule 3: Can't have more than 1 pair of shoes
+        shoe_categories = ['shoes', 'footwear']
+        shoe_count = sum(1 for cat in categories if cat in shoe_categories)
+        if shoe_count > 1:
+            return False, "Outfit has multiple shoes (can only wear one pair of shoes at a time)"
+
+        # Rule 4: Check for excessive tops/outerwear (allow max 3 for layering)
         # Count both tops and outerwear since outerwear (blazers, cardigans, jackets) are layered on top
         #top_count = sum(1 for cat in categories if cat in ['tops', 'outerwear'])
         #if top_count > 3:
