@@ -106,6 +106,13 @@ class WardrobeManager:
                     "trend_status": analysis_data.get('trend_status', 'Unknown'),
                     "styling_notes": analysis_data.get('styling_notes', '')
                 },
+                "structured_attrs": {
+                    "subcategory": analysis_data.get('sub_category', 'Unknown'),
+                    "fabric": analysis_data.get('fabric', 'unknown'),
+                    "silhouette": analysis_data.get('fit', 'Unknown').lower() if analysis_data.get('fit') else 'unknown',
+                    "sleeve_length": analysis_data.get('sleeve_length'),
+                    "waist_level": analysis_data.get('waist_level'),
+                },
                 "usage_metadata": {
                     "is_styling_challenge": is_styling_challenge,
                     "challenge_reason": challenge_reason if is_styling_challenge else "",

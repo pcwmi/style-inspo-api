@@ -5,7 +5,7 @@
       "styling_details": {
         "name": "Black leather ankle boots",
         "category": "shoes",
-        "sub_category": "Unknown",
+        "sub_category": "shoes_boots",
         "colors": [
           "black"
         ],
@@ -33,6 +33,13 @@
         "file_size": 130113,
         "source": "unknown",
         "processed_at": null
+      },
+      "structured_attrs": {
+        "subcategory": "shoes_boots",
+        "fabric": "leather",
+        "silhouette": "fitted",
+        "sleeve_length": null,
+        "waist_level": null
       }
     },
     {
@@ -40,7 +47,7 @@
       "styling_details": {
         "name": "Black leather ankle boots",
         "category": "shoes",
-        "sub_category": "Unknown",
+        "sub_category": "shoes_boots",
         "colors": [
           "black"
         ],
@@ -68,6 +75,13 @@
         "file_size": 63503,
         "source": "unknown",
         "processed_at": null
+      },
+      "structured_attrs": {
+        "subcategory": "shoes_boots",
+        "fabric": "leather",
+        "silhouette": "fitted",
+        "sleeve_length": null,
+        "waist_level": null
       }
     },
     {
@@ -75,7 +89,7 @@
       "styling_details": {
         "name": "Black leather ankle boots",
         "category": "shoes",
-        "sub_category": "Unknown",
+        "sub_category": "shoes_boots",
         "colors": [
           "black"
         ],
@@ -103,6 +117,13 @@
         "file_size": 43588,
         "source": "unknown",
         "processed_at": null
+      },
+      "structured_attrs": {
+        "subcategory": "shoes_boots",
+        "fabric": "leather",
+        "silhouette": "fitted",
+        "sleeve_length": null,
+        "waist_level": null
       }
     },
     {
@@ -110,7 +131,7 @@
       "styling_details": {
         "name": "High-waisted wide leg jeans",
         "category": "bottoms",
-        "sub_category": "Unknown",
+        "sub_category": "bottoms_jeans",
         "colors": [
           "medium blue denim"
         ],
@@ -138,6 +159,13 @@
         "file_size": 61467,
         "source": "unknown",
         "processed_at": null
+      },
+      "structured_attrs": {
+        "subcategory": "bottoms_jeans",
+        "fabric": "denim",
+        "silhouette": "fitted",
+        "sleeve_length": null,
+        "waist_level": "high_waisted"
       }
     },
     {
@@ -145,7 +173,7 @@
       "styling_details": {
         "name": "Black leather ankle boots",
         "category": "shoes",
-        "sub_category": "Unknown",
+        "sub_category": "shoes_boots",
         "colors": [
           "black"
         ],
@@ -173,6 +201,13 @@
         "file_size": 50785,
         "source": "unknown",
         "processed_at": null
+      },
+      "structured_attrs": {
+        "subcategory": "shoes_boots",
+        "fabric": "leather",
+        "silhouette": "fitted",
+        "sleeve_length": null,
+        "waist_level": null
       }
     }
   ],
