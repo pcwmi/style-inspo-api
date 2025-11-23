@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation'
 import { Suspense, useState, useRef, useEffect } from 'react'
 import { api } from '@/lib/api'
 import Link from 'next/link'
+import PhotoGuidelines from '@/components/PhotoGuidelines'
 
 // Try to import image compression (optional)
 let imageCompression: any = null
@@ -25,7 +26,10 @@ function UploadPageContent() {
   const [useRealAi, setUseRealAi] = useState(true)
   const [profile, setProfile] = useState<any>(null)
   const [wardrobe, setWardrobe] = useState<any>(null)
+  const [wardrobeItems, setWardrobeItems] = useState<any[]>([])
   const [loadingProfile, setLoadingProfile] = useState(true)
+  const [showGuidelines, setShowGuidelines] = useState(false)
+  const [analyzingCount, setAnalyzingCount] = useState(0)
 
   // Capitalize first letter of username for greeting
   const capitalizeFirst = (str: string) => {
@@ -33,16 +37,28 @@ function UploadPageContent() {
     return str.charAt(0).toUpperCase() + str.slice(1)
   }
 
-  // Check if user has profile (partial user)
+  // Fetch wardrobe items
+  const fetchWardrobe = async () => {
+    try {
+      const wardrobeData = await api.getWardrobe(user).catch(() => ({ count: 0, items: [] }))
+      setWardrobe(wardrobeData)
+      setWardrobeItems(wardrobeData.items || [])
+    } catch (error) {
+      console.error('Error fetching wardrobe:', error)
+    }
+  }
+
+  // Check if user has profile (partial user) and fetch wardrobe
   useEffect(() => {
     async function checkProfile() {
       try {
         const [profileData, wardrobeData] = await Promise.all([
           api.getProfile(user).catch(() => null),
-          api.getWardrobe(user).catch(() => null)
+          api.getWardrobe(user).catch(() => ({ count: 0, items: [] }))
         ])
         setProfile(profileData)
         setWardrobe(wardrobeData)
+        setWardrobeItems(wardrobeData.items || [])
       } catch (error) {
         console.error('Error loading profile:', error)
       } finally {
@@ -51,6 +67,21 @@ function UploadPageContent() {
     }
     checkProfile()
   }, [user])
+
+  // Show PhotoGuidelines on first load
+  useEffect(() => {
+    if (!loadingProfile) {
+      const hasSeenGuidelines = localStorage.getItem(`photo_guidelines_seen_${user}`)
+      if (!hasSeenGuidelines) {
+        setShowGuidelines(true)
+      }
+    }
+  }, [loadingProfile, user])
+
+  const handleGuidelinesContinue = () => {
+    localStorage.setItem(`photo_guidelines_seen_${user}`, 'true')
+    setShowGuidelines(false)
+  }
 
   const hasProfile = profile?.three_words && 
     profile.three_words.current &&
@@ -66,6 +97,7 @@ function UploadPageContent() {
 
     setUploading(true)
     setUploadStatus('Compressing image...')
+    const jobIds: string[] = []
 
     try {
       for (const file of Array.from(files)) {
@@ -97,6 +129,7 @@ function UploadPageContent() {
           const result = await api.uploadItem(user, fileToUpload, useRealAi)
           
           if (result.job_id) {
+            jobIds.push(result.job_id)
             setUploadStatus(`Uploaded! Analyzing ${file.name}... (Job: ${result.job_id})`)
           } else {
             setUploadStatus(`Uploaded ${file.name} successfully`)
@@ -107,8 +140,40 @@ function UploadPageContent() {
         }
       }
       
+      // Refresh wardrobe to show new items and update progress
+      await fetchWardrobe()
+      
+      // If there are job IDs, poll for completion
+      if (jobIds.length > 0) {
+        setAnalyzingCount(jobIds.length)
+        
+        const checkJobs = async () => {
+          let allComplete = true
+          for (const jobId of jobIds) {
+            try {
+              const status = await api.getJobStatus(jobId)
+              if (status.status !== 'complete' && status.status !== 'failed') {
+                allComplete = false
+              }
+            } catch (e) {
+              console.error('Error checking job:', e)
+            }
+          }
+
+          // Refresh wardrobe to see new items
+          await fetchWardrobe()
+
+          if (!allComplete) {
+            setTimeout(checkJobs, 2000)
+          } else {
+            setAnalyzingCount(0)
+          }
+        }
+
+        checkJobs()
+      }
+      
       // Show success message and clear after 3 seconds
-      // Let user decide when to navigate away
       setUploadStatus('Upload complete!')
       setTimeout(() => {
         setUploadStatus('')
@@ -184,9 +249,41 @@ function UploadPageContent() {
           <>
             <h1 className="text-2xl md:text-3xl font-bold mb-2">Upload Wardrobe Items</h1>
             <p className="text-muted mb-5 md:mb-8 text-base leading-relaxed">
-              Upload photos of your clothing items. We'll analyze them and add them to your wardrobe.
+              Upload at least 10 photos with a mix of top/bottom/shoes/accessories. More pieces lead to more inspiration.
             </p>
           </>
+        )}
+
+        {/* Progress Bar */}
+        {wardrobeCount < 10 && (
+          <div className="mb-5 md:mb-6">
+            <div className="flex justify-between items-center mb-2">
+              <p className="text-sm md:text-base font-medium text-ink">
+                {wardrobeCount} out of 10 photos uploaded
+              </p>
+              <span className="text-sm text-muted">
+                {Math.min(Math.round((wardrobeCount / 10) * 100), 100)}%
+              </span>
+            </div>
+            <div className="w-full bg-sand/30 rounded-full h-3 overflow-hidden">
+              <div 
+                className="bg-terracotta h-full rounded-full transition-all duration-300 ease-out"
+                style={{ width: `${Math.min((wardrobeCount / 10) * 100, 100)}%` }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Analyzing Banner */}
+        {analyzingCount > 0 && (
+          <div className="bg-blue-50 px-4 py-3 flex items-center justify-between mb-5 md:mb-6 rounded-lg border border-blue-200">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">📸</span>
+              <span className="text-sm text-blue-800 font-medium">
+                Analyzing {analyzingCount} photo{analyzingCount !== 1 ? 's' : ''}...
+              </span>
+            </div>
+          </div>
         )}
 
         {/* AI Analysis toggle */}
@@ -198,7 +295,7 @@ function UploadPageContent() {
               onChange={(e) => setUseRealAi(e.target.checked)}
               className="w-5 h-5 rounded border-[rgba(26,22,20,0.12)] flex-shrink-0"
             />
-            <span className="text-base leading-relaxed">✨ Use AI Fashion Analysis (GPT-4V)</span>
+            <span className="text-base leading-relaxed">Use AI Fashion Analysis</span>
           </label>
         </div>
 
@@ -253,12 +350,68 @@ function UploadPageContent() {
         )}
 
         {/* Tips */}
-        <div className="bg-sand/30 rounded-lg p-4 border border-[rgba(26,22,20,0.12)]">
+        <div className="bg-sand/30 rounded-lg p-4 border border-[rgba(26,22,20,0.12)] mb-5 md:mb-6">
           <p className="text-sm text-ink leading-relaxed">
-            💡 Tip: You can select multiple photos at once from your camera roll or gallery.
-            Images will be automatically compressed before uploading.
+            Tip: You can select multiple photos at once from your camera roll or gallery.
           </p>
         </div>
+
+        {/* Continue Button when 10+ items */}
+        {wardrobeCount >= 10 && hasProfile && (
+          <div className="mb-5 md:mb-6">
+            <Link
+              href={`/path-choice?user=${user}`}
+              className="block w-full bg-terracotta text-white text-center py-3.5 md:py-4 px-6 rounded-lg font-medium hover:opacity-90 transition active:opacity-80 min-h-[48px] flex items-center justify-center"
+            >
+              Continue to Generate Outfits →
+            </Link>
+          </div>
+        )}
+
+        {/* Uploaded Items Display */}
+        {wardrobeItems.length > 0 && (
+          <div className="mt-8 md:mt-12">
+            <h2 className="text-xl md:text-2xl font-bold mb-4">Your Uploaded Items</h2>
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {wardrobeItems.map(item => (
+                <Link
+                  key={item.id}
+                  href={`/closet/${item.id}?user=${user}`}
+                  className="group relative block aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden"
+                >
+                  {item.system_metadata?.image_path ? (
+                    <img
+                      src={item.system_metadata.image_path.startsWith('http')
+                        ? item.system_metadata.image_path
+                        : `/api/images/${item.system_metadata.image_path.split('/').pop()}`}
+                      alt={item.styling_details?.name || 'Clothing item'}
+                      className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-300">
+                      No Image
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                    <span className="text-white text-xs font-medium truncate w-full">
+                      {item.styling_details?.name || 'Item'}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* PhotoGuidelines Modal */}
+        <PhotoGuidelines
+          isOpen={showGuidelines}
+          onClose={() => {
+            localStorage.setItem(`photo_guidelines_seen_${user}`, 'true')
+            setShowGuidelines(false)
+          }}
+          onContinue={handleGuidelinesContinue}
+        />
       </div>
     </div>
   )
