@@ -144,6 +144,15 @@
       margin: 0 auto;
     }
   }
+  
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* Mobile-specific improvements */

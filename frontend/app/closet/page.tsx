@@ -84,13 +84,27 @@ function ClosetContent() {
         checkJobs()
     }
 
-    const filteredItems = activeCategory === 'All'
-        ? items
-        : items.filter(item => item.styling_details.category.toLowerCase() === activeCategory.toLowerCase())
+    const CATEGORY_ALIASES: Record<string, string[]> = {
+        'Shoes': ['footwear'],
+    }
+
+    const matchesCategory = (item: any, category: string) => {
+        if (category === 'All') return true
+        const itemCat = item.styling_details.category.toLowerCase()
+        const targetCat = category.toLowerCase()
+
+        if (itemCat === targetCat) return true
+
+        const aliases = CATEGORY_ALIASES[category]
+        if (aliases && aliases.includes(itemCat)) return true
+
+        return false
+    }
+
+    const filteredItems = items.filter(item => matchesCategory(item, activeCategory))
 
     const getCategoryCount = (cat: string) => {
-        if (cat === 'All') return items.length
-        return items.filter(item => item.styling_details.category.toLowerCase() === cat.toLowerCase()).length
+        return items.filter(item => matchesCategory(item, cat)).length
     }
 
     return (
@@ -110,7 +124,7 @@ function ClosetContent() {
                         <button
                             key={cat}
                             onClick={() => setActiveCategory(cat)}
-                            className={`flex items-center whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeCategory === cat
+                            className={`flex-shrink-0 flex items-center whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeCategory === cat
                                 ? 'bg-black text-white'
                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                 }`}
