@@ -3,7 +3,13 @@ import os
 import sys
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
-from openai import OpenAI
+from dotenv import load_dotenv
+
+# AI Provider abstraction
+from services.ai.factory import AIProviderFactory
+from services.ai.providers.base import AIResponse
+
+# Legacy OpenAI imports for backward compatibility
 try:
     from openai import OpenAIError, APIError, APIConnectionError, RateLimitError
 except ImportError:
@@ -12,7 +18,6 @@ except ImportError:
     APIError = Exception
     APIConnectionError = Exception
     RateLimitError = Exception
-from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
@@ -31,9 +36,33 @@ class OutfitCombination:
 class StyleGenerationEngine:
     """AI-powered style generation engine"""
 
-    def __init__(self, api_key: Optional[str] = None):
-        self.api_key = api_key or os.getenv("OPENAI_API_KEY")
-        self.client = OpenAI(api_key=self.api_key) if self.api_key else None
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        model: str = "gpt-4o",
+        temperature: float = 0.7,
+        max_tokens: int = 2000
+    ):
+        """
+        Initialize Style Generation Engine.
+
+        Args:
+            api_key: Optional API key (if not provided, uses environment variables)
+            model: Model to use (default: gpt-4o). Supports OpenAI, Gemini, Claude models.
+            temperature: Temperature for generation (default: 0.7)
+            max_tokens: Max tokens to generate (default: 2000)
+        """
+        self.model = model
+        self.temperature = temperature
+        self.max_tokens = max_tokens
+
+        # Create AI provider using factory
+        self.ai_provider = AIProviderFactory.create(
+            model=model,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            api_key=api_key
+        )
 
     def create_style_prompt(self,
                           user_profile: Dict,
@@ -493,19 +522,23 @@ IMPORTANT: Return ONLY valid JSON. Start with [ and end with ]. Use exact item n
             self._safe_stderr_write(prompt + "\n")
             self._safe_stderr_write("=" * 80 + "\n\n")
 
-            # Call OpenAI API with GPT-4
-            response = self.client.chat.completions.create(
-                model="gpt-4o",  # Using GPT-4o for better reasoning
-                messages=[
-                    {"role": "system", "content": "You are an expert fashion stylist. Return ONLY valid JSON arrays, no other text."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.7,  # Some creativity but not too random
-                max_tokens=2000
+            # Call AI provider (supports OpenAI, Gemini, Claude)
+            ai_result: AIResponse = self.ai_provider.generate_text(
+                prompt=prompt,
+                system_message="You are an expert fashion stylist. Return ONLY valid JSON arrays, no other text.",
+                temperature=self.temperature,
+                max_tokens=self.max_tokens
             )
 
             # Parse the AI response
-            ai_response = response.choices[0].message.content
+            ai_response = ai_result.content
+
+            # DEBUG: Log provider metadata
+            self._safe_stderr_write(f"\n📊 Provider: {self.ai_provider.provider_name} | Model: {ai_result.model}\n")
+            self._safe_stderr_write(f"⏱️  Latency: {ai_result.latency_seconds:.2f}s | Tokens: {ai_result.usage.get('total_tokens', 0)}\n")
+            cost = self.ai_provider.calculate_cost(ai_result.usage)
+            if cost > 0:
+                self._safe_stderr_write(f"💰 Cost: ${cost:.4f}\n")
 
             # DEBUG: Print raw AI response to stderr (so it shows in terminal)
             self._safe_stderr_write("\n" + "="*80 + "\n")
