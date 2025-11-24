@@ -40,7 +40,10 @@ def fetch_user_wardrobe(user_id: str) -> List[Dict]:
     """Fetch wardrobe for a user from production storage."""
     print(f"  📦 Fetching wardrobe for user: {user_id}")
     wardrobe_manager = WardrobeManager(user_id)
-    wardrobe = wardrobe_manager.load_wardrobe()
+    wardrobe_data = wardrobe_manager.load_wardrobe_data()
+
+    # Extract items array from wardrobe data
+    wardrobe = wardrobe_data.get('items', [])
 
     if not wardrobe or len(wardrobe) == 0:
         raise ValueError(f"No wardrobe found for user {user_id}. User must have uploaded items.")
