@@ -154,6 +154,16 @@ export const api = {
     const res = await fetch(`${API_URL}/api/outfits/${userId}/disliked`)
     if (!res.ok) throw new Error('Failed to fetch disliked outfits')
     return res.json()
+  },
+
+  // Consider Buying
+  async getConsiderBuyingItems(userId: string, status?: string) {
+    const url = new URL(`${API_URL}/api/consider-buying/list`)
+    url.searchParams.append('user_id', userId)
+    if (status) url.searchParams.append('status', status)
+
+    const res = await fetch(url.toString())
+    if (!res.ok) throw new Error('Failed to fetch consider buying items')
+    return res.json()
   }
 }
-

@@ -9,77 +9,44 @@
     "temperature_range": "75-85°F",
     "style_profile": {
       "three_words": {
-        "current": {
-          "word1": "classic",
-          "word2": "minimal",
-          "word3": "elegant"
-        },
-        "aspirational": {
-          "word1": "effortless",
-          "word2": "polished",
-          "word3": "chic"
-        }
-      },
-      "daily_emotion": {
-        "energy": "energized",
-        "mood": "confident"
+        "current": "classic",
+        "aspirational": "relaxed",
+        "feeling": "playful"
       }
     },
     "description": "Test elegant occasion-based outfit generation"
   },
   {
     "id": "occasion_work_meeting_heather",
-    "name": "Occasion: Important Work Meeting (Heather)",
+    "name": "Occasion: Important Work Meeting followed by drinks with girlfriends (Heather)",
     "user_id": "heather",
     "scenario_type": "occasion",
-    "occasion": "important client presentation",
-    "weather": "indoor climate controlled",
-    "temperature_range": "68-72°F",
+    "occasion": "important client presentation followed by drinks with girlfriends",
+    "weather": "cool",
+    "temperature_range": "55-65°F",
     "style_profile": {
       "three_words": {
-        "current": {
-          "word1": "professional",
-          "word2": "colorful",
-          "word3": "comfortable"
-        },
-        "aspirational": {
-          "word1": "polished",
-          "word2": "confident",
-          "word3": "stylish"
-        }
-      },
-      "daily_emotion": {
-        "energy": "focused",
-        "mood": "determined"
+        "current": "casual",
+        "aspirational": "polished",
+        "feeling": "chic"
       }
     },
     "description": "Test professional occasion-based outfit generation"
   },
   {
     "id": "complete_boots_peichin",
-    "name": "Complete My Look: Brown Knee-High Boots (Peichin)",
+    "name": "Complete My Look: Cream Knee-High Block Heel Boots (Peichin)",
     "user_id": "peichin",
     "scenario_type": "complete_my_look",
-    "anchor_item_name": "brown knee-high leather boots",
+    "anchor_item_name": "Cream knee-high block heel boots",
     "occasion": "casual weekend brunch",
     "weather": "cool and crisp",
     "temperature_range": "55-65°F",
     "style_profile": {
       "three_words": {
-        "current": {
-          "word1": "classic",
-          "word2": "minimal",
-          "word3": "elegant"
-        },
-        "aspirational": {
-          "word1": "effortless",
-          "word2": "polished",
-          "word3": "chic"
-        }
-      },
-      "daily_emotion": {
-        "energy": "relaxed",
-        "mood": "happy"
+        "current": "classic",
+        "aspirational": "relaxed",
+        "feeling": "playful"
       }
     },
     "description": "Test complete-my-look with anchor piece"
@@ -89,25 +56,14 @@
     "name": "Casual Weekend Outing (Heather)",
     "user_id": "heather",
     "scenario_type": "occasion",
-    "occasion": "casual coffee with friends",
+    "occasion": "casual coffee with friends followed with some errands",
     "weather": "mild",
     "temperature_range": "60-70°F",
     "style_profile": {
       "three_words": {
-        "current": {
-          "word1": "comfortable",
-          "word2": "casual",
-          "word3": "fun"
-        },
-        "aspirational": {
-          "word1": "effortless",
-          "word2": "chic",
-          "word3": "put-together"
-        }
-      },
-      "daily_emotion": {
-        "energy": "calm",
-        "mood": "content"
+        "current": "casual",
+        "aspirational": "polished",
+        "feeling": "chic"
       }
     },
     "description": "Test casual everyday outfit generation"
@@ -122,20 +78,9 @@
     "temperature_range": "68-72°F",
     "style_profile": {
       "three_words": {
-        "current": {
-          "word1": "classic",
-          "word2": "minimal",
-          "word3": "elegant"
-        },
-        "aspirational": {
-          "word1": "sophisticated",
-          "word2": "romantic",
-          "word3": "confident"
-        }
-      },
-      "daily_emotion": {
-        "energy": "excited",
-        "mood": "romantic"
+        "current": "classic",
+        "aspirational": "relaxed",
+        "feeling": "playful"
       }
     },
     "description": "Test dressy occasion outfit generation"

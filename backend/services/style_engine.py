@@ -500,9 +500,10 @@ IMPORTANT: Return ONLY valid JSON. Start with [ and end with ]. Use exact item n
         """Generate outfit combinations using AI"""
 
         # If no API key, return empty list with error message
-        if not self.client:
-            print("⚠️ No OpenAI API key found. Cannot generate outfits.")
-            self._safe_stderr_write("⚠️ No OpenAI API key found. Cannot generate outfits.\n\n")
+        # If no AI provider, return empty list with error message
+        if not self.ai_provider:
+            print("⚠️ No AI provider initialized. Cannot generate outfits.")
+            self._safe_stderr_write("⚠️ No AI provider initialized. Cannot generate outfits.\n\n")
             return []
 
         prompt = self.create_style_prompt(
@@ -529,6 +530,9 @@ IMPORTANT: Return ONLY valid JSON. Start with [ and end with ]. Use exact item n
                 temperature=self.temperature,
                 max_tokens=self.max_tokens
             )
+
+            # Store last AI response for cost tracking
+            self._last_ai_response = ai_result
 
             # Parse the AI response
             ai_response = ai_result.content
@@ -793,11 +797,14 @@ IMPORTANT: Return ONLY valid JSON. Start with [ and end with ]. Use exact item n
         for item in outfit_items:
             details = item.get('styling_details', {})
             category = details.get('category', '').lower()
+            name = details.get('name', 'Unknown')
+            self._safe_stderr_write(f"    DEBUG: Item '{name}' has category '{category}'\n")
             if category:
                 categories.append(category)
 
         # Count bottom pieces (bottoms and dresses both count as bottoms)
-        bottom_categories = ['bottoms', 'dresses']
+        # Also include specific bottom types in case category is granular
+        bottom_categories = ['bottoms', 'dresses', 'pants', 'trousers', 'jeans', 'skirts', 'shorts']
         bottom_count = sum(1 for cat in categories if cat in bottom_categories)
 
         # Rule 1: Can't have more than 1 bottom (either pants OR dress, not both)

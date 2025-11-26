@@ -7,7 +7,7 @@ import { api } from '@/lib/api'
 import UploadModal from '@/components/UploadModal'
 import PhotoGuidelines from '@/components/PhotoGuidelines'
 
-const CATEGORIES = ['All', 'Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Shoes', 'Accessories']
+const CATEGORIES = ['All', 'Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Shoes', 'Accessories', 'Considering']
 
 import { Suspense } from 'react'
 
@@ -61,13 +61,18 @@ function ClosetContent() {
 
     useEffect(() => {
         fetchWardrobe()
-    }, [user])
+    }, [user, activeCategory])
 
     const fetchWardrobe = async () => {
         try {
             setLoading(true)
-            const data = await api.getWardrobe(user)
-            setItems(data.items || [])
+            if (activeCategory === 'Considering') {
+                const data = await api.getConsiderBuyingItems(user, 'considering')
+                setItems(data.items || [])
+            } else {
+                const data = await api.getWardrobe(user)
+                setItems(data.items || [])
+            }
         } catch (err) {
             console.error('Failed to fetch wardrobe:', err)
         } finally {
@@ -213,22 +218,28 @@ function ClosetContent() {
                                 href={`/closet/${item.id}?user=${user}`}
                                 className="group relative block aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden"
                             >
-                                {item.system_metadata.image_path ? (
-                                    <img
-                                        src={item.system_metadata.image_path.startsWith('http')
-                                            ? item.system_metadata.image_path
-                                            : `/api/images/${item.system_metadata.image_path.split('/').pop()}`} // Fallback for local dev
-                                        alt={item.styling_details.name}
-                                        className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-gray-300">
-                                        No Image
-                                    </div>
-                                )}
+                                {(() => {
+                                    const imagePath = item.system_metadata?.image_path || item.image_path
+                                    if (!imagePath) {
+                                        return (
+                                            <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                                No Image
+                                            </div>
+                                        )
+                                    }
+                                    return (
+                                        <img
+                                            src={imagePath.startsWith('http')
+                                                ? imagePath
+                                                : `/api/images/${imagePath.split('/').pop()}`} // Fallback for local dev
+                                            alt={item.styling_details?.name || 'Item'}
+                                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                                        />
+                                    )
+                                })()}
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
                                     <span className="text-white text-xs font-medium truncate w-full">
-                                        {item.styling_details.name}
+                                        {item.styling_details?.name || 'Item'}
                                     </span>
                                 </div>
                             </Link>

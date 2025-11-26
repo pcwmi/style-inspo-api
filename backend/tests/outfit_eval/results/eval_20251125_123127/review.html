@@ -1,0 +1,1967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outfit Generation Evaluation - 2025-11-26 01:36:47</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            color: #333;
+        }
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .stat {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .scenario-section {
+            margin-bottom: 40px;
+        }
+        .scenario-header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .scenario-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .scenario-description {
+            color: #555;
+            margin-top: 10px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            line-height: 1.8;
+            font-size: 14px;
+        }
+        .model-group {
+            background: white;
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .model-group:last-child {
+            border-radius: 0 0 8px 8px;
+        }
+        .model-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .model-name {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .model-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        .outfits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+            gap: 25px;
+        }
+        .outfit-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background: #fafafa;
+            transition: box-shadow 0.2s;
+        }
+        .outfit-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .outfit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .outfit-title {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .outfit-meta {
+            font-size: 12px;
+            color: #666;
+        }
+        .outfit-items {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 20px 0;
+        }
+        .item-image {
+            width: 100%;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 6px;
+            background: #e0e0e0;
+            border: 1px solid #ddd;
+        }
+        .outfit-notes {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #555;
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+        }
+        .rating-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+        .stars {
+            display: flex;
+            gap: 5px;
+            margin: 10px 0;
+        }
+        .star {
+            font-size: 24px;
+            cursor: pointer;
+            color: #ddd;
+            transition: color 0.1s;
+        }
+        .star:hover,
+        .star.active {
+            color: #FFD700;
+        }
+        .notes-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 60px;
+        }
+        .save-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+        .save-button:hover {
+            background: #45a049;
+        }
+        .save-button.saved {
+            background: #888;
+        }
+        .validation {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+        .validation-badge {
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .badge-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 Outfit Generation Evaluation</h1>
+        <p>Generated: 2025-11-26 01:36:47</p>
+
+        <div class="summary">
+            <div class="stat">
+                <div class="stat-label">Total Outfits</div>
+                <div class="stat-value">45</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Models Tested</div>
+                <div class="stat-value">3</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Test Scenarios</div>
+                <div class="stat-value">5</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Rated</div>
+                <div class="stat-value" id="rated-count">0/45</div>
+            </div>
+        </div>
+    </div>
+
+    
+        <div class="scenario-section">
+            <div class="scenario-header">
+                <div class="scenario-title">Occasion: Outdoor Wedding (Peichin)</div>
+                
+                <div class="scenario-description">
+                    <strong>👗 Occasion:</strong> outdoor wedding in the afternoon<br>
+                    <strong>🌤️ Weather:</strong> sunny and warm (75-85°F)<br>
+                    <strong>✨ Style Profile:</strong> Current: classic, Aspirational: relaxed, Feeling: playful
+                </div>
+            
+            </div>
+        
+            <div class="model-group">
+                <div class="model-header">
+                    <div class="model-name">GPT-4o (Baseline)</div>
+                    <div class="model-stats">
+                        <span>Avg Latency: 20.27s</span>
+                        <span>Total Outfits: 3</span>
+                    </div>
+                </div>
+                <div class="outfits-grid">
+            
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 1</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" class="item-image" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b2eefe9b70084b8eae2ce17bba9b3546.jpg" alt="Cream textured tie-front blouse" class="item-image" title="Cream textured tie-front blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" alt="Gold leaf motif necklace" class="item-image" title="Gold leaf motif necklace"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" alt="White and Red Classic Leather Sneakers" class="item-image" title="White and Red Classic Leather Sneakers">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> 'Tie the front of the blouse to play up the waist
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 20.27s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_baseline_0_0" data-rating="1">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_baseline_0_0" data-rating="2">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_baseline_0_0" data-rating="3">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_baseline_0_0" data-rating="4">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_baseline_0_0" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="occasion_wedding_peichin_gpt4o_baseline_0_0" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 2</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/ab37e67316304ee7a0293033cdee5672.jpg" alt="Floral Patterned Long-Sleeve Dress" class="item-image" title="Floral Patterned Long-Sleeve Dress"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" class="item-image" title="Gold swirl earrings with pearl center"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/331fc97e712f40fb94a7d005479d1cdb.jpg" alt="White embroidered cowboy boots" class="item-image" title="White embroidered cowboy boots">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Allow the dress to flow naturally and pair it with the boots to create a playful contrast. The earrings should be visible to add elegance.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 20.27s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_baseline_0_1" data-rating="1">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_baseline_0_1" data-rating="2">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_baseline_0_1" data-rating="3">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_baseline_0_1" data-rating="4">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_baseline_0_1" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="occasion_wedding_peichin_gpt4o_baseline_0_1" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 3</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/13ae557e53b449bc8d68e07861375e0d.jpg" alt="Sage Green Leather A-line Skirt" class="item-image" title="Sage Green Leather A-line Skirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2a337a039a0a4d98b4833b48d9928baf.jpg" alt="Black and white paisley ruffle blouse" class="item-image" title="Black and white paisley ruffle blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" alt="Gold Bar Pendant Necklace" class="item-image" title="Gold Bar Pendant Necklace"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d3e79387d01e4fe88030ff21d383dae0.jpg" alt="Burgundy patent leather pointed-toe pumps" class="item-image" title="Burgundy patent leather pointed-toe pumps">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> 'Tuck the blouse into the skirt to define the waistline
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 20.27s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_baseline_0_2" data-rating="1">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_baseline_0_2" data-rating="2">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_baseline_0_2" data-rating="3">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_baseline_0_2" data-rating="4">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_baseline_0_2" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="occasion_wedding_peichin_gpt4o_baseline_0_2" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+                </div>
+            </div>
+            
+            <div class="model-group">
+                <div class="model-header">
+                    <div class="model-name">GPT-4o Mini</div>
+                    <div class="model-stats">
+                        <span>Avg Latency: 16.05s</span>
+                        <span>Total Outfits: 3</span>
+                    </div>
+                </div>
+                <div class="outfits-grid">
+            
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 1</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" class="item-image" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2f4a1fbfb7c240d291f1ff1c1448f0f0.jpg" alt="Cream tie-front blouse" class="item-image" title="Cream tie-front blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" alt="White and Red Classic Leather Sneakers" class="item-image" title="White and Red Classic Leather Sneakers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" alt="Black and White Floral Print Scarf" class="item-image" title="Black and White Floral Print Scarf"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" class="item-image" title="Gold swirl earrings with pearl center">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Tuck the front of the cream tie-front blouse into the white wide-leg pants for a balanced silhouette. Drape the black and white floral print scarf around the neck for added elegance. Wear the sneakers for a playful touch.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 16.05s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_mini_0_0" data-rating="1">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_mini_0_0" data-rating="2">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_mini_0_0" data-rating="3">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_mini_0_0" data-rating="4">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_mini_0_0" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="occasion_wedding_peichin_gpt4o_mini_0_0" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 2</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/ab37e67316304ee7a0293033cdee5672.jpg" alt="Floral Patterned Long-Sleeve Dress" class="item-image" title="Floral Patterned Long-Sleeve Dress"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" alt="White and Red Classic Leather Sneakers" class="item-image" title="White and Red Classic Leather Sneakers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" alt="Gold Bar Pendant Necklace" class="item-image" title="Gold Bar Pendant Necklace"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" class="item-image" title="Gold swirl earrings with pearl center">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> 'Style the floral dress with the white and red sneakers for a fun
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 16.05s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_mini_0_1" data-rating="1">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_mini_0_1" data-rating="2">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_mini_0_1" data-rating="3">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_mini_0_1" data-rating="4">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_mini_0_1" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="occasion_wedding_peichin_gpt4o_mini_0_1" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 3</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/a81ac89a43c44f0ebe1f69410bc76ccc.jpg" alt="Black and white polka dot long-sleeve blouse" class="item-image" title="Black and white polka dot long-sleeve blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" class="item-image" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" alt="White and Red Classic Leather Sneakers" class="item-image" title="White and Red Classic Leather Sneakers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" alt="Gold leaf motif necklace" class="item-image" title="Gold leaf motif necklace">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Tuck the polka dot blouse into the high-waisted pants to define the waist. Wear the sneakers to ground the outfit and add a playful twist. Layer the gold leaf necklace for an elegant finish.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 16.05s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_mini_0_2" data-rating="1">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_mini_0_2" data-rating="2">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_mini_0_2" data-rating="3">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_mini_0_2" data-rating="4">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gpt4o_mini_0_2" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="occasion_wedding_peichin_gpt4o_mini_0_2" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+                </div>
+            </div>
+            
+            <div class="model-group">
+                <div class="model-header">
+                    <div class="model-name">Gemini 2.0 Flash</div>
+                    <div class="model-stats">
+                        <span>Avg Latency: 6.90s</span>
+                        <span>Total Outfits: 3</span>
+                    </div>
+                </div>
+                <div class="outfits-grid">
+            
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 1</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" class="item-image" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/8e074000e7944a879fe07a6d129b9069.jpg" alt="Turquoise graphic tee with orange animal print" class="item-image" title="Turquoise graphic tee with orange animal print"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" alt="White and Red Classic Leather Sneakers" class="item-image" title="White and Red Classic Leather Sneakers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" class="item-image" title="Gold swirl earrings with pearl center"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c51d42bf62ad460e9fd31c136aed2679.jpg" alt="Tan suede belt with oval buckle" class="item-image" title="Tan suede belt with oval buckle">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Slightly tuck the front of the tee into the pants. Wear the belt around the high waist.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 6.90s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gemini_2_flash_0_0" data-rating="1">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gemini_2_flash_0_0" data-rating="2">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gemini_2_flash_0_0" data-rating="3">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gemini_2_flash_0_0" data-rating="4">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gemini_2_flash_0_0" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="occasion_wedding_peichin_gemini_2_flash_0_0" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 2</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b2eefe9b70084b8eae2ce17bba9b3546.jpg" alt="Cream textured tie-front blouse" class="item-image" title="Cream textured tie-front blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b6ecfd29000d4c918b4c81e0bf67efa6.jpg" alt="Dark Wash Flared Jeans" class="item-image" title="Dark Wash Flared Jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" alt="White and Red Classic Leather Sneakers" class="item-image" title="White and Red Classic Leather Sneakers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" alt="Gold Bar Pendant Necklace" class="item-image" title="Gold Bar Pendant Necklace">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> 'Tie the blouse in a relaxed knot at the front. The jeans should fall naturally over the sneakers
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 6.90s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gemini_2_flash_0_1" data-rating="1">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gemini_2_flash_0_1" data-rating="2">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gemini_2_flash_0_1" data-rating="3">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gemini_2_flash_0_1" data-rating="4">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gemini_2_flash_0_1" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="occasion_wedding_peichin_gemini_2_flash_0_1" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 3</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" class="item-image" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2e282ef4e797482ca7298f9f1e15ef82.jpg" alt="Black basic short-sleeve tee" class="item-image" title="Black basic short-sleeve tee"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" alt="Black and White Floral Print Scarf" class="item-image" title="Black and White Floral Print Scarf"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" alt="White and Red Classic Leather Sneakers" class="item-image" title="White and Red Classic Leather Sneakers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" alt="Gold leaf motif necklace" class="item-image" title="Gold leaf motif necklace">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Tuck the tee fully into the pants. Drape the scarf loosely around the neck or tie it in a simple knot.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 6.90s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gemini_2_flash_0_2" data-rating="1">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gemini_2_flash_0_2" data-rating="2">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gemini_2_flash_0_2" data-rating="3">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gemini_2_flash_0_2" data-rating="4">★</span>
+                <span class="star" data-outfit-id="occasion_wedding_peichin_gemini_2_flash_0_2" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="occasion_wedding_peichin_gemini_2_flash_0_2" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+                </div>
+            </div>
+            
+        </div>
+        
+        <div class="scenario-section">
+            <div class="scenario-header">
+                <div class="scenario-title">Occasion: Important Work Meeting followed by drinks with girlfriends (Heather)</div>
+                
+                <div class="scenario-description">
+                    <strong>👗 Occasion:</strong> important client presentation followed by drinks with girlfriends<br>
+                    <strong>🌤️ Weather:</strong> cool (55-65°F)<br>
+                    <strong>✨ Style Profile:</strong> Current: classic, Aspirational: relaxed, Feeling: playful
+                </div>
+            
+            </div>
+        
+            <div class="model-group">
+                <div class="model-header">
+                    <div class="model-name">GPT-4o (Baseline)</div>
+                    <div class="model-stats">
+                        <span>Avg Latency: 16.14s</span>
+                        <span>Total Outfits: 3</span>
+                    </div>
+                </div>
+                <div class="outfits-grid">
+            
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 1</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/f1f80e3d87664333a3a86d9e983f6ee5.jpg" alt="Salmon pink button-up shirt" class="item-image" title="Salmon pink button-up shirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/aaccd1914683445d922a530da0b75216.jpg" alt="Charcoal wide-leg elastic waist trousers" class="item-image" title="Charcoal wide-leg elastic waist trousers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/6949f2dad3cd4d1ab148b44423bb9ccf.jpg" alt="Black slouchy suede ankle boots" class="item-image" title="Black slouchy suede ankle boots"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/3e8b3914f58442d1a34c3ed634d0e0de.jpg" alt="Blue and burgundy striped silk scarf" class="item-image" title="Blue and burgundy striped silk scarf">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> 'Tuck the salmon pink shirt into the charcoal wide-leg trousers for a polished look. Drape the scarf around the neck
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 16.14s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_baseline_0_0" data-rating="1">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_baseline_0_0" data-rating="2">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_baseline_0_0" data-rating="3">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_baseline_0_0" data-rating="4">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_baseline_0_0" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="occasion_work_meeting_heather_gpt4o_baseline_0_0" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 2</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/8e45a387cb1743dba8d7af946b7d9876.jpg" alt="Black oversized batwing top" class="item-image" title="Black oversized batwing top"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/19d0cbdc93db4ca2b7206b3c2624189b.jpg" alt="Medium wash bootcut jeans" class="item-image" title="Medium wash bootcut jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/53ca56142d5e4c408d07c0397e112148.jpg" alt="Burgundy suede loafers" class="item-image" title="Burgundy suede loafers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/8d0d32fd645a4073a9b4dcf5bd49c957.jpg" alt="Blue silk scarf with horse pattern" class="item-image" title="Blue silk scarf with horse pattern">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Partially tuck the batwing top into the bootcut jeans for a balanced silhouette. Wrap the scarf around the neck for added warmth and style. Allow the jeans to cover the loafers slightly for a sleek look.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 16.14s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_baseline_0_1" data-rating="1">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_baseline_0_1" data-rating="2">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_baseline_0_1" data-rating="3">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_baseline_0_1" data-rating="4">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_baseline_0_1" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="occasion_work_meeting_heather_gpt4o_baseline_0_1" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 3</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/3bf75000277e4bbf8024305a7a613626.jpg" alt="Black and white striped long-sleeve tee" class="item-image" title="Black and white striped long-sleeve tee"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/a82f1bedcdd147bfaa3676cb7631e5ce.jpg" alt="Charcoal cropped cargo pants" class="item-image" title="Charcoal cropped cargo pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/d4acaeb647c54f03882725939bb9b8ed.jpg" alt="Hot pink suede sneakers" class="item-image" title="Hot pink suede sneakers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/d77a4769c99644e7bda09cb4b2fccfe4.jpg" alt="Bright blue puff-sleeve knit cardigan" class="item-image" title="Bright blue puff-sleeve knit cardigan">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> 'Layer the cardigan over the striped tee for warmth and style. Allow the striped tee to show at the hem and cuffs for added interest. Pair with sneakers for a playful touch
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 16.14s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_baseline_0_2" data-rating="1">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_baseline_0_2" data-rating="2">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_baseline_0_2" data-rating="3">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_baseline_0_2" data-rating="4">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_baseline_0_2" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="occasion_work_meeting_heather_gpt4o_baseline_0_2" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+                </div>
+            </div>
+            
+            <div class="model-group">
+                <div class="model-header">
+                    <div class="model-name">GPT-4o Mini</div>
+                    <div class="model-stats">
+                        <span>Avg Latency: 16.84s</span>
+                        <span>Total Outfits: 3</span>
+                    </div>
+                </div>
+                <div class="outfits-grid">
+            
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 1</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/f1f80e3d87664333a3a86d9e983f6ee5.jpg" alt="Salmon pink button-up shirt" class="item-image" title="Salmon pink button-up shirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/19d0cbdc93db4ca2b7206b3c2624189b.jpg" alt="Medium wash bootcut jeans" class="item-image" title="Medium wash bootcut jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/6949f2dad3cd4d1ab148b44423bb9ccf.jpg" alt="Black slouchy suede ankle boots" class="item-image" title="Black slouchy suede ankle boots"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/3e8b3914f58442d1a34c3ed634d0e0de.jpg" alt="Blue and burgundy striped silk scarf" class="item-image" title="Blue and burgundy striped silk scarf">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Tuck the salmon pink shirt partially into the medium wash bootcut jeans for a balanced silhouette. Let the scarf drape loosely around the neck to add dimension.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 16.84s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_mini_0_0" data-rating="1">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_mini_0_0" data-rating="2">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_mini_0_0" data-rating="3">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_mini_0_0" data-rating="4">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_mini_0_0" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="occasion_work_meeting_heather_gpt4o_mini_0_0" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 2</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/8e45a387cb1743dba8d7af946b7d9876.jpg" alt="Black oversized batwing top" class="item-image" title="Black oversized batwing top"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/a82f1bedcdd147bfaa3676cb7631e5ce.jpg" alt="Charcoal cropped cargo pants" class="item-image" title="Charcoal cropped cargo pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/82346257af8a4e939cbca23a69ac9cb8.jpg" alt="Leopard Print Mary Jane Flats" class="item-image" title="Leopard Print Mary Jane Flats"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/8d0d32fd645a4073a9b4dcf5bd49c957.jpg" alt="Blue silk scarf with horse pattern" class="item-image" title="Blue silk scarf with horse pattern">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Cuff the sleeves of the oversized top for a more tailored look and let the silk scarf hang loosely around the neck.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 16.84s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_mini_0_1" data-rating="1">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_mini_0_1" data-rating="2">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_mini_0_1" data-rating="3">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_mini_0_1" data-rating="4">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_mini_0_1" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="occasion_work_meeting_heather_gpt4o_mini_0_1" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 3</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/c57a5708831e4265b7b1a556d94bb5d0.jpg" alt="White basic crew-neck t-shirt" class="item-image" title="White basic crew-neck t-shirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/aaccd1914683445d922a530da0b75216.jpg" alt="Charcoal wide-leg elastic waist trousers" class="item-image" title="Charcoal wide-leg elastic waist trousers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/53ca56142d5e4c408d07c0397e112148.jpg" alt="Burgundy suede loafers" class="item-image" title="Burgundy suede loafers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/d77a4769c99644e7bda09cb4b2fccfe4.jpg" alt="Bright blue puff-sleeve knit cardigan" class="item-image" title="Bright blue puff-sleeve knit cardigan">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Layer the bright blue cardigan over the white t-shirt and tuck the front of the t-shirt into the trousers for a refined look.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 16.84s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_mini_0_2" data-rating="1">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_mini_0_2" data-rating="2">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_mini_0_2" data-rating="3">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_mini_0_2" data-rating="4">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gpt4o_mini_0_2" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="occasion_work_meeting_heather_gpt4o_mini_0_2" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+                </div>
+            </div>
+            
+            <div class="model-group">
+                <div class="model-header">
+                    <div class="model-name">Gemini 2.0 Flash</div>
+                    <div class="model-stats">
+                        <span>Avg Latency: 6.28s</span>
+                        <span>Total Outfits: 3</span>
+                    </div>
+                </div>
+                <div class="outfits-grid">
+            
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 1</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/c57a5708831e4265b7b1a556d94bb5d0.jpg" alt="White basic crew-neck t-shirt" class="item-image" title="White basic crew-neck t-shirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/d77a4769c99644e7bda09cb4b2fccfe4.jpg" alt="Bright blue puff-sleeve knit cardigan" class="item-image" title="Bright blue puff-sleeve knit cardigan"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/a82f1bedcdd147bfaa3676cb7631e5ce.jpg" alt="Charcoal cropped cargo pants" class="item-image" title="Charcoal cropped cargo pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/d4acaeb647c54f03882725939bb9b8ed.jpg" alt="Hot pink suede sneakers" class="item-image" title="Hot pink suede sneakers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/8d0d32fd645a4073a9b4dcf5bd49c957.jpg" alt="Blue silk scarf with horse pattern" class="item-image" title="Blue silk scarf with horse pattern">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Slightly tuck the front of the t-shirt into the cargo pants. Tie the blue silk scarf with horse pattern loosely around the neck.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 6.28s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gemini_2_flash_0_0" data-rating="1">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gemini_2_flash_0_0" data-rating="2">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gemini_2_flash_0_0" data-rating="3">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gemini_2_flash_0_0" data-rating="4">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gemini_2_flash_0_0" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="occasion_work_meeting_heather_gemini_2_flash_0_0" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 2</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/61903fa4d3834a63b4288b8c6a8f5fc0.jpg" alt="Navy blue sleeveless tank top" class="item-image" title="Navy blue sleeveless tank top"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/a28d75d957c048dca43ab5cb755364d0.jpg" alt="Beige puff-sleeve knit cardigan" class="item-image" title="Beige puff-sleeve knit cardigan"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/19d0cbdc93db4ca2b7206b3c2624189b.jpg" alt="Medium wash bootcut jeans" class="item-image" title="Medium wash bootcut jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/649799137c164e91942734d1689665ea.jpg" alt="Black Mary Jane Flats with Gold Buckle" class="item-image" title="Black Mary Jane Flats with Gold Buckle"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/3e8b3914f58442d1a34c3ed634d0e0de.jpg" alt="Blue and burgundy striped silk scarf" class="item-image" title="Blue and burgundy striped silk scarf">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Drape the blue and burgundy striped silk scarf loosely around the neck. Wear the Mary Jane flats with the jeans over the top of the shoe.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 6.28s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gemini_2_flash_0_1" data-rating="1">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gemini_2_flash_0_1" data-rating="2">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gemini_2_flash_0_1" data-rating="3">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gemini_2_flash_0_1" data-rating="4">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gemini_2_flash_0_1" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="occasion_work_meeting_heather_gemini_2_flash_0_1" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 3</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/e1ea81ed602c458a85eca3eafb561868.jpg" alt="White ribbed tank top" class="item-image" title="White ribbed tank top"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/f1f80e3d87664333a3a86d9e983f6ee5.jpg" alt="Salmon pink button-up shirt" class="item-image" title="Salmon pink button-up shirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/aaccd1914683445d922a530da0b75216.jpg" alt="Charcoal wide-leg elastic waist trousers" class="item-image" title="Charcoal wide-leg elastic waist trousers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/53ca56142d5e4c408d07c0397e112148.jpg" alt="Burgundy suede loafers" class="item-image" title="Burgundy suede loafers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/c4b9d639c4d84b4d846e7f7f9d923745.jpg" alt="Burgundy baseball cap" class="item-image" title="Burgundy baseball cap">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> 'Wear the tank top under the button-up shirt
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 6.28s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gemini_2_flash_0_2" data-rating="1">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gemini_2_flash_0_2" data-rating="2">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gemini_2_flash_0_2" data-rating="3">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gemini_2_flash_0_2" data-rating="4">★</span>
+                <span class="star" data-outfit-id="occasion_work_meeting_heather_gemini_2_flash_0_2" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="occasion_work_meeting_heather_gemini_2_flash_0_2" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+                </div>
+            </div>
+            
+        </div>
+        
+        <div class="scenario-section">
+            <div class="scenario-header">
+                <div class="scenario-title">Complete My Look: Cream Knee-High Block Heel Boots (Peichin)</div>
+                
+                <div class="scenario-description">
+                    <strong>👗 Occasion:</strong> casual weekend brunch<br>
+                    <strong>🌤️ Weather:</strong> cool and crisp (55-65°F)<br>
+                    <strong>✨ Style Profile:</strong> Current: classic, Aspirational: relaxed, Feeling: playful
+                </div>
+            
+            </div>
+        
+            <div class="model-group">
+                <div class="model-header">
+                    <div class="model-name">GPT-4o (Baseline)</div>
+                    <div class="model-stats">
+                        <span>Avg Latency: 15.94s</span>
+                        <span>Total Outfits: 3</span>
+                    </div>
+                </div>
+                <div class="outfits-grid">
+            
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 1</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" class="item-image" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2e282ef4e797482ca7298f9f1e15ef82.jpg" alt="Black basic short-sleeve tee" class="item-image" title="Black basic short-sleeve tee"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c3d14deb47d148c79dec12ec85f9bc27.jpg" alt="Cream knee-high block heel boots" class="item-image" title="Cream knee-high block heel boots"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" alt="Black and White Floral Print Scarf" class="item-image" title="Black and White Floral Print Scarf"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" alt="Gold Bar Pendant Necklace" class="item-image" title="Gold Bar Pendant Necklace">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> 'Tuck the black tee into the high-waisted pants for a clean silhouette. Drape the scarf loosely around the neck
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 15.94s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_baseline_0_0" data-rating="1">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_baseline_0_0" data-rating="2">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_baseline_0_0" data-rating="3">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_baseline_0_0" data-rating="4">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_baseline_0_0" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="complete_boots_peichin_gpt4o_baseline_0_0" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 2</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b6ecfd29000d4c918b4c81e0bf67efa6.jpg" alt="Dark Wash Flared Jeans" class="item-image" title="Dark Wash Flared Jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/fb74fd751f3d47f39da9104a24cd8d52.jpg" alt="Ivory crochet button-up cardigan" class="item-image" title="Ivory crochet button-up cardigan"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c3d14deb47d148c79dec12ec85f9bc27.jpg" alt="Cream knee-high block heel boots" class="item-image" title="Cream knee-high block heel boots"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" class="item-image" title="Gold swirl earrings with pearl center">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Partially tuck the cardigan into the jeans to show off the waist. Allow the earrings to be the focal point by pulling hair back or tucking behind the ears. Let the flared jeans cover the boots slightly for a seamless look.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 15.94s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_baseline_0_1" data-rating="1">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_baseline_0_1" data-rating="2">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_baseline_0_1" data-rating="3">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_baseline_0_1" data-rating="4">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_baseline_0_1" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="complete_boots_peichin_gpt4o_baseline_0_1" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 3</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/5b174344b6f94c83a97e250b5a34c1ab.jpg" alt="Medium wash straight-leg jeans" class="item-image" title="Medium wash straight-leg jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" alt="White ruffled button-up shirt" class="item-image" title="White ruffled button-up shirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c3d14deb47d148c79dec12ec85f9bc27.jpg" alt="Cream knee-high block heel boots" class="item-image" title="Cream knee-high block heel boots"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/cd9aba82c36248b8bb25d8acfe9b9490.jpg" alt="Leopard Print Square Scarf" class="item-image" title="Leopard Print Square Scarf"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" alt="Gold leaf motif necklace" class="item-image" title="Gold leaf motif necklace">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> 'Leave the shirt untucked for a relaxed feel
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 15.94s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_baseline_0_2" data-rating="1">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_baseline_0_2" data-rating="2">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_baseline_0_2" data-rating="3">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_baseline_0_2" data-rating="4">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_baseline_0_2" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="complete_boots_peichin_gpt4o_baseline_0_2" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+                </div>
+            </div>
+            
+            <div class="model-group">
+                <div class="model-header">
+                    <div class="model-name">GPT-4o Mini</div>
+                    <div class="model-stats">
+                        <span>Avg Latency: 18.75s</span>
+                        <span>Total Outfits: 3</span>
+                    </div>
+                </div>
+                <div class="outfits-grid">
+            
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 1</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" class="item-image" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/82846646f9a2420a8e69a1b5351ff49f.jpg" alt="Gray puff-sleeve cropped tee" class="item-image" title="Gray puff-sleeve cropped tee"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c3d14deb47d148c79dec12ec85f9bc27.jpg" alt="Cream knee-high block heel boots" class="item-image" title="Cream knee-high block heel boots"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" alt="Black and White Floral Print Scarf" class="item-image" title="Black and White Floral Print Scarf">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Tuck the front of the gray puff-sleeve cropped tee into the waist of the white wide-leg pants for a balanced silhouette. Drape the black and white floral scarf around the neck for added warmth and style.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 18.75s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_mini_0_0" data-rating="1">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_mini_0_0" data-rating="2">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_mini_0_0" data-rating="3">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_mini_0_0" data-rating="4">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_mini_0_0" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="complete_boots_peichin_gpt4o_mini_0_0" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 2</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b6ecfd29000d4c918b4c81e0bf67efa6.jpg" alt="Dark Wash Flared Jeans" class="item-image" title="Dark Wash Flared Jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/8e074000e7944a879fe07a6d129b9069.jpg" alt="Turquoise graphic tee with orange animal print" class="item-image" title="Turquoise graphic tee with orange animal print"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c3d14deb47d148c79dec12ec85f9bc27.jpg" alt="Cream knee-high block heel boots" class="item-image" title="Cream knee-high block heel boots"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2a337a039a0a4d98b4833b48d9928baf.jpg" alt="Black and white paisley ruffle blouse" class="item-image" title="Black and white paisley ruffle blouse">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> 'Layer the black and white paisley ruffle blouse over the turquoise graphic tee
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 18.75s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_mini_0_1" data-rating="1">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_mini_0_1" data-rating="2">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_mini_0_1" data-rating="3">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_mini_0_1" data-rating="4">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_mini_0_1" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="complete_boots_peichin_gpt4o_mini_0_1" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 3</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/f76ea30ff7bf4eae9c991e5ad6a08119.jpg" alt="Black and Gray Colorblock Dress" class="item-image" title="Black and Gray Colorblock Dress"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c3d14deb47d148c79dec12ec85f9bc27.jpg" alt="Cream knee-high block heel boots" class="item-image" title="Cream knee-high block heel boots"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2e282ef4e797482ca7298f9f1e15ef82.jpg" alt="Black basic short-sleeve tee" class="item-image" title="Black basic short-sleeve tee"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/a81ac89a43c44f0ebe1f69410bc76ccc.jpg" alt="Black and white polka dot long-sleeve blouse" class="item-image" title="Black and white polka dot long-sleeve blouse">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Layer the black and white polka dot long-sleeve blouse underneath the black and gray colorblock dress for added warmth and interest. Wear the cream knee-high block heel boots for a chic touch.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 18.75s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_mini_0_2" data-rating="1">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_mini_0_2" data-rating="2">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_mini_0_2" data-rating="3">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_mini_0_2" data-rating="4">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gpt4o_mini_0_2" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="complete_boots_peichin_gpt4o_mini_0_2" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+                </div>
+            </div>
+            
+            <div class="model-group">
+                <div class="model-header">
+                    <div class="model-name">Gemini 2.0 Flash</div>
+                    <div class="model-stats">
+                        <span>Avg Latency: 6.01s</span>
+                        <span>Total Outfits: 3</span>
+                    </div>
+                </div>
+                <div class="outfits-grid">
+            
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 1</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c3d14deb47d148c79dec12ec85f9bc27.jpg" alt="Cream knee-high block heel boots" class="item-image" title="Cream knee-high block heel boots"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d83ddd63b7cd4654bd4a063d19c3876e.jpg" alt="Light blue wide-leg jeans" class="item-image" title="Light blue wide-leg jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/82846646f9a2420a8e69a1b5351ff49f.jpg" alt="Gray puff-sleeve cropped tee" class="item-image" title="Gray puff-sleeve cropped tee"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e3bcf7bca70d49ec8c2736d15892319a.jpg" alt="Pink and yellow striped scarf with fringe" class="item-image" title="Pink and yellow striped scarf with fringe">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> 'Tuck the front of the gray tee into the jeans to define the waist. Drape the scarf loosely around the neck
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 6.01s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="complete_boots_peichin_gemini_2_flash_0_0" data-rating="1">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gemini_2_flash_0_0" data-rating="2">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gemini_2_flash_0_0" data-rating="3">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gemini_2_flash_0_0" data-rating="4">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gemini_2_flash_0_0" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="complete_boots_peichin_gemini_2_flash_0_0" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 2</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c3d14deb47d148c79dec12ec85f9bc27.jpg" alt="Cream knee-high block heel boots" class="item-image" title="Cream knee-high block heel boots"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" class="item-image" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/fb74fd751f3d47f39da9104a24cd8d52.jpg" alt="Ivory crochet button-up cardigan" class="item-image" title="Ivory crochet button-up cardigan"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" class="item-image" title="Gold swirl earrings with pearl center"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c51d42bf62ad460e9fd31c136aed2679.jpg" alt="Tan suede belt with oval buckle" class="item-image" title="Tan suede belt with oval buckle">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> 'Wear the cardigan buttoned as a top
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 6.01s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="complete_boots_peichin_gemini_2_flash_0_1" data-rating="1">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gemini_2_flash_0_1" data-rating="2">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gemini_2_flash_0_1" data-rating="3">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gemini_2_flash_0_1" data-rating="4">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gemini_2_flash_0_1" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="complete_boots_peichin_gemini_2_flash_0_1" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 3</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c3d14deb47d148c79dec12ec85f9bc27.jpg" alt="Cream knee-high block heel boots" class="item-image" title="Cream knee-high block heel boots"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b6ecfd29000d4c918b4c81e0bf67efa6.jpg" alt="Dark Wash Flared Jeans" class="item-image" title="Dark Wash Flared Jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/5bde30719e644a7face5b2968d7db076.jpg" alt="White tee with black bow detail" class="item-image" title="White tee with black bow detail"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" alt="Black and White Floral Print Scarf" class="item-image" title="Black and White Floral Print Scarf">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> 'Tuck the white tee fully into the flared jeans. Tie the black and white floral scarf around the neck in a loose knot. The jeans should fall over the boots
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 6.01s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="complete_boots_peichin_gemini_2_flash_0_2" data-rating="1">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gemini_2_flash_0_2" data-rating="2">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gemini_2_flash_0_2" data-rating="3">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gemini_2_flash_0_2" data-rating="4">★</span>
+                <span class="star" data-outfit-id="complete_boots_peichin_gemini_2_flash_0_2" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="complete_boots_peichin_gemini_2_flash_0_2" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+                </div>
+            </div>
+            
+        </div>
+        
+        <div class="scenario-section">
+            <div class="scenario-header">
+                <div class="scenario-title">Casual Weekend Outing (Heather)</div>
+                
+                <div class="scenario-description">
+                    <strong>👗 Occasion:</strong> casual coffee with friends followed with some errands<br>
+                    <strong>🌤️ Weather:</strong> mild (60-70°F)<br>
+                    <strong>✨ Style Profile:</strong> Current: classic, Aspirational: relaxed, Feeling: playful
+                </div>
+            
+            </div>
+        
+            <div class="model-group">
+                <div class="model-header">
+                    <div class="model-name">GPT-4o (Baseline)</div>
+                    <div class="model-stats">
+                        <span>Avg Latency: 13.95s</span>
+                        <span>Total Outfits: 3</span>
+                    </div>
+                </div>
+                <div class="outfits-grid">
+            
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 1</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/c57a5708831e4265b7b1a556d94bb5d0.jpg" alt="White basic crew-neck t-shirt" class="item-image" title="White basic crew-neck t-shirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/a82f1bedcdd147bfaa3676cb7631e5ce.jpg" alt="Charcoal cropped cargo pants" class="item-image" title="Charcoal cropped cargo pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/d4acaeb647c54f03882725939bb9b8ed.jpg" alt="Hot pink suede sneakers" class="item-image" title="Hot pink suede sneakers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/c4b9d639c4d84b4d846e7f7f9d923745.jpg" alt="Burgundy baseball cap" class="item-image" title="Burgundy baseball cap">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Tuck the front of the t-shirt into the cargo pants for a relaxed yet polished look. Leave the cap slightly tilted for a playful edge.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 13.95s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_baseline_0_0" data-rating="1">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_baseline_0_0" data-rating="2">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_baseline_0_0" data-rating="3">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_baseline_0_0" data-rating="4">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_baseline_0_0" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="casual_weekend_heather_gpt4o_baseline_0_0" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 2</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/f1f80e3d87664333a3a86d9e983f6ee5.jpg" alt="Salmon pink button-up shirt" class="item-image" title="Salmon pink button-up shirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/19d0cbdc93db4ca2b7206b3c2624189b.jpg" alt="Medium wash bootcut jeans" class="item-image" title="Medium wash bootcut jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/82346257af8a4e939cbca23a69ac9cb8.jpg" alt="Leopard Print Mary Jane Flats" class="item-image" title="Leopard Print Mary Jane Flats"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/3e8b3914f58442d1a34c3ed634d0e0de.jpg" alt="Blue and burgundy striped silk scarf" class="item-image" title="Blue and burgundy striped silk scarf">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Leave the shirt untucked and roll up the sleeves to elbow length for a relaxed vibe. Tie the scarf loosely around the neck for an added playful element.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 13.95s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_baseline_0_1" data-rating="1">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_baseline_0_1" data-rating="2">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_baseline_0_1" data-rating="3">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_baseline_0_1" data-rating="4">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_baseline_0_1" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="casual_weekend_heather_gpt4o_baseline_0_1" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 3</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/50607845bf38488b97e87f8627212219.jpg" alt="Dark brown short-sleeve tee" class="item-image" title="Dark brown short-sleeve tee"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/aaccd1914683445d922a530da0b75216.jpg" alt="Charcoal wide-leg elastic waist trousers" class="item-image" title="Charcoal wide-leg elastic waist trousers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/6949f2dad3cd4d1ab148b44423bb9ccf.jpg" alt="Black slouchy suede ankle boots" class="item-image" title="Black slouchy suede ankle boots"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/8d0d32fd645a4073a9b4dcf5bd49c957.jpg" alt="Blue silk scarf with horse pattern" class="item-image" title="Blue silk scarf with horse pattern">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Partially tuck the tee into the trousers to define the waist. Drape the scarf around the neck for an equestrian chic touch.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 13.95s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_baseline_0_2" data-rating="1">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_baseline_0_2" data-rating="2">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_baseline_0_2" data-rating="3">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_baseline_0_2" data-rating="4">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_baseline_0_2" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="casual_weekend_heather_gpt4o_baseline_0_2" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+                </div>
+            </div>
+            
+            <div class="model-group">
+                <div class="model-header">
+                    <div class="model-name">GPT-4o Mini</div>
+                    <div class="model-stats">
+                        <span>Avg Latency: 18.04s</span>
+                        <span>Total Outfits: 3</span>
+                    </div>
+                </div>
+                <div class="outfits-grid">
+            
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 1</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/c57a5708831e4265b7b1a556d94bb5d0.jpg" alt="White basic crew-neck t-shirt" class="item-image" title="White basic crew-neck t-shirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/a82f1bedcdd147bfaa3676cb7631e5ce.jpg" alt="Charcoal cropped cargo pants" class="item-image" title="Charcoal cropped cargo pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/d4acaeb647c54f03882725939bb9b8ed.jpg" alt="Hot pink suede sneakers" class="item-image" title="Hot pink suede sneakers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/3e8b3914f58442d1a34c3ed634d0e0de.jpg" alt="Blue and burgundy striped silk scarf" class="item-image" title="Blue and burgundy striped silk scarf">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Tuck the front of the t-shirt into the cargo pants for a relaxed yet polished look. Drape the scarf around the neck for a playful touch.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 18.04s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_mini_0_0" data-rating="1">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_mini_0_0" data-rating="2">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_mini_0_0" data-rating="3">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_mini_0_0" data-rating="4">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_mini_0_0" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="casual_weekend_heather_gpt4o_mini_0_0" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 2</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/f1f80e3d87664333a3a86d9e983f6ee5.jpg" alt="Salmon pink button-up shirt" class="item-image" title="Salmon pink button-up shirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/19d0cbdc93db4ca2b7206b3c2624189b.jpg" alt="Medium wash bootcut jeans" class="item-image" title="Medium wash bootcut jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/82346257af8a4e939cbca23a69ac9cb8.jpg" alt="Leopard Print Mary Jane Flats" class="item-image" title="Leopard Print Mary Jane Flats"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/8d0d32fd645a4073a9b4dcf5bd49c957.jpg" alt="Blue silk scarf with horse pattern" class="item-image" title="Blue silk scarf with horse pattern">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> 'Leave the button-up shirt untucked for a relaxed look
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 18.04s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_mini_0_1" data-rating="1">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_mini_0_1" data-rating="2">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_mini_0_1" data-rating="3">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_mini_0_1" data-rating="4">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_mini_0_1" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="casual_weekend_heather_gpt4o_mini_0_1" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 3</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/8e45a387cb1743dba8d7af946b7d9876.jpg" alt="Black oversized batwing top" class="item-image" title="Black oversized batwing top"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/aaccd1914683445d922a530da0b75216.jpg" alt="Charcoal wide-leg elastic waist trousers" class="item-image" title="Charcoal wide-leg elastic waist trousers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/53ca56142d5e4c408d07c0397e112148.jpg" alt="Burgundy suede loafers" class="item-image" title="Burgundy suede loafers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/d77a4769c99644e7bda09cb4b2fccfe4.jpg" alt="Bright blue puff-sleeve knit cardigan" class="item-image" title="Bright blue puff-sleeve knit cardigan">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Layer the cardigan over the oversized top and leave it unbuttoned for a relaxed silhouette. Cuff the trousers slightly to showcase the loafers.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 18.04s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_mini_0_2" data-rating="1">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_mini_0_2" data-rating="2">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_mini_0_2" data-rating="3">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_mini_0_2" data-rating="4">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gpt4o_mini_0_2" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="casual_weekend_heather_gpt4o_mini_0_2" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+                </div>
+            </div>
+            
+            <div class="model-group">
+                <div class="model-header">
+                    <div class="model-name">Gemini 2.0 Flash</div>
+                    <div class="model-stats">
+                        <span>Avg Latency: 6.92s</span>
+                        <span>Total Outfits: 3</span>
+                    </div>
+                </div>
+                <div class="outfits-grid">
+            
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 1</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/c57a5708831e4265b7b1a556d94bb5d0.jpg" alt="White basic crew-neck t-shirt" class="item-image" title="White basic crew-neck t-shirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/a82f1bedcdd147bfaa3676cb7631e5ce.jpg" alt="Charcoal cropped cargo pants" class="item-image" title="Charcoal cropped cargo pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/d4acaeb647c54f03882725939bb9b8ed.jpg" alt="Hot pink suede sneakers" class="item-image" title="Hot pink suede sneakers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/3e8b3914f58442d1a34c3ed634d0e0de.jpg" alt="Blue and burgundy striped silk scarf" class="item-image" title="Blue and burgundy striped silk scarf">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Tie the scarf to your handbag for a playful pop of color and classic touch. Cuff the cargo pants slightly to showcase the sneakers.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 6.92s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="casual_weekend_heather_gemini_2_flash_0_0" data-rating="1">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gemini_2_flash_0_0" data-rating="2">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gemini_2_flash_0_0" data-rating="3">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gemini_2_flash_0_0" data-rating="4">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gemini_2_flash_0_0" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="casual_weekend_heather_gemini_2_flash_0_0" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 2</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/61903fa4d3834a63b4288b8c6a8f5fc0.jpg" alt="Navy blue sleeveless tank top" class="item-image" title="Navy blue sleeveless tank top"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/4207a447877c454eb51f6cb287232dfc.jpg" alt="Brown knee-length shorts" class="item-image" title="Brown knee-length shorts"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/a28d75d957c048dca43ab5cb755364d0.jpg" alt="Beige puff-sleeve knit cardigan" class="item-image" title="Beige puff-sleeve knit cardigan"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/649799137c164e91942734d1689665ea.jpg" alt="Black Mary Jane Flats with Gold Buckle" class="item-image" title="Black Mary Jane Flats with Gold Buckle"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/8d0d32fd645a4073a9b4dcf5bd49c957.jpg" alt="Blue silk scarf with horse pattern" class="item-image" title="Blue silk scarf with horse pattern">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Drape the scarf loosely around your neck. Button only the top few buttons of the cardigan.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 6.92s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="casual_weekend_heather_gemini_2_flash_0_1" data-rating="1">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gemini_2_flash_0_1" data-rating="2">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gemini_2_flash_0_1" data-rating="3">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gemini_2_flash_0_1" data-rating="4">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gemini_2_flash_0_1" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="casual_weekend_heather_gemini_2_flash_0_1" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 3</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/467bd81999d74fd3aaa31c0eeb17394e.jpg" alt="Black oversized long-sleeve top" class="item-image" title="Black oversized long-sleeve top"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/19d0cbdc93db4ca2b7206b3c2624189b.jpg" alt="Medium wash bootcut jeans" class="item-image" title="Medium wash bootcut jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/53ca56142d5e4c408d07c0397e112148.jpg" alt="Burgundy suede loafers" class="item-image" title="Burgundy suede loafers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/heather/items/c4b9d639c4d84b4d846e7f7f9d923745.jpg" alt="Burgundy baseball cap" class="item-image" title="Burgundy baseball cap">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Do a front tuck with the oversized top into the jeans. Wear the baseball cap backwards for a more playful look.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 6.92s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="casual_weekend_heather_gemini_2_flash_0_2" data-rating="1">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gemini_2_flash_0_2" data-rating="2">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gemini_2_flash_0_2" data-rating="3">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gemini_2_flash_0_2" data-rating="4">★</span>
+                <span class="star" data-outfit-id="casual_weekend_heather_gemini_2_flash_0_2" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="casual_weekend_heather_gemini_2_flash_0_2" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+                </div>
+            </div>
+            
+        </div>
+        
+        <div class="scenario-section">
+            <div class="scenario-header">
+                <div class="scenario-title">Date Night Dinner (Peichin)</div>
+                
+                <div class="scenario-description">
+                    <strong>👗 Occasion:</strong> dinner date at upscale restaurant<br>
+                    <strong>🌤️ Weather:</strong> evening, indoor (68-72°F)<br>
+                    <strong>✨ Style Profile:</strong> Current: classic, Aspirational: relaxed, Feeling: playful
+                </div>
+            
+            </div>
+        
+            <div class="model-group">
+                <div class="model-header">
+                    <div class="model-name">GPT-4o (Baseline)</div>
+                    <div class="model-stats">
+                        <span>Avg Latency: 11.57s</span>
+                        <span>Total Outfits: 3</span>
+                    </div>
+                </div>
+                <div class="outfits-grid">
+            
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 1</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" class="item-image" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2a337a039a0a4d98b4833b48d9928baf.jpg" alt="Black and white paisley ruffle blouse" class="item-image" title="Black and white paisley ruffle blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d3e79387d01e4fe88030ff21d383dae0.jpg" alt="Burgundy patent leather pointed-toe pumps" class="item-image" title="Burgundy patent leather pointed-toe pumps"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" alt="Gold leaf motif necklace" class="item-image" title="Gold leaf motif necklace">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Tuck the blouse into the high-waisted pants to emphasize the waistline. Let the necklace sit naturally on the neckline of the blouse for a touch of elegance.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 11.57s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_baseline_0_0" data-rating="1">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_baseline_0_0" data-rating="2">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_baseline_0_0" data-rating="3">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_baseline_0_0" data-rating="4">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_baseline_0_0" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="date_night_peichin_gpt4o_baseline_0_0" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 2</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b6ecfd29000d4c918b4c81e0bf67efa6.jpg" alt="Dark Wash Flared Jeans" class="item-image" title="Dark Wash Flared Jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/fb74fd751f3d47f39da9104a24cd8d52.jpg" alt="Ivory crochet button-up cardigan" class="item-image" title="Ivory crochet button-up cardigan"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg" alt="Black Patent Leather Loafers" class="item-image" title="Black Patent Leather Loafers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" class="item-image" title="Gold swirl earrings with pearl center">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Layer the cardigan over the jeans and leave a few top buttons undone for a casual vibe. Cuff the jeans to showcase the loafers.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 11.57s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_baseline_0_1" data-rating="1">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_baseline_0_1" data-rating="2">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_baseline_0_1" data-rating="3">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_baseline_0_1" data-rating="4">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_baseline_0_1" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="date_night_peichin_gpt4o_baseline_0_1" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 3</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/13ae557e53b449bc8d68e07861375e0d.jpg" alt="Sage Green Leather A-line Skirt" class="item-image" title="Sage Green Leather A-line Skirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2e282ef4e797482ca7298f9f1e15ef82.jpg" alt="Black basic short-sleeve tee" class="item-image" title="Black basic short-sleeve tee"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c3d14deb47d148c79dec12ec85f9bc27.jpg" alt="Cream knee-high block heel boots" class="item-image" title="Cream knee-high block heel boots"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/cd9aba82c36248b8bb25d8acfe9b9490.jpg" alt="Leopard Print Square Scarf" class="item-image" title="Leopard Print Square Scarf">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Tuck the tee into the skirt for a polished look. Tie the scarf loosely around the neck for a playful pop of pattern.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 11.57s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_baseline_0_2" data-rating="1">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_baseline_0_2" data-rating="2">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_baseline_0_2" data-rating="3">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_baseline_0_2" data-rating="4">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_baseline_0_2" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="date_night_peichin_gpt4o_baseline_0_2" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+                </div>
+            </div>
+            
+            <div class="model-group">
+                <div class="model-header">
+                    <div class="model-name">GPT-4o Mini</div>
+                    <div class="model-stats">
+                        <span>Avg Latency: 15.03s</span>
+                        <span>Total Outfits: 3</span>
+                    </div>
+                </div>
+                <div class="outfits-grid">
+            
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 1</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" class="item-image" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2a337a039a0a4d98b4833b48d9928baf.jpg" alt="Black and white paisley ruffle blouse" class="item-image" title="Black and white paisley ruffle blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d3e79387d01e4fe88030ff21d383dae0.jpg" alt="Burgundy patent leather pointed-toe pumps" class="item-image" title="Burgundy patent leather pointed-toe pumps"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" class="item-image" title="Gold swirl earrings with pearl center">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> 'Tuck the front of the blouse into the pants for a polished look. Let the ruffles flow over the waistband for a soft
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 15.03s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_mini_0_0" data-rating="1">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_mini_0_0" data-rating="2">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_mini_0_0" data-rating="3">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_mini_0_0" data-rating="4">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_mini_0_0" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="date_night_peichin_gpt4o_mini_0_0" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 2</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b6ecfd29000d4c918b4c81e0bf67efa6.jpg" alt="Dark Wash Flared Jeans" class="item-image" title="Dark Wash Flared Jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/82846646f9a2420a8e69a1b5351ff49f.jpg" alt="Gray puff-sleeve cropped tee" class="item-image" title="Gray puff-sleeve cropped tee"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg" alt="Black Patent Leather Loafers" class="item-image" title="Black Patent Leather Loafers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" alt="Black and White Floral Print Scarf" class="item-image" title="Black and White Floral Print Scarf">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Cuff the jeans slightly to showcase the loafers and add a playful touch. Drape the scarf around the neck to introduce a pattern without overwhelming the look.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 15.03s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_mini_0_1" data-rating="1">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_mini_0_1" data-rating="2">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_mini_0_1" data-rating="3">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_mini_0_1" data-rating="4">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_mini_0_1" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="date_night_peichin_gpt4o_mini_0_1" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 3</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/fb74fd751f3d47f39da9104a24cd8d52.jpg" alt="Ivory crochet button-up cardigan" class="item-image" title="Ivory crochet button-up cardigan"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" alt="White ruffled button-up shirt" class="item-image" title="White ruffled button-up shirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/5b174344b6f94c83a97e250b5a34c1ab.jpg" alt="Medium wash straight-leg jeans" class="item-image" title="Medium wash straight-leg jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/66af2a43a68343a88921acec7a85c0f0.jpg" alt="Taupe suede ankle boots" class="item-image" title="Taupe suede ankle boots">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> Leave the cardigan open to showcase the ruffled shirt underneath. Tuck the ruffled shirt slightly at the front for a structured yet relaxed vibe.
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 15.03s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_mini_0_2" data-rating="1">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_mini_0_2" data-rating="2">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_mini_0_2" data-rating="3">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_mini_0_2" data-rating="4">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gpt4o_mini_0_2" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="date_night_peichin_gpt4o_mini_0_2" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+                </div>
+            </div>
+            
+            <div class="model-group">
+                <div class="model-header">
+                    <div class="model-name">Gemini 2.0 Flash</div>
+                    <div class="model-stats">
+                        <span>Avg Latency: 7.06s</span>
+                        <span>Total Outfits: 3</span>
+                    </div>
+                </div>
+                <div class="outfits-grid">
+            
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 1</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2e282ef4e797482ca7298f9f1e15ef82.jpg" alt="Black basic short-sleeve tee" class="item-image" title="Black basic short-sleeve tee"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" class="item-image" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" alt="Black and White Floral Print Scarf" class="item-image" title="Black and White Floral Print Scarf"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg" alt="Black Patent Leather Loafers" class="item-image" title="Black Patent Leather Loafers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" class="item-image" title="Gold swirl earrings with pearl center">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> 'Tuck the black tee fully into the white pants to accentuate the waist and create a clean silhouette. Drape the scarf loosely around the neck
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 7.06s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="date_night_peichin_gemini_2_flash_0_0" data-rating="1">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gemini_2_flash_0_0" data-rating="2">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gemini_2_flash_0_0" data-rating="3">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gemini_2_flash_0_0" data-rating="4">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gemini_2_flash_0_0" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="date_night_peichin_gemini_2_flash_0_0" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 2</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b2eefe9b70084b8eae2ce17bba9b3546.jpg" alt="Cream textured tie-front blouse" class="item-image" title="Cream textured tie-front blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b6ecfd29000d4c918b4c81e0bf67efa6.jpg" alt="Dark Wash Flared Jeans" class="item-image" title="Dark Wash Flared Jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/66af2a43a68343a88921acec7a85c0f0.jpg" alt="Taupe suede ankle boots" class="item-image" title="Taupe suede ankle boots"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" alt="Gold Bar Pendant Necklace" class="item-image" title="Gold Bar Pendant Necklace"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c51d42bf62ad460e9fd31c136aed2679.jpg" alt="Tan suede belt with oval buckle" class="item-image" title="Tan suede belt with oval buckle">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> 'Tie the cream blouse in a knot at the front
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 7.06s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="date_night_peichin_gemini_2_flash_0_1" data-rating="1">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gemini_2_flash_0_1" data-rating="2">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gemini_2_flash_0_1" data-rating="3">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gemini_2_flash_0_1" data-rating="4">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gemini_2_flash_0_1" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="date_night_peichin_gemini_2_flash_0_1" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+    <div class="outfit-card">
+        <div class="outfit-header">
+            <div class="outfit-title">Outfit 3</div>
+            <div class="outfit-meta">Iteration 1</div>
+        </div>
+
+        <div class="outfit-items">
+            <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" alt="White ruffled button-up shirt" class="item-image" title="White ruffled button-up shirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/85ec93b03d6a4bc1bca313bf175b2390.jpg" alt="Royal blue slim-fit chinos" class="item-image" title="Royal blue slim-fit chinos"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg" alt="Black Patent Leather Loafers" class="item-image" title="Black Patent Leather Loafers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/cd9aba82c36248b8bb25d8acfe9b9490.jpg" alt="Leopard Print Square Scarf" class="item-image" title="Leopard Print Square Scarf"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b120e972a0814e2a84dbcc254cd1767c.jpg" alt="Brown woven leather belt" class="item-image" title="Brown woven leather belt">
+        </div>
+
+        <div class="outfit-notes">
+            <strong>Styling Notes:</strong> 'Tuck the ruffled shirt fully into the chinos. Cinch the waist with the woven leather belt. Fold the scarf in a triangle and tie around the neck
+        </div>
+
+        <div class="validation">
+            <span class="validation-badge badge-success">✅ Valid structure</span><span class="validation-badge badge-success">⏱️ 7.06s</span>
+        </div>
+
+        <div class="rating-section">
+            <div class="stars">
+                <span class="star" data-outfit-id="date_night_peichin_gemini_2_flash_0_2" data-rating="1">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gemini_2_flash_0_2" data-rating="2">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gemini_2_flash_0_2" data-rating="3">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gemini_2_flash_0_2" data-rating="4">★</span>
+                <span class="star" data-outfit-id="date_night_peichin_gemini_2_flash_0_2" data-rating="5">★</span>
+            </div>
+            <textarea class="notes-input" data-outfit-id="date_night_peichin_gemini_2_flash_0_2" placeholder="Your notes..."></textarea>
+        </div>
+    </div>
+    
+                </div>
+            </div>
+            
+        </div>
+        
+
+    <script>
+        // Ratings storage
+        let ratings = {};
+
+        // Load existing ratings
+        try {
+            const saved = localStorage.getItem('outfit_ratings');
+            if (saved) {
+                ratings = JSON.parse(saved);
+                applyRatings();
+            }
+        } catch (e) {
+            console.error('Error loading ratings:', e);
+        }
+
+        // Star rating handler
+        document.querySelectorAll('.star').forEach(star => {
+            star.addEventListener('click', function() {
+                const outfitId = this.dataset.outfitId;
+                const rating = parseInt(this.dataset.rating);
+
+                // Update visual
+                const stars = document.querySelectorAll(`[data-outfit-id="${outfitId}"]`);
+                stars.forEach(s => {
+                    const starRating = parseInt(s.dataset.rating);
+                    s.classList.toggle('active', starRating <= rating);
+                });
+
+                // Store rating
+                if (!ratings[outfitId]) ratings[outfitId] = {};
+                ratings[outfitId].rating = rating;
+                saveRatings();
+            });
+        });
+
+        // Notes handler
+        document.querySelectorAll('.notes-input').forEach(input => {
+            input.addEventListener('change', function() {
+                const outfitId = this.dataset.outfitId;
+                if (!ratings[outfitId]) ratings[outfitId] = {};
+                ratings[outfitId].notes = this.value;
+                saveRatings();
+            });
+        });
+
+        // Save ratings
+        function saveRatings() {
+            localStorage.setItem('outfit_ratings', JSON.stringify(ratings));
+            updateRatedCount();
+            console.log('Ratings saved:', ratings);
+        }
+
+        // Apply saved ratings to UI
+        function applyRatings() {
+            Object.keys(ratings).forEach(outfitId => {
+                const data = ratings[outfitId];
+
+                // Apply star rating
+                if (data.rating) {
+                    const stars = document.querySelectorAll(`[data-outfit-id="${outfitId}"]`);
+                    stars.forEach(s => {
+                        const starRating = parseInt(s.dataset.rating);
+                        s.classList.toggle('active', starRating <= data.rating);
+                    });
+                }
+
+                // Apply notes
+                if (data.notes) {
+                    const notesInput = document.querySelector(`textarea[data-outfit-id="${outfitId}"]`);
+                    if (notesInput) notesInput.value = data.notes;
+                }
+            });
+            updateRatedCount();
+        }
+
+        // Update rated count
+        function updateRatedCount() {
+            const ratedCount = Object.keys(ratings).filter(k => ratings[k].rating).length;
+            const totalCount = document.querySelectorAll('.outfit-card').length;
+            document.getElementById('rated-count').textContent = `${ratedCount}/${totalCount}`;
+        }
+
+        // Export ratings
+        function exportRatings() {
+            const dataStr = JSON.stringify(ratings, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'ratings.json';
+            link.click();
+        }
+
+        // Add export button
+        window.addEventListener('load', () => {
+            const header = document.querySelector('.header');
+            const button = document.createElement('button');
+            button.textContent = '💾 Export Ratings';
+            button.className = 'save-button';
+            button.style.marginTop = '20px';
+            button.onclick = exportRatings;
+            header.appendChild(button);
+        });
+    </script>
+</body>
+</html>

@@ -39,13 +39,22 @@ def load_model_configs(models_path: str) -> List[Dict]:
 def fetch_user_wardrobe(user_id: str) -> List[Dict]:
     """Fetch wardrobe for a user from production storage."""
     print(f"  📦 Fetching wardrobe for user: {user_id}")
-    wardrobe_manager = WardrobeManager(user_id)
+
+    # Debug: Check storage configuration
+    storage_type = os.getenv("STORAGE_TYPE", "local")
+    print(f"  🔧 STORAGE_TYPE env var: '{storage_type}'")
+
+    wardrobe_manager = WardrobeManager(user_id=user_id)
+    print(f"  🔧 Storage type in use: {wardrobe_manager.storage.storage_type}")
+
     wardrobe_data = wardrobe_manager.load_wardrobe_data()
+    print(f"  🔧 Wardrobe data keys: {wardrobe_data.keys() if wardrobe_data else 'None'}")
 
     # Extract items array from wardrobe data
     wardrobe = wardrobe_data.get('items', [])
 
     if not wardrobe or len(wardrobe) == 0:
+        print(f"  ❌ Wardrobe data: {wardrobe_data}")
         raise ValueError(f"No wardrobe found for user {user_id}. User must have uploaded items.")
 
     print(f"  ✅ Loaded {len(wardrobe)} items")
@@ -93,7 +102,7 @@ def run_single_evaluation(
     start_time = time.time()
 
     try:
-        outfits = engine.generate_outfits(
+        outfits = engine.generate_outfit_combinations(
             user_profile=scenario['style_profile'],
             available_items=wardrobe,
             styling_challenges=styling_challenges,
@@ -106,11 +115,21 @@ def run_single_evaluation(
         success = True
         error = None
 
+        # Calculate cost from last AI call
+        cost_usd = 0.0
+        tokens_used = 0
+        if hasattr(engine, '_last_ai_response'):
+            ai_resp = engine._last_ai_response
+            cost_usd = engine.ai_provider.calculate_cost(ai_resp.usage)
+            tokens_used = ai_resp.usage.get('total_tokens', 0)
+
     except Exception as e:
         latency = time.time() - start_time
         outfits = []
         success = False
         error = str(e)
+        cost_usd = 0.0
+        tokens_used = 0
 
     return {
         "scenario_id": scenario['id'],
@@ -123,6 +142,8 @@ def run_single_evaluation(
         "success": success,
         "error": error,
         "latency_seconds": latency,
+        "cost_usd": cost_usd,
+        "tokens_used": tokens_used,
         "outfits": outfits,
         "num_outfits": len(outfits) if outfits else 0
     }
@@ -191,7 +212,8 @@ def main():
                 all_results.append(result)
 
                 if result['success']:
-                    print(f"✅ ({result['latency_seconds']:.2f}s, {result['num_outfits']} outfits)")
+                    cost_str = f", ${result['cost_usd']:.4f}" if result.get('cost_usd', 0) > 0 else ""
+                    print(f"✅ ({result['latency_seconds']:.2f}s, {result['num_outfits']} outfits{cost_str})")
                 else:
                     print(f"❌ Error: {result['error']}")
 

@@ -20,8 +20,19 @@ class ClaudeProvider(AIProvider):
         if not self.config.api_key:
             raise ValueError("Anthropic API key is required")
 
-        # Validate model name
+        # Validate model name (updated Nov 2025 with Claude 4.x models)
         valid_models = [
+            # Claude 4.5 models (latest naming scheme)
+            "claude-sonnet-4-5-20250929",
+            "claude-opus-4-5-20251101",
+            "claude-haiku-4-5-20251001",
+            # Claude 4.x models
+            "claude-opus-4-1-20250805",
+            "claude-opus-4-20250514",
+            "claude-sonnet-4-20250514",
+            # Claude 3.x models (legacy)
+            "claude-3-7-sonnet-20250219",
+            "claude-3-5-haiku-20241022",
             "claude-3-5-sonnet-20241022",
             "claude-3-5-sonnet-20240620",
             "claude-3-opus-20240229",

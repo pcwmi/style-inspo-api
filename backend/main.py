@@ -36,7 +36,11 @@ from api import wardrobe, outfits, jobs, user
 app.include_router(wardrobe.router, prefix="/api", tags=["wardrobe"])
 app.include_router(outfits.router, prefix="/api", tags=["outfits"])
 app.include_router(jobs.router, prefix="/api", tags=["jobs"])
+app.include_router(jobs.router, prefix="/api", tags=["jobs"])
 app.include_router(user.router, prefix="/api", tags=["user"])
+
+from api import consider_buying
+app.include_router(consider_buying.router)
 
 
 @app.get("/")

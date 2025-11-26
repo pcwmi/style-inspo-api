@@ -9,6 +9,58 @@ import argparse
 import json
 from pathlib import Path
 from datetime import datetime
+import re
+import ast
+
+
+def parse_outfit_string(outfit_str: str) -> dict:
+    """Parse OutfitCombination repr string into a dict."""
+    if isinstance(outfit_str, dict):
+        return outfit_str  # Already a dict
+
+    # Extract the content between OutfitCombination( and the final )
+    match = re.match(r'OutfitCombination\((.*)\)$', outfit_str, re.DOTALL)
+    if not match:
+        return {}
+
+    content = match.group(1)
+
+    # Parse as Python literal
+    try:
+        # Create a dict from the keyword arguments
+        result = {}
+        # Split on top-level commas (not inside brackets/braces)
+        parts = []
+        bracket_depth = 0
+        current = []
+        for char in content:
+            if char in '[{(':
+                bracket_depth += 1
+            elif char in ']})':
+                bracket_depth -= 1
+            elif char == ',' and bracket_depth == 0:
+                parts.append(''.join(current))
+                current = []
+                continue
+            current.append(char)
+        if current:
+            parts.append(''.join(current))
+
+        for part in parts:
+            part = part.strip()
+            if '=' in part:
+                key, value = part.split('=', 1)
+                key = key.strip()
+                value = value.strip()
+                try:
+                    result[key] = ast.literal_eval(value)
+                except:
+                    result[key] = value
+
+        return result
+    except Exception as e:
+        print(f"Warning: Failed to parse outfit string: {e}")
+        return {}
 
 
 HTML_TEMPLATE = """<!DOCTYPE html>
@@ -76,8 +128,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
             font-weight: 600;
         }}
         .scenario-description {{
-            color: #666;
-            margin-top: 5px;
+            color: #555;
+            margin-top: 10px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            line-height: 1.8;
+            font-size: 14px;
         }}
         .model-group {{
             background: white;
@@ -105,13 +162,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         }}
         .outfits-grid {{
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+            gap: 25px;
         }}
         .outfit-card {{
             border: 1px solid #ddd;
             border-radius: 8px;
-            padding: 15px;
+            padding: 20px;
             background: #fafafa;
             transition: box-shadow 0.2s;
         }}
@@ -137,15 +194,16 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         .outfit-items {{
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin: 15px 0;
+            gap: 12px;
+            margin: 20px 0;
         }}
         .item-image {{
             width: 100%;
             aspect-ratio: 1;
             object-fit: cover;
-            border-radius: 4px;
+            border-radius: 6px;
             background: #e0e0e0;
+            border: 1px solid #ddd;
         }}
         .outfit-notes {{
             font-size: 13px;
@@ -362,13 +420,15 @@ HTML_TEMPLATE = """<!DOCTYPE html>
 
 def generate_outfit_card_html(result: dict, outfit_idx: int) -> str:
     """Generate HTML for a single outfit card."""
-    outfit = result['outfits'][outfit_idx]
+    outfit_raw = result['outfits'][outfit_idx]
+    outfit = parse_outfit_string(outfit_raw)
     outfit_id = f"{result['scenario_id']}_{result['model_id']}_{result['iteration']}_{outfit_idx}"
 
     # Build items grid
     items_html = ""
     for item in outfit.get('items', [])[:9]:  # Max 9 items for 3x3 grid
-        image_path = item.get('image_path', '')
+        # Image path is in system_metadata
+        image_path = item.get('system_metadata', {}).get('image_path', '')
         item_name = item.get('styling_details', {}).get('name', 'Unknown item')
         items_html += f'<img src="{image_path}" alt="{item_name}" class="item-image" title="{item_name}">'
 
@@ -410,8 +470,21 @@ def generate_outfit_card_html(result: dict, outfit_idx: int) -> str:
     return card_html
 
 
+def load_scenario_details(results_dir: Path) -> dict:
+    """Load scenario details from fixtures."""
+    scenarios_file = results_dir.parent.parent / 'fixtures' / 'test_scenarios.json'
+    if scenarios_file.exists():
+        with open(scenarios_file, 'r') as f:
+            scenarios_list = json.load(f)
+            return {s['id']: s for s in scenarios_list}
+    return {}
+
+
 def generate_html(results: list, output_path: Path):
     """Generate HTML review page from results."""
+
+    # Load scenario details
+    scenario_details = load_scenario_details(output_path.parent)
 
     # Group results by scenario and model
     scenarios = {}
@@ -420,6 +493,7 @@ def generate_html(results: list, output_path: Path):
         if scenario_id not in scenarios:
             scenarios[scenario_id] = {
                 'name': result['scenario_name'],
+                'details': scenario_details.get(scenario_id, {}),
                 'models': {}
             }
 
@@ -435,10 +509,25 @@ def generate_html(results: list, output_path: Path):
     # Generate content HTML
     content_html = ""
     for scenario_id, scenario_data in scenarios.items():
+        details = scenario_data.get('details', {})
+
+        # Build scenario context details
+        context_html = ""
+        if details:
+            style_profile = details.get('style_profile', {}).get('three_words', {})
+            context_html = f"""
+                <div class="scenario-description">
+                    <strong>👗 Occasion:</strong> {details.get('occasion', 'N/A')}<br>
+                    <strong>🌤️ Weather:</strong> {details.get('weather', 'N/A')} ({details.get('temperature_range', 'N/A')})<br>
+                    <strong>✨ Style Profile:</strong> Current: {style_profile.get('current', 'N/A')}, Aspirational: {style_profile.get('aspirational', 'N/A')}, Feeling: {style_profile.get('feeling', 'N/A')}
+                </div>
+            """
+
         content_html += f"""
         <div class="scenario-section">
             <div class="scenario-header">
                 <div class="scenario-title">{scenario_data['name']}</div>
+                {context_html}
             </div>
         """
 

@@ -33,14 +33,14 @@ class ImageAnalyzer(ABC):
     """Abstract base class for image analysis implementations"""
 
     @abstractmethod
-    def analyze_clothing_item(self, image_file) -> Dict[str, str]:
+    def analyze_clothing_item(self, image_file, product_title: Optional[str] = None) -> Dict[str, str]:
         """Analyze clothing item and return detailed metadata"""
         pass
 
 class MockImageAnalyzer(ImageAnalyzer):
     """Mock implementation for testing and fallback"""
 
-    def analyze_clothing_item(self, image_file) -> Dict[str, str]:
+    def analyze_clothing_item(self, image_file, product_title: Optional[str] = None) -> Dict[str, str]:
         """Return realistic mock data for testing"""
 
         # Sample mock responses
@@ -135,7 +135,7 @@ class GPTVisionAnalyzer(ImageAnalyzer):
 
         return base64_image, timings
 
-    def analyze_clothing_item(self, image_file) -> Dict[str, str]:
+    def analyze_clothing_item(self, image_file, product_title: Optional[str] = None) -> Dict[str, str]:
         """Use GPT-4V to analyze clothing item and return detailed metadata"""
 
         start_total = time.time()
@@ -149,6 +149,16 @@ class GPTVisionAnalyzer(ImageAnalyzer):
             # Create detailed prompt for fashion analysis with structured physical attributes
             prompt = """
             Analyze this clothing item as a professional fashion stylist would. Focus on PHYSICAL ATTRIBUTES that help identify similar items and create outfits.
+            """
+
+            # Add context-aware instruction if product title is provided
+            if product_title:
+                prompt += f"""
+            IMPORTANT: The product title is "{product_title}". Use this to identify the specific item to analyze in the image, especially if there are multiple items (e.g. if title says "Pant", ignore the top/shoes and analyze the pants).
+            """
+
+            prompt += """
+            Return STRICT JSON with these fields (no extra commentary):
 
             Return STRICT JSON with these fields (no extra commentary):
             {

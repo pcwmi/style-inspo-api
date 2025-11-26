@@ -86,25 +86,31 @@ class StorageManager:
             return f"https://{self.bucket_name}.s3.{self.s3_region}.amazonaws.com"
         return self.base_path
     
-    def save_image(self, image: Image.Image, filename: str) -> str:
+    def save_image(self, image: Image.Image, filename: str, subfolder: Optional[str] = None) -> str:
         """
         Save image and return URL or path
         
         Args:
             image: PIL Image object
             filename: Target filename
+            subfolder: Optional subfolder within user directory
             
         Returns:
             URL (S3) or path (local)
         """
         if self.storage_type == "s3":
-            return self._save_to_s3(image, filename)
+            return self._save_to_s3(image, filename, subfolder)
         else:
-            return self._save_to_local(image, filename)
+            return self._save_to_local(image, filename, subfolder)
     
-    def _save_to_local(self, image: Image.Image, filename: str) -> str:
+    def _save_to_local(self, image: Image.Image, filename: str, subfolder: Optional[str] = None) -> str:
         """Save image to local filesystem"""
-        file_path = os.path.join(self.items_path, filename)
+        target_dir = self.items_path
+        if subfolder:
+            target_dir = os.path.join(self.base_path, subfolder)
+            os.makedirs(target_dir, exist_ok=True)
+            
+        file_path = os.path.join(target_dir, filename)
         
         # Resize if too large
         image.thumbnail((800, 800), Image.Resampling.LANCZOS)
@@ -112,9 +118,13 @@ class StorageManager:
         
         return file_path
     
-    def _save_to_s3(self, image: Image.Image, filename: str) -> str:
+    def _save_to_s3(self, image: Image.Image, filename: str, subfolder: Optional[str] = None) -> str:
         """Upload image to S3"""
-        s3_key = f"{self.user_id}/items/{filename}"
+        folder = f"{self.user_id}/items"
+        if subfolder:
+            folder = f"{self.user_id}/{subfolder}"
+            
+        s3_key = f"{folder}/{filename}"
         
         # Resize if too large
         image.thumbnail((800, 800), Image.Resampling.LANCZOS)

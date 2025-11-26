@@ -105,6 +105,30 @@ function DashboardContent() {
           </Link>
         </div>
 
+        {/* Buy Smarter Card */}
+        {/* Buy Smarter Card */}
+        {/* Buy Smarter Card */}
+        <Link
+          href={`/consider-buying?user=${user}`}
+          className="block bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-4 md:p-6 mb-5 md:mb-8 hover:bg-sand/30 active:bg-sand/50 transition shadow-sm group"
+        >
+          <div className="flex justify-between items-center mb-3">
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg md:text-xl font-semibold">Buy Smarter</h2>
+              <span className="text-xl">✨</span>
+            </div>
+            <span className="text-terracotta text-sm md:text-base flex items-center font-medium group-hover:opacity-80 transition-opacity">
+              Try it now
+              <svg className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+              </svg>
+            </span>
+          </div>
+          <p className="text-muted text-base leading-relaxed">
+            See how new items work with your closet before you buy.
+          </p>
+        </Link>
+
         {/* Wardrobe summary */}
         <Link
           href={`/closet?user=${user}`}
@@ -147,7 +171,7 @@ function DashboardContent() {
           </Link>
         </div>
       </div>
-    </div>
+    </div >
   )
 }
 

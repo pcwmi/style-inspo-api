@@ -1,31 +1,12 @@
 # Model configurations for evaluation
 # Add or remove models as needed
+# Last updated: Nov 2025 with correct model names
 
 models:
-  - id: gpt4o_baseline
-    name: "GPT-4o (Baseline)"
-    model: gpt-4o
+  # Anthropic Claude Models
+  - id: claude_sonnet_45
+    name: "Claude Sonnet 4.5"
+    model: claude-sonnet-4-5-20250929
     temperature: 0.7
     max_tokens: 2000
-    description: "Current production model"
-
-  - id: gemini_2_flash
-    name: "Gemini 2.0 Flash"
-    model: gemini-2.0-flash-exp
-    temperature: 0.7
-    max_tokens: 2000
-    description: "Google's latest fast model"
-
-  - id: claude_35_sonnet
-    name: "Claude 3.5 Sonnet"
-    model: claude-3-5-sonnet-20241022
-    temperature: 0.7
-    max_tokens: 2000
-    description: "Anthropic's reasoning model"
-
-  - id: gpt4o_mini
-    name: "GPT-4o Mini"
-    model: gpt-4o-mini
-    temperature: 0.7
-    max_tokens: 2000
-    description: "Cost-effective OpenAI model"
+    description: "Latest Claude Sonnet (Sept 2025)"

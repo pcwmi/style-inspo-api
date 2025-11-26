@@ -1,0 +1,170 @@
+{
+  "occasion_wedding_peichin_gpt4o_baseline_0_1": {
+    "rating": 5,
+    "notes": "Feels festive for a wedding. Balanced the stronger dress with the also strong cowboy boots. "
+  },
+  "occasion_wedding_peichin_gpt4o_baseline_0_0": {
+    "notes": "jeans and sneaker for a wedding doesn't make sense. ",
+    "rating": 2
+  },
+  "occasion_wedding_peichin_gpt4o_baseline_0_2": {
+    "rating": 2,
+    "notes": "while the style makes sense for the wedding, it's more of a fall tone vs. the wedding is in a warm weather - feel out of place"
+  },
+  "occasion_wedding_peichin_gpt4o_mini_0_2": {
+    "rating": 2,
+    "notes": "jeans and sneaker - feels too casual for a wedding."
+  },
+  "occasion_wedding_peichin_gemini_2_flash_0_0": {
+    "rating": 1,
+    "notes": "t-shirt and jeans and sneaker for a wedding - too casual "
+  },
+  "occasion_wedding_peichin_gemini_2_flash_0_1": {
+    "rating": 2,
+    "notes": "jeans and top - too casual for a wedding when there are better other options"
+  },
+  "occasion_wedding_peichin_gpt4o_mini_0_0": {
+    "rating": 3,
+    "notes": "too casual for a wedding "
+  },
+  "occasion_wedding_peichin_gpt4o_mini_0_1": {
+    "rating": 3,
+    "notes": "too casual for a wedding when there are better other options"
+  },
+  "occasion_wedding_peichin_gemini_2_flash_0_2": {
+    "notes": "too casual for a wedding when there are better other options",
+    "rating": 2
+  },
+  "occasion_work_meeting_heather_gpt4o_baseline_0_2": {
+    "rating": 1,
+    "notes": "the cardian looks like a fitted version so you can't layer that over a tee"
+  },
+  "occasion_work_meeting_heather_gpt4o_baseline_0_0": {
+    "rating": 4,
+    "notes": "fits the occasion. the color combo for the shirt and the scarf looks good"
+  },
+  "occasion_work_meeting_heather_gpt4o_baseline_0_1": {
+    "rating": 4,
+    "notes": "combo of loafer "
+  },
+  "date_night_peichin_gpt4o_baseline_0_0": {
+    "rating": 3,
+    "notes": "the strong necklace and the ruffled v-neck are competing for attention"
+  },
+  "date_night_peichin_gpt4o_baseline_0_1": {
+    "rating": 3,
+    "notes": "good contrast between the soft cardigan and the chunky loafer, but you can't cuff a flare jeans (only skinny or straight cut)"
+  },
+  "date_night_peichin_gpt4o_baseline_0_2": {
+    "rating": 5,
+    "notes": "more dressy and femine for a date night"
+  },
+  "date_night_peichin_gpt4o_mini_0_2": {
+    "notes": "the shirt has a larger sleeve length so it won't fit under the cardigan",
+    "rating": 1
+  },
+  "date_night_peichin_gpt4o_mini_0_0": {
+    "notes": "like the contrast between the romantic top and the sharp heels",
+    "rating": 5
+  },
+  "date_night_peichin_gpt4o_mini_0_1": {
+    "rating": 3,
+    "notes": "it's a flared jeans so it can't be easily cuffed (only doable for straight cut or skinny jeans)"
+  },
+  "date_night_peichin_gemini_2_flash_0_1": {
+    "rating": 4
+  },
+  "date_night_peichin_gemini_2_flash_0_2": {
+    "rating": 1,
+    "notes": "the belt is wider than the belt hole - not doable"
+  },
+  "date_night_peichin_gemini_2_flash_0_0": {
+    "notes": "not romantic enough",
+    "rating": 3
+  },
+  "casual_weekend_heather_gpt4o_baseline_0_0": {
+    "notes": "like the color echo beetween the hat and the shoes",
+    "rating": 5
+  },
+  "casual_weekend_heather_gpt4o_baseline_0_1": {
+    "notes": "chic but maybe the scarf makes it a bit too formal?",
+    "rating": 4
+  },
+  "casual_weekend_heather_gpt4o_baseline_0_2": {
+    "rating": 5,
+    "notes": "chic"
+  },
+  "casual_weekend_heather_gpt4o_mini_0_0": {
+    "rating": 3,
+    "notes": "not sure if the color of the scarf goes witth the shoes "
+  },
+  "casual_weekend_heather_gpt4o_mini_0_1": {
+    "rating": 4,
+    "notes": "chic but unsure about the scarf"
+  },
+  "casual_weekend_heather_gpt4o_mini_0_2": {
+    "notes": "cannot layer cardigan over an oversize top, the arm sleeves won't fit",
+    "rating": 1
+  },
+  "casual_weekend_heather_gemini_2_flash_0_1": {
+    "rating": 4
+  },
+  "casual_weekend_heather_gemini_2_flash_0_0": {
+    "rating": 4
+  },
+  "casual_weekend_heather_gemini_2_flash_0_2": {
+    "rating": 4
+  },
+  "complete_boots_peichin_gpt4o_baseline_0_1": {
+    "rating": 5
+  },
+  "complete_boots_peichin_gpt4o_baseline_0_2": {
+    "rating": 4,
+    "notes": "too much going on with scarf and the strong necklace. but I like the shoes tucked into the boots"
+  },
+  "complete_boots_peichin_gpt4o_baseline_0_0": {
+    "rating": 4
+  },
+  "complete_boots_peichin_gpt4o_mini_0_1": {
+    "rating": 1,
+    "notes": "this layering doesn't make any sense. it's not a super fitted t shirt, the blouse is not that losose for layering"
+  },
+  "complete_boots_peichin_gpt4o_mini_0_0": {
+    "rating": 4
+  },
+  "complete_boots_peichin_gpt4o_mini_0_2": {
+    "rating": 2,
+    "notes": "the layering feels kinda weird"
+  },
+  "complete_boots_peichin_gemini_2_flash_0_0": {
+    "rating": 5
+  },
+  "complete_boots_peichin_gemini_2_flash_0_1": {
+    "rating": 5,
+    "notes": "interesting tonal look. not my usuall but can be cool. want to see it on me"
+  },
+  "complete_boots_peichin_gemini_2_flash_0_2": {
+    "rating": 4
+  },
+  "occasion_work_meeting_heather_gpt4o_mini_0_0": {
+    "rating": 5
+  },
+  "occasion_work_meeting_heather_gpt4o_mini_0_1": {
+    "rating": 4
+  },
+  "occasion_work_meeting_heather_gpt4o_mini_0_2": {
+    "rating": 2,
+    "notes": "the layering might not work given the sleeve width"
+  },
+  "occasion_work_meeting_heather_gemini_2_flash_0_0": {
+    "rating": 1,
+    "notes": "the layering might not work given the sleeve width. the sneakers don't fit for the important work meeting"
+  },
+  "occasion_work_meeting_heather_gemini_2_flash_0_1": {
+    "rating": 4
+  },
+  "occasion_work_meeting_heather_gemini_2_flash_0_2": {
+    "notes": "cap feels too casual but like the combo. ",
+    "rating": 3
+  }
+}
