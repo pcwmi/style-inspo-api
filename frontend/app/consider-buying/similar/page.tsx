@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-export default function SimilarItemsPage() {
+import { Suspense } from 'react'
+
+function SimilarItemsContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const itemId = searchParams.get('item_id')
@@ -81,5 +83,13 @@ export default function SimilarItemsPage() {
                 </button>
             </div>
         </div>
+    )
+}
+
+export default function SimilarItemsPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <SimilarItemsContent />
+        </Suspense>
     )
 }

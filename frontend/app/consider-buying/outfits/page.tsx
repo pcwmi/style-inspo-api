@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { OutfitCard } from '@/components/OutfitCard'
 
-export default function OutfitsPage() {
+import { Suspense } from 'react'
+
+function OutfitsContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
     const itemId = searchParams.get('item_id')
@@ -124,5 +126,13 @@ export default function OutfitsPage() {
             {/* Spacer for fixed bottom bar */}
             <div className="h-24"></div>
         </div>
+    )
+}
+
+export default function OutfitsPage() {
+    return (
+        <Suspense fallback={<div>Loading outfits...</div>}>
+            <OutfitsContent />
+        </Suspense>
     )
 }
