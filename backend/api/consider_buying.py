@@ -244,28 +244,6 @@ async def record_decision(request: DecisionRequest, user_id: str = Query(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/{item_id}/image")
-async def update_item_image(
-    item_id: str,
-    image_file: UploadFile = File(...),
-    user_id: str = Query(..., description="User ID")
-):
-    """Update the image of a consider-buying item"""
-    try:
-        manager = ConsiderBuyingManager(user_id)
-        
-        # Read image content
-        content = await image_file.read()
-        
-        # Save new image
-        image_path = manager.update_item_image(item_id, content)
-        
-        return {"success": True, "image_path": image_path}
-    except Exception as e:
-        logger.error(f"Error updating item image: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
 @router.get("/list")
 async def list_items(user_id: str = Query(...), status: Optional[str] = None):
     """

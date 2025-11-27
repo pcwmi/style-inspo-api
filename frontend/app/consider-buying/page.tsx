@@ -233,61 +233,6 @@ function ConsiderBuyingContent() {
                                         fill
                                         className="object-cover"
                                     />
-                                    {/* Cleanup Button */}
-                                    <button
-                                        onClick={async (e) => {
-                                            e.preventDefault()
-                                            e.stopPropagation()
-                                            if (!analyzedItem?.item?.id) return
-
-                                            try {
-                                                setLoading(true)
-                                                // 1. Get current image as blob/file
-                                                const imgPath = analyzedItem.item.image_path.startsWith('http')
-                                                    ? analyzedItem.item.image_path
-                                                    : `/api/images/${analyzedItem.item.image_path.split('/').pop()}`
-
-                                                const imgRes = await fetch(imgPath)
-                                                const imgBlob = await imgRes.blob()
-                                                const imgFile = new File([imgBlob], "image.png", { type: "image/png" })
-
-                                                // 2. Remove background (assuming 'api' is imported or defined elsewhere)
-                                                const cleanedBlob = await api.removeBackground(imgFile, user)
-
-                                                // 3. Update item with new image
-                                                const cleanedFile = new File([cleanedBlob], "cleaned.png", { type: "image/png" })
-                                                const updateRes = await api.updateConsiderBuyingImage(analyzedItem.item.id, cleanedFile, user)
-
-                                                // 4. Update state
-                                                setAnalyzedItem((prev: any) => ({
-                                                    ...prev,
-                                                    item: {
-                                                        ...prev.item,
-                                                        image_path: updateRes.image_path,
-                                                        system_metadata: {
-                                                            ...prev.item.system_metadata,
-                                                            image_path: updateRes.image_path
-                                                        }
-                                                    }
-                                                }))
-
-                                            } catch (err) {
-                                                console.error("Cleanup failed:", err)
-                                                setError("Failed to clean up image")
-                                            } finally {
-                                                setLoading(false)
-                                            }
-                                        }}
-                                        className="absolute top-2 right-2 bg-white/90 hover:bg-white text-ink p-2 rounded-full shadow-sm transition-all z-10"
-                                        title="Remove background"
-                                        disabled={loading}
-                                    >
-                                        {loading ? (
-                                            <div className="w-5 h-5 border-2 border-ink border-t-transparent rounded-full animate-spin" />
-                                        ) : (
-                                            <span className="text-lg">✨</span>
-                                        )}
-                                    </button>
                                 </div>
                                 <div className="flex-1">
                                     <p className="font-medium text-lg">{analyzedItem.item.styling_details.name}</p>

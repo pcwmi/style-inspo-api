@@ -178,18 +178,5 @@ export const api = {
     const res = await fetch(url.toString())
     if (!res.ok) throw new Error('Failed to fetch consider buying items')
     return res.json()
-  },
-
-  async updateConsiderBuyingImage(itemId: string, file: File, userId: string) {
-    const formData = new FormData()
-    formData.append('image_file', file)
-
-    const res = await fetch(`${API_URL}/api/consider-buying/${itemId}/image?user_id=${userId}`, {
-      method: 'PUT',
-      body: formData
-    })
-
-    if (!res.ok) throw new Error('Failed to update item image')
-    return res.json()
   }
 }

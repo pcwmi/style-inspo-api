@@ -311,42 +311,6 @@ class ConsiderBuyingManager:
 
         return decision_record
 
-    def update_item_image(self, item_id: str, image_content: bytes) -> str:
-        """
-        Update the image for an item.
-        Saves the new image and updates the metadata.
-        """
-        # Find item
-        item = next((i for i in self.consider_buying_data["items"] if i["id"] == item_id), None)
-        if not item:
-            raise ValueError(f"Item {item_id} not found")
-
-        # Determine filename (reuse existing if possible, or create new)
-        # We'll overwrite the existing file to keep it simple, or use the ID
-        image_filename = f"{item_id}.jpg" # Default to jpg for consistency
-        
-        # Load image from bytes
-        from PIL import Image
-        import io
-        image = Image.open(io.BytesIO(image_content))
-        
-        # Save image using storage manager
-        # Note: save_image handles format conversion if needed based on extension
-        image_path = self.storage.save_image(image, image_filename, subfolder="consider_buying")
-        
-        # Update item metadata if path changed (unlikely if we reuse ID, but good practice)
-        # Also ensure system_metadata is updated
-        if "system_metadata" not in item:
-            item["system_metadata"] = {}
-            
-        item["system_metadata"]["image_path"] = image_path
-        # Also update root image_path for backward compatibility/display
-        item["image_path"] = image_path
-        
-        self._save_consider_buying_data()
-        
-        return image_path
-
     def get_items(self, status: Optional[str] = None) -> List[Dict]:
         """Get items, optionally filtered by status"""
         items = self.consider_buying_data.get("items", [])
