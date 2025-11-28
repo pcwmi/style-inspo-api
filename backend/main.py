@@ -30,12 +30,12 @@ app.add_middleware(
 )
 
 # Import routers
-from api import wardrobe, outfits, users, consider_buying, jobs
+from api import wardrobe, outfits, user, consider_buying, jobs
 
 # Register routers
 app.include_router(wardrobe.router, prefix="/api", tags=["wardrobe"])
 app.include_router(outfits.router, prefix="/api", tags=["outfits"])
-app.include_router(users.router, prefix="/api", tags=["users"])
+app.include_router(user.router, prefix="/api", tags=["users"])
 app.include_router(consider_buying.router, prefix="/api", tags=["consider_buying"])
 app.include_router(jobs.router, prefix="/api", tags=["jobs"])
 
