@@ -41,12 +41,20 @@ function ConsiderBuyingContent() {
                 body: JSON.stringify({ url })
             })
 
+            // Check if response is OK before parsing JSON
+            if (!extractRes.ok) {
+                const errorText = await extractRes.text()
+                console.error("Extract URL failed with status:", extractRes.status, errorText)
+                throw new Error(`Failed to fetch: ${extractRes.status} ${errorText}`)
+            }
+
             const extractData = await extractRes.json()
+            console.log("Extract response:", extractData)
 
             // Check success field instead of response status
             if (!extractData.success) {
                 // If extraction fails (e.g. Sezane, Reformation), show screenshot upload
-                console.log("Extraction failed, showing screenshot upload")
+                console.log("Extraction failed, showing screenshot upload", extractData.error)
                 setError(extractData.error || 'Could not extract product details automatically.')
                 setShowScreenshotUpload(true)
                 setLoading(false)
