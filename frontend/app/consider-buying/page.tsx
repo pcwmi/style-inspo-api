@@ -69,12 +69,34 @@ function ConsiderBuyingContent() {
                 throw new Error('No image URL found in extraction result')
             }
 
+            // Convert HTTP to HTTPS to avoid mixed content issues
+            let safeImageUrl = imageUrl
+            if (imageUrl.startsWith('http://') && typeof window !== 'undefined' && window.location.protocol === 'https:') {
+                safeImageUrl = imageUrl.replace('http://', 'https://')
+                console.log('Converting HTTP image URL to HTTPS:', imageUrl, '->', safeImageUrl)
+            }
+
             // Download image as blob
-            const imageRes = await fetch(imageUrl)
+            console.log('Downloading image from:', safeImageUrl)
+            let imageRes
+            try {
+                imageRes = await fetch(safeImageUrl)
+            } catch (fetchError: any) {
+                console.error('Image fetch error:', fetchError)
+                // If HTTPS conversion failed, try using backend as proxy
+                if (safeImageUrl !== imageUrl) {
+                    console.log('HTTPS conversion failed, trying original URL via backend proxy')
+                    throw new Error(`Failed to download image: ${fetchError.message}. This may be due to CORS or mixed content restrictions.`)
+                }
+                throw new Error(`Failed to download image: ${fetchError.message}`)
+            }
+            
             if (!imageRes.ok) {
-                throw new Error('Failed to download product image')
+                console.error('Image download failed with status:', imageRes.status, imageRes.statusText)
+                throw new Error(`Failed to download product image: ${imageRes.status} ${imageRes.statusText}`)
             }
             const imageBlob = await imageRes.blob()
+            console.log('Image downloaded successfully, size:', imageBlob.size)
 
             // Create FormData
             const formData = new FormData()
