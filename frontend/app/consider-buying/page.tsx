@@ -63,44 +63,18 @@ function ConsiderBuyingContent() {
 
             setExtractedData(extractData.data)
 
-            // Step 2: Download image and analyze
+            // Step 2: Send image URL to backend (backend will download it to avoid CORS/mixed content issues)
             const imageUrl = extractData.data.image_url
             if (!imageUrl) {
                 throw new Error('No image URL found in extraction result')
             }
 
-            // Convert HTTP to HTTPS to avoid mixed content issues
-            let safeImageUrl = imageUrl
-            if (imageUrl.startsWith('http://') && typeof window !== 'undefined' && window.location.protocol === 'https:') {
-                safeImageUrl = imageUrl.replace('http://', 'https://')
-                console.log('Converting HTTP image URL to HTTPS:', imageUrl, '->', safeImageUrl)
-            }
+            console.log('Using image URL (backend will download):', imageUrl)
 
-            // Download image as blob
-            console.log('Downloading image from:', safeImageUrl)
-            let imageRes
-            try {
-                imageRes = await fetch(safeImageUrl)
-            } catch (fetchError: any) {
-                console.error('Image fetch error:', fetchError)
-                // If HTTPS conversion failed, try using backend as proxy
-                if (safeImageUrl !== imageUrl) {
-                    console.log('HTTPS conversion failed, trying original URL via backend proxy')
-                    throw new Error(`Failed to download image: ${fetchError.message}. This may be due to CORS or mixed content restrictions.`)
-                }
-                throw new Error(`Failed to download image: ${fetchError.message}`)
-            }
-            
-            if (!imageRes.ok) {
-                console.error('Image download failed with status:', imageRes.status, imageRes.statusText)
-                throw new Error(`Failed to download product image: ${imageRes.status} ${imageRes.statusText}`)
-            }
-            const imageBlob = await imageRes.blob()
-            console.log('Image downloaded successfully, size:', imageBlob.size)
-
-            // Create FormData
+            // Create FormData - pass image_url instead of downloading client-side
+            // This avoids CORS and mixed content issues (HTTP images on HTTPS pages)
             const formData = new FormData()
-            formData.append('image_file', imageBlob, 'product.jpg')
+            formData.append('image_url', imageUrl)
             if (extractData.data.price) {
                 formData.append('price', extractData.data.price.toString())
             }
