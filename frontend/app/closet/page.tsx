@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { api } from '@/lib/api'
+import { useWardrobe, useConsiderBuying } from '@/lib/queries'
 import UploadModal from '@/components/UploadModal'
 import PhotoGuidelines from '@/components/PhotoGuidelines'
 
@@ -16,8 +17,10 @@ function ClosetContent() {
     const router = useRouter()
     const user = searchParams.get('user') || 'default'
 
-    const [items, setItems] = useState<any[]>([])
-    const [loading, setLoading] = useState(true)
+    // React Query hooks - automatic caching
+    const { data: wardrobeData, isLoading: wardrobeLoading, refetch: refetchWardrobe } = useWardrobe(user)
+    const { data: considerBuyingData, isLoading: considerBuyingLoading, refetch: refetchConsiderBuying } = useConsiderBuying(user, 'considering')
+
     const [activeCategory, setActiveCategory] = useState('All')
     const [showUploadModal, setShowUploadModal] = useState(false)
     const [showGuidelines, setShowGuidelines] = useState(false)
@@ -59,25 +62,16 @@ function ClosetContent() {
         router.push(`?${params.toString()}`, { scroll: false })
     }
 
-    useEffect(() => {
-        fetchWardrobe()
-    }, [user, activeCategory])
+    // Get the correct data source based on category
+    const items = activeCategory === 'Considering'
+        ? (considerBuyingData?.items || [])
+        : (wardrobeData?.items || [])
+
+    const loading = activeCategory === 'Considering' ? considerBuyingLoading : wardrobeLoading
 
     const fetchWardrobe = async () => {
-        try {
-            setLoading(true)
-            if (activeCategory === 'Considering') {
-                const data = await api.getConsiderBuyingItems(user, 'considering')
-                setItems(data.items || [])
-            } else {
-                const data = await api.getWardrobe(user)
-                setItems(data.items || [])
-            }
-        } catch (err) {
-            console.error('Failed to fetch wardrobe:', err)
-        } finally {
-            setLoading(false)
-        }
+        await refetchWardrobe()
+        await refetchConsiderBuying()
     }
 
     const handleAddClick = () => {
@@ -142,10 +136,13 @@ function ClosetContent() {
         return false
     }
 
-    const filteredItems = items.filter(item => matchesCategory(item, activeCategory))
+    // Client-side filtering with useMemo - instant category switching
+    const filteredItems = useMemo(() => {
+        return items.filter((item: any) => matchesCategory(item, activeCategory))
+    }, [items, activeCategory])
 
     const getCategoryCount = (cat: string) => {
-        return items.filter(item => matchesCategory(item, cat)).length
+        return items.filter((item: any) => matchesCategory(item, cat)).length
     }
 
     return (
@@ -212,7 +209,7 @@ function ClosetContent() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                        {filteredItems.map(item => (
+                        {filteredItems.map((item: any) => (
                             <Link
                                 key={item.id}
                                 href={`/closet/${item.id}?user=${user}`}

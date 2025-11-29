@@ -2,10 +2,10 @@
 
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Suspense } from 'react'
-import { useEffect, useState } from 'react'
-import { api } from '@/lib/api'
+import { useEffect } from 'react'
 import Link from 'next/link'
 import { isOnboardingComplete, getOnboardingStep } from '@/lib/onboarding'
+import { useWardrobe, useProfile, useSavedOutfits, useDislikedOutfits } from '@/lib/queries'
 
 function DashboardContent() {
   const searchParams = useSearchParams()
@@ -19,34 +19,33 @@ function DashboardContent() {
     return str.charAt(0).toUpperCase() + str.slice(1)
   }
 
-  const [wardrobe, setWardrobe] = useState<any>(null)
-  const [profile, setProfile] = useState<any>(null)
-  const [savedCount, setSavedCount] = useState<number>(0)
-  const [dislikedCount, setDislikedCount] = useState<number>(0)
-  const [loading, setLoading] = useState(true)
-  const [checkingOnboarding, setCheckingOnboarding] = useState(true)
+  // React Query hooks - automatic caching and deduplication
+  const { data: wardrobe, isLoading: wardrobeLoading, error: wardrobeError } = useWardrobe(user)
+  const { data: profile, isLoading: profileLoading, error: profileError } = useProfile(user)
+  const { data: savedData, isLoading: savedLoading } = useSavedOutfits(user)
+  const { data: dislikedData, isLoading: dislikedLoading } = useDislikedOutfits(user)
 
+  const savedCount = savedData?.count || 0
+  const dislikedCount = dislikedData?.count || 0
+  const loading = wardrobeLoading || profileLoading || savedLoading || dislikedLoading
+
+  // Log errors for debugging
+  if (wardrobeError) console.error('Wardrobe error:', wardrobeError)
+  if (profileError) console.error('Profile error:', profileError)
+
+  // Check onboarding and redirect if needed
   useEffect(() => {
-    async function fetchData() {
+    async function checkOnboarding() {
       // If no user parameter in URL, redirect to welcome page
       if (!userParam) {
         router.push('/welcome')
         return
       }
 
-      try {
-        const [wardrobeData, profileData, savedData, dislikedData] = await Promise.all([
-          api.getWardrobe(user),
-          api.getProfile(user),
-          api.getSavedOutfits(user).catch(() => ({ count: 0 })),
-          api.getDislikedOutfits(user).catch(() => ({ count: 0 }))
-        ])
-        setWardrobe(wardrobeData)
-        setProfile(profileData)
-        setSavedCount(savedData.count || 0)
-        setDislikedCount(dislikedData.count || 0)
+      // Wait for wardrobe data to load before checking onboarding
+      if (wardrobeLoading) return
 
-        // Check onboarding status and redirect if needed
+      try {
         const onboardingComplete = await isOnboardingComplete(user)
         if (!onboardingComplete) {
           const step = await getOnboardingStep(user)
@@ -58,20 +57,16 @@ function DashboardContent() {
           }
           const redirectPath = stepMap[step] || '/welcome'
           router.push(`${redirectPath}?user=${user}`)
-          return
         }
       } catch (error) {
-        console.error('Error fetching data:', error)
+        console.error('Error checking onboarding:', error)
         // On error, default to showing dashboard (safer than blocking)
-      } finally {
-        setLoading(false)
-        setCheckingOnboarding(false)
       }
     }
-    if (user) fetchData()
-  }, [user, router])
+    checkOnboarding()
+  }, [user, userParam, wardrobeLoading, router])
 
-  if (loading || checkingOnboarding) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-bone flex items-center justify-center page-container">
         <div className="text-center px-4">
