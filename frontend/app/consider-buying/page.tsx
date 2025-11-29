@@ -7,6 +7,8 @@ import { api } from '@/lib/api'
 
 import { Suspense } from 'react'
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
 function ConsiderBuyingContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -33,7 +35,7 @@ function ConsiderBuyingContent() {
 
         try {
             // Step 1: Extract from URL
-            const extractRes = await fetch(`http://localhost:8000/api/consider-buying/extract-url?user_id=${user}`, {
+            const extractRes = await fetch(`${API_URL}/api/consider-buying/extract-url?user_id=${user}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url })
@@ -85,7 +87,7 @@ function ConsiderBuyingContent() {
             formData.append('user_id', user)
 
             // Step 3: Add item
-            const analyzeRes = await fetch('http://localhost:8000/api/consider-buying/add-item', {
+            const analyzeRes = await fetch(`${API_URL}/api/consider-buying/add-item`, {
                 method: 'POST',
                 body: formData
             })
@@ -123,7 +125,7 @@ function ConsiderBuyingContent() {
             formData.append('source_url', url || '')
             formData.append('user_id', user)
 
-            const res = await fetch('http://localhost:8000/api/consider-buying/add-item', {
+            const res = await fetch(`${API_URL}/api/consider-buying/add-item`, {
                 method: 'POST',
                 body: formData
             })
@@ -156,7 +158,7 @@ function ConsiderBuyingContent() {
                 setPassedItems(data.items || [])
                 
                 // Also get stats
-                const statsRes = await fetch(`http://localhost:8000/api/consider-buying/stats?user_id=${user}`)
+                const statsRes = await fetch(`${API_URL}/api/consider-buying/stats?user_id=${user}`)
                 if (statsRes.ok) {
                     const statsData = await statsRes.json()
                     setStats(statsData)
