@@ -6,6 +6,8 @@ import { OutfitCard } from '@/components/OutfitCard'
 
 import { Suspense } from 'react'
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
 function OutfitsContent() {
     const router = useRouter()
     const searchParams = useSearchParams()
@@ -26,7 +28,7 @@ function OutfitsContent() {
                 formData.append('use_existing_similar', useExisting.toString())
                 formData.append('user_id', user)
 
-                const res = await fetch('http://localhost:8000/api/consider-buying/generate-outfits', {
+                const res = await fetch(`${API_URL}/api/consider-buying/generate-outfits`, {
                     method: 'POST',
                     body: formData
                 })
@@ -48,7 +50,7 @@ function OutfitsContent() {
 
     const handleDecision = async (decision: string) => {
         try {
-            await fetch(`http://localhost:8000/api/consider-buying/decide?user_id=${user}`, {
+            await fetch(`${API_URL}/api/consider-buying/decide?user_id=${user}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -60,9 +62,18 @@ function OutfitsContent() {
 
             setDecisionMade(true)
 
-            // Redirect to dashboard (root) or closet after a delay
+            // Redirect based on decision
             setTimeout(() => {
-                router.push(`/?user=${user}`)
+                if (decision === 'bought') {
+                    // Redirect to closet to see the new item
+                    router.push(`/closet?user=${user}`)
+                } else if (decision === 'later') {
+                    // Redirect to closet "Considering" tab
+                    router.push(`/closet?user=${user}&category=Considering`)
+                } else {
+                    // "passed" - redirect back to buy-smarter to see in "Save $$" section
+                    router.push(`/consider-buying?user=${user}`)
+                }
             }, 2000)
 
         } catch (err) {

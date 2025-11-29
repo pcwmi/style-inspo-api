@@ -7,19 +7,21 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional, List
 import logging
+import os
 
 from services.consider_buying_manager import ConsiderBuyingManager
 from services.product_extractor import ProductExtractor
 from services.wardrobe_manager import WardrobeManager
 from services.image_analyzer import create_image_analyzer
 from services.style_engine import StyleGenerationEngine
+from services.storage_manager import StorageManager
 from fastapi import Query, Body
 from io import BytesIO
 from starlette.datastructures import UploadFile as StarletteUploadFile
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/consider-buying", tags=["consider-buying"])
+router = APIRouter(tags=["consider-buying"])
 
 
 class ExtractRequest(BaseModel):
@@ -32,7 +34,7 @@ class DecisionRequest(BaseModel):
     reason: Optional[str] = None
 
 
-@router.post("/extract-url")
+@router.post("/consider-buying/extract-url")
 async def extract_from_url(request: ExtractRequest, user_id: str = Query(...)):
     """
     Extract product information from URL
@@ -52,12 +54,13 @@ async def extract_from_url(request: ExtractRequest, user_id: str = Query(...)):
         return {"success": False, "data": None, "error": error}
 
 
-@router.post("/add-item")
+@router.post("/consider-buying/add-item")
 async def add_item(
     image_file: Optional[UploadFile] = File(None),
     image_url: Optional[str] = Form(None),
     name: Optional[str] = Form(None),
     category: Optional[str] = Form(None),  # Added category parameter
+    brand: Optional[str] = Form(None),  # Added brand parameter
     price: Optional[float] = Form(None),
     source_url: Optional[str] = Form(None),
     user_id: str = Form(...),
@@ -116,6 +119,10 @@ async def add_item(
         # Override category if provided
         if category:
             analysis_data['category'] = category
+            
+        # Override brand if provided (from URL extraction)
+        if brand:
+            analysis_data['brand'] = brand
 
         # Add to consider_buying
         # Ensure the file pointer is at the beginning for saving
@@ -148,7 +155,7 @@ async def add_item(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/generate-outfits")
+@router.post("/consider-buying/generate-outfits")
 async def generate_outfits(
     item_id: str = Form(...),
     use_existing_similar: bool = Form(False),
@@ -213,7 +220,7 @@ async def generate_outfits(
         raise HTTPException(status_code=500, detail=f"Error generating outfits: {str(e)}")
 
 
-@router.post("/decide")
+@router.post("/consider-buying/decide")
 async def record_decision(request: DecisionRequest, user_id: str = Query(...)):
     """
     Record user's buying decision
@@ -230,8 +237,74 @@ async def record_decision(request: DecisionRequest, user_id: str = Query(...)):
 
         # If bought, move to wardrobe
         if request.decision == "bought":
-            # TODO: Move item from consider_buying to wardrobe
-            pass
+            from services.wardrobe_manager import WardrobeManager
+            from services.image_analyzer import create_image_analyzer
+            from io import BytesIO
+            import requests
+            from PIL import Image
+            
+            # Get the item from consider_buying
+            consider_item = next((i for i in cb_manager.get_items() if i["id"] == request.item_id), None)
+            if not consider_item:
+                raise HTTPException(status_code=404, detail="Item not found in consider_buying")
+            
+            # Download the image from storage
+            image_path = consider_item.get("image_path")
+            if not image_path:
+                raise HTTPException(status_code=400, detail="Item has no image path")
+            
+            # Download image (works for both S3 URLs and local paths)
+            if image_path.startswith("http"):
+                # S3 URL - download it
+                import requests
+                img_response = requests.get(image_path)
+                img_response.raise_for_status()
+                image_file = BytesIO(img_response.content)
+            else:
+                # Local path - open it
+                storage = StorageManager(storage_type=os.getenv("STORAGE_TYPE", "local"), user_id=user_id)
+                # For local storage, construct the full path
+                if hasattr(storage, 'base_path'):
+                    full_path = os.path.join(storage.base_path, "consider_buying", os.path.basename(image_path))
+                else:
+                    full_path = os.path.join("wardrobe_photos", user_id, "consider_buying", os.path.basename(image_path))
+                image_file = open(full_path, 'rb')
+            
+            # Convert to analysis_data format
+            analysis_data = {
+                'name': consider_item.get('styling_details', {}).get('name', 'Unnamed Item'),
+                'category': consider_item.get('styling_details', {}).get('category', 'tops'),
+                'sub_category': consider_item.get('styling_details', {}).get('sub_category', 'Unknown'),
+                'colors': consider_item.get('styling_details', {}).get('colors', []),
+                'cut': consider_item.get('styling_details', {}).get('cut', 'Unknown'),
+                'texture': consider_item.get('styling_details', {}).get('texture', 'Unknown'),
+                'style': consider_item.get('styling_details', {}).get('style', 'casual'),
+                'fit': consider_item.get('styling_details', {}).get('fit', 'Unknown'),
+                'brand': consider_item.get('styling_details', {}).get('brand'),
+                'trend_status': consider_item.get('styling_details', {}).get('trend_status', 'Unknown'),
+                'styling_notes': consider_item.get('styling_details', {}).get('styling_notes', ''),
+                'fabric': consider_item.get('structured_attrs', {}).get('fabric', 'unknown'),
+                'sleeve_length': consider_item.get('structured_attrs', {}).get('sleeve_length'),
+                'waist_level': consider_item.get('structured_attrs', {}).get('waist_level'),
+            }
+            
+            # Add to wardrobe (as regular wear, not styling challenge)
+            wardrobe_manager = WardrobeManager(user_id=user_id)
+            wardrobe_item = wardrobe_manager.add_wardrobe_item(
+                uploaded_file=image_file,
+                analysis_data=analysis_data,
+                is_styling_challenge=False
+            )
+            
+            if not wardrobe_item:
+                raise HTTPException(status_code=500, detail="Failed to add item to wardrobe")
+            
+            # Remove from consider_buying (or mark as moved)
+            items = cb_manager.consider_buying_data.get("items", [])
+            items.remove(consider_item)
+            cb_manager._save_consider_buying_data()
+            
+            logger.info(f"Moved item {request.item_id} from consider_buying to wardrobe as {wardrobe_item['id']}")
 
         return {
             "success": True,
@@ -244,7 +317,7 @@ async def record_decision(request: DecisionRequest, user_id: str = Query(...)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/list")
+@router.get("/consider-buying/list")
 async def list_items(user_id: str = Query(...), status: Optional[str] = None):
     """
     List items in consider_buying bucket
@@ -256,7 +329,7 @@ async def list_items(user_id: str = Query(...), status: Optional[str] = None):
     return {"items": items}
 
 
-@router.get("/stats")
+@router.get("/consider-buying/stats")
 async def get_stats(user_id: str = Query(...)):
     """Get buying decision stats"""
     cb_manager = ConsiderBuyingManager(user_id=user_id)
