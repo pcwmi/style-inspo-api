@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { api } from '@/lib/api'
@@ -19,6 +19,8 @@ function ConsiderBuyingContent() {
     const [extractedData, setExtractedData] = useState<any>(null)
     const [analyzedItem, setAnalyzedItem] = useState<any>(null)
     const [selectedCategory, setSelectedCategory] = useState<string>('')
+    const [passedItems, setPassedItems] = useState<any[]>([])
+    const [stats, setStats] = useState<any>(null)
 
     const handlePasteLink = async () => {
         if (!url) return
@@ -39,35 +41,58 @@ function ConsiderBuyingContent() {
 
             const extractData = await extractRes.json()
 
-            if (!extractRes.ok) {
-                // If extraction fails (e.g. Sezane), show screenshot upload
+            // Check success field instead of response status
+            if (!extractData.success) {
+                // If extraction fails (e.g. Sezane, Reformation), show screenshot upload
                 console.log("Extraction failed, showing screenshot upload")
-                setError(extractData.detail || 'Could not extract product details automatically.')
+                setError(extractData.error || 'Could not extract product details automatically.')
                 setShowScreenshotUpload(true)
                 setLoading(false)
                 return
             }
 
-            setExtractedData(extractData)
+            setExtractedData(extractData.data)
 
-            // Step 2: Analyze Item
-            // If we have a category override, pass it
-            const analyzeBody: any = {
-                ...extractData,
-                user_id: user
+            // Step 2: Download image and analyze
+            const imageUrl = extractData.data.image_url
+            if (!imageUrl) {
+                throw new Error('No image URL found in extraction result')
+            }
+
+            // Download image as blob
+            const imageRes = await fetch(imageUrl)
+            if (!imageRes.ok) {
+                throw new Error('Failed to download product image')
+            }
+            const imageBlob = await imageRes.blob()
+
+            // Create FormData
+            const formData = new FormData()
+            formData.append('image_file', imageBlob, 'product.jpg')
+            if (extractData.data.price) {
+                formData.append('price', extractData.data.price.toString())
+            }
+            if (extractData.data.title) {
+                formData.append('name', extractData.data.title)
+            }
+            if (extractData.data.brand) {
+                formData.append('brand', extractData.data.brand)
             }
             if (selectedCategory) {
-                analyzeBody.category = selectedCategory
+                formData.append('category', selectedCategory)
             }
+            formData.append('source_url', url)
+            formData.append('user_id', user)
 
+            // Step 3: Add item
             const analyzeRes = await fetch('http://localhost:8000/api/consider-buying/add-item', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(analyzeBody)
+                body: formData
             })
 
             if (!analyzeRes.ok) {
-                throw new Error('Failed to analyze item')
+                const errorData = await analyzeRes.json().catch(() => ({}))
+                throw new Error(errorData.detail || 'Failed to analyze item')
             }
 
             const analyzeData = await analyzeRes.json()
@@ -122,6 +147,26 @@ function ConsiderBuyingContent() {
             setLoading(false)
         }
     }
+
+    // Load passed items and stats on mount
+    useEffect(() => {
+        const loadPassedItems = async () => {
+            try {
+                const data = await api.getConsiderBuyingItems(user, 'passed')
+                setPassedItems(data.items || [])
+                
+                // Also get stats
+                const statsRes = await fetch(`http://localhost:8000/api/consider-buying/stats?user_id=${user}`)
+                if (statsRes.ok) {
+                    const statsData = await statsRes.json()
+                    setStats(statsData)
+                }
+            } catch (err) {
+                console.error('Failed to load passed items:', err)
+            }
+        }
+        loadPassedItems()
+    }, [user])
 
     return (
         <div className="min-h-screen bg-bone page-container">
@@ -196,13 +241,7 @@ function ConsiderBuyingContent() {
                                         const file = e.target.files?.[0]
                                         if (file) handleScreenshotUpload(file)
                                     }}
-                                    className="block w-full text-sm text-gray-500
-                                        file:mr-4 file:py-2 file:px-4
-                                        file:rounded-full file:border-0
-                                        file:text-sm file:font-semibold
-                                        file:bg-black file:text-white
-                                        hover:file:bg-gray-800
-                                        disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-black file:text-white hover:file:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
                                     disabled={loading}
                                 />
                                 {loading && <p className="mt-2 text-sm text-gray-600">Analyzing screenshot... this may take a moment.</p>}
@@ -223,8 +262,8 @@ function ConsiderBuyingContent() {
                     <div className="animate-in fade-in slide-in-from-bottom-8 duration-500">
                         <div className="mb-8 border rounded-lg p-4 bg-green-50 border-green-200">
                             <h3 className="font-bold mb-4 text-green-800">Analysis Complete!</h3>
-                            <div className="flex gap-4">
-                                <div className="relative w-32 h-40 rounded overflow-hidden">
+                            <div className="flex gap-4 mb-4">
+                                <div className="relative w-32 h-40 rounded overflow-hidden flex-shrink-0">
                                     <Image
                                         src={analyzedItem.item.image_path.startsWith('http')
                                             ? analyzedItem.item.image_path
@@ -235,62 +274,80 @@ function ConsiderBuyingContent() {
                                     />
                                 </div>
                                 <div className="flex-1">
-                                    <p className="font-medium text-lg">{analyzedItem.item.styling_details.name}</p>
+                                    <p className="font-medium text-lg mb-2">{analyzedItem.item.styling_details.name}</p>
                                     <div className="mt-2 space-y-1 text-sm text-gray-700 bg-white p-3 rounded border border-green-100 max-h-60 overflow-y-auto">
-                                        onClick={() => setShowScreenshotUpload(true)}
-                                        className="mt-2 text-orange-600 underline"
-                            >
-                                        Upload screenshot instead
-                                    </button>
-                                </div>
-                    )}
-                            </div>
-                            ) : (
-                            <div className="max-w-2xl">
-                                <div className="mb-6">
-                                    <h2 className="text-xl font-bold mb-2">Upload Screenshot</h2>
-                                    <p className="text-gray-600">
-                                        {error ? (
-                                            <span className="text-orange-700 bg-orange-50 px-2 py-1 rounded">
-                                                {error.includes("403") || error.includes("CloudFront")
-                                                    ? "This site blocks automated access. Please upload a screenshot instead."
-                                                    : error}
-                                            </span>
-                                        ) : (
-                                            "Upload a screenshot of the item you want to add."
+                                        <p><strong>Category:</strong> {analyzedItem.item.styling_details.category}</p>
+                                        <p><strong>Subcategory:</strong> {analyzedItem.item.styling_details.sub_category}</p>
+                                        {analyzedItem.item.styling_details.colors && (
+                                            <p><strong>Colors:</strong> {Array.isArray(analyzedItem.item.styling_details.colors) 
+                                                ? analyzedItem.item.styling_details.colors.join(', ') 
+                                                : analyzedItem.item.styling_details.colors}</p>
                                         )}
-                                    </p>
+                                        {analyzedItem.item.price && (
+                                            <p><strong>Price:</strong> ${analyzedItem.item.price}</p>
+                                        )}
+                                        {analyzedItem.item.styling_details.brand && (
+                                            <p><strong>Brand:</strong> {analyzedItem.item.styling_details.brand}</p>
+                                        )}
+                                    </div>
                                 </div>
-
-                                <label className="block mb-2 font-medium">
-                                    Choose Image
-                                </label>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) => {
-                                        const file = e.target.files?.[0]
-                                        if (file) handleScreenshotUpload(file)
-                                    }}
-                                    className="block w-full text-sm text-gray-500
-                            file:mr-4 file:py-2 file:px-4
-                            file:rounded-full file:border-0
-                            file:text-sm file:font-semibold
-                            file:bg-black file:text-white
-                            hover:file:bg-gray-800
-                            disabled:opacity-50 disabled:cursor-not-allowed"
-                                    disabled={loading}
-                                />
-                                {loading && <p className="mt-2 text-sm text-gray-600">Analyzing screenshot... this may take a moment.</p>}
-
-                                <button
-                                    onClick={() => setShowScreenshotUpload(false)}
-                                    className="mt-6 text-sm text-gray-500 underline"
-                                >
-                                    ← Back to URL paste
-                                </button>
                             </div>
-            )}
+                            <button
+                                onClick={handleAddItem}
+                                className="w-full mt-4 px-6 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                            >
+                                Continue to Similar Items
+                            </button>
                         </div>
-                        )
+                    </div>
+                )}
+
+                {/* Save $$ Section - Show passed items */}
+                {passedItems.length > 0 && (
+                    <div className="mt-8">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-xl font-semibold">Save $$</h2>
+                            {stats && (
+                                <p className="text-sm text-gray-600">
+                                    Total saved: ${stats.total_saved?.toFixed(2) || '0.00'}
+                                </p>
+                            )}
+                        </div>
+                        <div className="bg-white rounded-lg border border-[rgba(26,22,20,0.12)] p-4">
+                            <p className="text-sm text-gray-600 mb-4">
+                                Items you decided not to buy ({passedItems.length})
+                            </p>
+                            <div className="grid grid-cols-3 gap-3">
+                                {passedItems.map((item) => (
+                                    <div key={item.id} className="relative aspect-square rounded overflow-hidden">
+                                        <Image
+                                            src={item.image_path.startsWith('http')
+                                                ? item.image_path
+                                                : `/api/images/${item.image_path.split('/').pop()}`}
+                                            alt={item.styling_details.name}
+                                            fill
+                                            className="object-cover"
+                                        />
+                                        {item.price && (
+                                            <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs p-1 text-center">
+                                                ${item.price}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    )
+}
+
+export default function ConsiderBuyingPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <ConsiderBuyingContent />
+        </Suspense>
+    )
 }
