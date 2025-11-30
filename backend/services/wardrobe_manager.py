@@ -86,7 +86,19 @@ class WardrobeManager:
             # Load and process image
             image = Image.open(uploaded_file)
             image = ImageOps.exif_transpose(image)  # Fix orientation before saving
-            
+
+            # Convert RGBA to RGB for JPEG compatibility (PNG with transparency -> JPEG)
+            if image.mode in ('RGBA', 'LA', 'P'):
+                # Create white background for transparency
+                rgb_image = Image.new('RGB', image.size, (255, 255, 255))
+                if image.mode == 'P':
+                    image = image.convert('RGBA')
+                rgb_image.paste(image, mask=image.split()[-1] if image.mode == 'RGBA' else None)
+                image = rgb_image
+            elif image.mode != 'RGB':
+                # Convert any other mode to RGB
+                image = image.convert('RGB')
+
             # Save image using storage manager (returns URL for S3, path for local)
             save_path = self.storage.save_image(image, unique_filename)
 
