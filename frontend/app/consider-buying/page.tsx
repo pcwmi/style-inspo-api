@@ -370,7 +370,7 @@ function ConsiderBuyingContent() {
                                 onClick={handleAddItem}
                                 className="w-full mt-4 px-6 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
                             >
-                                Continue to Similar Items
+                                See how it fits with your closet
                             </button>
                         </div>
                     </div>
