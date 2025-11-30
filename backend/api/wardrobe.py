@@ -57,11 +57,12 @@ async def upload_item(
         # Create a file-like object from the upload
         content = await file.read()
         from io import BytesIO
+        import uuid
         file_obj = BytesIO(content)
-        
-        # Save to staging area
-        staging_filename = f"staging/{file.filename}"
-        file_path = storage.save_file(file_obj, staging_filename)
+
+        # Save to staging area with unique filename to prevent collisions
+        unique_staging_name = f"staging/{uuid.uuid4().hex}_{file.filename}"
+        file_path = storage.save_file(file_obj, unique_staging_name)
         
         # Enqueue analysis job
         analysis_queue = get_analysis_queue()
