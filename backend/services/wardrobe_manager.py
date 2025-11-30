@@ -133,6 +133,8 @@ class WardrobeManager:
             }
 
             # Add to items array
+            # CRITICAL: Reload data to prevent race condition when multiple workers run concurrently
+            self.wardrobe_data = self.load_wardrobe_data()
             self.wardrobe_data["items"].append(item_data)
             self.wardrobe_data["last_updated"] = datetime.datetime.now().isoformat()
             self.save_wardrobe_data()

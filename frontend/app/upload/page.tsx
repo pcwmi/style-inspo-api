@@ -214,6 +214,10 @@ function UploadPageContent() {
       }, 8000)
     } finally {
       setUploading(false)
+      // Reset file input so user can select the same files again if needed
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
     }
   }
 
