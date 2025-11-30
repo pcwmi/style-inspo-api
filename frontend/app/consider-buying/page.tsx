@@ -23,6 +23,7 @@ function ConsiderBuyingContent() {
     const [selectedCategory, setSelectedCategory] = useState<string>('')
     const [passedItems, setPassedItems] = useState<any[]>([])
     const [stats, setStats] = useState<any>(null)
+    const [analyzing, setAnalyzing] = useState(false)
 
     const handlePasteLink = async () => {
         if (!url) return
@@ -61,8 +62,10 @@ function ConsiderBuyingContent() {
                 return
             }
 
+            // Show extracted data immediately (progressive display)
             setExtractedData(extractData.data)
-
+            setLoading(false) // Stop initial loading, show extracted data
+            
             // Step 2: Send image URL to backend (backend will download it to avoid CORS/mixed content issues)
             const imageUrl = extractData.data.image_url
             if (!imageUrl) {
@@ -70,6 +73,9 @@ function ConsiderBuyingContent() {
             }
 
             console.log('Using image URL (backend will download):', imageUrl)
+
+            // Start analyzing state
+            setAnalyzing(true)
 
             // Create FormData - pass image_url instead of downloading client-side
             // This avoids CORS and mixed content issues (HTTP images on HTTPS pages)
@@ -90,7 +96,7 @@ function ConsiderBuyingContent() {
             formData.append('source_url', url)
             formData.append('user_id', user)
 
-            // Step 3: Add item
+            // Step 3: Add item (image analysis)
             const analyzeRes = await fetch(`${API_URL}/api/consider-buying/add-item`, {
                 method: 'POST',
                 body: formData
@@ -103,10 +109,13 @@ function ConsiderBuyingContent() {
 
             const analyzeData = await analyzeRes.json()
             setAnalyzedItem(analyzeData)
+            setExtractedData(null) // Hide extracted data, show full analysis
+            setAnalyzing(false)
 
         } catch (err: any) {
             console.error("Error in handlePasteLink:", err)
             setError(err.message || 'An error occurred. Please try again.')
+            setAnalyzing(false)
         } finally {
             setLoading(false)
         }
@@ -179,8 +188,51 @@ function ConsiderBuyingContent() {
             <div className="max-w-md mx-auto px-4 py-8">
                 <h1 className="text-2xl font-serif mb-6 text-center">Buy Smarter</h1>
 
+                {/* Extracted Data View (Progressive Display) */}
+                {extractedData && !analyzedItem && (
+                    <div className="mb-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                        <div className="bg-white p-6 rounded-lg shadow-sm border border-[rgba(26,22,20,0.12)]">
+                            <h3 className="font-bold mb-4 text-gray-800">Product Found!</h3>
+                            <div className="flex gap-4 mb-4">
+                                {extractedData.image_url && (
+                                    <div className="relative w-24 h-32 rounded overflow-hidden flex-shrink-0 bg-gray-100">
+                                        <img
+                                            src={extractedData.image_url}
+                                            alt="Product"
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                                // Hide image if it fails to load
+                                                e.currentTarget.style.display = 'none'
+                                            }}
+                                        />
+                                    </div>
+                                )}
+                                <div className="flex-1">
+                                    <p className="font-medium text-lg mb-2">{extractedData.title || 'Product'}</p>
+                                    <div className="space-y-1 text-sm text-gray-700">
+                                        {extractedData.brand && (
+                                            <p><strong>Brand:</strong> {extractedData.brand}</p>
+                                        )}
+                                        {extractedData.price && (
+                                            <p><strong>Price:</strong> ${extractedData.price}</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                            {analyzing && (
+                                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <div className="flex items-center gap-3">
+                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                                        <p className="text-sm text-blue-800">Analyzing image and finding similar items...</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {/* Initial View: URL Input or Screenshot Upload */}
-                {!analyzedItem && (
+                {!analyzedItem && !extractedData && (
                     <div className="bg-white p-6 rounded-lg shadow-sm border border-[rgba(26,22,20,0.12)]">
                         <p className="text-gray-600 mb-4 text-center">
                             Paste a product link or upload a screenshot to see how it fits with your closet.
@@ -269,15 +321,27 @@ function ConsiderBuyingContent() {
                         <div className="mb-8 border rounded-lg p-4 bg-green-50 border-green-200">
                             <h3 className="font-bold mb-4 text-green-800">Analysis Complete!</h3>
                             <div className="flex gap-4 mb-4">
-                                <div className="relative w-32 h-40 rounded overflow-hidden flex-shrink-0">
-                                    <Image
-                                        src={analyzedItem.item.image_path.startsWith('http')
-                                            ? analyzedItem.item.image_path
-                                            : `/api/images/${analyzedItem.item.image_path.split('/').pop()}`}
-                                        alt="Analyzed Item"
-                                        fill
-                                        className="object-cover"
-                                    />
+                                <div className="relative w-32 h-40 rounded overflow-hidden flex-shrink-0 bg-gray-100">
+                                    {analyzedItem.item.image_path ? (
+                                        analyzedItem.item.image_path.startsWith('http') ? (
+                                            <img
+                                                src={analyzedItem.item.image_path}
+                                                alt="Analyzed Item"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <Image
+                                                src={`/api/images/${analyzedItem.item.image_path.split('/').pop()}`}
+                                                alt="Analyzed Item"
+                                                fill
+                                                className="object-cover"
+                                            />
+                                        )
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
+                                            No Image
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="flex-1">
                                     <p className="font-medium text-lg mb-2">{analyzedItem.item.styling_details.name}</p>

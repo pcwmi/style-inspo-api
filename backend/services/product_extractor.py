@@ -306,6 +306,14 @@ class ProductExtractor:
                         if domain.lower() in brand_mappings:
                             return brand_mappings[domain.lower()]
                         
+                        # Remove "the" prefix if present (e.g., "thereformation" -> "reformation")
+                        domain_lower = domain.lower()
+                        if domain_lower.startswith('the') and len(domain_lower) > 3:
+                            # Remove "the" prefix
+                            domain_without_the = domain_lower[3:]  # Remove "the"
+                            # Capitalize first letter
+                            return domain_without_the.capitalize()
+                        
                         # Capitalize first letter for simple domains
                         return domain.capitalize()
             except Exception as e:
