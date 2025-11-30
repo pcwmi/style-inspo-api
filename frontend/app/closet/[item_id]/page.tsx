@@ -20,6 +20,8 @@ function ItemDetailContent() {
     const [isEditing, setIsEditing] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
     const [saving, setSaving] = useState(false)
+    const [isConsideringItem, setIsConsideringItem] = useState(false)
+    const [deleting, setDeleting] = useState(false)
 
     // Edit form state
     const [formData, setFormData] = useState({
@@ -32,15 +34,29 @@ function ItemDetailContent() {
     })
 
     useEffect(() => {
-        fetchItem()
+        // Check if this is a considering item (ID starts with "consider_")
+        const isConsidering = itemId.startsWith('consider_')
+        setIsConsideringItem(isConsidering)
+        fetchItem(isConsidering)
     }, [itemId, user])
 
-    const fetchItem = async () => {
+    const fetchItem = async (isConsidering: boolean = false) => {
         try {
             setLoading(true)
-            const data = await api.getItem(user, itemId)
-            setItem(data)
-            initializeForm(data)
+            if (isConsidering) {
+                // Fetch from consider-buying list
+                const data = await api.getConsiderBuyingItems(user, 'considering')
+                const foundItem = data.items.find((i: any) => i.id === itemId)
+                if (!foundItem) {
+                    throw new Error('Item not found')
+                }
+                setItem(foundItem)
+            } else {
+                // Fetch from wardrobe
+                const data = await api.getItem(user, itemId)
+                setItem(data)
+                initializeForm(data)
+            }
         } catch (err) {
             console.error('Failed to fetch item:', err)
             // router.push(`/closet?user=${user}`)
@@ -86,15 +102,32 @@ function ItemDetailContent() {
     }
 
     const handleDelete = () => {
-        router.push(`/closet?user=${user}`)
+        // Navigation after successful delete (actual deletion is handled by DeleteItemModal)
+        if (isConsideringItem) {
+            router.push(`/closet?user=${user}&category=Considering`)
+        } else {
+            router.push(`/closet?user=${user}`)
+        }
     }
 
     if (loading) return <div className="p-8 text-center">Loading...</div>
     if (!item) return <div className="p-8 text-center">Item not found</div>
 
-    const imagePath = item.system_metadata.image_path.startsWith('http')
-        ? item.system_metadata.image_path
-        : `/api/images/${item.system_metadata.image_path.split('/').pop()}`
+    // Handle image path for both wardrobe items and considering items
+    const getImagePath = () => {
+        const path = isConsideringItem 
+            ? item.image_path 
+            : (item.system_metadata?.image_path || item.image_path)
+        
+        if (!path) return null
+        
+        if (path.startsWith('http')) {
+            return path
+        }
+        return `/api/images/${path.split('/').pop()}`
+    }
+
+    const imagePath = getImagePath()
 
     return (
         <div className="min-h-screen bg-white pb-24">
@@ -116,36 +149,49 @@ function ItemDetailContent() {
                     </Link>
                 )}
 
-                {isEditing ? (
+                {!isConsideringItem && (
+                    isEditing ? (
+                        <button
+                            onClick={handleSave}
+                            disabled={saving}
+                            className="text-blue-600 font-medium disabled:opacity-50"
+                        >
+                            {saving ? 'Saving...' : 'Save'}
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => setIsEditing(true)}
+                            className="text-blue-600 font-medium"
+                        >
+                            Edit
+                        </button>
+                    )
+                )}
+                {isConsideringItem && (
                     <button
-                        onClick={handleSave}
-                        disabled={saving}
-                        className="text-blue-600 font-medium disabled:opacity-50"
+                        onClick={() => setShowDeleteModal(true)}
+                        disabled={deleting}
+                        className="text-red-600 font-medium disabled:opacity-50"
                     >
-                        {saving ? 'Saving...' : 'Save'}
-                    </button>
-                ) : (
-                    <button
-                        onClick={() => setIsEditing(true)}
-                        className="text-blue-600 font-medium"
-                    >
-                        Edit
+                        {deleting ? 'Deleting...' : 'Delete'}
                     </button>
                 )}
             </div>
 
             <div className="max-w-md mx-auto">
                 {/* Image */}
-                <div className="aspect-[3/4] bg-gray-50 w-full relative">
-                    <img
-                        src={imagePath}
-                        alt={item.styling_details.name}
-                        className="w-full h-full object-contain"
-                    />
-                </div>
+                {imagePath && (
+                    <div className="aspect-[3/4] bg-gray-50 w-full relative">
+                        <img
+                            src={imagePath}
+                            alt={item.styling_details?.name || 'Item'}
+                            className="w-full h-full object-contain"
+                        />
+                    </div>
+                )}
 
                 {/* Rotate Button (Edit Mode Only) */}
-                {isEditing && (
+                {isEditing && !isConsideringItem && (
                     <div className="px-6 pt-4">
                         <button
                             onClick={async () => {
@@ -181,7 +227,7 @@ function ItemDetailContent() {
 
                 {/* Content */}
                 <div className="p-6 space-y-6">
-                    {isEditing ? (
+                    {isEditing && !isConsideringItem ? (
                         // Edit Mode
                         <div className="space-y-4">
                             <div>
@@ -265,32 +311,86 @@ function ItemDetailContent() {
                         // View Mode
                         <div className="space-y-6">
                             <div>
-                                <h1 className="text-2xl font-serif font-semibold mb-1">{item.styling_details.name}</h1>
-                                <p className="text-gray-500 capitalize">{item.styling_details.category}</p>
+                                <h1 className="text-2xl font-serif font-semibold mb-1">{item.styling_details?.name || 'Unnamed Item'}</h1>
+                                <p className="text-gray-500 capitalize">{item.styling_details?.category || 'Unknown'}</p>
                             </div>
 
+                            {/* Source URL (for considering items) */}
+                            {isConsideringItem && item.source_url && (
+                                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                                    <h3 className="text-sm font-medium text-gray-900 mb-2">🔗 Source URL</h3>
+                                    <a 
+                                        href={item.source_url} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 hover:underline text-sm break-all"
+                                    >
+                                        {item.source_url}
+                                    </a>
+                                </div>
+                            )}
+
+                            {/* Price (for considering items) */}
+                            {isConsideringItem && item.price && (
+                                <div className="bg-green-50 p-4 rounded-lg border border-green-100">
+                                    <span className="text-sm text-gray-500">Price: </span>
+                                    <span className="text-lg font-semibold text-green-700">${item.price.toFixed(2)}</span>
+                                </div>
+                            )}
+
+                            {/* Metadata Grid */}
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
                                     <span className="text-gray-500 block mb-1">Colors</span>
                                     <span className="font-medium">
-                                        {Array.isArray(item.styling_details.colors)
+                                        {Array.isArray(item.styling_details?.colors)
                                             ? item.styling_details.colors.join(', ')
-                                            : item.styling_details.colors}
+                                            : item.styling_details?.colors || 'Unknown'}
                                     </span>
                                 </div>
                                 <div>
                                     <span className="text-gray-500 block mb-1">Texture</span>
-                                    <span className="font-medium capitalize">{item.styling_details.texture}</span>
+                                    <span className="font-medium capitalize">{item.styling_details?.texture || 'Unknown'}</span>
                                 </div>
-                                {item.styling_details.brand && (
+                                {item.styling_details?.brand && (
                                     <div>
                                         <span className="text-gray-500 block mb-1">Brand</span>
                                         <span className="font-medium">{item.styling_details.brand}</span>
                                     </div>
                                 )}
+                                {item.styling_details?.cut && (
+                                    <div>
+                                        <span className="text-gray-500 block mb-1">Cut</span>
+                                        <span className="font-medium capitalize">{item.styling_details.cut}</span>
+                                    </div>
+                                )}
+                                {item.styling_details?.fit && (
+                                    <div>
+                                        <span className="text-gray-500 block mb-1">Fit</span>
+                                        <span className="font-medium capitalize">{item.styling_details.fit}</span>
+                                    </div>
+                                )}
+                                {item.styling_details?.style && (
+                                    <div>
+                                        <span className="text-gray-500 block mb-1">Style</span>
+                                        <span className="font-medium capitalize">{item.styling_details.style}</span>
+                                    </div>
+                                )}
+                                {item.structured_attrs?.fabric && (
+                                    <div>
+                                        <span className="text-gray-500 block mb-1">Fabric</span>
+                                        <span className="font-medium capitalize">{item.structured_attrs.fabric}</span>
+                                    </div>
+                                )}
+                                {item.structured_attrs?.subcategory && (
+                                    <div>
+                                        <span className="text-gray-500 block mb-1">Subcategory</span>
+                                        <span className="font-medium capitalize">{item.structured_attrs.subcategory}</span>
+                                    </div>
+                                )}
                             </div>
 
-                            {item.styling_details.styling_notes && (
+                            {item.styling_details?.styling_notes && (
                                 <div className="border-t border-b border-gray-100 py-4">
                                     <h3 className="text-sm font-medium text-gray-900 mb-2">📝 AI Styling Notes</h3>
                                     <p className="text-gray-600 text-sm leading-relaxed">
@@ -299,12 +399,26 @@ function ItemDetailContent() {
                                 </div>
                             )}
 
-                            <button
-                                onClick={() => setShowDeleteModal(true)}
-                                className="w-full py-3 text-red-600 font-medium border border-red-100 rounded-lg hover:bg-red-50 transition-colors"
-                            >
-                                Delete Item
-                            </button>
+                            {/* Delete Button - only for considering items */}
+                            {isConsideringItem && (
+                                <button
+                                    onClick={() => setShowDeleteModal(true)}
+                                    disabled={deleting}
+                                    className="w-full py-3 text-red-600 font-medium border border-red-100 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                                >
+                                    {deleting ? 'Deleting...' : 'Delete from Considering'}
+                                </button>
+                            )}
+                            
+                            {/* Delete Button - for wardrobe items */}
+                            {!isConsideringItem && (
+                                <button
+                                    onClick={() => setShowDeleteModal(true)}
+                                    className="w-full py-3 text-red-600 font-medium border border-red-100 rounded-lg hover:bg-red-50 transition-colors"
+                                >
+                                    Delete Item
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>

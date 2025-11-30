@@ -25,6 +25,8 @@ function ClosetContent() {
     const [showUploadModal, setShowUploadModal] = useState(false)
     const [showGuidelines, setShowGuidelines] = useState(false)
     const [analyzingCount, setAnalyzingCount] = useState(0)
+    const [showDeleteAllModal, setShowDeleteAllModal] = useState(false)
+    const [deletingAll, setDeletingAll] = useState(false)
 
     // Sync activeCategory with URL param on mount and when param changes
     useEffect(() => {
@@ -138,11 +140,27 @@ function ClosetContent() {
 
     // Client-side filtering with useMemo - instant category switching
     const filteredItems = useMemo(() => {
+        // For "Considering" tab, show all considering items (no category filtering needed)
+        if (activeCategory === 'Considering') {
+            return items
+        }
+        // For other categories, filter by category
         return items.filter((item: any) => matchesCategory(item, activeCategory))
     }, [items, activeCategory])
 
     const getCategoryCount = (cat: string) => {
-        return items.filter((item: any) => matchesCategory(item, cat)).length
+        // For "All", count only wardrobe items (NOT considering items)
+        if (cat === 'All') {
+            return (wardrobeData?.items || []).length
+        }
+        
+        // For "Considering", just return the count of considering items (no filtering needed)
+        if (cat === 'Considering') {
+            return (considerBuyingData?.items || []).length
+        }
+        
+        // For other categories, count only from wardrobe items (NOT considering items)
+        return (wardrobeData?.items || []).filter((item: any) => matchesCategory(item, cat)).length
     }
 
     return (
@@ -185,6 +203,19 @@ function ClosetContent() {
                 </div>
             )}
 
+            {/* Delete All Button (only for Considering tab) */}
+            {activeCategory === 'Considering' && considerBuyingData?.items && considerBuyingData.items.length > 0 && (
+                <div className="px-4 py-2 border-b border-gray-100">
+                    <button
+                        onClick={() => setShowDeleteAllModal(true)}
+                        disabled={deletingAll}
+                        className="w-full py-2 text-red-600 font-medium border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50 text-sm"
+                    >
+                        {deletingAll ? 'Deleting...' : `Delete All (${considerBuyingData.items.length} items)`}
+                    </button>
+                </div>
+            )}
+
             {/* Content */}
             <div className="p-4">
                 {loading ? (
@@ -194,19 +225,37 @@ function ClosetContent() {
                         ))}
                     </div>
                 ) : items.length === 0 ? (
-                    <div className="text-center py-20">
-                        <div className="text-6xl mb-4">👗</div>
-                        <h3 className="text-xl font-serif font-medium mb-2">Your closet is empty</h3>
-                        <p className="text-gray-500 mb-8 max-w-xs mx-auto">
-                            Let's start building! Add your favorite pieces so I can help you style them.
-                        </p>
-                        <button
-                            onClick={handleAddClick}
-                            className="bg-black text-white px-8 py-3 rounded-full font-medium shadow-lg hover:scale-105 transition-transform"
-                        >
-                            📷 Add to Closet
-                        </button>
-                    </div>
+                    activeCategory === 'Considering' ? (
+                        // Empty state for Considering tab
+                        <div className="text-center py-20">
+                            <div className="text-6xl mb-4">🛍️</div>
+                            <h3 className="text-xl font-serif font-medium mb-2">Nothing in Considering yet</h3>
+                            <p className="text-gray-500 mb-8 max-w-xs mx-auto">
+                                Thinking about buying something but not sure how it'll fit your style?
+                            </p>
+                            <Link
+                                href={`/consider-buying?user=${user}`}
+                                className="inline-block bg-black text-white px-8 py-3 rounded-full font-medium shadow-lg hover:scale-105 transition-transform"
+                            >
+                                Try Buy Smarter
+                            </Link>
+                        </div>
+                    ) : (
+                        // Empty state for other tabs
+                        <div className="text-center py-20">
+                            <div className="text-6xl mb-4">👗</div>
+                            <h3 className="text-xl font-serif font-medium mb-2">Your closet is empty</h3>
+                            <p className="text-gray-500 mb-8 max-w-xs mx-auto">
+                                Let's start building! Add your favorite pieces so I can help you style them.
+                            </p>
+                            <button
+                                onClick={handleAddClick}
+                                className="bg-black text-white px-8 py-3 rounded-full font-medium shadow-lg hover:scale-105 transition-transform"
+                            >
+                                📷 Add to Closet
+                            </button>
+                        </div>
+                    )
                 ) : (
                     <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                         {filteredItems.map((item: any) => (
@@ -269,6 +318,55 @@ function ClosetContent() {
                 onUploadComplete={handleUploadComplete}
                 user={user}
             />
+
+            {/* Delete All Confirmation Modal */}
+            {showDeleteAllModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6">
+                        <div className="text-center mb-6">
+                            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                                🗑️
+                            </div>
+                            <h2 className="text-xl font-bold text-gray-900 mb-2">Delete All Items?</h2>
+                            <p className="text-gray-600 text-sm">
+                                Are you sure you want to delete all <span className="font-semibold">{considerBuyingData?.items?.length || 0} items</span> from Considering? This action cannot be undone.
+                            </p>
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowDeleteAllModal(false)}
+                                disabled={deletingAll}
+                                className="flex-1 py-3 px-4 border border-gray-200 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition disabled:opacity-50"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        setDeletingAll(true)
+                                        await api.deleteAllConsiderBuyingItems(user)
+                                        await refetchConsiderBuying()
+                                        setShowDeleteAllModal(false)
+                                    } catch (err) {
+                                        console.error('Failed to delete all items:', err)
+                                        alert('Failed to delete all items')
+                                    } finally {
+                                        setDeletingAll(false)
+                                    }
+                                }}
+                                disabled={deletingAll}
+                                className="flex-1 py-3 px-4 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition disabled:opacity-50 flex items-center justify-center"
+                            >
+                                {deletingAll ? (
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    'Delete All'
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

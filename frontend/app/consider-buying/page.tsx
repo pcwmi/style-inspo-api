@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import { api } from '@/lib/api'
+import { useConsiderBuying } from '@/lib/queries'
+import { BackButton } from '@/components/BackButton'
 
 import { Suspense } from 'react'
 
@@ -21,9 +23,28 @@ function ConsiderBuyingContent() {
     const [extractedData, setExtractedData] = useState<any>(null)
     const [analyzedItem, setAnalyzedItem] = useState<any>(null)
     const [selectedCategory, setSelectedCategory] = useState<string>('')
-    const [passedItems, setPassedItems] = useState<any[]>([])
-    const [stats, setStats] = useState<any>(null)
     const [analyzing, setAnalyzing] = useState(false)
+
+    // Use React Query for caching passed items and stats
+    const { data: passedItemsData, refetch: refetchPassedItems } = useConsiderBuying(user, 'passed')
+    const passedItems = passedItemsData?.items || []
+
+    // Load stats separately (stats endpoint)
+    const [stats, setStats] = useState<any>(null)
+    useEffect(() => {
+        const loadStats = async () => {
+            try {
+                const statsRes = await fetch(`${API_URL}/api/consider-buying/stats?user_id=${user}`)
+                if (statsRes.ok) {
+                    const statsData = await statsRes.json()
+                    setStats(statsData)
+                }
+            } catch (err) {
+                console.error('Failed to load stats:', err)
+            }
+        }
+        loadStats()
+    }, [user])
 
     const handlePasteLink = async () => {
         if (!url) return
@@ -163,29 +184,12 @@ function ConsiderBuyingContent() {
         }
     }
 
-    // Load passed items and stats on mount
-    useEffect(() => {
-        const loadPassedItems = async () => {
-            try {
-                const data = await api.getConsiderBuyingItems(user, 'passed')
-                setPassedItems(data.items || [])
-                
-                // Also get stats
-                const statsRes = await fetch(`${API_URL}/api/consider-buying/stats?user_id=${user}`)
-                if (statsRes.ok) {
-                    const statsData = await statsRes.json()
-                    setStats(statsData)
-                }
-            } catch (err) {
-                console.error('Failed to load passed items:', err)
-            }
-        }
-        loadPassedItems()
-    }, [user])
+    // Refetch passed items when user makes a decision (handled by React Query cache invalidation)
 
     return (
         <div className="min-h-screen bg-bone page-container">
             <div className="max-w-md mx-auto px-4 py-8">
+                <BackButton />
                 <h1 className="text-2xl font-serif mb-6 text-center">Buy Smarter</h1>
 
                 {/* Extracted Data View (Progressive Display) */}
@@ -387,22 +391,42 @@ function ConsiderBuyingContent() {
                             <p className="text-sm text-gray-600 mb-4">
                                 Items you decided not to buy ({passedItems.length})
                             </p>
-                            <div className="grid grid-cols-3 gap-3">
-                                {passedItems.map((item) => (
-                                    <div key={item.id} className="relative aspect-square rounded overflow-hidden">
-                                        <Image
-                                            src={item.image_path.startsWith('http')
-                                                ? item.image_path
-                                                : `/api/images/${item.image_path.split('/').pop()}`}
-                                            alt={item.styling_details.name}
-                                            fill
-                                            className="object-cover"
-                                        />
-                                        {item.price && (
-                                            <div className="absolute bottom-0 left-0 right-0 bg-black/70 text-white text-xs p-1 text-center">
-                                                ${item.price}
-                                            </div>
-                                        )}
+                            <div className="space-y-3">
+                                {passedItems.map((item: any) => (
+                                    <div key={item.id} className="flex gap-3 p-3 border border-gray-100 rounded-lg hover:bg-gray-50 transition-colors">
+                                        <div className="relative w-20 h-20 rounded overflow-hidden flex-shrink-0 bg-gray-100">
+                                            {item.image_path ? (
+                                                <img
+                                                    src={item.image_path.startsWith('http')
+                                                        ? item.image_path
+                                                        : `/api/images/${item.image_path.split('/').pop()}`}
+                                                    alt={item.styling_details?.name || 'Item'}
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                        e.currentTarget.style.display = 'none'
+                                                    }}
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">
+                                                    No Image
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            {item.styling_details?.brand && (
+                                                <p className="text-xs text-gray-500 mb-1 font-medium">
+                                                    {item.styling_details.brand}
+                                                </p>
+                                            )}
+                                            <p className="text-sm font-medium text-gray-900 mb-1 truncate">
+                                                {item.styling_details?.name || 'Unnamed Item'}
+                                            </p>
+                                            {item.price && (
+                                                <p className="text-sm font-semibold text-gray-900">
+                                                    ${item.price.toFixed(2)}
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
                                 ))}
                             </div>

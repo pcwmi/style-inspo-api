@@ -229,6 +229,15 @@ async def record_decision(request: DecisionRequest, user_id: str = Query(...)):
     """
     try:
         cb_manager = ConsiderBuyingManager(user_id=user_id)
+        
+        # Get item info before recording decision (item might be removed after decision)
+        consider_item = next((i for i in cb_manager.get_items() if i["id"] == request.item_id), None)
+        if not consider_item:
+            raise HTTPException(status_code=404, detail="Item not found in consider_buying")
+        
+        item_name = consider_item.get('styling_details', {}).get('name', 'Item')
+        item_price = consider_item.get('price', 0)
+        
         decision_record = cb_manager.record_decision(
             item_id=request.item_id,
             decision=request.decision,
@@ -243,12 +252,7 @@ async def record_decision(request: DecisionRequest, user_id: str = Query(...)):
             import requests
             from PIL import Image
             
-            # Get the item from consider_buying
-            consider_item = next((i for i in cb_manager.get_items() if i["id"] == request.item_id), None)
-            if not consider_item:
-                raise HTTPException(status_code=404, detail="Item not found in consider_buying")
-            
-            # Download the image from storage
+            # Download the image from storage (consider_item already fetched above)
             image_path = consider_item.get("image_path")
             if not image_path:
                 raise HTTPException(status_code=400, detail="Item has no image path")
@@ -306,10 +310,15 @@ async def record_decision(request: DecisionRequest, user_id: str = Query(...)):
             
             logger.info(f"Moved item {request.item_id} from consider_buying to wardrobe as {wardrobe_item['id']}")
 
+        # Return decision with item info for all decisions
         return {
             "success": True,
             "decision": decision_record,
-            "stats": cb_manager.get_stats()
+            "stats": cb_manager.get_stats(),
+            "item": {
+                "name": item_name,
+                "price": item_price
+            }
         }
 
     except Exception as e:
@@ -334,3 +343,45 @@ async def get_stats(user_id: str = Query(...)):
     """Get buying decision stats"""
     cb_manager = ConsiderBuyingManager(user_id=user_id)
     return cb_manager.get_stats()
+
+
+@router.delete("/consider-buying/item/{item_id}")
+async def delete_item(item_id: str, user_id: str = Query(...)):
+    """
+    Delete an item from consider_buying
+    """
+    try:
+        cb_manager = ConsiderBuyingManager(user_id=user_id)
+        cb_manager.delete_item(item_id)
+        
+        return {
+            "success": True,
+            "message": "Item deleted successfully"
+        }
+    except Exception as e:
+        logger.error(f"Error deleting item: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/consider-buying/all")
+async def delete_all_items(user_id: str = Query(...)):
+    """
+    Delete all items from consider_buying for a user
+    """
+    try:
+        cb_manager = ConsiderBuyingManager(user_id=user_id)
+        items = cb_manager.get_items()
+        deleted_count = len(items)
+        
+        # Clear all items
+        cb_manager.consider_buying_data["items"] = []
+        cb_manager._save_consider_buying_data()
+        
+        return {
+            "success": True,
+            "message": f"Deleted {deleted_count} items successfully",
+            "deleted_count": deleted_count
+        }
+    except Exception as e:
+        logger.error(f"Error deleting all items: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))

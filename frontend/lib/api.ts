@@ -178,5 +178,21 @@ export const api = {
     const res = await fetch(url.toString())
     if (!res.ok) throw new Error('Failed to fetch consider buying items')
     return res.json()
+  },
+
+  async deleteConsiderBuyingItem(userId: string, itemId: string) {
+    const res = await fetch(`${API_URL}/api/consider-buying/item/${itemId}?user_id=${userId}`, {
+      method: 'DELETE'
+    })
+    if (!res.ok) throw new Error('Failed to delete consider buying item')
+    return res.json()
+  },
+
+  async deleteAllConsiderBuyingItems(userId: string) {
+    const res = await fetch(`${API_URL}/api/consider-buying/all?user_id=${userId}`, {
+      method: 'DELETE'
+    })
+    if (!res.ok) throw new Error('Failed to delete all consider buying items')
+    return res.json()
   }
 }

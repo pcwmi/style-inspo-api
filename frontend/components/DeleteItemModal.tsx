@@ -32,7 +32,15 @@ export default function DeleteItemModal({ isOpen, onClose, onDelete, item, user 
         setError('')
 
         try {
-            await api.deleteItem(user, item.id)
+            // Check if this is a considering item (ID starts with "consider_")
+            const isConsideringItem = item.id?.startsWith('consider_')
+            
+            if (isConsideringItem) {
+                await api.deleteConsiderBuyingItem(user, item.id)
+            } else {
+                await api.deleteItem(user, item.id)
+            }
+            
             onDelete()
             onClose()
         } catch (err: any) {

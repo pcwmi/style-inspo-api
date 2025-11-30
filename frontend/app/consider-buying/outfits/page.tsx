@@ -19,6 +19,8 @@ function OutfitsContent() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [decisionMade, setDecisionMade] = useState(false)
+    const [feedbackMessage, setFeedbackMessage] = useState('')
+    const [decisionType, setDecisionType] = useState<string>('')
 
     useEffect(() => {
         const generateOutfits = async () => {
@@ -50,7 +52,7 @@ function OutfitsContent() {
 
     const handleDecision = async (decision: string) => {
         try {
-            await fetch(`${API_URL}/api/consider-buying/decide?user_id=${user}`, {
+            const res = await fetch(`${API_URL}/api/consider-buying/decide?user_id=${user}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -60,20 +62,27 @@ function OutfitsContent() {
                 })
             })
 
+            const data = await res.json()
+            const itemName = data.item?.name || 'Item'
+            const itemPrice = data.item?.price || 0
+
+            // Set feedback message based on decision
+            let message = ''
+            if (decision === 'bought') {
+                message = `${itemName} is added to your closet`
+            } else if (decision === 'passed') {
+                message = `Great, $${itemPrice.toFixed(2)} saved`
+            } else if (decision === 'later') {
+                message = `${itemName} is added to your Considering section of closet`
+            }
+
+            setFeedbackMessage(message)
+            setDecisionType(decision)
             setDecisionMade(true)
 
-            // Redirect based on decision
+            // Redirect to dashboard after showing feedback
             setTimeout(() => {
-                if (decision === 'bought') {
-                    // Redirect to closet to see the new item
-                    router.push(`/closet?user=${user}`)
-                } else if (decision === 'later') {
-                    // Redirect to closet "Considering" tab
-                    router.push(`/closet?user=${user}&category=Considering`)
-                } else {
-                    // "passed" - redirect back to buy-smarter to see in "Save $$" section
-                    router.push(`/consider-buying?user=${user}`)
-                }
+                router.push(`/?user=${user}`)
             }, 2000)
 
         } catch (err) {
@@ -88,8 +97,10 @@ function OutfitsContent() {
     if (decisionMade) {
         return (
             <div className="container mx-auto px-4 py-8 text-center">
-                <h2 className="text-2xl font-bold mb-4">Decision Recorded!</h2>
-                <p>Redirecting to dashboard...</p>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-4">
+                    <h2 className="text-2xl font-bold mb-2 text-green-800">✓ {feedbackMessage}</h2>
+                </div>
+                <p className="text-gray-600">Returning to dashboard...</p>
             </div>
         )
     }
