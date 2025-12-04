@@ -178,6 +178,12 @@ class WardrobeManager:
                     for field in allowed_fields:
                         if field in updates:
                             item["styling_details"][field] = updates[field]
+                    
+                    # Handle fabric update (stored in structured_attrs)
+                    if "fabric" in updates:
+                        if "structured_attrs" not in item:
+                            item["structured_attrs"] = {}
+                        item["structured_attrs"]["fabric"] = updates["fabric"]
                             
                     # Update system metadata
                     if "system_metadata" not in item:

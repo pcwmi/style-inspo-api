@@ -30,7 +30,13 @@ function ItemDetailContent() {
         colors: '',
         style_tags: '',
         texture: '',
-        brand: ''
+        brand: '',
+        cut: '',
+        fit: '',
+        style: '',
+        sub_category: '',
+        fabric: '',
+        styling_notes: ''
     })
 
     useEffect(() => {
@@ -74,20 +80,35 @@ function ItemDetailContent() {
                 : data.styling_details.colors || '',
             style_tags: (data.usage_metadata?.tags || []).join(', '),
             texture: data.styling_details.texture || '',
-            brand: data.styling_details.brand || ''
+            brand: data.styling_details.brand || '',
+            cut: data.styling_details.cut || '',
+            fit: data.styling_details.fit || '',
+            style: data.styling_details.style || '',
+            sub_category: data.styling_details.sub_category || '',
+            fabric: data.structured_attrs?.fabric || '',
+            styling_notes: data.styling_details.styling_notes || ''
         })
     }
 
     const handleSave = async () => {
         try {
             setSaving(true)
-            const updates = {
+            const updates: any = {
                 name: formData.name,
                 category: formData.category,
                 colors: formData.colors.split(',').map((c: string) => c.trim()).filter(Boolean),
                 texture: formData.texture,
-                brand: formData.brand
-                // Note: style_tags update might need backend support if not in styling_details
+                brand: formData.brand,
+                cut: formData.cut || undefined,
+                fit: formData.fit || undefined,
+                style: formData.style || undefined,
+                sub_category: formData.sub_category || undefined,
+                styling_notes: formData.styling_notes || undefined
+            }
+            
+            // Only include fabric if it has a value
+            if (formData.fabric) {
+                updates.fabric = formData.fabric
             }
 
             await api.updateItem(user, itemId, updates)
@@ -285,16 +306,71 @@ function ItemDetailContent() {
                                 />
                             </div>
 
-                            {/* AI Override Notice */}
-                            {(formData.name !== item.styling_details.name || formData.category !== item.styling_details.category) && (
-                                <div className="bg-yellow-50 p-3 rounded-lg text-sm text-yellow-800 flex gap-2">
-                                    <span>💡</span>
-                                    <div>
-                                        <p className="font-medium">AI detected: "{item.styling_details.name}"</p>
-                                        <p>You are correcting this information.</p>
-                                    </div>
-                                </div>
-                            )}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Cut</label>
+                                <input
+                                    type="text"
+                                    value={formData.cut}
+                                    onChange={e => setFormData({ ...formData, cut: e.target.value })}
+                                    className="w-full p-3 border border-gray-200 rounded-lg"
+                                    placeholder="e.g., regular, cropped, wide-leg"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Fit</label>
+                                <input
+                                    type="text"
+                                    value={formData.fit}
+                                    onChange={e => setFormData({ ...formData, fit: e.target.value })}
+                                    className="w-full p-3 border border-gray-200 rounded-lg"
+                                    placeholder="e.g., fitted, loose, relaxed"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Style</label>
+                                <input
+                                    type="text"
+                                    value={formData.style}
+                                    onChange={e => setFormData({ ...formData, style: e.target.value })}
+                                    className="w-full p-3 border border-gray-200 rounded-lg"
+                                    placeholder="e.g., casual, formal, minimalist"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Sub Category</label>
+                                <input
+                                    type="text"
+                                    value={formData.sub_category}
+                                    onChange={e => setFormData({ ...formData, sub_category: e.target.value })}
+                                    className="w-full p-3 border border-gray-200 rounded-lg"
+                                    placeholder="e.g., tee, jeans, blazer"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Fabric</label>
+                                <input
+                                    type="text"
+                                    value={formData.fabric}
+                                    onChange={e => setFormData({ ...formData, fabric: e.target.value })}
+                                    className="w-full p-3 border border-gray-200 rounded-lg"
+                                    placeholder="e.g., cotton, wool, silk"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Styling Notes</label>
+                                <textarea
+                                    value={formData.styling_notes}
+                                    onChange={e => setFormData({ ...formData, styling_notes: e.target.value })}
+                                    className="w-full p-3 border border-gray-200 rounded-lg"
+                                    rows={4}
+                                    placeholder="AI-generated styling suggestions..."
+                                />
+                            </div>
 
                             {/* AI Override Notice */}
                             {(formData.name !== item.styling_details.name || formData.category !== item.styling_details.category) && (
