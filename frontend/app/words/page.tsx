@@ -107,7 +107,7 @@ function WordsPageContent() {
         <div className="mb-6 md:mb-8">
           <div className="flex items-baseline gap-3 mb-2">
             <span className="text-2xl font-bold text-ink">1</span>
-            <label className="text-base font-medium text-ink">Your Usual Style</label>
+            <label className="text-base font-medium text-terracotta">Your Usual Style</label>
           </div>
           <input
             type="text"
