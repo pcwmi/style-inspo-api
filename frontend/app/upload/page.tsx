@@ -1,6 +1,6 @@
 'use client'
 
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { Suspense, useState, useRef, useEffect } from 'react'
 import { api } from '@/lib/api'
 import Link from 'next/link'
@@ -18,6 +18,7 @@ if (typeof window !== 'undefined') {
 
 function UploadPageContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const user = searchParams.get('user') || 'default'
   const fileInputRef = useRef<HTMLInputElement>(null)
   
@@ -90,6 +91,16 @@ function UploadPageContent() {
   
   const wardrobeCount = wardrobe?.count || 0
   const isPartialUser = hasProfile && wardrobeCount < 10
+
+  const handleBack = () => {
+    // Check if there's browser history to go back to
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back()
+    } else {
+      // Fallback to dashboard or welcome if no history
+      router.push(hasProfile ? `/?user=${user}` : `/welcome?user=${user}`)
+    }
+  }
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -235,12 +246,12 @@ function UploadPageContent() {
   return (
     <div className="min-h-screen bg-bone page-container">
       <div className="max-w-2xl mx-auto px-4 py-4 md:py-8">
-        <Link 
-          href={hasProfile ? `/?user=${user}` : `/welcome?user=${user}`} 
+        <button
+          onClick={handleBack}
           className="text-terracotta mb-4 inline-block min-h-[44px] flex items-center"
         >
           ← Back
-        </Link>
+        </button>
         
         {isPartialUser ? (
           <>
