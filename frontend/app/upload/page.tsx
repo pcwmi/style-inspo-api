@@ -308,7 +308,7 @@ function UploadPageContent() {
               type="checkbox"
               checked={useRealAi}
               onChange={(e) => setUseRealAi(e.target.checked)}
-              className="w-5 h-5 rounded border-[rgba(26,22,20,0.12)] flex-shrink-0"
+              className="w-5 h-5 rounded border-[rgba(26,22,20,0.12)] flex-shrink-0 accent-terracotta"
             />
             <span className="text-base leading-relaxed">Use AI Fashion Analysis</span>
           </label>
@@ -356,8 +356,8 @@ function UploadPageContent() {
         )}
 
         {/* Tips */}
-        <div className="bg-sand/30 rounded-lg p-4 border border-[rgba(26,22,20,0.12)] mb-5 md:mb-6">
-          <p className="text-sm text-ink">
+        <div className="bg-sand/30 rounded-lg p-3 border border-[rgba(26,22,20,0.12)] mb-5 md:mb-6">
+          <p className="text-sm text-ink leading-tight">
             Tip: Select multiple photos at once from your camera roll.
           </p>
         </div>

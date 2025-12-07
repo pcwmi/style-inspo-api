@@ -118,7 +118,7 @@ function WordsPageContent() {
             onChange={(e) => setWord1(e.target.value)}
             className="w-full px-4 py-3 text-base border border-[rgba(26,22,20,0.12)] rounded-lg focus:outline-none focus:ring-2 focus:ring-terracotta bg-white mb-3"
           />
-          <div className="flex flex-wrap gap-2 ml-10">
+          <div className="flex flex-wrap gap-2">
             {word1Chips.map((chip) => (
               <button
                 key={chip}
@@ -148,7 +148,7 @@ function WordsPageContent() {
             onChange={(e) => setWord2(e.target.value)}
             className="w-full px-4 py-3 text-base border border-[rgba(26,22,20,0.12)] rounded-lg focus:outline-none focus:ring-2 focus:ring-terracotta bg-white mb-3"
           />
-          <div className="flex flex-wrap gap-2 ml-10">
+          <div className="flex flex-wrap gap-2">
             {word2Chips.map((chip) => (
               <button
                 key={chip}
@@ -178,7 +178,7 @@ function WordsPageContent() {
             onChange={(e) => setWord3(e.target.value)}
             className="w-full px-4 py-3 text-base border border-[rgba(26,22,20,0.12)] rounded-lg focus:outline-none focus:ring-2 focus:ring-terracotta bg-white mb-3"
           />
-          <div className="flex flex-wrap gap-2 ml-10">
+          <div className="flex flex-wrap gap-2">
             {word3Chips.map((chip) => (
               <button
                 key={chip}
@@ -198,7 +198,7 @@ function WordsPageContent() {
         {/* Reassurance text */}
         <div className="mb-6 md:mb-8">
           <p className="text-muted text-sm text-center">
-            Not sure? Pick what feels right now — you can always refine this later
+            Not sure? Pick what feels right now - you can always change later
           </p>
         </div>
 
