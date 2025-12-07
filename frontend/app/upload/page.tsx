@@ -257,7 +257,7 @@ function UploadPageContent() {
           <>
             <h1 className="text-2xl md:text-3xl font-bold mb-2">Welcome back {capitalizeFirst(user)}!</h1>
             <p className="text-muted mb-5 md:mb-8 text-base leading-relaxed">
-              Let's add more pieces to your closet. Upload photos of your clothing items and we'll analyze them to help you discover new outfit combinations.
+              Upload {Math.max(0, 10 - wardrobeCount)} more pieces to unlock new outfit possibilities.
             </p>
           </>
         ) : (
@@ -328,20 +328,11 @@ function UploadPageContent() {
           />
           <label
             htmlFor="file-upload"
-            className={`block w-full border-2 border-dashed rounded-lg p-6 md:p-12 text-center cursor-pointer transition min-h-[140px] md:min-h-[180px] flex items-center justify-center ${
-              uploading
-                ? 'border-[rgba(26,22,20,0.12)] bg-sand cursor-not-allowed'
-                : 'border-[rgba(26,22,20,0.3)] hover:border-terracotta hover:bg-sand/30 active:border-terracotta/70 bg-white'
+            className={`block w-full bg-terracotta text-white text-center py-3.5 md:py-4 px-6 rounded-lg font-medium hover:opacity-90 transition active:opacity-80 min-h-[48px] flex items-center justify-center cursor-pointer ${
+              uploading ? 'opacity-70 cursor-not-allowed' : ''
             }`}
           >
-            <div>
-              <p className="text-base md:text-lg font-medium mb-2 leading-relaxed">
-                {uploading ? 'Uploading...' : 'Tap to upload photos'}
-              </p>
-              <p className="text-sm text-muted leading-relaxed">
-                PNG, JPG, WEBP up to 10MB each
-              </p>
-            </div>
+            {uploading ? 'Uploading...' : 'Upload photos'}
           </label>
         </div>
 
@@ -366,8 +357,8 @@ function UploadPageContent() {
 
         {/* Tips */}
         <div className="bg-sand/30 rounded-lg p-4 border border-[rgba(26,22,20,0.12)] mb-5 md:mb-6">
-          <p className="text-sm text-ink leading-relaxed">
-            Tip: You can select multiple photos at once from your camera roll or gallery.
+          <p className="text-sm text-ink">
+            Tip: Select multiple photos at once from your camera roll.
           </p>
         </div>
 

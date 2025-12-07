@@ -43,7 +43,7 @@ function WelcomePageContent() {
                 2
               </div>
               <p className="text-base leading-relaxed pt-1">
-                Upload 10-15 pieces, a mix of tops, bottoms, shoes, outerwear works the best.
+                Upload 10-15 pieces, a mix of tops, bottoms, shoes, and outerwear works the best.
               </p>
             </div>
 
@@ -52,7 +52,7 @@ function WelcomePageContent() {
                 3
               </div>
               <p className="text-base leading-relaxed pt-1">
-                Get fresh outfit ideas that match your style
+                Get fresh outfit ideas that stay true to your style
               </p>
             </div>
           </div>
