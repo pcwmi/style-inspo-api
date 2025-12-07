@@ -79,6 +79,13 @@ function UploadPageContent() {
     }
   }, [loadingProfile, user])
 
+  // Auto-route to dashboard when 10+ photos uploaded
+  useEffect(() => {
+    if (!loadingProfile && wardrobeCount >= 10 && hasProfile) {
+      router.push(`/?user=${user}`)
+    }
+  }, [wardrobeCount, hasProfile, loadingProfile, user, router])
+
   const handleGuidelinesContinue = () => {
     localStorage.setItem(`photo_guidelines_seen_${user}`, 'true')
     setShowGuidelines(false)
@@ -333,7 +340,7 @@ function UploadPageContent() {
               uploading ? 'opacity-70 cursor-not-allowed' : ''
             }`}
           >
-            {uploading ? 'Uploading...' : 'Upload photos'}
+            {uploading ? 'Uploading...' : 'Upload Photos'}
           </label>
         </div>
 
@@ -358,7 +365,7 @@ function UploadPageContent() {
 
         {/* Tips */}
         <div className="bg-sand/30 rounded-lg p-3 border border-[rgba(26,22,20,0.12)] mb-5 md:mb-6">
-          <p className="text-sm text-ink leading-tight">
+          <p className="text-sm text-ink leading-tight mb-0">
             Tip: Select multiple photos at once from your camera roll.
           </p>
         </div>
@@ -367,7 +374,7 @@ function UploadPageContent() {
         {wardrobeCount >= 10 && hasProfile && (
           <div className="mb-5 md:mb-6">
             <Link
-              href={`/path-choice?user=${user}`}
+              href={`/?user=${user}`}
               className="block w-full bg-terracotta text-white text-center py-3.5 md:py-4 px-6 rounded-lg font-medium hover:opacity-90 transition active:opacity-80 min-h-[48px] flex items-center justify-center"
             >
               Continue to Generate Outfits
