@@ -79,13 +79,6 @@ function UploadPageContent() {
     }
   }, [loadingProfile, user])
 
-  // Auto-route to dashboard when 10+ photos uploaded
-  useEffect(() => {
-    if (!loadingProfile && wardrobeCount >= 10 && hasProfile) {
-      router.push(`/?user=${user}`)
-    }
-  }, [wardrobeCount, hasProfile, loadingProfile, user, router])
-
   const handleGuidelinesContinue = () => {
     localStorage.setItem(`photo_guidelines_seen_${user}`, 'true')
     setShowGuidelines(false)
@@ -98,6 +91,13 @@ function UploadPageContent() {
   
   const wardrobeCount = wardrobe?.count || 0
   const isPartialUser = hasProfile && wardrobeCount < 10
+
+  // Auto-route to dashboard when 10+ photos uploaded
+  useEffect(() => {
+    if (!loadingProfile && wardrobeCount >= 10 && hasProfile) {
+      router.push(`/?user=${user}`)
+    }
+  }, [wardrobeCount, hasProfile, loadingProfile, user, router])
 
   const handleBack = () => {
     // Check if there's browser history to go back to
