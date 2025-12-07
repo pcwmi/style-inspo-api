@@ -43,16 +43,16 @@ function WelcomePageContent() {
                 2
               </div>
               <p className="text-base leading-relaxed pt-1">
-                Upload 10-15 pieces, including items you love but rarely wear
+                Upload 10-15 pieces, a mix of tops, bottoms, shoes, outerwear works the best.
               </p>
             </div>
-            
+
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-terracotta text-white flex items-center justify-center font-semibold text-sm">
                 3
               </div>
               <p className="text-base leading-relaxed pt-1">
-                Get styled outfits featuring your challenging pieces
+                Get fresh outfit ideas that match your style
               </p>
             </div>
           </div>
