@@ -314,7 +314,7 @@ function UploadPageContent() {
               onChange={(e) => setUseRealAi(e.target.checked)}
               className="w-5 h-5 rounded border-[rgba(26,22,20,0.12)] flex-shrink-0 accent-terracotta"
             />
-            <span className="text-base leading-relaxed">Use AI Fashion Analysis</span>
+            <span className="text-base leading-relaxed text-muted">Use AI Fashion Analysis</span>
           </label>
         </div>
 
