@@ -99,7 +99,7 @@ function WordsPageContent() {
           </div>
           <h2 className="text-2xl md:text-3xl font-bold mb-3">Three Words</h2>
           <p className="text-muted text-base leading-relaxed max-w-xl mx-auto">
-            Your first word describes your usual style, the second is your aspirational style, and the third is how you want to feel. This helps us generate outfits that honor your go-to style while incorporating your aspirations and helping you feel the way you want to feel.
+            Describe your usual style, your aspirational style, and how you want to feel. We'll use these to create outfits that honor your natural style while helping you grow.
           </p>
         </div>
 
