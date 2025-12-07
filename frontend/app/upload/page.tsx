@@ -257,7 +257,7 @@ function UploadPageContent() {
           <>
             <h1 className="text-2xl md:text-3xl font-bold mb-2">Welcome back {capitalizeFirst(user)}!</h1>
             <p className="text-muted mb-5 md:mb-8 text-base leading-relaxed">
-              Upload {Math.max(0, 10 - wardrobeCount)} more pieces to unlock new outfit possibilities.
+              Upload at least 10 photos with a mix of top/bottom/shoes/accessories. More pieces lead to more inspiration.
             </p>
           </>
         ) : (
@@ -272,12 +272,9 @@ function UploadPageContent() {
         {/* Progress Bar */}
         {wardrobeCount < 10 && (
           <div className="mb-5 md:mb-6">
-            <div className="flex justify-between items-center mb-2">
-              <p className="text-sm md:text-base font-medium text-ink">
-                {wardrobeCount} out of 10 photos uploaded
-              </p>
+            <div className="flex justify-end items-center mb-2">
               <span className="text-sm text-muted">
-                {Math.min(Math.round((wardrobeCount / 10) * 100), 100)}%
+                {wardrobeCount} out of 10 photos uploaded
               </span>
             </div>
             <div className="w-full bg-sand/30 rounded-full h-3 overflow-hidden">
@@ -328,7 +325,11 @@ function UploadPageContent() {
           />
           <label
             htmlFor="file-upload"
-            className={`block w-full bg-terracotta text-white text-center py-3.5 md:py-4 px-6 rounded-lg font-medium hover:opacity-90 transition active:opacity-80 min-h-[48px] flex items-center justify-center cursor-pointer ${
+            className={`block w-full text-center py-3.5 md:py-4 px-6 rounded-lg font-medium transition min-h-[48px] flex items-center justify-center cursor-pointer ${
+              wardrobeCount >= 10
+                ? 'bg-white text-terracotta border-2 border-terracotta hover:bg-terracotta/5 active:bg-terracotta/10'
+                : 'bg-terracotta text-white hover:opacity-90 active:opacity-80'
+            } ${
               uploading ? 'opacity-70 cursor-not-allowed' : ''
             }`}
           >
@@ -369,7 +370,7 @@ function UploadPageContent() {
               href={`/path-choice?user=${user}`}
               className="block w-full bg-terracotta text-white text-center py-3.5 md:py-4 px-6 rounded-lg font-medium hover:opacity-90 transition active:opacity-80 min-h-[48px] flex items-center justify-center"
             >
-              Continue to Generate Outfits →
+              Continue to Generate Outfits
             </Link>
           </div>
         )}
