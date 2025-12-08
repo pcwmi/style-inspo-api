@@ -85,26 +85,43 @@ function SavedPageContent() {
                   <div className="grid grid-cols-3 gap-2 mb-4">
                     {outfit.items?.map((item: any, idx: number) => {
                       const imagePath = item.image_path || item.system_metadata?.image_path
+                      const itemName = item.name || `Item ${idx + 1}`
                       return (
                         <div key={idx} className="relative aspect-square rounded overflow-hidden bg-gray-100">
                           {imagePath ? (
                             imagePath.startsWith('http') ? (
                               <img
                                 src={imagePath}
-                                alt={item.name || `Item ${idx + 1}`}
+                                alt={itemName}
                                 className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  // If image fails to load, show placeholder with item name
+                                  const target = e.currentTarget
+                                  target.style.display = 'none'
+                                  const parent = target.parentElement
+                                  if (parent) {
+                                    const placeholder = document.createElement('div')
+                                    placeholder.className = 'w-full h-full flex flex-col items-center justify-center text-muted text-xs bg-sand p-2'
+                                    placeholder.innerHTML = `<div class="text-center">${itemName}</div>`
+                                    parent.appendChild(placeholder)
+                                  }
+                                }}
                               />
                             ) : (
                               <Image
                                 src={`/${imagePath}`}
-                                alt={item.name || `Item ${idx + 1}`}
+                                alt={itemName}
                                 fill
                                 className="object-cover"
+                                onError={() => {
+                                  // Next.js Image component handles errors internally
+                                  // But we can add a fallback if needed
+                                }}
                               />
                             )
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-muted text-xs bg-sand">
-                              No image
+                            <div className="w-full h-full flex flex-col items-center justify-center text-muted text-xs bg-sand p-2">
+                              <div className="text-center">{itemName}</div>
                             </div>
                           )}
                         </div>

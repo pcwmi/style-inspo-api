@@ -187,19 +187,36 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
             # Complete my look - use anchor items
             if not anchor_items:
                 raise ValueError("anchor_items required for 'complete' mode")
-            
-            # Get anchor items
+
+            # Get anchor items (can be from wardrobe OR considering items)
             anchor_item_objects = []
             for item_id in anchor_items:
+                # First try to find in wardrobe
+                found = False
                 for item in all_items:
                     if item.get("id") == item_id:
                         anchor_item_objects.append(item)
+                        found = True
                         break
-            
+
+                # If not found and it's a considering item, fetch from ConsiderBuyingManager
+                if not found and item_id.startswith('consider_'):
+                    from services.consider_buying_manager import ConsiderBuyingManager
+                    cb_manager = ConsiderBuyingManager(user_id=user_id)
+                    considering_items = cb_manager.get_items(status='considering')
+                    for considering_item in considering_items:
+                        if considering_item.get("id") == item_id:
+                            anchor_item_objects.append(considering_item)
+                            found = True
+                            break
+
+                if not found:
+                    logger.warning(f"Anchor item {item_id} not found in wardrobe or considering items")
+
             if not anchor_item_objects:
-                raise ValueError("Anchor items not found in wardrobe")
-            
-            # Get all other items
+                raise ValueError("Anchor items not found in wardrobe or considering items")
+
+            # Get all other items (only from wardrobe, NOT considering)
             available_items = [item for item in all_items if item.get("id") not in anchor_items]
             
             combinations = engine.generate_outfit_combinations(
@@ -220,6 +237,7 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
                 {
                     "items": [
                         {
+                            "id": item.get("id"),  # Preserve ID for future lookups
                             "name": item.get("styling_details", {}).get("name", item.get("name", "Unknown")),
                             "category": item.get("styling_details", {}).get("category", item.get("category", "unknown")),
                             "image_path": item.get("system_metadata", {}).get("image_path", item.get("image_path"))

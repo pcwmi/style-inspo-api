@@ -6,6 +6,7 @@ import sys
 from datetime import datetime
 from typing import Dict, List, Optional
 from services.storage_manager import StorageManager
+from services.wardrobe_manager import WardrobeManager
 
 
 _WRITE_LOCK = threading.Lock()
@@ -121,14 +122,87 @@ class DislikedOutfitsManager:
             print(f"Error disliking outfit: {e}")
             return False
 
-    def get_disliked_outfits(self) -> List[Dict]:
+    def get_disliked_outfits(self, enrich_with_current_images: bool = True) -> List[Dict]:
         """Get all disliked outfits for the current user (newest first).
 
+        Args:
+            enrich_with_current_images: If True, enrich items with current image_paths from wardrobe
+        
         Returns:
             List of disliked outfit dicts
         """
         data = self._read_json()
-        return data.get("disliked", [])
+        disliked_outfits = data.get("disliked", [])
+        
+        if enrich_with_current_images:
+            disliked_outfits = self._enrich_with_current_images(disliked_outfits)
+        
+        return disliked_outfits
+    
+    def _enrich_with_current_images(self, disliked_outfits: List[Dict]) -> List[Dict]:
+        """Enrich disliked outfit items with current image_paths from wardrobe.
+        
+        Same logic as SavedOutfitsManager - ensures disliked outfits show current images.
+        """
+        try:
+            wardrobe_manager = WardrobeManager(user_id=self.user_id)
+            all_wardrobe_items = wardrobe_manager.get_wardrobe_items("all")
+            
+            # Create lookup maps
+            items_by_id = {item.get("id"): item for item in all_wardrobe_items if item.get("id")}
+            items_by_name = {}
+            for item in all_wardrobe_items:
+                name = item.get("styling_details", {}).get("name") or item.get("name")
+                if name:
+                    if name not in items_by_name:
+                        items_by_name[name] = item
+            
+            # Enrich each disliked outfit
+            enriched_outfits = []
+            for disliked_outfit in disliked_outfits:
+                outfit_data = disliked_outfit.get("outfit_data", {})
+                items = outfit_data.get("items", [])
+                
+                enriched_items = []
+                for item in items:
+                    enriched_item = item.copy()
+                    item_id = item.get("id")
+                    item_name = item.get("name")
+                    
+                    # Try to find current item from wardrobe
+                    current_item = None
+                    
+                    if item_id and item_id in items_by_id:
+                        current_item = items_by_id[item_id]
+                    elif item_name and item_name in items_by_name:
+                        current_item = items_by_name[item_name]
+                    
+                    # If found, use current image_path
+                    if current_item:
+                        current_image_path = (
+                            current_item.get("system_metadata", {}).get("image_path") or
+                            current_item.get("image_path")
+                        )
+                        if current_image_path:
+                            enriched_item["image_path"] = current_image_path
+                            # Also update ID if it was missing
+                            if not enriched_item.get("id") and current_item.get("id"):
+                                enriched_item["id"] = current_item.get("id")
+                    
+                    enriched_items.append(enriched_item)
+                
+                # Create enriched outfit copy
+                enriched_outfit = disliked_outfit.copy()
+                enriched_outfit["outfit_data"] = outfit_data.copy()
+                enriched_outfit["outfit_data"]["items"] = enriched_items
+                enriched_outfits.append(enriched_outfit)
+            
+            return enriched_outfits
+            
+        except Exception as e:
+            # If enrichment fails, return original outfits
+            print(f"Warning: Failed to enrich disliked outfits with current images: {e}")
+            return disliked_outfits
 
     def _read_json(self) -> Dict:
         """Read disliked outfits data from storage"""
