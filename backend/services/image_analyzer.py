@@ -6,6 +6,7 @@ Provides both mock and GPT-4V implementations for analyzing wardrobe photos.
 import os
 import json
 import base64
+import html
 import random
 import time
 import logging
@@ -250,6 +251,9 @@ class GPTVisionAnalyzer(ImageAnalyzer):
                 analysis_text = analysis_text[json_start:json_end]
 
             analysis = json.loads(analysis_text)
+            # Decode HTML entities in the name field
+            if 'name' in analysis:
+                analysis['name'] = html.unescape(analysis['name'])
             timings['json_parsing'] = time.time() - start_parse
 
             # Ensure all required fields are present

@@ -1,6 +1,7 @@
 import json
 import os
 import sys
+import html
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 from dotenv import load_dotenv
@@ -829,19 +830,28 @@ IMPORTANT: Return ONLY valid JSON. Start with [ and end with ]. Use exact item n
 
         return True, "Valid outfit structure"
 
+    def _normalize_item_name(self, name: str) -> str:
+        """Normalize item name by decoding HTML entities and lowercasing"""
+        return html.unescape(name).lower().strip()
+
     def _find_item_by_name(self, item_name: str, all_items: List[Dict]) -> Optional[Dict]:
         """Find a wardrobe item by name (fuzzy matching)"""
-        item_name_lower = item_name.lower()
+        item_name_normalized = self._normalize_item_name(item_name)
 
         # First try exact match
         for item in all_items:
-            if item.get('styling_details', {}).get('name', '').lower() == item_name_lower:
+            wardrobe_name_normalized = self._normalize_item_name(
+                item.get('styling_details', {}).get('name', '')
+            )
+            if wardrobe_name_normalized == item_name_normalized:
                 return item
 
         # Then try partial match
         for item in all_items:
-            wardrobe_name = item.get('styling_details', {}).get('name', '').lower()
-            if item_name_lower in wardrobe_name or wardrobe_name in item_name_lower:
+            wardrobe_name_normalized = self._normalize_item_name(
+                item.get('styling_details', {}).get('name', '')
+            )
+            if item_name_normalized in wardrobe_name_normalized or wardrobe_name_normalized in item_name_normalized:
                 return item
 
         return None
