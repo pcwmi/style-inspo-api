@@ -9,7 +9,6 @@ import base64
 import random
 import time
 import logging
-import html
 from io import BytesIO
 from PIL import Image
 from abc import ABC, abstractmethod
@@ -252,10 +251,6 @@ class GPTVisionAnalyzer(ImageAnalyzer):
 
             analysis = json.loads(analysis_text)
             timings['json_parsing'] = time.time() - start_parse
-
-            # Normalize item name by decoding HTML entities (fixes &trade;, &reg;, etc.)
-            if 'name' in analysis and isinstance(analysis['name'], str):
-                analysis['name'] = html.unescape(analysis['name']).strip()
 
             # Ensure all required fields are present
             required_fields = ['name', 'category', 'sub_category', 'colors', 'fabric', 'cut', 'design_details', 'texture', 'style', 'fit', 'sleeve_length', 'waist_level', 'brand', 'trend_status', 'styling_notes', 'attributes', 'confidence']
