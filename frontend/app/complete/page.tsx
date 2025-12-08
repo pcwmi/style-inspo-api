@@ -13,23 +13,28 @@ function CompletePageContent() {
   const user = searchParams.get('user') || 'default'
   
   const [wardrobe, setWardrobe] = useState<any>(null)
+  const [consideringItems, setConsideringItems] = useState<any>(null)
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [weather, setWeather] = useState({ condition: 'Sunny', temp: 'Cool (50-65°F)' })
   const [generating, setGenerating] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function fetchWardrobe() {
+    async function fetchItems() {
       try {
-        const data = await api.getWardrobe(user)
-        setWardrobe(data)
+        const [wardrobeData, consideringData] = await Promise.all([
+          api.getWardrobe(user),
+          api.getConsiderBuyingItems(user, 'considering')
+        ])
+        setWardrobe(wardrobeData)
+        setConsideringItems(consideringData)
       } catch (error) {
-        console.error('Error fetching wardrobe:', error)
+        console.error('Error fetching items:', error)
       } finally {
         setLoading(false)
       }
     }
-    fetchWardrobe()
+    fetchItems()
   }, [user])
 
   const handleGenerate = async () => {
@@ -75,7 +80,13 @@ function CompletePageContent() {
     )
   }
 
-  if (!wardrobe || wardrobe.count === 0) {
+  // Merge wardrobe and considering items for display
+  const allItems = [
+    ...(wardrobe?.items || []),
+    ...(consideringItems?.items || [])
+  ]
+
+  if (allItems.length === 0) {
     return (
       <div className="min-h-screen bg-bone page-container">
         <div className="max-w-2xl mx-auto px-4 py-8">
@@ -104,10 +115,11 @@ function CompletePageContent() {
 
         {/* Item selection grid */}
         <div className="grid grid-cols-2 gap-3 md:gap-4 mb-5 md:mb-6">
-          {wardrobe.items.map((item: any) => {
+          {allItems.map((item: any) => {
             const isSelected = selectedItems.includes(item.id)
             const imagePath = item.system_metadata?.image_path || item.image_path
-            
+            const isConsidering = item.id.startsWith('consider_')
+
             return (
               <button
                 key={item.id}
@@ -120,6 +132,12 @@ function CompletePageContent() {
               >
             {imagePath && (
               <div className="relative w-full aspect-square mb-2 rounded overflow-hidden bg-sand">
+                {/* Considering badge */}
+                {isConsidering && (
+                  <div className="absolute top-2 right-2 bg-terracotta backdrop-blur-sm px-2 py-0.5 rounded-full z-10">
+                    <span className="text-xs font-medium text-white">Considering</span>
+                  </div>
+                )}
                 {imagePath.startsWith('http') ? (
                   <img
                     src={imagePath}

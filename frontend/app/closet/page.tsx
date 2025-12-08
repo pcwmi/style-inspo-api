@@ -258,38 +258,48 @@ function ClosetContent() {
                     )
                 ) : (
                     <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                        {filteredItems.map((item: any) => (
-                            <Link
-                                key={item.id}
-                                href={`/closet/${item.id}?user=${user}`}
-                                className="group relative block aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden"
-                            >
-                                {(() => {
-                                    const imagePath = item.system_metadata?.image_path || item.image_path
-                                    if (!imagePath) {
+                        {filteredItems.map((item: any) => {
+                            const isConsidering = item.id.startsWith('consider_')
+                            const imagePath = item.system_metadata?.image_path || item.image_path
+
+                            return (
+                                <Link
+                                    key={item.id}
+                                    href={`/closet/${item.id}?user=${user}`}
+                                    className="group relative block aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden"
+                                >
+                                    {/* Considering badge */}
+                                    {isConsidering && (
+                                        <div className="absolute top-2 right-2 bg-terracotta backdrop-blur-sm px-2 py-0.5 rounded-full z-10">
+                                            <span className="text-xs font-medium text-white">Considering</span>
+                                        </div>
+                                    )}
+                                    {(() => {
+                                        if (!imagePath) {
+                                            return (
+                                                <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                                    No Image
+                                                </div>
+                                            )
+                                        }
                                         return (
-                                            <div className="w-full h-full flex items-center justify-center text-gray-300">
-                                                No Image
-                                            </div>
+                                            <img
+                                                src={imagePath.startsWith('http')
+                                                    ? imagePath
+                                                    : `/api/images/${imagePath.split('/').pop()}`} // Fallback for local dev
+                                                alt={item.styling_details?.name || 'Item'}
+                                                className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                                            />
                                         )
-                                    }
-                                    return (
-                                        <img
-                                            src={imagePath.startsWith('http')
-                                                ? imagePath
-                                                : `/api/images/${imagePath.split('/').pop()}`} // Fallback for local dev
-                                            alt={item.styling_details?.name || 'Item'}
-                                            className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                                        />
-                                    )
-                                })()}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
-                                    <span className="text-white text-xs font-medium truncate w-full">
-                                        {item.styling_details?.name || 'Item'}
-                                    </span>
-                                </div>
-                            </Link>
-                        ))}
+                                    })()}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                                        <span className="text-white text-xs font-medium truncate w-full">
+                                            {item.styling_details?.name || 'Item'}
+                                        </span>
+                                    </div>
+                                </Link>
+                            )
+                        })}
                     </div>
                 )}
             </div>

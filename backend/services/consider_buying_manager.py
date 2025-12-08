@@ -305,8 +305,11 @@ class ConsiderBuyingManager:
 
         self._save_decisions_data()
 
-        # Update item status
-        item["status"] = decision
+        # Update item status - map "later" to "considering" for UI consistency
+        if decision == "later":
+            item["status"] = "considering"
+        else:
+            item["status"] = decision
         self._save_consider_buying_data()
 
         return decision_record
