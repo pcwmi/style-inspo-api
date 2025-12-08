@@ -61,24 +61,26 @@ function OccasionPageContent() {
           Pick everything you're doing—we'll find pieces that transition across all of it
         </p>
 
-        {/* Occasion checkboxes */}
-        <div className="space-y-2.5 md:space-y-3 mb-5 md:mb-6">
+        {/* Occasion chips */}
+        <div className="flex flex-wrap gap-2 mb-5 md:mb-6">
           {OCCASIONS.map(occ => (
-            <label key={occ} className="flex items-center space-x-3 cursor-pointer min-h-[44px] py-1">
-              <input
-                type="checkbox"
-                checked={selectedOccasions.includes(occ)}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    setSelectedOccasions([...selectedOccasions, occ])
-                  } else {
-                    setSelectedOccasions(selectedOccasions.filter(o => o !== occ))
-                  }
-                }}
-                className="w-5 h-5 rounded border-[rgba(26,22,20,0.12)] flex-shrink-0"
-              />
-              <span className="text-base leading-relaxed flex-1">{occ}</span>
-            </label>
+            <button
+              key={occ}
+              onClick={() => {
+                if (selectedOccasions.includes(occ)) {
+                  setSelectedOccasions(selectedOccasions.filter(o => o !== occ))
+                } else {
+                  setSelectedOccasions([...selectedOccasions, occ])
+                }
+              }}
+              className={`px-3 py-1.5 text-sm rounded-full border transition ${
+                selectedOccasions.includes(occ)
+                  ? 'bg-terracotta text-white border-terracotta'
+                  : 'bg-white text-ink border-[rgba(26,22,20,0.12)] hover:border-terracotta/50'
+              }`}
+            >
+              {occ}
+            </button>
           ))}
         </div>
 
