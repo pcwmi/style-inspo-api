@@ -172,14 +172,13 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
         
         # Generate outfits based on mode
         if mode == "occasion":
-            # Occasion-based generation
-            available_items = wardrobe_manager.get_wardrobe_items("regular_wear")
-            styling_challenges = wardrobe_manager.get_wardrobe_items("styling_challenges")
-            
+            # Occasion-based generation - use entire wardrobe, no anchor requirements
+            available_items = wardrobe_manager.get_wardrobe_items("all")
+
             combinations = engine.generate_outfit_combinations(
                 user_profile=user_profile,
                 available_items=available_items,
-                styling_challenges=styling_challenges,
+                styling_challenges=[],  # No anchor requirements for occasion mode
                 occasion=", ".join(occasions) if occasions else None,
                 weather_condition=weather_condition,
                 temperature_range=temperature_range
