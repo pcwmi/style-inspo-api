@@ -86,8 +86,15 @@ function SavedPageContent() {
                     {outfit.items?.map((item: any, idx: number) => {
                       const imagePath = item.image_path || item.system_metadata?.image_path
                       const itemName = item.name || `Item ${idx + 1}`
+                      const isConsidering = item.id?.startsWith('consider_')
                       return (
                         <div key={idx} className="relative aspect-square rounded overflow-hidden bg-gray-100">
+                          {/* Considering badge */}
+                          {isConsidering && (
+                            <div className="absolute top-2 right-2 bg-terracotta backdrop-blur-sm px-2 py-0.5 rounded-full z-10">
+                              <span className="text-xs font-medium text-white">Considering</span>
+                            </div>
+                          )}
                           {imagePath ? (
                             imagePath.startsWith('http') ? (
                               <img

@@ -61,9 +61,16 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
             <div className="grid grid-cols-3 gap-2 mb-4">
                 {outfit.items.map((item: any, idx: number) => {
                     const imagePath = item.system_metadata?.image_path || item.image_path
+                    const isConsidering = item.id?.startsWith('consider_')
 
                     return (
                         <div key={idx} className="relative aspect-square rounded overflow-hidden bg-sand">
+                            {/* Considering badge */}
+                            {isConsidering && (
+                                <div className="absolute top-2 right-2 bg-terracotta backdrop-blur-sm px-2 py-0.5 rounded-full z-10">
+                                    <span className="text-xs font-medium text-white">Considering</span>
+                                </div>
+                            )}
                             {imagePath ? (
                                 imagePath.startsWith('http') ? (
                                     <img
