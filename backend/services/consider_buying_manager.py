@@ -398,7 +398,7 @@ class ConsiderBuyingManager:
                 return None
 
             # Load image using storage manager
-            image_data = self.storage.load_file(current_path, subfolder="consider_buying")
+            image_data = self.storage.load_file(current_path)
             if not image_data:
                 logger.error(f"Could not load image data from {current_path}")
                 return None
@@ -436,7 +436,7 @@ class ConsiderBuyingManager:
             # If S3 and filename changed, try to delete old file
             if self.storage.storage_type == "s3" and new_path != current_path:
                 try:
-                    self.storage.delete_file(current_path, subfolder="consider_buying")
+                    self.storage.delete_file(current_path)
                 except Exception as e:
                     logger.warning(f"Failed to delete old image {current_path}: {e}")
 
