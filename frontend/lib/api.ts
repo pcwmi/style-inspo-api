@@ -194,5 +194,23 @@ export const api = {
     })
     if (!res.ok) throw new Error('Failed to delete all consider buying items')
     return res.json()
+  },
+
+  async updateConsideringItem(userId: string, itemId: string, data: any) {
+    const res = await fetch(`${API_URL}/api/consider-buying/item/${itemId}?user_id=${userId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+    if (!res.ok) throw new Error('Failed to update considering item')
+    return res.json()
+  },
+
+  async rotateConsideringItem(userId: string, itemId: string, degrees: number = 90) {
+    const res = await fetch(`${API_URL}/api/consider-buying/item/${itemId}/rotate?user_id=${userId}&degrees=${degrees}`, {
+      method: 'POST'
+    })
+    if (!res.ok) throw new Error('Failed to rotate considering item')
+    return res.json()
   }
 }

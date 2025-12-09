@@ -57,6 +57,7 @@ function ItemDetailContent() {
                     throw new Error('Item not found')
                 }
                 setItem(foundItem)
+                initializeForm(foundItem)
             } else {
                 // Fetch from wardrobe
                 const data = await api.getItem(user, itemId)
@@ -105,14 +106,20 @@ function ItemDetailContent() {
                 sub_category: formData.sub_category || undefined,
                 styling_notes: formData.styling_notes || undefined
             }
-            
+
             // Only include fabric if it has a value
             if (formData.fabric) {
                 updates.fabric = formData.fabric
             }
 
-            await api.updateItem(user, itemId, updates)
-            await fetchItem()
+            // Use different API methods based on item type
+            if (isConsideringItem) {
+                await api.updateConsideringItem(user, itemId, updates)
+            } else {
+                await api.updateItem(user, itemId, updates)
+            }
+
+            await fetchItem(isConsideringItem)
             setIsEditing(false)
         } catch (err) {
             console.error('Failed to update item:', err)
@@ -170,31 +177,20 @@ function ItemDetailContent() {
                     </Link>
                 )}
 
-                {!isConsideringItem && (
-                    isEditing ? (
-                        <button
-                            onClick={handleSave}
-                            disabled={saving}
-                            className="text-blue-600 font-medium disabled:opacity-50"
-                        >
-                            {saving ? 'Saving...' : 'Save'}
-                        </button>
-                    ) : (
-                        <button
-                            onClick={() => setIsEditing(true)}
-                            className="text-blue-600 font-medium"
-                        >
-                            Edit
-                        </button>
-                    )
-                )}
-                {isConsideringItem && (
+                {isEditing ? (
                     <button
-                        onClick={() => setShowDeleteModal(true)}
-                        disabled={deleting}
-                        className="text-red-600 font-medium disabled:opacity-50"
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="text-blue-600 font-medium disabled:opacity-50"
                     >
-                        {deleting ? 'Deleting...' : 'Delete'}
+                        {saving ? 'Saving...' : 'Save'}
+                    </button>
+                ) : (
+                    <button
+                        onClick={() => setIsEditing(true)}
+                        className="text-blue-600 font-medium"
+                    >
+                        Edit
                     </button>
                 )}
             </div>
@@ -212,21 +208,30 @@ function ItemDetailContent() {
                 )}
 
                 {/* Rotate Button (Edit Mode Only) */}
-                {isEditing && !isConsideringItem && (
+                {isEditing && (
                     <div className="px-6 pt-4">
                         <button
                             onClick={async () => {
                                 try {
                                     setSaving(true)
-                                    const res = await api.rotateItem(user, itemId)
+                                    const res = isConsideringItem
+                                        ? await api.rotateConsideringItem(user, itemId)
+                                        : await api.rotateItem(user, itemId)
                                     // Force image refresh by updating item with new path
-                                    setItem((prev: any) => ({
-                                        ...prev,
-                                        system_metadata: {
-                                            ...prev.system_metadata,
+                                    if (isConsideringItem) {
+                                        setItem((prev: any) => ({
+                                            ...prev,
                                             image_path: res.new_image_path
-                                        }
-                                    }))
+                                        }))
+                                    } else {
+                                        setItem((prev: any) => ({
+                                            ...prev,
+                                            system_metadata: {
+                                                ...prev.system_metadata,
+                                                image_path: res.new_image_path
+                                            }
+                                        }))
+                                    }
                                 } catch (err) {
                                     console.error('Failed to rotate item:', err)
                                     alert('Failed to rotate image')
@@ -248,7 +253,7 @@ function ItemDetailContent() {
 
                 {/* Content */}
                 <div className="p-6 space-y-6">
-                    {isEditing && !isConsideringItem ? (
+                    {isEditing ? (
                         // Edit Mode
                         <div className="space-y-4">
                             <div>

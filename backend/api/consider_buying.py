@@ -34,6 +34,23 @@ class DecisionRequest(BaseModel):
     reason: Optional[str] = None
 
 
+class ConsideringItemUpdate(BaseModel):
+    name: Optional[str] = None
+    category: Optional[str] = None
+    sub_category: Optional[str] = None
+    colors: Optional[List[str]] = None
+    cut: Optional[str] = None
+    texture: Optional[str] = None
+    style: Optional[str] = None
+    fit: Optional[str] = None
+    brand: Optional[str] = None
+    trend_status: Optional[str] = None
+    styling_notes: Optional[str] = None
+    fabric: Optional[str] = None
+    price: Optional[float] = None
+    source_url: Optional[str] = None
+
+
 @router.post("/consider-buying/extract-url")
 async def extract_from_url(request: ExtractRequest, user_id: str = Query(...)):
     """
@@ -372,11 +389,11 @@ async def delete_all_items(user_id: str = Query(...)):
         cb_manager = ConsiderBuyingManager(user_id=user_id)
         items = cb_manager.get_items()
         deleted_count = len(items)
-        
+
         # Clear all items
         cb_manager.consider_buying_data["items"] = []
         cb_manager._save_consider_buying_data()
-        
+
         return {
             "success": True,
             "message": f"Deleted {deleted_count} items successfully",
@@ -384,4 +401,47 @@ async def delete_all_items(user_id: str = Query(...)):
         }
     except Exception as e:
         logger.error(f"Error deleting all items: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put("/consider-buying/item/{item_id}")
+async def update_considering_item(item_id: str, user_id: str = Query(...), updates: ConsideringItemUpdate = Body(...)):
+    """
+    Update considering item details
+    """
+    try:
+        cb_manager = ConsiderBuyingManager(user_id=user_id)
+        # Convert Pydantic model to dict, excluding None values
+        update_data = {k: v for k, v in updates.dict().items() if v is not None}
+
+        updated_item = cb_manager.update_considering_item(item_id, update_data)
+
+        if not updated_item:
+            raise HTTPException(status_code=404, detail="Item not found")
+
+        return updated_item
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating considering item {item_id}: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/consider-buying/item/{item_id}/rotate")
+async def rotate_considering_item(item_id: str, user_id: str = Query(...), degrees: int = 90):
+    """
+    Rotate considering item image by specified degrees (default 90 clockwise)
+    """
+    try:
+        cb_manager = ConsiderBuyingManager(user_id=user_id)
+        new_path = cb_manager.rotate_considering_item_image(item_id, degrees)
+
+        if not new_path:
+            raise HTTPException(status_code=404, detail="Item not found or rotation failed")
+
+        return {"success": True, "new_image_path": new_path}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error rotating considering item {item_id}: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
