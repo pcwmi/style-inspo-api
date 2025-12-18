@@ -15,31 +15,51 @@ backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if backend_dir not in sys.path:
     sys.path.insert(0, backend_dir)
 
+logger = logging.getLogger(__name__)
+
+# Helper function for safe debug logging (works in both local and production)
+DEBUG_LOG_PATH = '/Users/peichin/Projects/style-inspo/.cursor/debug.log'
+def _debug_log(location, message, data, hypothesis_id="A", run_id="run1"):
+    """Safely log debug info to file (if available) and logger"""
+    log_entry = {
+        "sessionId": "debug-session",
+        "runId": run_id,
+        "hypothesisId": hypothesis_id,
+        "location": location,
+        "message": message,
+        "data": data,
+        "timestamp": int(datetime.datetime.now().timestamp() * 1000)
+    }
+    # Always log to logger (goes to Railway logs in production)
+    logger.debug(f"[DEBUG] {location}: {message} | {json.dumps(data)}")
+    # Try to write to file (only works locally)
+    try:
+        if os.path.exists(os.path.dirname(DEBUG_LOG_PATH)):
+            with open(DEBUG_LOG_PATH, 'a') as f:
+                f.write(json.dumps(log_entry) + '\n')
+    except Exception:
+        pass  # Silently fail if file write doesn't work
+
 # #region agent log
-try:
-    with open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a') as f:
-        f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"outfit_worker.py:15","message":"Before import - checking sys.path","data":{"backend_dir":backend_dir,"sys_path":sys.path[:3]},"timestamp":int(datetime.datetime.now().timestamp()*1000)})+'\n')
-except: pass
+_debug_log("outfit_worker.py:15", "Before import - checking sys.path", {"backend_dir": backend_dir, "sys_path": sys.path[:3]})
 # #endregion
 
 # #region agent log
 try:
     from services.prompts.library import PromptLibrary
-    with open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a') as f:
-        f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"outfit_worker.py:20","message":"PromptLibrary import successful","data":{},"timestamp":int(datetime.datetime.now().timestamp()*1000)})+'\n')
+    _debug_log("outfit_worker.py:20", "PromptLibrary import successful", {})
 except Exception as e:
-    with open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a') as f:
-        f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"outfit_worker.py:22","message":"PromptLibrary import FAILED","data":{"error":str(e),"traceback":traceback.format_exc()},"timestamp":int(datetime.datetime.now().timestamp()*1000)})+'\n')
+    _debug_log("outfit_worker.py:22", "PromptLibrary import FAILED", {"error": str(e), "traceback": traceback.format_exc()})
+    logger.error(f"Failed to import PromptLibrary: {e}")
 # #endregion
 
 # #region agent log
 try:
     from services.style_engine import StyleGenerationEngine
-    with open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a') as f:
-        f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"outfit_worker.py:30","message":"StyleGenerationEngine import successful","data":{},"timestamp":int(datetime.datetime.now().timestamp()*1000)})+'\n')
+    _debug_log("outfit_worker.py:30", "StyleGenerationEngine import successful", {})
 except Exception as e:
-    with open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a') as f:
-        f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"A","location":"outfit_worker.py:32","message":"StyleGenerationEngine import FAILED","data":{"error":str(e),"traceback":traceback.format_exc()},"timestamp":int(datetime.datetime.now().timestamp()*1000)})+'\n')
+    _debug_log("outfit_worker.py:32", "StyleGenerationEngine import FAILED", {"error": str(e), "traceback": traceback.format_exc()})
+    logger.error(f"Failed to import StyleGenerationEngine: {e}")
     raise
 # #endregion
 
@@ -48,8 +68,6 @@ from services.user_profile_manager import UserProfileManager
 from services.image_analyzer import create_image_analyzer
 from core.config import get_settings
 import time
-
-logger = logging.getLogger(__name__)
 
 
 from models.schemas import OutfitContext
@@ -63,20 +81,14 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
     try:
         # Get prompt version (provided or env default)
         # #region agent log
-        try:
-            with open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a') as f:
-                f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"C","location":"outfit_worker.py:36","message":"Before getting prompt_version","data":{"prompt_version_param":prompt_version},"timestamp":int(datetime.datetime.now().timestamp()*1000)})+'\n')
-        except: pass
+        _debug_log("outfit_worker.py:83", "Before getting prompt_version", {"prompt_version_param": prompt_version}, "C")
         # #endregion
         
         if prompt_version is None:
             prompt_version = get_settings().PROMPT_VERSION
         
         # #region agent log
-        try:
-            with open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a') as f:
-                f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"C","location":"outfit_worker.py:40","message":"After getting prompt_version","data":{"prompt_version":prompt_version,"type":type(prompt_version).__name__},"timestamp":int(datetime.datetime.now().timestamp()*1000)})+'\n')
-        except: pass
+        _debug_log("outfit_worker.py:91", "After getting prompt_version", {"prompt_version": prompt_version, "type": type(prompt_version).__name__}, "C")
         # #endregion
         
         # Update progress
@@ -168,20 +180,16 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
         max_tokens = 3000 if "chain_of_thought" in prompt_version else 2000
         
         # #region agent log
-        try:
-            with open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a') as f:
-                f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C,D","location":"outfit_worker.py:127","message":"Before creating StyleGenerationEngine","data":{"prompt_version":prompt_version,"max_tokens":max_tokens,"sys_path_exists":os.path.exists(backend_dir)},"timestamp":int(datetime.datetime.now().timestamp()*1000)})+'\n')
-        except: pass
+        _debug_log("outfit_worker.py:186", "Before creating StyleGenerationEngine", {"prompt_version": prompt_version, "max_tokens": max_tokens, "sys_path_exists": os.path.exists(backend_dir)}, "B,C,D")
         # #endregion
         
         # #region agent log
         try:
             PromptLibrary.get_prompt(prompt_version)
-            with open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a') as f:
-                f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"C","location":"outfit_worker.py:131","message":"PromptLibrary.get_prompt successful","data":{"prompt_version":prompt_version},"timestamp":int(datetime.datetime.now().timestamp()*1000)})+'\n')
+            _debug_log("outfit_worker.py:190", "PromptLibrary.get_prompt successful", {"prompt_version": prompt_version}, "C")
         except Exception as e:
-            with open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a') as f:
-                f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"C","location":"outfit_worker.py:133","message":"PromptLibrary.get_prompt FAILED","data":{"prompt_version":prompt_version,"error":str(e),"traceback":traceback.format_exc()},"timestamp":int(datetime.datetime.now().timestamp()*1000)})+'\n')
+            _debug_log("outfit_worker.py:192", "PromptLibrary.get_prompt FAILED", {"prompt_version": prompt_version, "error": str(e), "traceback": traceback.format_exc()}, "C")
+            logger.error(f"PromptLibrary.get_prompt failed for version '{prompt_version}': {e}")
             raise
         # #endregion
         
@@ -194,11 +202,10 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
                 max_tokens=max_tokens,
                 prompt_version=prompt_version
             )
-            with open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a') as f:
-                f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C,D","location":"outfit_worker.py:145","message":"StyleGenerationEngine created successfully","data":{"prompt_version":prompt_version},"timestamp":int(datetime.datetime.now().timestamp()*1000)})+'\n')
+            _debug_log("outfit_worker.py:204", "StyleGenerationEngine created successfully", {"prompt_version": prompt_version}, "B,C,D")
         except Exception as e:
-            with open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a') as f:
-                f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"B,C,D","location":"outfit_worker.py:147","message":"StyleGenerationEngine creation FAILED","data":{"prompt_version":prompt_version,"error":str(e),"traceback":traceback.format_exc()},"timestamp":int(datetime.datetime.now().timestamp()*1000)})+'\n')
+            _debug_log("outfit_worker.py:206", "StyleGenerationEngine creation FAILED", {"prompt_version": prompt_version, "error": str(e), "traceback": traceback.format_exc()}, "B,C,D")
+            logger.error(f"Failed to create StyleGenerationEngine with prompt_version '{prompt_version}': {e}")
             raise
         # #endregion
         wardrobe_manager = WardrobeManager(user_id=user_id)
@@ -360,12 +367,9 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
         
     except Exception as e:
         # #region agent log
-        try:
-            with open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a') as f:
-                f.write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"ALL","location":"outfit_worker.py:291","message":"Exception caught in generate_outfits_job","data":{"error":str(e),"error_type":type(e).__name__,"traceback":traceback.format_exc(),"user_id":user_id},"timestamp":int(datetime.datetime.now().timestamp()*1000)})+'\n')
-        except: pass
+        _debug_log("outfit_worker.py:368", "Exception caught in generate_outfits_job", {"error": str(e), "error_type": type(e).__name__, "traceback": traceback.format_exc(), "user_id": user_id}, "ALL")
         # #endregion
-        logger.error(f"Error in generate_outfits_job for {user_id}: {e}")
+        logger.error(f"Error in generate_outfits_job for {user_id}: {e}", exc_info=True)
         if job:
             job.meta['error'] = str(e)
             job.save_meta()
