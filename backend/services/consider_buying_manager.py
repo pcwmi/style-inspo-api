@@ -327,6 +327,127 @@ class ConsiderBuyingManager:
         """Get buying decision stats"""
         return self.decisions_data.get("stats", {})
 
+    def update_considering_item(self, item_id: str, updates: Dict) -> Optional[Dict]:
+        """Update metadata for an existing considering item"""
+        try:
+            items = self.consider_buying_data.get("items", [])
+
+            for item in items:
+                if item.get("id") == item_id:
+                    # Update styling details
+                    if "styling_details" not in item:
+                        item["styling_details"] = {}
+
+                    # Allow updating specific fields in styling_details
+                    allowed_fields = [
+                        "name", "category", "sub_category", "colors",
+                        "cut", "texture", "style", "fit", "brand",
+                        "trend_status", "styling_notes"
+                    ]
+
+                    for field in allowed_fields:
+                        if field in updates:
+                            item["styling_details"][field] = updates[field]
+
+                    # Handle fabric update (stored in structured_attrs)
+                    if "fabric" in updates:
+                        if "structured_attrs" not in item:
+                            item["structured_attrs"] = {}
+                        item["structured_attrs"]["fabric"] = updates["fabric"]
+
+                    # Update price and source_url if provided
+                    if "price" in updates:
+                        item["price"] = updates["price"]
+                    if "source_url" in updates:
+                        item["source_url"] = updates["source_url"]
+
+                    # Update last modified timestamp
+                    item["last_updated"] = datetime.now().isoformat()
+
+                    self._save_consider_buying_data()
+                    return item
+
+            return None
+
+        except Exception as e:
+            logger.error(f"Error updating considering item {item_id}: {str(e)}")
+            return None
+
+    def rotate_considering_item_image(self, item_id: str, degrees: int = 90) -> Optional[str]:
+        """
+        Rotate a considering item's image by the specified degrees (clockwise).
+        Returns the new image path/URL if successful, None otherwise.
+        """
+        try:
+            items = self.consider_buying_data.get("items", [])
+            target_item = None
+
+            for item in items:
+                if item.get("id") == item_id:
+                    target_item = item
+                    break
+
+            if not target_item:
+                logger.error(f"Considering item {item_id} not found for rotation")
+                return None
+
+            # Get current image path
+            current_path = target_item.get("image_path")
+            if not current_path:
+                logger.error(f"No image path found for considering item {item_id}")
+                return None
+
+            # Load image using storage manager
+            image_data = self.storage.load_file(current_path)
+            if not image_data:
+                logger.error(f"Could not load image data from {current_path}")
+                return None
+
+            # Rotate image
+            from io import BytesIO
+            from PIL import Image
+            img = Image.open(BytesIO(image_data))
+
+            # Rotate clockwise (negative angle for PIL rotate)
+            # PIL rotate is counter-clockwise, so -90 is 90 degrees clockwise
+            rotated_img = img.rotate(-degrees, expand=True)
+
+            # Save rotated image
+            # For S3, we'll generate a new filename to avoid caching issues
+
+            filename = os.path.basename(current_path)
+            if self.storage.storage_type == "s3":
+                # Generate new filename for cache busting
+                name, ext = os.path.splitext(filename)
+                # Remove old timestamp if present (simple heuristic)
+                if "_" in name and len(name.split("_")[-1]) > 8:
+                    name = "_".join(name.split("_")[:-1])
+
+                new_filename = f"{name}_{int(datetime.now().timestamp())}{ext}"
+            else:
+                new_filename = filename
+
+            new_path = self.storage.save_image(rotated_img, new_filename, subfolder="consider_buying")
+
+            # Update metadata
+            target_item["image_path"] = new_path
+            target_item["last_updated"] = datetime.now().isoformat()
+
+            # If S3 and filename changed, try to delete old file
+            if self.storage.storage_type == "s3" and new_path != current_path:
+                try:
+                    self.storage.delete_file(current_path)
+                except Exception as e:
+                    logger.warning(f"Failed to delete old image {current_path}: {e}")
+
+            self._save_consider_buying_data()
+
+            return new_path
+
+        except Exception as e:
+            logger.error(f"Error rotating considering item image: {str(e)}")
+            return None
+
     def delete_item(self, item_id: str):
         """Delete item from consider_buying"""
         items = self.consider_buying_data.get("items", [])
