@@ -17,25 +17,31 @@ from services.style_engine import StyleGenerationEngine
 from services.wardrobe_manager import WardrobeManager
 from services.user_profile_manager import UserProfileManager
 from services.image_analyzer import create_image_analyzer
+from core.config import get_settings
+import time
 
 logger = logging.getLogger(__name__)
 
 
 from models.schemas import OutfitContext
 
-def generate_outfits_job(user_id, occasions, weather_condition, temperature_range, mode, anchor_items=None, mock=False):
+def generate_outfits_job(user_id, occasions, weather_condition, temperature_range, mode, anchor_items=None, mock=False, prompt_version=None):
     """Background job for outfit generation"""
     
     job = get_current_job()
+    start_time = time.time()
     
     try:
+        # Get prompt version (provided or env default)
+        if prompt_version is None:
+            prompt_version = get_settings().PROMPT_VERSION
+        
         # Update progress
         if job:
             job.meta['progress'] = 10
             job.save_meta()
             
         if mock:
-            import time
             # Simulate some processing time
             time.sleep(2)
             if job:
@@ -100,7 +106,13 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
                         }
                     }
                 ],
-                "count": 2
+                "count": 2,
+                "metadata": {
+                    "prompt_version": prompt_version,
+                    "model": "gpt-4o",
+                    "temperature": 0.7,
+                    "latency_ms": int((time.time() - start_time) * 1000)
+                }
             }
             
             if job:
@@ -109,8 +121,16 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
                 
             return result
         
+        # Adjust max_tokens based on prompt version
+        max_tokens = 3000 if "chain_of_thought" in prompt_version else 2000
+        
         # Initialize services
-        engine = StyleGenerationEngine()
+        engine = StyleGenerationEngine(
+            model="gpt-4o",
+            temperature=0.7,
+            max_tokens=max_tokens,
+            prompt_version=prompt_version
+        )
         wardrobe_manager = WardrobeManager(user_id=user_id)
         profile_manager = UserProfileManager(user_id=user_id)
         
@@ -253,7 +273,13 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
                 }
                 for combo in combinations
             ],
-            "count": len(combinations)
+            "count": len(combinations),
+            "metadata": {
+                "prompt_version": prompt_version,
+                "model": engine.model,
+                "temperature": engine.temperature,
+                "latency_ms": int((time.time() - start_time) * 1000)
+            }
         }
         
         if job:

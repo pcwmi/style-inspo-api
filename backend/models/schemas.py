@@ -31,6 +31,7 @@ class OutfitRequest(BaseModel):
     mode: str = Field(default="occasion", pattern="^(occasion|complete)$")
     anchor_items: Optional[List[str]] = None  # Item IDs for "complete my look" mode
     mock: bool = False
+    prompt_version: Optional[str] = None  # Optional prompt version override
 
 
 class OutfitItem(BaseModel):
@@ -63,6 +64,7 @@ class OutfitGenerationResponse(BaseModel):
     job_id: str
     status: str
     estimated_time: int = 30  # seconds
+    prompt_version: str  # Prompt version used for generation
 
 
 # Job Status Models

@@ -9,7 +9,9 @@ from models.schemas import OutfitRequest, OutfitGenerationResponse, SaveOutfitRe
 from workers.outfit_worker import generate_outfits_job
 from services.saved_outfits_manager import SavedOutfitsManager
 from services.disliked_outfits_manager import DislikedOutfitsManager
+from services.prompts.library import PromptLibrary
 from core.redis import get_redis_connection
+from core.config import get_settings
 from rq import Queue
 
 router = APIRouter()
@@ -26,6 +28,15 @@ def get_outfit_queue():
 async def generate_outfits(request: OutfitRequest):
     """Generate outfits (background job)"""
     try:
+        # Get prompt version (request override or env default)
+        prompt_version = request.prompt_version or get_settings().PROMPT_VERSION
+        
+        # Validate prompt version exists
+        try:
+            PromptLibrary.get_prompt(prompt_version)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+        
         # Enqueue outfit generation job
         outfit_queue = get_outfit_queue()
         job = outfit_queue.enqueue(
@@ -37,14 +48,18 @@ async def generate_outfits(request: OutfitRequest):
             mode=request.mode,
             anchor_items=request.anchor_items,
             mock=request.mock,
+            prompt_version=prompt_version,
             job_timeout=120  # 2 minutes max
         )
         
         return {
             "job_id": job.id,
             "status": "queued",
-            "estimated_time": 30  # seconds
+            "estimated_time": 30,  # seconds
+            "prompt_version": prompt_version
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error enqueueing outfit generation for {request.user_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))

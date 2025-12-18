@@ -32,6 +32,9 @@ class Settings:
     # API Configuration
     API_V1_PREFIX: str = "/api"
     
+    # Prompt configuration
+    PROMPT_VERSION: str = os.getenv("PROMPT_VERSION", "baseline_v1")
+    
     @property
     def is_openai_configured(self) -> bool:
         return bool(self.OPENAI_API_KEY)
@@ -42,5 +45,10 @@ class Settings:
 
 
 settings = Settings()
+
+
+def get_settings() -> Settings:
+    """Get application settings (singleton pattern for test compatibility)"""
+    return settings
 
 
