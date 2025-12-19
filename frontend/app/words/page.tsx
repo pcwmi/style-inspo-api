@@ -200,6 +200,18 @@ function WordsPageContent() {
           <p className="text-muted text-sm text-center">
             Not sure? Pick what feels right now - you can always change later
           </p>
+          <p className="text-muted text-xs text-center mt-3">
+            Inspired by{' '}
+            <a
+              href="https://www.allisonbornstein.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-terracotta transition"
+            >
+              Allison Bornstein's
+            </a>
+            {' '}three-word method
+          </p>
         </div>
 
         {/* Error message */}
