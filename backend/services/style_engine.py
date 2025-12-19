@@ -10,6 +10,10 @@ from dotenv import load_dotenv
 from services.ai.factory import AIProviderFactory
 from services.ai.providers.base import AIResponse
 
+# Prompt Library for A/B testing
+from services.prompts.library import PromptLibrary
+from services.prompts.base import PromptContext
+
 # Legacy OpenAI imports for backward compatibility
 try:
     from openai import OpenAIError, APIError, APIConnectionError, RateLimitError
@@ -42,7 +46,8 @@ class StyleGenerationEngine:
         api_key: Optional[str] = None,
         model: str = "gpt-4o",
         temperature: float = 0.7,
-        max_tokens: int = 2000
+        max_tokens: int = 2000,
+        prompt_version: str = "baseline_v1"
     ):
         """
         Initialize Style Generation Engine.
@@ -52,10 +57,12 @@ class StyleGenerationEngine:
             model: Model to use (default: gpt-4o). Supports OpenAI, Gemini, Claude models.
             temperature: Temperature for generation (default: 0.7)
             max_tokens: Max tokens to generate (default: 2000)
+            prompt_version: Prompt template version (default: baseline_v1). Options: baseline_v1, fit_constraints_v2, chain_of_thought_v1
         """
         self.model = model
         self.temperature = temperature
         self.max_tokens = max_tokens
+        self.prompt_version = prompt_version
 
         # Create AI provider using factory
         self.ai_provider = AIProviderFactory.create(
@@ -72,126 +79,24 @@ class StyleGenerationEngine:
                           occasion: Optional[str] = None,
                           weather_condition: Optional[str] = None,
                           temperature_range: Optional[str] = None) -> str:
-        """Create the main styling prompt for AI with Style Constitution principles"""
+        """Create the main styling prompt for AI using prompt template system"""
 
-        # Extract user style information
-        three_words = user_profile.get("three_words", {})
-        daily_emotion = user_profile.get("daily_emotion", {})
-        
-        # Build explicit challenge item list for the prompt
-        challenge_item_names = [item.get('styling_details', {}).get('name', 'Unknown') for item in styling_challenges]
-        challenge_items_text = ', '.join([f'"{name}"' for name in challenge_item_names])
+        # Get the appropriate prompt template based on version
+        prompt_template = PromptLibrary.get_prompt(self.prompt_version)
 
-        # Determine opening statement based on flow type
-        if occasion or weather_condition:
-            opening_statement = "Your job is to create outfit combinations that are appropriate for the user's occasion and weather, while honoring their personal style DNA."
-        else:
-            opening_statement = "Your job is to create outfit combinations that help the user wear pieces they love but struggle to style."
-        
-        prompt = f"""
-You are an expert fashion stylist inspired by Allison Bornstein's "Wear it Well" methodology. {opening_statement}
+        # Build context for the template
+        context = PromptContext(
+            user_profile=user_profile,
+            available_items=available_items,
+            styling_challenges=styling_challenges,
+            occasion=occasion,
+            weather_condition=weather_condition,
+            temperature_range=temperature_range
+        )
 
-## USER STYLE PROFILE
-- **Current Style**: {three_words.get('current', 'N/A')}
-- **Aspirational Style**: {three_words.get('aspirational', 'N/A')}
-- **How They Want to Feel**: {three_words.get('feeling', 'N/A')}
+        # Generate prompt using the template
+        prompt = prompt_template.build(context)
 
-## TODAY'S CONTEXT
-{self._format_todays_context(occasion, weather_condition, temperature_range)}
-
-## AVAILABLE WARDROBE
-{self._format_combined_wardrobe(available_items, styling_challenges)}
-
-## STYLE CONSTITUTION: Core Principles for Great Outfits
-
-Apply these principles to create truly exceptional styling:
-
-**Principle 1: Style DNA Alignment**
-Every outfit MUST reflect ALL three aspects of the user's style DNA throughout the look.
-- Their go-to style is {three_words.get('current', 'N/A')}, and their aspiration is to be {three_words.get('aspirational', 'N/A')}, and they want to feel {three_words.get('feeling', 'N/A')} via this outfit
-- Each element should contribute to expressing at least one of these characteristics
-- Example: If their go-to style is "classic", their aspiration is to be "bold", and they want to feel "confident", include classic foundations, bold statement pieces, AND styling that creates confidence through intentional details
-
-**Principle 2: Intentional Contrast**
-Create visual interest through thoughtful contrast across multiple dimensions:
-
-A. **Proportional Contrast**: Mix fitted with loose, minimal with voluminous
-   - Fitted top + wide-leg pants, or oversized sweater + slim jeans
-   - Less clothes + bigger accessories (cropped top + oversized bag)
-   - wide leg pants + shoes with a sharper toe like almond toe or pointy toe
-
-B. **Wrong Shoe Theory**: Break footwear expectations for surprise
-   - Sneakers with dresses instead of heels
-   - Western boots with elegant pieces instead of expected casual
-   - Dress shoes with jeans instead of sneakers
-
-C. **Textural Contrast**: Combine different textures even in similar colors
-   - Smooth leather + soft knit + crisp cotton
-   - Structured denim + flowing silk
-   - A tonal outfit creates the sense of intentionality and depth. e.g. every item is in similar shade but have different textures.
-
-D. **Expectation Contrast**: Mix styles that don't typically go together
-   - Statement + Statement (bold scarf + statement boots)
-   - Western + elegant, preppy + grunge
-   - Formal pieces in casual settings
-
-**Principle 3: Intentional Details**
-Add purposeful styling gestures that demonstrate care:
-
-A. **Layering**: Show underlayers strategically
-   - Tee showing beneath sweater
-   - Collar peeking from pullover
-
-B. **Repetition**: Repeat colors or textures for visual rhythm
-   - Multiple necklaces, stacked belts
-   - Echo textures across pieces
-
-C. **Styling Gestures**: Specify deliberate styling techniques
-   - Partial tuck (front only)
-   - Cuffed sleeves or pant legs
-   - Draped belts vs. cinched
-   - Unbuttoned elements
-
-## WARDROBE CONSTRAINTS
-Before creating outfits, review the available wardrobe items for appropriateness:
-
-- **Weather-Appropriateness Check**: Review items for temperature fit. If wardrobe lacks appropriate items for the temperature (e.g., no mid-weight/heavy fabrics for cool weather, no lightweight fabrics for hot weather), acknowledge this limitation in the `style_opportunity` field and suggest specific missing pieces with fabric type and weight.
-- **Occasion-Appropriateness Check**: Review items for occasion fit. If wardrobe lacks pieces that would make the outfit more appropriate for the occasion (e.g., no blazer for business meeting, no structured pieces for formal event), acknowledge this in `style_opportunity` and suggest specific missing pieces.
-- **The `style_opportunity` field should be used to address wardrobe gaps that prevent optimal occasion/weather fit**, not just style DNA gaps. Be specific about what's missing and why it matters for the occasion/weather.
-
-**Example**: If generating for "Business meeting" in "Cool (50-65°F)" but wardrobe only has lightweight summer fabrics, `style_opportunity` should say: "A mid-weight blazer or structured cardigan would make this outfit more appropriate for the business meeting and provide warmth for cool weather. Consider a navy or charcoal blazer in wool or cashmere blend."
-
-## YOUR TASK
-{self._format_task_instructions(occasion, weather_condition, temperature_range, styling_challenges, challenge_item_names, challenge_items_text)}
-
-## OPTIONAL: Style Opportunities
-If an outfit would significantly benefit from an item not in their wardrobe to better express their style words, you may suggest it. Be specific:
-- What item (category, color, style details like "structured blazer in navy" or "ankle boots with block heel")
-- How it would enhance expression of their three style words
-- Why it matters for this particular outfit
-Only suggest if there's a genuine gap that would meaningfully improve the outfit's ability to express their style DNA - don't force suggestions. If the outfit already fully expresses their style words with available items, omit this field or set to null.
-
-## OUTPUT FORMAT
-Return a valid JSON array with 1-3 outfits (generate as many as genuinely work with their style). Each outfit must include:
-
-```json
-{{
-  "items": ["Item Name 1", "Item Name 2", ...],
-  "styling_notes": "Specific instructions: tucking, cuffing, layering, etc. For boots, describe if the pants are tucked inside the boot or outisde.",
-  "why_it_works": "MUST explain THREE aspects concisely (keep to 3-4 sentences total): (1) How this outfit is appropriate for the occasion(s) - address each occasion mentioned and why the outfit works for it, (2) How this outfit works for the weather/temperature - explain fabric choices, layering strategy, and temperature appropriateness, (3) How this honors their style DNA and applies Constitution principles. Be punchy and succinct - focus on the key reasons, not exhaustive detail. MUST explain the role of EACH item in the outfit and how it contributes to occasion fit, weather fit, AND overall style.",
-  "style_opportunity": "Optional: If wardrobe lacks items needed for optimal occasion/weather fit OR to better express their three style words, suggest specific missing pieces here. Be specific about fabric type and weight for weather gaps (e.g., 'a mid-weight blazer in navy wool' for business meeting in cool weather). Only include if there's a genuine gap - if the outfit already fully works for occasion/weather/style, omit this field or set to null.",
-  "constitution_principles": {{
-    "style_dna_alignment": "How each style word appears (soft: X, elegant: Y, playful: Z)",
-    "intentional_contrast": "Which types used (proportional: X, wrong shoe: Y, textural: Z)",
-    "intentional_details": "Specific gestures specified (partial tuck, cuffed sleeves, etc.)"
-  }}
-}}
-```
-
-IMPORTANT: Return ONLY valid JSON. Start with [ and end with ]. Use exact item names from the wardrobe list above.
-
-{self._format_critical_reminder(styling_challenges, challenge_item_names, challenge_items_text)}
-"""
         return prompt
 
     def _format_todays_context(self, occasion: Optional[str], weather_condition: Optional[str], temperature_range: Optional[str]) -> str:
@@ -516,6 +421,11 @@ IMPORTANT: Return ONLY valid JSON. Start with [ and end with ]. Use exact item n
             temperature_range=temperature_range
         )
 
+        # Get the prompt template's system message
+        from services.prompts.library import PromptLibrary
+        prompt_template = PromptLibrary.get_prompt(self.prompt_version)
+        system_message = prompt_template.system_message
+
         try:
             # DEBUG: Print prompt sent to AI
             self._safe_stderr_write("\n" + "=" * 80 + "\n")
@@ -527,7 +437,7 @@ IMPORTANT: Return ONLY valid JSON. Start with [ and end with ]. Use exact item n
             # Call AI provider (supports OpenAI, Gemini, Claude)
             ai_result: AIResponse = self.ai_provider.generate_text(
                 prompt=prompt,
-                system_message="You are an expert fashion stylist. Return ONLY valid JSON arrays, no other text.",
+                system_message=system_message,
                 temperature=self.temperature,
                 max_tokens=self.max_tokens
             )
@@ -554,14 +464,40 @@ IMPORTANT: Return ONLY valid JSON. Start with [ and end with ]. Use exact item n
 
             # Clean the AI response - remove markdown code blocks if present
             cleaned_response = ai_response.strip()
-            if cleaned_response.startswith('```json'):
-                cleaned_response = cleaned_response[7:]  # Remove ```json
-            if cleaned_response.startswith('```'):
-                cleaned_response = cleaned_response[3:]   # Remove ```
-            if cleaned_response.endswith('```'):
-                cleaned_response = cleaned_response[:-3]  # Remove trailing ```
-            cleaned_response = cleaned_response.strip()
-            
+
+            # For chain-of-thought prompts, extract JSON from mixed reasoning + JSON content
+            import re
+
+            # First, check for ===JSON OUTPUT=== marker (chain-of-thought format)
+            if '===JSON OUTPUT===' in cleaned_response:
+                # Extract everything after the marker
+                json_section = cleaned_response.split('===JSON OUTPUT===')[1].strip()
+                # Find JSON array in this section
+                json_array_match = re.search(r'\[[\s\S]*\]', json_section)
+                if json_array_match:
+                    cleaned_response = json_array_match.group(0)
+                else:
+                    cleaned_response = json_section
+            else:
+                # Try to find JSON array first (preferred format)
+                json_array_match = re.search(r'\[[\s\S]*\]', cleaned_response)
+                if json_array_match:
+                    cleaned_response = json_array_match.group(0)
+                else:
+                    # Fallback: Try to find JSON object
+                    json_object_match = re.search(r'\{[\s\S]*\}', cleaned_response)
+                    if json_object_match:
+                        cleaned_response = json_object_match.group(0)
+                    else:
+                        # No JSON found - try original markdown block removal
+                        if cleaned_response.startswith('```json'):
+                            cleaned_response = cleaned_response[7:]  # Remove ```json
+                        if cleaned_response.startswith('```'):
+                            cleaned_response = cleaned_response[3:]   # Remove ```
+                        if cleaned_response.endswith('```'):
+                            cleaned_response = cleaned_response[:-3]  # Remove trailing ```
+                        cleaned_response = cleaned_response.strip()
+
             outfits_data = json.loads(cleaned_response)
 
             # Handle different response formats
