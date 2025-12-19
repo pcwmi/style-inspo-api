@@ -185,3 +185,4 @@ Workers must be running separately:
 rq worker outfits analysis --url $REDIS_URL
 ```
 
+# Force redeploy Fri Dec 19 09:29:38 PST 2025
