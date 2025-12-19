@@ -53,7 +53,6 @@ Safe outfits don't get photographed. Predictable is a failure mode. Your job is 
 
 Style DNA: {current_style} + {aspirational_style} + wants to feel {feeling}
 Occasion: {context.occasion or 'N/A'}
-Weather: {context.weather_condition or 'N/A'} ({context.temperature_range or 'N/A'})
 
 ---
 
@@ -283,7 +282,7 @@ Note which style word(s) this piece carries."""
         return """[
   {
     "items": ["item name 1", "item name 2", ...],
-    "styling_notes": "Concrete styling details",
-    "why_it_works": "Why this combination succeeds"
+    "styling_notes": "Specific instructions: tucking, cuffing, layering, sleeve rolling, etc. For boots, specify if pants are tucked inside or worn outside. Be concrete and actionable.",
+    "why_it_works": "MUST be concise (2-4 sentences): Explain how this is appropriate for the occasion, works with their wardrobe, and honors their style DNA. MUST explain the role of EACH item."
   }
 ]"""
