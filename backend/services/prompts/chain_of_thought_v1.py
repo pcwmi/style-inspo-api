@@ -36,6 +36,10 @@ class ChainOfThoughtPromptV1(BaselinePromptV1):
                 for item in context.styling_challenges
             ]
             anchor_items_text = ', '.join([f'"{name}"' for name in anchor_item_names])
+            # #region agent log
+            import sys
+            print(f"[DEBUG-ANCHOR] chain_of_thought_v1.py:38 | anchor_item_names={anchor_item_names} | anchor_items_text={anchor_items_text} | len(styling_challenges)={len(context.styling_challenges)}", file=sys.stderr)
+            # #endregion
         else:
             anchor_items_text = ""
 
@@ -75,7 +79,7 @@ For each outfit, think through these steps:
 What must this outfit accomplish? Name the ONE primary job.
 
 **STEP 2: ANCHOR**
-{self._format_anchor_step(has_anchor_items, anchor_items_text)}
+{self._format_anchor_step(has_anchor_items, anchor_items_text, len(context.styling_challenges) if has_anchor_items else None)}
 
 **STEP 3: SUPPORTING PIECES**
 Select 2-4 pieces that complete the outfit. These pieces should:
@@ -124,7 +128,7 @@ Complete: "This outfit says: I'm someone who ___"
 
 2. Each outfit MUST have an explicitly named unexpected element
 
-{self._format_anchor_requirement(has_anchor_items)}
+{self._format_anchor_requirement(has_anchor_items, anchor_items_text if has_anchor_items else "", len(context.styling_challenges) if has_anchor_items else None)}
 
 4. No item can appear in more than 2 of the 3 outfits
 
@@ -135,7 +139,7 @@ Complete: "This outfit says: I'm someone who ___"
 7. Show reasoning for each step
 
 ---
-
+{self._format_critical_anchor_reminder(has_anchor_items, anchor_items_text if has_anchor_items else "", len(context.styling_challenges) if has_anchor_items else None)}
 ## OUTPUT FORMAT
 
 For each outfit, first show your reasoning:
@@ -197,21 +201,82 @@ CRITICAL: You MUST include both the reasoning AND the JSON. Do not stop after th
 """
         return prompt
 
-    def _format_anchor_step(self, has_anchor_items: bool, anchor_items_text: str) -> str:
-        """Format STEP 2 based on whether this is complete-my-outfit or occasion-based"""
+    def _format_anchor_step(self, has_anchor_items: bool, anchor_items_text: str, anchor_count: int = None) -> str:
+        """Format STEP 2 based on whether this is complete-my-outfit or occasion-based
+        
+        Args:
+            has_anchor_items: Whether anchor items are present
+            anchor_items_text: Formatted string like '"Item1", "Item2"'
+            anchor_count: Optional explicit count (more reliable than string parsing)
+        """
         if has_anchor_items:
-            return f"""The user has selected {anchor_items_text} to wear today. This is your hero piece (or pieces) - style it in a fresh, wearable way that makes the user feel put-together.
+            # Count the number of anchors to determine singular vs plural
+            # BUG FIX: anchor_items_text.count('",') doesn't work because format is '", "' (comma-space-quote)
+            # The separator between items is: ", " (quote-comma-space-quote)
+            if anchor_count is None:
+                # Fallback: count the separator pattern '", ' + 1, or count quotes and divide by 2
+                anchor_count_by_pattern = anchor_items_text.count('", ') + 1
+                anchor_count_by_quotes = anchor_items_text.count('"') // 2 if anchor_items_text.count('"') > 0 else 0
+                # Use the more reliable method (quotes / 2, since each item has 2 quotes)
+                anchor_count = anchor_count_by_quotes if anchor_count_by_quotes > 0 else anchor_count_by_pattern
+            # #region agent log
+            import sys
+            print(f"[DEBUG-ANCHOR] chain_of_thought_v1.py:204 | anchor_items_text={anchor_items_text!r} | anchor_count={anchor_count}", file=sys.stderr)
+            # #endregion
+
+            if anchor_count == 1:
+                # Single anchor: existing language works
+                return f"""The user has selected {anchor_items_text} to wear today. This is your hero piece - style it in a fresh, wearable way that makes the user feel put-together.
 Note which style word(s) this piece carries."""
+            else:
+                # Multiple anchors: use plural, explicit language
+                return f"""The user has selected {anchor_items_text} to wear today. These are ALL required pieces - EVERY outfit must include ALL of them. Style them together in fresh, wearable ways that make the user feel put-together.
+Note which style word(s) these pieces carry."""
         else:
             return """Select the HERO piece - the one that makes this outfit worth photographing.
 Note which style word(s) this piece carries."""
 
-    def _format_anchor_requirement(self, has_anchor_items: bool) -> str:
-        """Format REQUIREMENT #3 based on whether this is complete-my-outfit or occasion-based"""
+    def _format_anchor_requirement(self, has_anchor_items: bool, anchor_items_text: str = "", anchor_count: int = None) -> str:
+        """Format REQUIREMENT #3 based on whether this is complete-my-outfit or occasion-based
+        
+        Args:
+            has_anchor_items: Whether anchor items are present
+            anchor_items_text: Formatted string like '"Item1", "Item2"'
+            anchor_count: Optional explicit count (more reliable than string parsing)
+        """
         if has_anchor_items:
-            return "3. The anchor item(s) MUST appear in ALL 3 outfits. Style them differently each time to show versatility."
+            # Count the number of anchors to determine singular vs plural
+            if anchor_count is None:
+                # Fallback: count quotes and divide by 2 (each item has 2 quotes)
+                anchor_count = anchor_items_text.count('"') // 2 if anchor_items_text.count('"') > 0 else 1
+
+            if anchor_count == 1:
+                return "3. The anchor item MUST appear in ALL 3 outfits. Style it differently each time to show versatility."
+            else:
+                return f"3. REQUIRED: ALL anchor pieces ({anchor_items_text}) MUST appear in ALL 3 outfits. Style them together differently each time to show versatility."
         else:
             return "3. Anchor pieces must be DIFFERENT across all 3 outfits"
+
+    def _format_critical_anchor_reminder(self, has_anchor_items: bool, anchor_items_text: str, anchor_count: int = None) -> str:
+        """Format critical reminder about anchor items (appears at end of prompt)
+        
+        Args:
+            has_anchor_items: Whether anchor items are present
+            anchor_items_text: Formatted string like '"Item1", "Item2"'
+            anchor_count: Optional explicit count (more reliable than string parsing)
+        """
+        if not has_anchor_items:
+            return ""
+
+        # Count the number of anchors to determine singular vs plural
+        if anchor_count is None:
+            # Fallback: count quotes and divide by 2 (each item has 2 quotes)
+            anchor_count = anchor_items_text.count('"') // 2 if anchor_items_text.count('"') > 0 else 1
+
+        if anchor_count == 1:
+            return f"\n\nCRITICAL REMINDER: The anchor piece {anchor_items_text} MUST appear in EVERY outfit. Do not skip this item in any of your 3 combinations."
+        else:
+            return f"\n\nCRITICAL REMINDER: ALL anchor pieces ({anchor_items_text}) MUST appear in EVERY outfit. Do not skip any of these items - each outfit should include all {anchor_count} anchor pieces styled together."
 
     def _get_json_schema(self) -> str:
         """JSON schema for outfit response"""
