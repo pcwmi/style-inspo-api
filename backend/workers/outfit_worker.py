@@ -19,8 +19,12 @@ logger = logging.getLogger(__name__)
 
 # Helper function for safe debug logging (works in both local and production)
 DEBUG_LOG_PATH = '/Users/peichin/Projects/style-inspo/.cursor/debug.log'
-def _debug_log(location, message, data, hypothesis_id="A", run_id="run1"):
-    """Safely log debug info to file (if available) and logger"""
+def _debug_log(location, message, data, hypothesis_id="A", run_id="run1", level="error"):
+    """Safely log debug info to file (if available) and logger
+    
+    Args:
+        level: "error" (always visible in Railway) or "debug" (may be filtered)
+    """
     log_entry = {
         "sessionId": "debug-session",
         "runId": run_id,
@@ -30,8 +34,14 @@ def _debug_log(location, message, data, hypothesis_id="A", run_id="run1"):
         "data": data,
         "timestamp": int(datetime.datetime.now().timestamp() * 1000)
     }
-    # Always log to logger (goes to Railway logs in production)
-    logger.debug(f"[DEBUG] {location}: {message} | {json.dumps(data)}")
+    # Always log to logger - use ERROR level so it shows up in Railway logs
+    log_msg = f"[DEBUG-{hypothesis_id}] {location}: {message} | {json.dumps(data)}"
+    if level == "error":
+        logger.error(log_msg)
+    else:
+        logger.debug(log_msg)
+    # Also print to stderr (Railway captures this)
+    print(f"[DEBUG-{hypothesis_id}] {location}: {message} | {json.dumps(data)}", file=sys.stderr)
     # Try to write to file (only works locally)
     try:
         if os.path.exists(os.path.dirname(DEBUG_LOG_PATH)):
@@ -180,21 +190,23 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
         max_tokens = 3000 if "chain_of_thought" in prompt_version else 2000
         
         # #region agent log
-        _debug_log("outfit_worker.py:186", "Before creating StyleGenerationEngine", {"prompt_version": prompt_version, "max_tokens": max_tokens, "sys_path_exists": os.path.exists(backend_dir)}, "B,C,D")
+        _debug_log("outfit_worker.py:186", "Before creating StyleGenerationEngine", {"prompt_version": prompt_version, "max_tokens": max_tokens, "sys_path_exists": os.path.exists(backend_dir)}, "B,C,D", "error")
         # #endregion
         
         # #region agent log
         try:
-            PromptLibrary.get_prompt(prompt_version)
-            _debug_log("outfit_worker.py:190", "PromptLibrary.get_prompt successful", {"prompt_version": prompt_version}, "C")
+            _debug_log("outfit_worker.py:189", "Calling PromptLibrary.get_prompt", {"prompt_version": prompt_version}, "C", "error")
+            prompt_obj = PromptLibrary.get_prompt(prompt_version)
+            _debug_log("outfit_worker.py:191", "PromptLibrary.get_prompt successful", {"prompt_version": prompt_version, "prompt_type": type(prompt_obj).__name__}, "C", "error")
         except Exception as e:
-            _debug_log("outfit_worker.py:192", "PromptLibrary.get_prompt FAILED", {"prompt_version": prompt_version, "error": str(e), "traceback": traceback.format_exc()}, "C")
-            logger.error(f"PromptLibrary.get_prompt failed for version '{prompt_version}': {e}")
+            _debug_log("outfit_worker.py:193", "PromptLibrary.get_prompt FAILED", {"prompt_version": prompt_version, "error": str(e), "error_type": type(e).__name__, "traceback": traceback.format_exc()}, "C", "error")
+            logger.error(f"PromptLibrary.get_prompt failed for version '{prompt_version}': {e}", exc_info=True)
             raise
         # #endregion
         
         # Initialize services
         # #region agent log
+        _debug_log("outfit_worker.py:200", "About to create StyleGenerationEngine", {"prompt_version": prompt_version, "max_tokens": max_tokens, "model": "gpt-4o"}, "B,C,D", "error")
         try:
             engine = StyleGenerationEngine(
                 model="gpt-4o",
@@ -202,10 +214,12 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
                 max_tokens=max_tokens,
                 prompt_version=prompt_version
             )
-            _debug_log("outfit_worker.py:204", "StyleGenerationEngine created successfully", {"prompt_version": prompt_version}, "B,C,D")
+            _debug_log("outfit_worker.py:209", "StyleGenerationEngine created successfully", {"prompt_version": prompt_version, "engine_prompt_version": getattr(engine, 'prompt_version', 'N/A')}, "B,C,D", "error")
         except Exception as e:
-            _debug_log("outfit_worker.py:206", "StyleGenerationEngine creation FAILED", {"prompt_version": prompt_version, "error": str(e), "traceback": traceback.format_exc()}, "B,C,D")
-            logger.error(f"Failed to create StyleGenerationEngine with prompt_version '{prompt_version}': {e}")
+            _debug_log("outfit_worker.py:211", "StyleGenerationEngine creation FAILED", {"prompt_version": prompt_version, "error": str(e), "error_type": type(e).__name__, "traceback": traceback.format_exc()}, "B,C,D", "error")
+            logger.error(f"Failed to create StyleGenerationEngine with prompt_version '{prompt_version}': {e}", exc_info=True)
+            print(f"ERROR: StyleGenerationEngine creation failed: {e}", file=sys.stderr)
+            print(f"Traceback: {traceback.format_exc()}", file=sys.stderr)
             raise
         # #endregion
         wardrobe_manager = WardrobeManager(user_id=user_id)
