@@ -81,7 +81,6 @@ export const api = {
   async generateOutfits(request: {
     user_id: string
     occasions?: string[]
-    weather_condition?: string
     temperature_range?: string
     mode: 'occasion' | 'complete'
     anchor_items?: string[]

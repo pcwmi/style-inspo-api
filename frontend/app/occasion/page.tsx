@@ -24,7 +24,7 @@ function OccasionPageContent() {
 
   const [selectedOccasions, setSelectedOccasions] = useState<string[]>([])
   const [customOccasion, setCustomOccasion] = useState('')
-  const [weather, setWeather] = useState({ condition: 'Sunny', temp: 'Cool (50-65°F)' })
+  const [temperatureRange, setTemperatureRange] = useState('Cool (50-65°F)')
   const [generating, setGenerating] = useState(false)
 
   const handleGenerate = async () => {
@@ -33,8 +33,7 @@ function OccasionPageContent() {
       const { job_id } = await api.generateOutfits({
         user_id: user,
         occasions: [...selectedOccasions, customOccasion].filter(Boolean),
-        weather_condition: weather.condition,
-        temperature_range: weather.temp,
+        temperature_range: temperatureRange,
         mode: 'occasion',
         mock: user === 'test'
       })
@@ -95,22 +94,12 @@ function OccasionPageContent() {
           />
         </div>
 
-        {/* Weather section */}
+        {/* Temperature section */}
         <div className="mb-5 md:mb-6">
-          <label className="block text-sm font-medium mb-2 text-ink">Weather</label>
+          <label className="block text-sm font-medium mb-2 text-ink">Temperature</label>
           <select
-            value={weather.condition}
-            onChange={(e) => setWeather({ ...weather, condition: e.target.value })}
-            className="w-full px-4 py-3 border border-[rgba(26,22,20,0.12)] rounded-lg focus:outline-none focus:ring-2 focus:ring-terracotta mb-3 text-base bg-white"
-          >
-            <option>Sunny</option>
-            <option>Cloudy</option>
-            <option>Rainy</option>
-            <option>Snowy</option>
-          </select>
-          <select
-            value={weather.temp}
-            onChange={(e) => setWeather({ ...weather, temp: e.target.value })}
+            value={temperatureRange}
+            onChange={(e) => setTemperatureRange(e.target.value)}
             className="w-full px-4 py-3 border border-[rgba(26,22,20,0.12)] rounded-lg focus:outline-none focus:ring-2 focus:ring-terracotta text-base bg-white"
           >
             <option>Cool (50-65°F)</option>

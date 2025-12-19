@@ -167,7 +167,6 @@ export function useGenerateOutfits(
       {
         user_id: string
         occasions?: string[]
-        weather_condition?: string
         temperature_range?: string
         mode: 'occasion' | 'complete'
         anchor_items?: string[]
@@ -181,7 +180,6 @@ export function useGenerateOutfits(
     mutationFn: (request: {
       user_id: string
       occasions?: string[]
-      weather_condition?: string
       temperature_range?: string
       mode: 'occasion' | 'complete'
       anchor_items?: string[]

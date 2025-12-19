@@ -172,11 +172,6 @@ function SavedPageContent() {
                           </span>
                         </Tooltip>
                       )}
-                      {saved.context.weather_condition && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
-                          {saved.context.weather_condition}
-                        </span>
-                      )}
                       {saved.context.temperature_range && (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100">
                           {saved.context.temperature_range}

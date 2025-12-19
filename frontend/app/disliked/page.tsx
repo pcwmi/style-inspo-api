@@ -164,11 +164,6 @@ function DislikedPageContent() {
                           </span>
                         </Tooltip>
                       )}
-                      {disliked.context.weather_condition && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
-                          {disliked.context.weather_condition}
-                        </span>
-                      )}
                       {disliked.context.temperature_range && (
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100">
                           {disliked.context.temperature_range}
