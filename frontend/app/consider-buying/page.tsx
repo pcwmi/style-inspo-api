@@ -211,10 +211,10 @@ function ConsiderBuyingContent() {
             setError('Cannot continue: item ID is missing. Please try again.')
             return
         }
-        console.log('[DEBUG] Navigating to similar items with item_id:', analyzedItem.item.id)
-        // Navigate to similar items view
+        console.log('[DEBUG] Navigating to outfits with item_id:', analyzedItem.item.id)
+        // Navigate to outfits view
         sessionStorage.setItem('consider_buying_item', JSON.stringify(analyzedItem))
-        router.push(`/consider-buying/similar?item_id=${analyzedItem.item.id}&user=${user}`)
+        router.push(`/consider-buying/outfits?item_id=${analyzedItem.item.id}&user=${user}`)
     }
 
     const handleScreenshotUpload = async (file: File) => {
@@ -515,7 +515,7 @@ function ConsiderBuyingContent() {
                                         onClick={handleAddItem}
                                         className="w-full mt-4 px-6 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
                                     >
-                                        Continue to Similar Items
+                                        See outfits
                                     </button>
                                 </div>
                             )
