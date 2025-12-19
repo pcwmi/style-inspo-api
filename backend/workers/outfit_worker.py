@@ -85,6 +85,11 @@ from models.schemas import OutfitContext
 def generate_outfits_job(user_id, occasions, weather_condition, temperature_range, mode, anchor_items=None, mock=False, prompt_version=None):
     """Background job for outfit generation"""
     
+    # #region agent log
+    print(f"[WORKER-START] generate_outfits_job called: user_id={user_id}, mode={mode}, prompt_version={prompt_version}", file=sys.stderr)
+    logger.error(f"[WORKER-START] generate_outfits_job called: user_id={user_id}, mode={mode}, prompt_version={prompt_version}")
+    # #endregion
+    
     job = get_current_job()
     start_time = time.time()
     
