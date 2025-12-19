@@ -15,7 +15,6 @@ function CompletePageContent() {
   const [wardrobe, setWardrobe] = useState<any>(null)
   const [consideringItems, setConsideringItems] = useState<any>(null)
   const [selectedItems, setSelectedItems] = useState<string[]>([])
-  const [temperatureRange, setTemperatureRange] = useState('Cool (50-65°F)')
   const [generating, setGenerating] = useState(false)
   const [loading, setLoading] = useState(true)
 
@@ -48,7 +47,7 @@ function CompletePageContent() {
       const { job_id } = await api.generateOutfits({
         user_id: user,
         anchor_items: selectedItems,
-        temperature_range: temperatureRange,
+        temperature_range: undefined,
         mode: 'complete'
       })
       
@@ -159,21 +158,6 @@ function CompletePageContent() {
               </button>
             )
           })}
-        </div>
-
-        {/* Temperature section */}
-        <div className="mb-5 md:mb-6">
-          <label className="block text-sm font-medium mb-2 text-ink">Temperature</label>
-          <select
-            value={temperatureRange}
-            onChange={(e) => setTemperatureRange(e.target.value)}
-            className="w-full px-4 py-3 border border-[rgba(26,22,20,0.12)] rounded-lg focus:outline-none focus:ring-2 focus:ring-terracotta text-base bg-white"
-          >
-            <option>Cool (50-65°F)</option>
-            <option>Warm (65-75°F)</option>
-            <option>Hot (75°F+)</option>
-            <option>Cold (Below 50°F)</option>
-          </select>
         </div>
 
         {/* Generate button */}
