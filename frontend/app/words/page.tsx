@@ -113,7 +113,7 @@ function WordsPageContent() {
           </div>
           <input
             type="text"
-            placeholder="e.g., classic"
+            placeholder="Think of your go-to outfit - what makes it you?"
             value={word1}
             onChange={(e) => setWord1(e.target.value)}
             className="w-full px-4 py-3 text-base border border-[rgba(26,22,20,0.12)] rounded-lg focus:outline-none focus:ring-2 focus:ring-terracotta bg-white mb-3"
@@ -143,7 +143,7 @@ function WordsPageContent() {
           </div>
           <input
             type="text"
-            placeholder="e.g., bold"
+            placeholder="What style do you screenshot or admire, but haven't tried yet?"
             value={word2}
             onChange={(e) => setWord2(e.target.value)}
             className="w-full px-4 py-3 text-base border border-[rgba(26,22,20,0.12)] rounded-lg focus:outline-none focus:ring-2 focus:ring-terracotta bg-white mb-3"
@@ -173,7 +173,7 @@ function WordsPageContent() {
           </div>
           <input
             type="text"
-            placeholder="e.g., confident"
+            placeholder="What energy do you want to bring?"
             value={word3}
             onChange={(e) => setWord3(e.target.value)}
             className="w-full px-4 py-3 text-base border border-[rgba(26,22,20,0.12)] rounded-lg focus:outline-none focus:ring-2 focus:ring-terracotta bg-white mb-3"
