@@ -12,8 +12,8 @@
 
 ## Research Summary
 
-**Total users interviewed**: 3 (Mia, Charity, Heather)
-**Research period**: Oct 2025 - Nov 2025
+**Total users interviewed**: 4 (Mia, Charity, Heather, Alexi)
+**Research period**: Oct 2025 - Dec 2025
 **Key themes across all users**:
 - Decision fatigue on daily outfit execution (even when they know their style)
 - Duplicate buying problem (forgetting what they own)
@@ -50,6 +50,13 @@
 - **Problem**: Duplicate buying ("doesn't keep buying the same thing"), outfit planning for trips
 - **Use case**: See what's in closet to prevent duplicates, create outfits for trips
 - **Status**: Actually used the app (Nov 17, 2025) - uploaded 24 pieces, created outfits, provided detailed feedback
+
+### Alexi [Last name TBD]
+- **Role**: First beta tester (complete onboarding flow on new stack)
+- **Background**: [To be added]
+- **Problem**: Needs inspiration for style vocabulary (three-words), uncertainty during upload process
+- **Use case**: Complete onboarding and outfit generation
+- **Status**: ✅ **COMPLETED ONBOARDING Dec 2025** - First user to complete full end-to-end flow on FastAPI + Next.js stack, uploaded 40 items, generated outfits
 
 ---
 
@@ -526,6 +533,189 @@
 
 ---
 
+### Week of Dec 16, 2025
+
+**Product state at this time**: FastAPI + Next.js migration complete, deployed to production. Mobile-first photo upload working end-to-end. Weather integration active. Three-words style profile with simple text inputs. Chain-of-thought prompt shipped to production.
+
+**Research conducted**: Alexi beta testing - first complete onboarding flow test with real user on new stack
+
+---
+
+#### Alexi [Last Name] - Beta Testing Session (Dec 19, 2025)
+
+**Session context**: Alexi is identified as "first beta tester" - first user to go through complete onboarding flow from start to finish on the new FastAPI + Next.js stack. Testing mobile web upload experience and three-words profile collection. Provided feedback asynchronously after completing full flow.
+
+**Product state shown**: FastAPI backend + Next.js frontend (post-migration), mobile-first photo upload, three-words style profile, weather integration, occasion-based outfit generation with chain-of-thought prompt. Production URL deployed to Vercel.
+
+**What she completed**:
+- Full onboarding flow (three-words → photo upload → outfit generation)
+- Uploaded 40 wardrobe items (UI initially showed 10, then corrected to 40 after generation completed)
+- Generated outfits successfully
+- Tested weather integration feature
+
+---
+
+**Her exact words (direct quotes)**:
+
+**Three-words inspiration need**:
+- "Would like more inspiration words/examples (similar to music genre selection)"
+- "More aesthetics words (like 'preppy')"
+- "Mood words (like 'effortless', 'put together', 'laid back')"
+
+**Upload count display issue**:
+- "Small lag where UI showed 10 items uploaded, but actually uploaded 40"
+- "The count corrected itself after outfit generation completed"
+- [Implied concern: Creates uncertainty about whether all items were captured]
+
+**Weather integration request**:
+- "Take weather into account for outfit suggestions"
+- "Example: Suggesting to bring an umbrella"
+
+**Onboarding emotional response**:
+- "I feel like I'll get what I put into it"
+- Feeling: "Daunted by uploading closet (feels like a task)"
+- Motivation: "Still motivated because understands the value proposition"
+
+---
+
+**Observed behavior** (inferred from feedback):
+
+**High completion**:
+- Completed entire onboarding despite feeling daunted
+- Uploaded 40 items (significantly more than 10-item minimum)
+- Successfully generated outfits
+
+**Perception issues**:
+- Upload count discrepancy created uncertainty (10 shown vs 40 actual)
+- Needed more guidance/inspiration for three-words profile step
+
+**Value understanding**:
+- Quote "I'll get what I put into it" suggests she understands quality-in-quality-out model
+- Stayed motivated through upload task because she sees value proposition
+
+---
+
+**What frustrated her** (UX issues):
+
+1. **Three-words prompt lacks inspiration**: No examples or suggestions for aesthetic/mood words
+2. **Upload count lag**: UI showed wrong count (10 vs 40), created uncertainty about whether items were captured
+3. **Missing weather context**: Wants practical advice like "bring umbrella" based on weather
+
+---
+
+**What worked**:
+
+1. **Completed full onboarding**: Despite feeling daunted, she finished
+2. **Uploaded significantly more than minimum**: 40 items vs 10 required
+3. **Understood value proposition**: Motivated to complete because she sees potential value
+
+---
+
+**Her feature requests** (prioritized by emphasis):
+
+**P0 (UX improvements for existing features)**:
+1. **Three-words inspiration examples**
+   - Add aesthetic words like "preppy"
+   - Add mood words like "effortless", "put together", "laid back"
+   - Format similar to music genre selection (browseable options vs blank text field)
+
+**P1 (Enhancement to existing feature)**:
+2. **Weather-aware outfit advice**
+   - Already has weather integration, but wants contextual advice
+   - Example: "Bring an umbrella" when rain expected
+   - Goes beyond outfit selection to practical styling advice
+
+**Bugs to fix**:
+- Upload count display lag (showed 10, then corrected to 40 after generation)
+
+---
+
+**Impact on product roadmap**:
+
+**VALIDATED existing features**:
+- ✅ Weather integration exists and is being used
+- ✅ Three-words profile collection works functionally
+- ✅ Mobile upload works end-to-end (she uploaded 40 items successfully)
+
+**UX IMPROVEMENTS NEEDED (PRIORITY)**:
+- 🔧 **Three-words UX enhancement** - Add inspiration examples/chips (HIGH PRIORITY)
+  - Current: Blank text fields, user must invent words
+  - Requested: Pre-populated aesthetic + mood word suggestions (like music genre picker)
+  - Impact: Reduces onboarding friction, helps users articulate style faster
+
+- 🐛 **Upload count display bug** - Fix real-time count accuracy (MEDIUM PRIORITY)
+  - Current: Shows 10, then updates to 40 after generation completes
+  - Creates uncertainty about whether items were captured
+  - Impact: Trust issue during critical onboarding step
+
+**FEATURE ENHANCEMENT**:
+- 🆕 **Contextual weather advice** - Extend weather integration to include practical tips
+  - Current: Weather selection influences outfit choice
+  - Requested: Actionable advice like "bring umbrella", "layer up", etc.
+  - Impact: Adds practical value beyond outfit selection
+
+---
+
+**Strategic insights**:
+
+**Onboarding emotional journey validated**:
+- Users feel "daunted" by upload task (expected)
+- BUT still complete if they understand value prop
+- Quote: "I feel like I'll get what I put into it" = quality-in-quality-out mental model
+- **Implication**: Value prop communication is working, but need to reduce perceived effort
+
+**Three-words UX needs work**:
+- Blank text fields are intimidating without examples
+- Users want browseable options (like music genre selection)
+- Specific aesthetic/mood vocabulary needed
+- **Implication**: Aligns with onboarding improvements needed
+
+**Upload count bug is critical trust issue**:
+- Small UI bug created uncertainty during critical onboarding moment
+- Users need confidence that their work (40 photos!) is being captured
+- **Implication**: Fix immediately - trust during onboarding is non-negotiable
+
+**Weather integration working but underutilized**:
+- Feature exists and users notice it
+- Could add more value with contextual advice (umbrella, layers, etc.)
+- **Implication**: Low-effort enhancement to existing feature
+
+---
+
+**Questions raised** (for future research):
+
+1. **Did she use outfits after generating them?** (Retention signal - check in 3-7 days)
+2. **What specific aesthetic/mood words would resonate?** (Could survey to build word bank)
+3. **How daunted did upload actually feel?** (Time spent, moments of frustration)
+4. **Does 'I'll get what I put into it' translate to actual usage?** (Track outfit generation frequency)
+
+**Follow-up needed**:
+- Check in 3-7 days: Did she generate more outfits? Did she wear suggested outfits?
+- Ask: What specific aesthetic/mood words would you add to three-words inspiration?
+- Understand: What made upload feel daunting? Time? Uncertainty? Photo quality concerns?
+- Track: Outfit generation frequency (daily utility vs one-time upload)
+
+---
+
+**Comparison to previous users** (convergent/divergent patterns):
+
+**Convergent (similar to Mia/Heather)**:
+- Upload task feels effortful (Heather: "clunky", Mia: "boxing up 75% of clothes", Alexi: "daunted")
+- Weather integration valued (Mia: "Love love the weather function!", Alexi: wants more weather advice)
+- Completed onboarding despite friction (high commitment signal)
+
+**Divergent (unique to Alexi)**:
+- First to request three-words inspiration (others didn't mention this)
+- First to report upload count bug (new issue post-migration or first to notice?)
+- Framed weather as "practical advice" vs outfit selection (different mental model)
+
+**Strategic implication**:
+- Three-words UX issue may be hidden friction for others (Alexi first to articulate it)
+- Upload count bug is new (post-migration regression?)
+- Weather feature has untapped potential (contextual advice layer)
+
+---
+
 ## Themes Across Users
 
 ### Theme: Decision Fatigue (Validated by Mia, [others TBD])
@@ -635,6 +825,48 @@
 
 ---
 
+### Theme: Onboarding Friction and Motivation (Validated by Alexi, Heather, Mia)
+
+**Pattern**: Upload task feels daunting, but users complete if value prop is clear
+- Alexi: "Daunted by uploading closet (feels like a task)" BUT "I feel like I'll get what I put into it"
+- Heather: Upload process "a little clunky" (email batches, airdrop workaround)
+- Mia: "It was a little clunky to upload pictures at first" BUT "boxed up 75% of clothes" to prepare
+
+**Root cause**:
+- Effort investment required upfront (10+ photos minimum)
+- Uncertainty about whether effort will pay off
+- Friction in upload flow (mobile → desktop, count display bugs)
+
+**What keeps them going**:
+- Clear value proposition ("I'll get what I put into it")
+- Motivation to solve real problem (decision fatigue, trip packing, duplicate buying)
+- Visible progress (though Alexi's count bug undermined this)
+
+**Product implication**:
+- Priority fixes: Upload count accuracy (trust), three-words inspiration (reduce cognitive load)
+- Keep reinforcing value prop during upload (dynamic encouragement copy)
+- Mobile-first upload flow critical (reduce friction)
+
+---
+
+### Theme: Three-Words Onboarding Needs Inspiration (Validated by Alexi)
+
+**Pattern**: Users find blank text fields intimidating for style vocabulary without examples
+- Alexi: "Would like more inspiration words/examples (similar to music genre selection)"
+- Alexi: Specific request for aesthetic words ("preppy") and mood words ("effortless", "put together", "laid back")
+
+**Root cause**:
+- Style vocabulary not intuitive for everyone
+- Blank text field creates cognitive load (what words are "right"?)
+- Users want browseable options, not blank slate
+
+**Product implication**:
+- Add chips/examples for three-words (similar to music genre selection)
+- Reduce onboarding friction at critical style definition step
+- Helps users articulate style faster, improves AI understanding
+
+---
+
 ## Next Research Needed
 
 **Questions to validate**:
@@ -661,6 +893,8 @@
 
 ---
 
-*Last updated: Nov 21, 2025*
+*Last updated: Dec 19, 2025*
 *Maintainer: Pei-Chin*
-*Key milestone: 2 activated users (Mia + Heather) - Nov 17-19, 2025*
+*Key milestones:*
+- *2 activated users (Mia + Heather) - Nov 17-19, 2025*
+- *First beta tester on new stack (Alexi) - Dec 19, 2025*
