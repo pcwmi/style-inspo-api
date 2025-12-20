@@ -49,14 +49,14 @@
 - **Background**: [To be added - friend of Pei-Chin]
 - **Problem**: Duplicate buying ("doesn't keep buying the same thing"), outfit planning for trips
 - **Use case**: See what's in closet to prevent duplicates, create outfits for trips
-- **Status**: Actually used the app (Nov 17, 2025) - uploaded 24 pieces, created outfits, provided detailed feedback
+- **Status**: Used the app on FastAPI + Next.js stack (Nov 17, 2025) - uploaded 24 pieces, created outfits, provided detailed feedback. ⚠️ **MAY HAVE CHURNED** - has some usage but might have stopped using
 
 ### Alexi [Last name TBD]
-- **Role**: First beta tester (complete onboarding flow on new stack)
+- **Role**: Recent beta tester (complete onboarding flow)
 - **Background**: [To be added]
 - **Problem**: Needs inspiration for style vocabulary (three-words), uncertainty during upload process
 - **Use case**: Complete onboarding and outfit generation
-- **Status**: ✅ **COMPLETED ONBOARDING Dec 2025** - First user to complete full end-to-end flow on FastAPI + Next.js stack, uploaded 40 items, generated outfits
+- **Status**: ✅ **COMPLETED ONBOARDING Dec 2025** - Completed full end-to-end flow on FastAPI + Next.js stack, uploaded 40 items, generated outfits
 
 ---
 
@@ -172,9 +172,9 @@
 
 ### Week of Nov 17, 2025
 
-**Product state at this time**: Streamlit app feature-complete but hitting mobile UX issues (1-2s page load latency, button flicker, spacing problems on mobile). Architecture migration to FastAPI + Next.js in progress with Cursor. Backend deployed to Railway, frontend deployment to Vercel blocked on syntax error.
+**Product state at this time**: FastAPI + Next.js stack deployed to production (backend on Railway, frontend on Vercel). Mobile-first photo upload working. Weather integration active. Occasion-based outfit generation.
 
-**Research conducted**: Heather feedback (to be added below)
+**Research conducted**: Heather testing - early user on new stack
 
 ---
 
@@ -182,7 +182,9 @@
 
 **Session context**: Heather is Pei-Chin's friend. When shared what Pei-Chin was working on, she was excited to try it. Shared her use cases BEFORE seeing the app, then actually used it independently a couple days later (Nov 17, Monday evening). Sent detailed feedback via text message over several hours as she explored the app.
 
-**Product state shown**: Streamlit app with all P0/P1 features (occasion-based generation, complete-my-look, save/dislike feedback, wardrobe upload). URL: style-inspo.streamlit.app
+**Product state shown**: FastAPI + Next.js stack with all P0/P1 features (occasion-based generation, complete-my-look, save/dislike feedback, wardrobe upload). Production deployment on Vercel.
+
+⚠️ **CHURN SIGNAL**: Heather has some usage but may have stopped using the app. Need to follow up on retention.
 
 **Her use cases BEFORE seeing the app**:
 1. "Ability to see what's in her closet so she doesn't keep buying the same thing" *(duplicate buying problem)*
@@ -331,6 +333,17 @@
 - Understand her "almost gave up" and "rewarding moment" experiences
 - Track if she actually uploads more items tomorrow (retention signal)
 - See if she uses it to plan outfits for an actual trip (validates use case)
+
+**RETENTION UPDATE (Dec 2025)**:
+- ⚠️ Heather has some usage but may have stopped using the app
+- **Critical question**: Why did she churn? Which friction point caused drop-off?
+- **Hypotheses to investigate**:
+  - Upload count bug created trust issues?
+  - Three-words onboarding too intimidating?
+  - Missing features she requested (edit outfit, swap items)?
+  - Outfit quality not meeting expectations?
+  - Forgot about the app / no reminder mechanism?
+- **Action needed**: Reach out to understand why she stopped using (exit interview)
 
 ---
 
@@ -543,7 +556,7 @@
 
 #### Alexi [Last Name] - Beta Testing Session (Dec 19, 2025)
 
-**Session context**: Alexi is identified as "first beta tester" - first user to go through complete onboarding flow from start to finish on the new FastAPI + Next.js stack. Testing mobile web upload experience and three-words profile collection. Provided feedback asynchronously after completing full flow.
+**Session context**: Alexi is a recent beta tester who went through complete onboarding flow from start to finish on the FastAPI + Next.js stack. Testing mobile web upload experience and three-words profile collection. Provided feedback asynchronously after completing full flow.
 
 **Product state shown**: FastAPI backend + Next.js frontend (post-migration), mobile-first photo upload, three-words style profile, weather integration, occasion-based outfit generation with chain-of-thought prompt. Production URL deployed to Vercel.
 
@@ -869,11 +882,22 @@
 
 ## Next Research Needed
 
+**CRITICAL - Retention Investigation**:
+1. **Why did Heather churn?** (Exit interview needed)
+   - Uploaded 24 pieces, generated outfits, gave detailed feedback
+   - Then stopped using - what happened?
+   - Which friction point was the breaking point?
+2. **Will Alexi retain?** (Check in 3-7 days)
+   - Did she generate more outfits after first session?
+   - Did she wear any suggested outfits?
+   - Track usage frequency
+
 **Questions to validate**:
 1. Will users pay $10-15/month? (After they use daily for 2 weeks)
 2. Does preventing duplicate buying justify subscription cost?
 3. Do stylists actually want to recommend this app?
 4. What's the retention curve? (Daily usage after week 1, week 2, month 1)
+5. **What causes churn?** (Now validated: at least 1 user churned - need to understand why)
 
 **Users to recruit**:
 - 2-3 more target users (similar profile to Mia)
