@@ -34,7 +34,7 @@ from services.image_analyzer import create_image_analyzer
 from core.config import get_settings
 from models.schemas import OutfitContext
 
-def generate_outfits_job(user_id, occasions, weather_condition, temperature_range, mode, anchor_items=None, mock=False, prompt_version=None):
+def generate_outfits_job(user_id, occasions, weather_condition, temperature_range, mode, anchor_items=None, mock=False, prompt_version=None, include_reasoning=False):
     """Background job for outfit generation"""
     
     logger.info(f"Starting outfit generation: user_id={user_id}, mode={mode}, prompt_version={prompt_version or 'default'}")
@@ -213,18 +213,31 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
             job.save_meta()
         
         # Generate outfits based on mode
+        raw_reasoning = None
         if mode == "occasion":
             # Occasion-based generation - use entire wardrobe, no anchor requirements
             available_items = wardrobe_manager.get_wardrobe_items("all")
 
-            combinations = engine.generate_outfit_combinations(
-                user_profile=user_profile,
-                available_items=available_items,
-                styling_challenges=[],  # No anchor requirements for occasion mode
-                occasion=", ".join(occasions) if occasions else None,
-                weather_condition=weather_condition,
-                temperature_range=temperature_range
-            )
+            if include_reasoning:
+                combinations, raw_reasoning = engine.generate_outfit_combinations(
+                    user_profile=user_profile,
+                    available_items=available_items,
+                    styling_challenges=[],  # No anchor requirements for occasion mode
+                    occasion=", ".join(occasions) if occasions else None,
+                    weather_condition=weather_condition,
+                    temperature_range=temperature_range,
+                    include_raw_response=True
+                )
+            else:
+                combinations = engine.generate_outfit_combinations(
+                    user_profile=user_profile,
+                    available_items=available_items,
+                    styling_challenges=[],  # No anchor requirements for occasion mode
+                    occasion=", ".join(occasions) if occasions else None,
+                    weather_condition=weather_condition,
+                    temperature_range=temperature_range,
+                    include_raw_response=False
+                )
         else:  # mode == "complete"
             # Complete my look - use anchor items
             if not anchor_items:
@@ -261,13 +274,24 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
             # Get all other items (only from wardrobe, NOT considering)
             available_items = [item for item in all_items if item.get("id") not in anchor_items]
             
-            combinations = engine.generate_outfit_combinations(
-                user_profile=user_profile,
-                available_items=available_items,
-                styling_challenges=anchor_item_objects,
-                weather_condition=weather_condition,
-                temperature_range=temperature_range
-            )
+            if include_reasoning:
+                combinations, raw_reasoning = engine.generate_outfit_combinations(
+                    user_profile=user_profile,
+                    available_items=available_items,
+                    styling_challenges=anchor_item_objects,
+                    weather_condition=weather_condition,
+                    temperature_range=temperature_range,
+                    include_raw_response=True
+                )
+            else:
+                combinations = engine.generate_outfit_combinations(
+                    user_profile=user_profile,
+                    available_items=available_items,
+                    styling_challenges=anchor_item_objects,
+                    weather_condition=weather_condition,
+                    temperature_range=temperature_range,
+                    include_raw_response=False
+                )
         
         if job:
             job.meta['progress'] = 90
@@ -303,6 +327,10 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
                 "latency_ms": int((time.time() - start_time) * 1000)
             }
         }
+        
+        # Add reasoning if requested
+        if include_reasoning and raw_reasoning:
+            result["reasoning"] = raw_reasoning
         
         if job:
             job.meta['progress'] = 100

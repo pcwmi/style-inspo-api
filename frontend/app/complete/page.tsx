@@ -11,6 +11,7 @@ function CompletePageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const user = searchParams.get('user') || 'default'
+  const debugMode = searchParams.get('debug') === 'true'
   
   const [wardrobe, setWardrobe] = useState<any>(null)
   const [consideringItems, setConsideringItems] = useState<any>(null)
@@ -48,10 +49,13 @@ function CompletePageContent() {
         user_id: user,
         anchor_items: selectedItems,
         temperature_range: undefined,
-        mode: 'complete'
+        mode: 'complete',
+        include_reasoning: debugMode
       })
       
-      router.push(`/reveal?user=${user}&job=${job_id}`)
+      // Redirect with debug param if enabled
+      const debugParam = debugMode ? '&debug=true' : ''
+      router.push(`/reveal?user=${user}&job=${job_id}${debugParam}`)
     } catch (error) {
       console.error('Error generating outfits:', error)
       alert('Failed to generate outfits. Please try again.')
@@ -103,6 +107,15 @@ function CompletePageContent() {
         <Link href={`/?user=${user}`} className="text-terracotta mb-4 inline-block min-h-[44px] flex items-center">
           ← Back
         </Link>
+
+        {/* Debug mode indicator */}
+        {debugMode && (
+          <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-sm text-yellow-800">
+              🐛 Debug Mode Active - Showing AI reasoning
+            </p>
+          </div>
+        )}
         
         <h1 className="text-2xl md:text-3xl font-bold mb-2">
           Start with a piece you want to wear

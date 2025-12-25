@@ -176,7 +176,8 @@ async def add_item(
 async def generate_outfits(
     item_id: str = Form(...),
     use_existing_similar: bool = Form(False),
-    user_id: str = Form(...)
+    user_id: str = Form(...),
+    include_reasoning: bool = Form(False)
 ):
     """
     Generate outfits with consider_buying item
@@ -216,19 +217,39 @@ async def generate_outfits(
 
         # Generate outfits
         engine = StyleGenerationEngine()
-        combinations = engine.generate_outfit_combinations(
-            user_profile=user_profile,
-            available_items=wardrobe_items,
-            styling_challenges=anchor_items,
-            occasion=None,
-            weather_condition=None,
-            temperature_range=None
-        )
+        if include_reasoning:
+            combinations, raw_reasoning = engine.generate_outfit_combinations(
+                user_profile=user_profile,
+                available_items=wardrobe_items,
+                styling_challenges=anchor_items,
+                occasion=None,
+                weather_condition=None,
+                temperature_range=None,
+                include_raw_response=True
+            )
+        else:
+            combinations = engine.generate_outfit_combinations(
+                user_profile=user_profile,
+                available_items=wardrobe_items,
+                styling_challenges=anchor_items,
+                occasion=None,
+                weather_condition=None,
+                temperature_range=None,
+                include_raw_response=False
+            )
+            raw_reasoning = None
 
-        return {
+        # Build response
+        response_data = {
             "outfits": combinations,
             "anchor_items": anchor_items
         }
+        
+        # Add reasoning if requested
+        if include_reasoning and raw_reasoning:
+            response_data["reasoning"] = raw_reasoning
+
+        return response_data
 
     except Exception as e:
         logger.error(f"Error generating outfits: {str(e)}")

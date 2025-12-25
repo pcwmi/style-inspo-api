@@ -85,6 +85,7 @@ export const api = {
     mode: 'occasion' | 'complete'
     anchor_items?: string[]
     mock?: boolean
+    include_reasoning?: boolean
   }) {
     const res = await fetch(`${API_URL}/api/outfits/generate`, {
       method: 'POST',

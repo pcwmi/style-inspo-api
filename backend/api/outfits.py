@@ -49,6 +49,7 @@ async def generate_outfits(request: OutfitRequest):
             anchor_items=request.anchor_items,
             mock=request.mock,
             prompt_version=prompt_version,
+            include_reasoning=request.include_reasoning,
             job_timeout=120  # 2 minutes max
         )
         

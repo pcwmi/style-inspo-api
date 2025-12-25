@@ -2,7 +2,7 @@ import json
 import os
 import sys
 import html
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 from dataclasses import dataclass
 from dotenv import load_dotenv
 
@@ -402,8 +402,25 @@ class StyleGenerationEngine:
                                    num_outfits: int = 3,
                                    occasion: Optional[str] = None,
                                    weather_condition: Optional[str] = None,
-                                   temperature_range: Optional[str] = None) -> List[OutfitCombination]:
-        """Generate outfit combinations using AI"""
+                                   temperature_range: Optional[str] = None,
+                                   include_raw_response: bool = False) -> Union[List[OutfitCombination], Tuple[List[OutfitCombination], str]]:
+        """
+        Generate outfit combinations using AI.
+
+        Args:
+            user_profile: User's style profile
+            available_items: List of available wardrobe items
+            styling_challenges: List of styling challenge items (anchor pieces)
+            num_outfits: Number of outfits to generate (default: 3)
+            occasion: Optional occasion context
+            weather_condition: Optional weather condition
+            temperature_range: Optional temperature range
+            include_raw_response: If True, return (outfits, raw_ai_response) tuple
+
+        Returns:
+            If include_raw_response=False: List[OutfitCombination] of outfit objects
+            If include_raw_response=True: Tuple[List[OutfitCombination], str] - (outfits, raw AI response)
+        """
 
         # If no API key, return empty list with error message
         # If no AI provider, return empty list with error message
@@ -447,6 +464,9 @@ class StyleGenerationEngine:
 
             # Parse the AI response
             ai_response = ai_result.content
+            
+            # Store raw response BEFORE parsing (for debug mode)
+            raw_response = ai_response
 
             # DEBUG: Log provider metadata
             self._safe_stderr_write(f"\n📊 Provider: {self.ai_provider.provider_name} | Model: {ai_result.model}\n")
@@ -621,7 +641,11 @@ class StyleGenerationEngine:
             if not combinations:
                 self._safe_stderr_write("⚠️ No valid outfits generated from AI - returning empty list\n\n")
 
-            return combinations
+            # Return based on include_raw_response flag
+            if include_raw_response:
+                return (combinations, raw_response)
+            else:
+                return combinations
 
         except json.JSONDecodeError as e:
             error_details = f"JSON parsing error: {str(e)}\n"

@@ -14,8 +14,10 @@ function OutfitsContent() {
     const itemId = searchParams.get('item_id')
     const user = searchParams.get('user') || 'default'
     const useExisting = searchParams.get('use_existing') === 'true'
+    const debugMode = searchParams.get('debug') === 'true'
 
     const [outfits, setOutfits] = useState<any[]>([])
+    const [reasoning, setReasoning] = useState<string | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [decisionMade, setDecisionMade] = useState(false)
@@ -29,14 +31,22 @@ function OutfitsContent() {
                 formData.append('item_id', itemId || '')
                 formData.append('use_existing_similar', useExisting.toString())
                 formData.append('user_id', user)
+                formData.append('include_reasoning', debugMode.toString())
 
                 const res = await fetch(`${API_URL}/api/consider-buying/generate-outfits`, {
                     method: 'POST',
                     body: formData
                 })
 
+                if (!res.ok) throw new Error('Failed to generate outfits')
+
                 const data = await res.json()
                 setOutfits(data.outfits)
+                
+                // Store reasoning if present
+                if (debugMode && data.reasoning) {
+                    setReasoning(data.reasoning)
+                }
             } catch (err) {
                 console.error(err)
                 setError('Failed to generate outfits')
@@ -48,7 +58,7 @@ function OutfitsContent() {
         if (itemId) {
             generateOutfits()
         }
-    }, [itemId, useExisting])
+    }, [itemId, useExisting, debugMode])
 
     const handleDecision = async (decision: string) => {
         try {
@@ -107,20 +117,63 @@ function OutfitsContent() {
 
     return (
         <div className="container mx-auto px-4 py-8">
+            {/* Debug mode indicator */}
+            {debugMode && (
+                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-sm text-yellow-800">
+                        🐛 Debug Mode Active - Showing AI reasoning
+                    </p>
+                </div>
+            )}
+
             <h2 className="text-2xl font-bold mb-6">Here's how it works with your closet</h2>
 
-            <div className="space-y-8 mb-12">
-                {outfits.map((outfit, idx) => (
-                    <OutfitCard
-                        key={idx}
-                        outfit={outfit}
-                        user={user}
-                        index={idx + 1}
-                        allowSave={false}
-                        allowDislike={false}
-                    />
-                ))}
-            </div>
+            {/* Show reasoning if debug mode is on */}
+            {debugMode && reasoning ? (
+                <div className="space-y-6 mb-8">
+                    <div className="bg-white rounded-lg shadow-sm border border-sand p-6">
+                        <h2 className="text-lg font-semibold text-ink mb-4">
+                            Chain-of-Thought Reasoning
+                        </h2>
+                        <pre className="whitespace-pre-wrap text-sm text-muted font-mono bg-bone p-4 rounded border border-sand overflow-x-auto max-h-96 overflow-y-auto">
+                            {reasoning}
+                        </pre>
+                    </div>
+
+                    {/* Still show outfits below reasoning */}
+                    <div className="border-t border-sand pt-6">
+                        <h2 className="text-lg font-semibold text-ink mb-4">
+                            Final Outfits
+                        </h2>
+                        <div className="space-y-8 mb-12">
+                            {outfits.map((outfit, idx) => (
+                                <OutfitCard
+                                    key={idx}
+                                    outfit={outfit}
+                                    user={user}
+                                    index={idx + 1}
+                                    allowSave={false}
+                                    allowDislike={false}
+                                />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                /* Normal mode: just show outfit cards */
+                <div className="space-y-8 mb-12">
+                    {outfits.map((outfit, idx) => (
+                        <OutfitCard
+                            key={idx}
+                            outfit={outfit}
+                            user={user}
+                            index={idx + 1}
+                            allowSave={false}
+                            allowDislike={false}
+                        />
+                    ))}
+                </div>
+            )}
 
             <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 shadow-lg">
                 <div className="container mx-auto flex gap-4 max-w-lg">

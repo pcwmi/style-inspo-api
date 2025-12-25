@@ -13,8 +13,10 @@ function RevealPageContent() {
   const router = useRouter()
   const user = searchParams.get('user') || 'default'
   const jobId = searchParams.get('job')
+  const debugMode = searchParams.get('debug') === 'true'
 
   const [outfits, setOutfits] = useState<any[]>([])
+  const [reasoning, setReasoning] = useState<string | null>(null)
   const [status, setStatus] = useState<'loading' | 'complete' | 'error'>('loading')
   const [error, setError] = useState<string>('')
   const [progress, setProgress] = useState<number>(0)
@@ -58,6 +60,12 @@ function RevealPageContent() {
           const outfitsArray = result.result?.outfits || []
           console.log('Job completed, outfits:', outfitsArray, 'Full result:', result.result)
           setOutfits(outfitsArray)
+          
+          // Extract reasoning if present
+          if (debugMode && result.result?.reasoning) {
+            setReasoning(result.result.reasoning)
+          }
+          
           setStatus('complete')
           clearInterval(pollInterval)
         } else if (result.status === 'failed') {
@@ -146,9 +154,38 @@ function RevealPageContent() {
   return (
     <div className="min-h-screen bg-bone page-container">
       <div className="max-w-2xl mx-auto px-4 py-4 md:py-8">
+        {/* Debug mode indicator */}
+        {debugMode && (
+          <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-sm text-yellow-800">
+              🐛 Debug Mode Active - Showing AI reasoning
+            </p>
+          </div>
+        )}
+
         <h1 className="text-2xl md:text-3xl font-bold mb-5 md:mb-8">
           Here's what could work for your day
         </h1>
+
+        {/* Show reasoning if debug mode is on */}
+        {debugMode && reasoning && (
+          <div className="space-y-6 mb-8">
+            <div className="bg-white rounded-lg shadow-sm border border-sand p-6">
+              <h2 className="text-lg font-semibold text-ink mb-4">
+                Chain-of-Thought Reasoning
+              </h2>
+              <pre className="whitespace-pre-wrap text-sm text-muted font-mono bg-bone p-4 rounded border border-sand overflow-x-auto max-h-96 overflow-y-auto">
+                {reasoning}
+              </pre>
+            </div>
+
+            <div className="border-t border-sand pt-6">
+              <h2 className="text-lg font-semibold text-ink mb-4">
+                Final Outfits
+              </h2>
+            </div>
+          </div>
+        )}
 
         {outfits.length === 0 ? (
           <div className="bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-6 md:p-8 mb-6 shadow-sm">

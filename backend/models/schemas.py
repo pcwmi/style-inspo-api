@@ -32,6 +32,7 @@ class OutfitRequest(BaseModel):
     anchor_items: Optional[List[str]] = None  # Item IDs for "complete my look" mode
     mock: bool = False
     prompt_version: Optional[str] = None  # Optional prompt version override
+    include_reasoning: bool = False  # Include raw AI reasoning in response
 
 
 class OutfitItem(BaseModel):
