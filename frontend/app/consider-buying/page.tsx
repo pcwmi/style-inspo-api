@@ -211,10 +211,47 @@ function ConsiderBuyingContent() {
             setError('Cannot continue: item ID is missing. Please try again.')
             return
         }
-        console.log('[DEBUG] Navigating to outfits with item_id:', analyzedItem.item.id)
-        // Navigate to outfits view
-        sessionStorage.setItem('consider_buying_item', JSON.stringify(analyzedItem))
-        router.push(`/consider-buying/outfits?item_id=${analyzedItem.item.id}&user=${user}`)
+        
+        const itemId = analyzedItem.item.id
+        const debugMode = searchParams.get('debug') === 'true'
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/5d81dfeb-73bf-4177-b032-99de96bc199e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'consider-buying/page.tsx:216',message:'handleAddItem called',data:{debugMode,debugParam:searchParams.get('debug'),itemId,allParams:Object.fromEntries(searchParams.entries())},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+        // #endregion
+        
+        try {
+            // Enqueue job directly (same pattern as complete flow)
+            const formData = new FormData()
+            formData.append('item_id', itemId)
+            formData.append('use_existing_similar', 'false')
+            formData.append('user_id', user)
+            formData.append('include_reasoning', debugMode.toString())
+
+            const res = await fetch(`${API_URL}/api/consider-buying/generate-outfits`, {
+                method: 'POST',
+                body: formData
+            })
+
+            if (!res.ok) {
+                throw new Error('Failed to generate outfits')
+            }
+
+            const data = await res.json()
+            const jobId = data.job_id
+
+            if (!jobId) {
+                throw new Error('No job_id returned from API')
+            }
+
+            // Redirect to reveal page with job_id and debug param (same as complete flow)
+            const debugParam = debugMode ? '&debug=true' : ''
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/5d81dfeb-73bf-4177-b032-99de96bc199e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'consider-buying/page.tsx:243',message:'Redirecting to reveal',data:{debugMode,debugParam,jobId,redirectUrl:`/reveal?user=${user}&job=${jobId}${debugParam}`},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+            // #endregion
+            router.push(`/reveal?user=${user}&job=${jobId}${debugParam}`)
+        } catch (err: any) {
+            console.error('Error generating outfits:', err)
+            setError(err.message || 'Failed to generate outfits. Please try again.')
+        }
     }
 
     const handleScreenshotUpload = async (file: File) => {
@@ -513,9 +550,9 @@ function ConsiderBuyingContent() {
                                     </div>
                                     <button
                                         onClick={handleAddItem}
-                                        className="w-full mt-4 px-6 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
+                                        className="w-full mt-4 px-6 py-3 bg-black text-white rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        See outfits
+                                        See Outfits
                                     </button>
                                 </div>
                             )

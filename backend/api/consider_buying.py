@@ -13,8 +13,10 @@ from services.consider_buying_manager import ConsiderBuyingManager
 from services.product_extractor import ProductExtractor
 from services.wardrobe_manager import WardrobeManager
 from services.image_analyzer import create_image_analyzer
-from services.style_engine import StyleGenerationEngine
 from services.storage_manager import StorageManager
+from workers.outfit_worker import generate_consider_buying_job
+from core.redis import get_redis_connection
+from rq import Queue
 from fastapi import Query, Body
 from io import BytesIO
 from starlette.datastructures import UploadFile as StarletteUploadFile
@@ -22,6 +24,12 @@ from starlette.datastructures import UploadFile as StarletteUploadFile
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["consider-buying"])
+
+# Lazy initialization of RQ queue (only when needed)
+def get_outfit_queue():
+    """Get or create outfit queue"""
+    redis_conn = get_redis_connection()
+    return Queue('outfits', connection=redis_conn)
 
 
 class ExtractRequest(BaseModel):
@@ -180,82 +188,42 @@ async def generate_outfits(
     include_reasoning: bool = Form(False)
 ):
     """
-    Generate outfits with consider_buying item
+    Generate outfits with consider_buying item (background job).
 
-    If use_existing_similar=True, use similar items from wardrobe instead
+    Returns job_id immediately. Client should poll /api/jobs/{job_id} for results.
     """
     try:
-        cb_manager = ConsiderBuyingManager(user_id=user_id)
-        wardrobe_manager = WardrobeManager(user_id=user_id)
-
-        # Get consider_buying item
-        consider_item = next((i for i in cb_manager.get_items() if i["id"] == item_id), None)
-        if not consider_item:
-            raise HTTPException(status_code=404, detail="Item not found")
-
-        # Get wardrobe items
-        wardrobe_items = wardrobe_manager.get_wardrobe_items("all")
-
-        # Get user profile
-        # Hardcoded for testing as requested
-        user_profile = {
-            "three_words": {
-                "current": "classic",
-                "aspirational": "relaxed",
-                "feeling": "playful"
-            }
-        }
-
-        # Determine anchor items
-        if use_existing_similar:
-            # Use similar items from wardrobe
-            similar_item_ids = consider_item.get("similar_items_in_wardrobe", [])
-            anchor_items = [item for item in wardrobe_items if item["id"] in similar_item_ids]
-        else:
-            # Use consider_buying item as anchor
-            anchor_items = [consider_item]
-
-        # Generate outfits
-        engine = StyleGenerationEngine()
-        if include_reasoning:
-            combinations, raw_reasoning = engine.generate_outfit_combinations(
-                user_profile=user_profile,
-                available_items=wardrobe_items,
-                styling_challenges=anchor_items,
-                occasion=None,
-                weather_condition=None,
-                temperature_range=None,
-                include_raw_response=True
-            )
-        else:
-            combinations = engine.generate_outfit_combinations(
-                user_profile=user_profile,
-                available_items=wardrobe_items,
-                styling_challenges=anchor_items,
-                occasion=None,
-                weather_condition=None,
-                temperature_range=None,
-                include_raw_response=False
-            )
-            raw_reasoning = None
-
-        # Build response
-        response_data = {
-            "outfits": combinations,
-            "anchor_items": anchor_items
-        }
+        # #region agent log
+        import json; open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a').write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"C","location":"consider_buying.py:189","message":"Endpoint received request","data":{"include_reasoning":include_reasoning,"include_reasoning_type":type(include_reasoning).__name__,"item_id":item_id,"user_id":user_id},"timestamp":int(__import__('time').time()*1000)})+'\n')
+        # #endregion
         
-        # Add reasoning if requested
-        if include_reasoning and raw_reasoning:
-            response_data["reasoning"] = raw_reasoning
+        # Enqueue outfit generation job
+        outfit_queue = get_outfit_queue()
+        # #region agent log
+        import json; open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a').write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"C","location":"consider_buying.py:195","message":"Enqueueing job with params","data":{"include_reasoning":include_reasoning,"include_reasoning_type":type(include_reasoning).__name__},"timestamp":int(__import__('time').time()*1000)})+'\n')
+        # #endregion
+        job = outfit_queue.enqueue(
+            generate_consider_buying_job,
+            user_id=user_id,
+            item_id=item_id,
+            use_existing_similar=use_existing_similar,
+            include_reasoning=include_reasoning,
+            job_timeout=120  # 2 minutes max
+        )
 
-        return response_data
+        logger.info(f"Enqueued consider-buying job {job.id} for user {user_id}")
+
+        return {
+            "job_id": job.id,
+            "status": "queued",
+            "estimated_time": 30  # seconds
+        }
 
     except Exception as e:
-        logger.error(f"Error generating outfits: {str(e)}")
+        logger.error(f"Error enqueueing consider-buying job: {str(e)}")
         import traceback
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Error generating outfits: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/consider-buying/decide")

@@ -59,11 +59,15 @@ function RevealPageContent() {
         if (result.status === 'complete') {
           const outfitsArray = result.result?.outfits || []
           console.log('Job completed, outfits:', outfitsArray, 'Full result:', result.result)
+          console.log('Debug mode:', debugMode, 'Has reasoning:', !!result.result?.reasoning, 'Reasoning length:', result.result?.reasoning?.length || 0)
           setOutfits(outfitsArray)
           
           // Extract reasoning if present
           if (debugMode && result.result?.reasoning) {
+            console.log('Setting reasoning, length:', result.result.reasoning.length)
             setReasoning(result.result.reasoning)
+          } else if (debugMode) {
+            console.warn('Debug mode is ON but no reasoning found in result. Result keys:', Object.keys(result.result || {}))
           }
           
           setStatus('complete')

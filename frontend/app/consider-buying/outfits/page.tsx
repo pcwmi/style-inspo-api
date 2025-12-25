@@ -1,8 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { OutfitCard } from '@/components/OutfitCard'
 
 import { Suspense } from 'react'
 
@@ -16,49 +15,54 @@ function OutfitsContent() {
     const useExisting = searchParams.get('use_existing') === 'true'
     const debugMode = searchParams.get('debug') === 'true'
 
-    const [outfits, setOutfits] = useState<any[]>([])
-    const [reasoning, setReasoning] = useState<string | null>(null)
-    const [loading, setLoading] = useState(true)
+    const [generating, setGenerating] = useState(false)
     const [error, setError] = useState('')
     const [decisionMade, setDecisionMade] = useState(false)
     const [feedbackMessage, setFeedbackMessage] = useState('')
     const [decisionType, setDecisionType] = useState<string>('')
 
-    useEffect(() => {
-        const generateOutfits = async () => {
-            try {
-                const formData = new FormData()
-                formData.append('item_id', itemId || '')
-                formData.append('use_existing_similar', useExisting.toString())
-                formData.append('user_id', user)
-                formData.append('include_reasoning', debugMode.toString())
+    const handleGenerate = async () => {
+        if (!itemId) {
+            setError('No item selected')
+            return
+        }
 
-                const res = await fetch(`${API_URL}/api/consider-buying/generate-outfits`, {
-                    method: 'POST',
-                    body: formData
-                })
+        setGenerating(true)
+        setError('')
 
-                if (!res.ok) throw new Error('Failed to generate outfits')
+        try {
+            const formData = new FormData()
+            formData.append('item_id', itemId)
+            formData.append('use_existing_similar', useExisting.toString())
+            formData.append('user_id', user)
+            formData.append('include_reasoning', debugMode.toString())
 
-                const data = await res.json()
-                setOutfits(data.outfits)
-                
-                // Store reasoning if present
-                if (debugMode && data.reasoning) {
-                    setReasoning(data.reasoning)
-                }
-            } catch (err) {
-                console.error(err)
-                setError('Failed to generate outfits')
-            } finally {
-                setLoading(false)
+            const res = await fetch(`${API_URL}/api/consider-buying/generate-outfits`, {
+                method: 'POST',
+                body: formData
+            })
+
+            if (!res.ok) {
+                throw new Error('Failed to generate outfits')
             }
-        }
 
-        if (itemId) {
-            generateOutfits()
+            const data = await res.json()
+            const jobId = data.job_id
+
+            if (!jobId) {
+                throw new Error('No job_id returned from API')
+            }
+
+            // Redirect to reveal page with job_id and debug param
+            const debugParam = debugMode ? '&debug=true' : ''
+            router.push(`/reveal?user=${user}&job=${jobId}${debugParam}`)
+
+        } catch (err: any) {
+            console.error('Error generating outfits:', err)
+            setError(err.message || 'Failed to generate outfits. Please try again.')
+            setGenerating(false)
         }
-    }, [itemId, useExisting, debugMode])
+    }
 
     const handleDecision = async (decision: string) => {
         try {
@@ -101,9 +105,6 @@ function OutfitsContent() {
         }
     }
 
-    if (loading) return <div>Generating outfits...</div>
-    if (error) return <div>{error}</div>
-
     if (decisionMade) {
         return (
             <div className="container mx-auto px-4 py-8 text-center">
@@ -128,78 +129,27 @@ function OutfitsContent() {
 
             <h2 className="text-2xl font-bold mb-6">Here's how it works with your closet</h2>
 
-            {/* Show reasoning if debug mode is on */}
-            {debugMode && reasoning ? (
-                <div className="space-y-6 mb-8">
-                    <div className="bg-white rounded-lg shadow-sm border border-sand p-6">
-                        <h2 className="text-lg font-semibold text-ink mb-4">
-                            Chain-of-Thought Reasoning
-                        </h2>
-                        <pre className="whitespace-pre-wrap text-sm text-muted font-mono bg-bone p-4 rounded border border-sand overflow-x-auto max-h-96 overflow-y-auto">
-                            {reasoning}
-                        </pre>
-                    </div>
-
-                    {/* Still show outfits below reasoning */}
-                    <div className="border-t border-sand pt-6">
-                        <h2 className="text-lg font-semibold text-ink mb-4">
-                            Final Outfits
-                        </h2>
-                        <div className="space-y-8 mb-12">
-                            {outfits.map((outfit, idx) => (
-                                <OutfitCard
-                                    key={idx}
-                                    outfit={outfit}
-                                    user={user}
-                                    index={idx + 1}
-                                    allowSave={false}
-                                    allowDislike={false}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            ) : (
-                /* Normal mode: just show outfit cards */
-                <div className="space-y-8 mb-12">
-                    {outfits.map((outfit, idx) => (
-                        <OutfitCard
-                            key={idx}
-                            outfit={outfit}
-                            user={user}
-                            index={idx + 1}
-                            allowSave={false}
-                            allowDislike={false}
-                        />
-                    ))}
+            {error && (
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-red-800">{error}</p>
                 </div>
             )}
 
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 shadow-lg">
-                <div className="container mx-auto flex gap-4 max-w-lg">
-                    <button
-                        onClick={() => handleDecision('bought')}
-                        className="flex-1 px-4 py-3 bg-black text-white rounded-lg font-medium"
-                    >
-                        I bought it!
-                    </button>
-                    <button
-                        onClick={() => handleDecision('passed')}
-                        className="flex-1 px-4 py-3 border border-black rounded-lg font-medium"
-                    >
-                        Not buying
-                    </button>
-                    <button
-                        onClick={() => handleDecision('later')}
-                        className="flex-1 px-4 py-3 text-gray-600 font-medium"
-                    >
-                        Decide later
-                    </button>
+            {generating && (
+                <div className="text-center py-4">
+                    <p className="text-muted">Starting outfit generation...</p>
                 </div>
-            </div>
+            )}
 
-            {/* Spacer for fixed bottom bar */}
-            <div className="h-24"></div>
+            {!generating && !error && (
+                <button
+                    onClick={handleGenerate}
+                    disabled={!itemId}
+                    className="w-full bg-terracotta text-white py-3.5 md:py-4 px-6 rounded-lg font-medium hover:opacity-90 active:opacity-80 transition disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] flex items-center justify-center"
+                >
+                    Generate Outfits
+                </button>
+            )}
         </div>
     )
 }

@@ -31,6 +31,7 @@ except Exception as e:
 from services.wardrobe_manager import WardrobeManager
 from services.user_profile_manager import UserProfileManager
 from services.image_analyzer import create_image_analyzer
+from services.consider_buying_manager import ConsiderBuyingManager
 from core.config import get_settings
 from models.schemas import OutfitContext
 
@@ -207,6 +208,9 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
         
         # Load wardrobe
         all_items = wardrobe_manager.get_wardrobe_items("all")
+        # #region agent log
+        import json; open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a').write(json.dumps({"sessionId":"debug-session","runId":"wardrobe-check","hypothesisId":"wardrobe","location":"outfit_worker.py:210","message":"Wardrobe loaded","data":{"user_id":user_id,"mode":mode,"all_items_count":len(all_items),"anchor_items":anchor_items if 'anchor_items' in locals() else None},"timestamp":int(__import__('time').time()*1000)})+'\n')
+        # #endregion
         
         if job:
             job.meta['progress'] = 30
@@ -259,20 +263,35 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
                     from services.consider_buying_manager import ConsiderBuyingManager
                     cb_manager = ConsiderBuyingManager(user_id=user_id)
                     considering_items = cb_manager.get_items(status='considering')
+                    # #region agent log
+                    import json; open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a').write(json.dumps({"sessionId":"debug-session","runId":"anchor-check","hypothesisId":"wardrobe","location":"outfit_worker.py:260","message":"Looking for consider item","data":{"item_id":item_id,"considering_items_count":len(considering_items),"considering_item_ids":[item.get("id") for item in considering_items]},"timestamp":int(__import__('time').time()*1000)})+'\n')
+                    # #endregion
                     for considering_item in considering_items:
                         if considering_item.get("id") == item_id:
                             anchor_item_objects.append(considering_item)
                             found = True
+                            # #region agent log
+                            import json; open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a').write(json.dumps({"sessionId":"debug-session","runId":"anchor-check","hypothesisId":"wardrobe","location":"outfit_worker.py:265","message":"Found consider item","data":{"item_id":item_id,"item_name":considering_item.get("styling_details",{}).get("name","no-name")},"timestamp":int(__import__('time').time()*1000)})+'\n')
+                            # #endregion
                             break
 
                 if not found:
                     logger.warning(f"Anchor item {item_id} not found in wardrobe or considering items")
+                    # #region agent log
+                    import json; open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a').write(json.dumps({"sessionId":"debug-session","runId":"anchor-check","hypothesisId":"wardrobe","location":"outfit_worker.py:270","message":"Anchor item NOT found","data":{"item_id":item_id,"all_items_count":len(all_items),"all_item_ids":[item.get("id") for item in all_items[:5]]},"timestamp":int(__import__('time').time()*1000)})+'\n')
+                    # #endregion
 
             if not anchor_item_objects:
                 raise ValueError("Anchor items not found in wardrobe or considering items")
+            # #region agent log
+            import json; open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a').write(json.dumps({"sessionId":"debug-session","runId":"anchor-check","hypothesisId":"wardrobe","location":"outfit_worker.py:273","message":"Anchor items found","data":{"anchor_item_objects_count":len(anchor_item_objects),"anchor_item_names":[item.get("styling_details",{}).get("name","no-name") for item in anchor_item_objects]},"timestamp":int(__import__('time').time()*1000)})+'\n')
+            # #endregion
 
             # Get all other items (only from wardrobe, NOT considering)
             available_items = [item for item in all_items if item.get("id") not in anchor_items]
+            # #region agent log
+            import json; open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a').write(json.dumps({"sessionId":"debug-session","runId":"wardrobe-check","hypothesisId":"wardrobe","location":"outfit_worker.py:276","message":"Available items for complete mode","data":{"available_items_count":len(available_items),"all_items_count":len(all_items),"anchor_items_count":len(anchor_item_objects),"anchor_item_ids":anchor_items},"timestamp":int(__import__('time').time()*1000)})+'\n')
+            # #endregion
             
             if include_reasoning:
                 combinations, raw_reasoning = engine.generate_outfit_combinations(
@@ -343,6 +362,91 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
         if job:
             job.meta['error'] = str(e)
             job.save_meta()
+        raise
+
+
+def generate_consider_buying_job(
+    user_id: str,
+    item_id: str,
+    use_existing_similar: bool = False,
+    include_reasoning: bool = False
+):
+    """
+    Background job for consider-buying outfit generation.
+    
+    This is a thin wrapper around generate_outfits_job that:
+    1. Gets the consider_buying item
+    2. Converts it to anchor_items format
+    3. Calls generate_outfits_job with mode="complete"
+    4. Adds anchor_items to the response
+
+    Args:
+        user_id: User identifier
+        item_id: ID of the item being considered for purchase
+        use_existing_similar: If True, use similar items from wardrobe instead of consider_buying item
+        include_reasoning: If True, include chain-of-thought reasoning in response
+
+    Returns:
+        Dict with outfits, anchor_items, and optionally reasoning
+    """
+    try:
+        logger.info(f"Starting consider-buying job for user {user_id}, item {item_id}")
+        # #region agent log
+        import json; open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a').write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"C","location":"outfit_worker.py:374","message":"generate_consider_buying_job called","data":{"include_reasoning":include_reasoning,"include_reasoning_type":type(include_reasoning).__name__,"item_id":item_id,"user_id":user_id},"timestamp":int(__import__('time').time()*1000)})+'\n')
+        # #endregion
+        
+        # Initialize managers
+        cb_manager = ConsiderBuyingManager(user_id=user_id)
+        wardrobe_manager = WardrobeManager(user_id=user_id)
+
+        # Get consider_buying item
+        consider_item = next((i for i in cb_manager.get_items() if i["id"] == item_id), None)
+        if not consider_item:
+            raise ValueError(f"Item {item_id} not found in consider_buying")
+
+        # Determine anchor items
+        if use_existing_similar:
+            # Use similar items from wardrobe
+            similar_item_ids = consider_item.get("similar_items_in_wardrobe", [])
+            wardrobe_items = wardrobe_manager.get_wardrobe_items("all")
+            anchor_items = [item for item in wardrobe_items if item.get("id") in similar_item_ids]
+            anchor_item_ids = similar_item_ids
+        else:
+            # Use consider_buying item as anchor
+            anchor_items = [consider_item]
+            anchor_item_ids = [item_id]
+
+        logger.info(f"Anchor items: {len(anchor_items)}")
+
+        # Call existing generate_outfits_job with mode="complete"
+        # This reuses all the existing logic (prompt version, engine setup, user profile, etc.)
+        logger.info(f"Calling generate_outfits_job with include_reasoning={include_reasoning}")
+        # #region agent log
+        import json; open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a').write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"C","location":"outfit_worker.py:405","message":"About to call generate_outfits_job","data":{"include_reasoning":include_reasoning,"include_reasoning_type":type(include_reasoning).__name__,"anchor_item_ids":anchor_item_ids},"timestamp":int(__import__('time').time()*1000)})+'\n')
+        # #endregion
+        result = generate_outfits_job(
+            user_id=user_id,
+            occasions=None,
+            weather_condition=None,
+            temperature_range=None,
+            mode="complete",
+            anchor_items=anchor_item_ids,
+            mock=False,
+            prompt_version=None,  # Use default from settings
+            include_reasoning=include_reasoning
+        )
+
+        # Add anchor_items to response (for consider-buying specific use case)
+        result["anchor_items"] = anchor_items
+
+        logger.info(f"Consider-buying job completed: {result.get('count', 0)} outfits generated, has_reasoning={('reasoning' in result)}, reasoning_length={len(result.get('reasoning', '')) if result.get('reasoning') else 0}")
+        # #region agent log
+        import json; open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a').write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"D","location":"outfit_worker.py:420","message":"Job result before return","data":{"has_reasoning":"reasoning" in result,"reasoning_length":len(result.get("reasoning","")) if result.get("reasoning") else 0,"result_keys":list(result.keys()),"include_reasoning":include_reasoning},"timestamp":int(__import__('time').time()*1000)})+'\n')
+        # #endregion
+        return result
+
+    except Exception as e:
+        logger.error(f"Error in consider-buying job: {str(e)}", exc_info=True)
         raise
 
 
