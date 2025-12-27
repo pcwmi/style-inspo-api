@@ -29,7 +29,8 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
                 feedback: selectedFeedback
             })
             posthog.capture('outfit_saved', {
-                outfit_id: outfit.id
+                outfit_id: outfit.id,
+                feedback: selectedFeedback
             })
             alert('Outfit saved!')
             setSaving(false)
@@ -49,7 +50,8 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
                 reason: dislikeReason === 'Other' ? `Other: ${otherReasonText}` : dislikeReason
             })
             posthog.capture('outfit_disliked', {
-                outfit_id: outfit.id
+                outfit_id: outfit.id,
+                reason: dislikeReason === 'Other' ? `Other: ${otherReasonText}` : dislikeReason
             })
             alert('Feedback recorded')
             setDisliking(false)

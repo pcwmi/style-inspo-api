@@ -1,7 +1,7 @@
 """OpenAI provider implementation."""
 
 import time
-from typing import Optional
+from typing import Dict, Optional, Iterator
 from openai import OpenAI
 
 from .base import AIProvider, AIResponse, AIProviderConfig
@@ -63,6 +63,37 @@ class OpenAIProvider(AIProvider):
             latency_seconds=latency,
             raw_response=response
         )
+
+    def generate_text_stream(
+        self,
+        prompt: str,
+        system_message: Optional[str] = None,
+        temperature: Optional[float] = None,
+        max_tokens: Optional[int] = None
+    ) -> Iterator[str]:
+        """
+        Stream text generation from OpenAI.
+
+        Yields:
+            str: Text chunks as they're generated
+        """
+        messages = []
+        if system_message:
+            messages.append({"role": "system", "content": system_message})
+        messages.append({"role": "user", "content": prompt})
+
+        stream = self.client.chat.completions.create(
+            model=self.config.model,
+            messages=messages,
+            temperature=temperature or self.config.temperature,
+            max_tokens=max_tokens or self.config.max_tokens,
+            stream=True  # Enable streaming
+        )
+
+        for chunk in stream:
+            content = chunk.choices[0].delta.content
+            if content:
+                yield content
 
     def analyze_image(
         self,

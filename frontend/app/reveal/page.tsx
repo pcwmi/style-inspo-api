@@ -8,6 +8,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { OutfitCard } from '@/components/OutfitCard'
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
 function RevealPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -21,6 +23,8 @@ function RevealPageContent() {
   const [error, setError] = useState<string>('')
   const [progress, setProgress] = useState<number>(0)
   const [pollCount, setPollCount] = useState<number>(0)
+  const [streamedContent, setStreamedContent] = useState<string>('')
+  const [currentOutfit, setCurrentOutfit] = useState<number>(0)
 
   useEffect(() => {
     if (!jobId) {
@@ -32,83 +36,146 @@ function RevealPageContent() {
     // TypeScript now knows jobId is string after the check above
     const validJobId = jobId
 
-    let pollInterval: NodeJS.Timeout
-    const MAX_POLLS = 90 // 3 minutes max (90 polls * 2 seconds)
-    let pollCounter = 0
+    let eventSource: EventSource | null = null
+    let pollInterval: NodeJS.Timeout | null = null
 
-    async function pollJob() {
-      pollCounter++
-      setPollCount(pollCounter)
-
-      // Timeout after max polls
-      if (pollCounter > MAX_POLLS) {
-        setStatus('error')
-        setError('Outfit generation is taking longer than expected. The job may have failed or the worker may be unavailable. Please try again.')
-        clearInterval(pollInterval)
-        return
-      }
-
+    const startSSEStreaming = () => {
       try {
-        const result = await api.getJobStatus(validJobId)
+        eventSource = new EventSource(`${API_URL}/api/jobs/${validJobId}/stream`)
 
-        // Update progress if available
-        if (result.progress !== undefined) {
-          setProgress(result.progress)
-        }
+        eventSource.addEventListener('progress', (e) => {
+          const data = JSON.parse(e.data)
+          setProgress(data.progress)
+          setCurrentOutfit(data.current_outfit || 0)
 
-        if (result.status === 'complete') {
-          const outfitsArray = result.result?.outfits || []
-          console.log('Job completed, outfits:', outfitsArray, 'Full result:', result.result)
-          console.log('Debug mode:', debugMode, 'Has reasoning:', !!result.result?.reasoning, 'Reasoning length:', result.result?.reasoning?.length || 0)
-          setOutfits(outfitsArray)
-          
-          // Extract reasoning if present
-          if (debugMode && result.result?.reasoning) {
-            console.log('Setting reasoning, length:', result.result.reasoning.length)
-            setReasoning(result.result.reasoning)
-          } else if (debugMode) {
-            console.warn('Debug mode is ON but no reasoning found in result. Result keys:', Object.keys(result.result || {}))
+          // Update status message
+          if (data.message) {
+            setStreamedContent(data.message)
           }
-          
+        })
+
+        eventSource.addEventListener('outfit', (e) => {
+          const data = JSON.parse(e.data)
+          console.log(`Outfit ${data.outfit_number} being generated...`)
+          setCurrentOutfit(data.outfit_number)
+        })
+
+        eventSource.addEventListener('complete', (e) => {
+          const result = JSON.parse(e.data)
+          const outfitsArray = result.outfits || []
+          console.log('SSE complete, outfits:', outfitsArray.length)
+          setOutfits(outfitsArray)
+
+          // Extract reasoning if debug mode
+          if (debugMode && result.reasoning) {
+            console.log('Setting reasoning from SSE, length:', result.reasoning.length)
+            setReasoning(result.reasoning)
+          }
+
           setStatus('complete')
-          clearInterval(pollInterval)
-        } else if (result.status === 'failed') {
-          setStatus('error')
-          // Extract error message from job.exc_info if it's a string
-          const errorMsg = result.error || 'Generation failed'
-          setError(errorMsg.length > 500 ? errorMsg.substring(0, 500) + '...' : errorMsg)
-          clearInterval(pollInterval)
-        }
-        // else keep polling (status === 'processing' or 'queued')
-      } catch (err: any) {
-        // Handle 404 (job not found) specially
-        if (err.message?.includes('404') || err.message?.includes('not found')) {
-          setStatus('error')
-          setError('Job not found. The job may have expired or the worker may not be running. Please try generating outfits again.')
-        } else {
-          setStatus('error')
-          setError(err.message || 'Failed to check job status. Please check your connection and try again.')
-        }
-        clearInterval(pollInterval)
+          eventSource?.close()
+        })
+
+        eventSource.addEventListener('error', (e: Event) => {
+          console.warn('SSE error, falling back to polling', e)
+          eventSource?.close()
+
+          // Fall back to polling
+          startPolling()
+        })
+
+      } catch (err) {
+        console.warn('SSE not supported, using polling', err)
+        startPolling()
       }
     }
 
-    // Initial call
-    pollJob()
+    const startPolling = () => {
+      // Existing polling logic as fallback
+      let pollCounter = 0
+      const MAX_POLLS = 90
 
-    // Poll every 2 seconds
-    pollInterval = setInterval(pollJob, 2000)
+      const pollJob = async () => {
+        pollCounter++
+        setPollCount(pollCounter)
 
-    return () => clearInterval(pollInterval)
-  }, [jobId])
+        if (pollCounter > MAX_POLLS) {
+          setStatus('error')
+          setError('Generation taking longer than expected...')
+          return
+        }
+
+        try {
+          const result = await api.getJobStatus(validJobId)
+
+          // Update progress if available
+          if (result.progress !== undefined) {
+            setProgress(result.progress)
+          }
+
+          if (result.status === 'complete') {
+            const outfitsArray = result.result?.outfits || []
+            console.log('Polling complete, outfits:', outfitsArray.length)
+            setOutfits(outfitsArray)
+
+            if (debugMode && result.result?.reasoning) {
+              console.log('Setting reasoning from polling, length:', result.result.reasoning.length)
+              setReasoning(result.result.reasoning)
+            }
+
+            setStatus('complete')
+            if (pollInterval) clearInterval(pollInterval)
+          } else if (result.status === 'failed') {
+            setStatus('error')
+            const errorMsg = result.error || 'Generation failed'
+            setError(errorMsg.length > 500 ? errorMsg.substring(0, 500) + '...' : errorMsg)
+            if (pollInterval) clearInterval(pollInterval)
+          }
+        } catch (err: any) {
+          // Handle 404 (job not found) specially
+          if (err.message?.includes('404') || err.message?.includes('not found')) {
+            setStatus('error')
+            setError('Job not found. The job may have expired or the worker may not be running. Please try generating outfits again.')
+          } else {
+            setStatus('error')
+            setError(err.message || 'Failed to check job status. Please check your connection and try again.')
+          }
+          if (pollInterval) clearInterval(pollInterval)
+        }
+      }
+
+      pollJob()
+      pollInterval = setInterval(pollJob, 2000)
+    }
+
+    // Try SSE first
+    startSSEStreaming()
+
+    return () => {
+      eventSource?.close()
+      if (pollInterval) clearInterval(pollInterval)
+    }
+  }, [jobId, debugMode])
 
   if (status === 'loading') {
     return (
       <div className="min-h-screen bg-bone flex items-center justify-center page-container">
         <div className="text-center px-4 max-w-sm">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-sand border-t-terracotta mx-auto mb-4"></div>
-          <p className="text-ink text-base font-medium mb-2">Creating your outfits...</p>
-          <p className="text-muted text-sm leading-relaxed mb-2">This usually takes 20-30 seconds</p>
+
+          {/* Show current progress message */}
+          <p className="text-ink text-base font-medium mb-2">
+            {streamedContent || 'Creating your outfits...'}
+          </p>
+
+          {/* Show which outfit is being created */}
+          {currentOutfit > 0 && (
+            <p className="text-muted text-sm mb-2">
+              Outfit {currentOutfit} of 3
+            </p>
+          )}
+
+          {/* Progress bar */}
           {progress > 0 && (
             <div className="mt-4">
               <div className="w-full bg-sand rounded-full h-2 mb-2">
@@ -120,8 +187,11 @@ function RevealPageContent() {
               <p className="text-xs text-muted">{progress}% complete</p>
             </div>
           )}
+
           {pollCount > 30 && (
-            <p className="text-xs text-muted mt-2">Still processing... ({Math.floor(pollCount * 2)}s elapsed)</p>
+            <p className="text-xs text-muted mt-2">
+              Still processing... ({Math.floor(pollCount * 2)}s elapsed)
+            </p>
           )}
         </div>
       </div>

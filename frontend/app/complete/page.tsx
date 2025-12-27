@@ -4,6 +4,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { Suspense } from 'react'
 import { useState, useEffect } from 'react'
 import { api } from '@/lib/api'
+import { posthog } from '@/lib/posthog'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -52,7 +53,19 @@ function CompletePageContent() {
         mode: 'complete',
         include_reasoning: debugMode
       })
-      
+
+      // Track outfit generation with anchor items
+      const selectedItemNames = allItems
+        .filter((item: any) => selectedItems.includes(item.id))
+        .map((item: any) => item.styling_details?.name || item.id)
+
+      posthog.capture('outfit_generated', {
+        mode: 'complete',
+        anchor_item_ids: selectedItems,
+        anchor_item_names: selectedItemNames,
+        anchor_count: selectedItems.length
+      })
+
       // Redirect with debug param if enabled
       const debugParam = debugMode ? '&debug=true' : ''
       router.push(`/reveal?user=${user}&job=${job_id}${debugParam}`)

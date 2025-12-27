@@ -211,10 +211,20 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
 
         if job:
             job.meta['progress'] = 30
+            job.meta['status_message'] = "Wardrobe loaded, starting generation..."
             job.save_meta()
         
         # Generate outfits based on mode
         raw_reasoning = None
+        
+        # Update progress before starting generation
+        if job:
+            job.meta['progress'] = 40
+            job.meta['status_message'] = "Creating outfit 1 of 3..."
+            job.meta['current_outfit'] = 1
+            job.meta['total_outfits'] = 3
+            job.save_meta()
+        
         if mode == "occasion":
             # Occasion-based generation - use entire wardrobe, no anchor requirements
             available_items = wardrobe_manager.get_wardrobe_items("all")
@@ -296,6 +306,8 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
         
         if job:
             job.meta['progress'] = 90
+            job.meta['status_message'] = "Finalizing outfits..."
+            job.meta['current_outfit'] = 3
             job.save_meta()
         
         # Convert to serializable format
@@ -335,6 +347,7 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
         
         if job:
             job.meta['progress'] = 100
+            job.meta['status_message'] = "Complete!"
             job.save_meta()
         
         return result
@@ -371,8 +384,18 @@ def generate_consider_buying_job(
     Returns:
         Dict with outfits, anchor_items, and optionally reasoning
     """
+    job = get_current_job()
+    
     try:
         logger.info(f"Starting consider-buying job for user {user_id}, item {item_id}")
+        
+        # Initial progress
+        if job:
+            job.meta['progress'] = 10
+            job.meta['status_message'] = "Loading item details..."
+            job.meta['current_outfit'] = 0
+            job.meta['total_outfits'] = 3
+            job.save_meta()
 
         # Initialize managers
         cb_manager = ConsiderBuyingManager(user_id=user_id)
@@ -396,6 +419,12 @@ def generate_consider_buying_job(
             anchor_item_ids = [item_id]
 
         logger.info(f"Anchor items: {len(anchor_items)}")
+
+        # Update progress before generation
+        if job:
+            job.meta['progress'] = 20
+            job.meta['status_message'] = "Preparing to generate outfits..."
+            job.save_meta()
 
         # Call existing generate_outfits_job with mode="complete"
         # This reuses all the existing logic (prompt version, engine setup, user profile, etc.)
