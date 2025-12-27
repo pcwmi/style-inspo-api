@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostic Review</title>
+    <style>
+        body { font-family: system-ui; background: #f5f5f5; padding: 20px; }
+        .header { background: white; padding: 30px; border-radius: 8px; margin-bottom: 30px; }
+        h1 { font-size: 32px; }
+        .section { background: white; padding: 30px; border-radius: 8px; margin-bottom: 30px; }
+        .outfit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px; }
+        .outfit-card { border: 1px solid #ddd; border-radius: 8px; padding: 20px; background: #fafafa; }
+        .outfit-title { font-weight: bold; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #ddd; }
+        .items-container { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
+        .item-image { width: 80px; height: 80px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; }
+        .item-placeholder { width: 80px; height: 80px; background: #e0e0e0; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px; text-align: center; padding: 5px; }
+        .styling-notes { font-size: 14px; margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 4px; }
+        .marker { background: #ff4444; color: white; padding: 2px 8px; border-radius: 3px; font-size: 12px; margin-left: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Diagnostic Review: White Sneakers & Shirt Constraint Test</h1>
+        <p><strong>User:</strong> peichin | <strong>Wardrobe Items:</strong> 54 | <strong>Scenario:</strong> Outdoor Wedding (75-85°F)</p>
+    </div>
+
+    <div class="section">
+        <h2>Baseline Generation (No Constraints)</h2>
+        <p>Generated 15 outfits with no constraints</p>
+        <div class="outfit-grid">
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 1, Outfit 1 <span class="marker">WHITE SHIRT</span></div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" class="item-image" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" alt="White ruffled button-up shirt" class="item-image" title="White ruffled button-up shirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" class="item-image" title="Gold swirl earrings with pearl center"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/331fc97e712f40fb94a7d005479d1cdb.jpg" alt="White embroidered cowboy boots" class="item-image" title="White embroidered cowboy boots"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" alt="Black and White Floral Print Scarf" class="item-image" title="Black and White Floral Print Scarf">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Tuck the white ruffled shirt into the white wide-leg pants. Drape the black and white floral print scarf around the neck loosely for a relaxed look. Let the earrings be the focal point by styling the hair back. Keep the pants outside the cowboy boots for a clean look.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> This outfit is perfect for an outdoor wedding because it balances classic elegance with playful touches, suitable for an afternoon event. The lightweight fabrics in the pants and shirt ensure breathability in warm weather, while the scarf can be removed if it gets too hot. The wide-leg pants and cowboy boots add a relaxed, playful vibe, while the shirt and earrings maintain classic elegance.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 1, Outfit 2 <span class="marker">WHITE SNEAKERS</span></div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/a81ac89a43c44f0ebe1f69410bc76ccc.jpg" alt="Black and white polka dot long-sleeve blouse" class="item-image" title="Black and white polka dot long-sleeve blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/13ae557e53b449bc8d68e07861375e0d.jpg" alt="Sage Green Leather A-line Skirt" class="item-image" title="Sage Green Leather A-line Skirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" alt="Gold Bar Pendant Necklace" class="item-image" title="Gold Bar Pendant Necklace"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" alt="White and Red Classic Leather Sneakers" class="item-image" title="White and Red Classic Leather Sneakers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/cd9aba82c36248b8bb25d8acfe9b9490.jpg" alt="Leopard Print Square Scarf" class="item-image" title="Leopard Print Square Scarf">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Tuck the polka dot blouse into the sage green A-line skirt for a defined waistline. Knot the leopard print scarf around the neck for a pop of pattern. Wear the gold bar necklace over the blouse. Keep the sneakers clean for a fresh, playful touch.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> This outfit suits an outdoor wedding with its blend of classic polka dots and playful leopard print, fitting the festive atmosphere. The lightweight blouse and leather skirt are comfortable in warm weather, while the sneakers offer a relaxed, playful twist on traditional footwear choices. The necklace and scarf add intentional detailing, enhancing the outfit's playful and chic elements.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 1, Outfit 3 </div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/ab37e67316304ee7a0293033cdee5672.jpg" alt="Floral Patterned Long-Sleeve Dress" class="item-image" title="Floral Patterned Long-Sleeve Dress"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" alt="Gold leaf motif necklace" class="item-image" title="Gold leaf motif necklace"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1e1f015ce81489997c2f77d046b6497.jpg" alt="White and Black Distressed Leather Ankle Boots" class="item-image" title="White and Black Distressed Leather Ankle Boots">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Add the gold leaf motif necklace over the dress for a touch of elegance. Wear the dress with the ankle boots, allowing the dress to flow naturally over them for a bohemian touch.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> The floral dress is perfect for an outdoor wedding, offering a boho vintage style that suits the occasion. Its lightweight fabric is ideal for warm weather, while the ankle boots add a playful, relaxed contrast to the dressy floral print. The necklace enhances the overall elegance, making it suitable for the celebratory environment.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 2, Outfit 1 </div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" class="item-image" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2f4a1fbfb7c240d291f1ff1c1448f0f0.jpg" alt="Cream tie-front blouse" class="item-image" title="Cream tie-front blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/331fc97e712f40fb94a7d005479d1cdb.jpg" alt="White embroidered cowboy boots" class="item-image" title="White embroidered cowboy boots"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" class="item-image" title="Gold swirl earrings with pearl center"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" alt="Gold leaf motif necklace" class="item-image" title="Gold leaf motif necklace">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Tie the blouse in a loose knot to emphasize the relaxed, playful feel. Let the white wide-leg pants flow over the boots for a seamless look. Keep jewelry minimal to let the gold pieces shine.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> The white wide-leg pants and cream blouse create a light, airy outfit perfect for an outdoor wedding. The lightweight fabrics keep it comfortable in warm weather. Cowboy boots add a playful, unexpected twist, while the gold jewelry ties in classic elegance and a relaxed vibe.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 2, Outfit 2 <span class="marker">WHITE SNEAKERS</span></div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/ab37e67316304ee7a0293033cdee5672.jpg" alt="Floral Patterned Long-Sleeve Dress" class="item-image" title="Floral Patterned Long-Sleeve Dress"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c51d42bf62ad460e9fd31c136aed2679.jpg" alt="Tan suede belt with oval buckle" class="item-image" title="Tan suede belt with oval buckle"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" alt="White and Red Classic Leather Sneakers" class="item-image" title="White and Red Classic Leather Sneakers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" alt="Gold Bar Pendant Necklace" class="item-image" title="Gold Bar Pendant Necklace">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Use the tan suede belt to cinch the waist for a defined silhouette. Style the sneakers with the dress for a casual touch. Allow the necklace to sit just above the neckline.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> The floral dress is ideal for an outdoor wedding with its vibrant print and fitted cut. The lightweight fabric is perfect for warm weather. Sneakers add a playful contrast to the dressy setting, while the belt emphasizes the classic style, and the gold necklace adds a relaxed touch.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 2, Outfit 3 </div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2a337a039a0a4d98b4833b48d9928baf.jpg" alt="Black and white paisley ruffle blouse" class="item-image" title="Black and white paisley ruffle blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/13ae557e53b449bc8d68e07861375e0d.jpg" alt="Sage Green Leather A-line Skirt" class="item-image" title="Sage Green Leather A-line Skirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d3e79387d01e4fe88030ff21d383dae0.jpg" alt="Burgundy patent leather pointed-toe pumps" class="item-image" title="Burgundy patent leather pointed-toe pumps"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" alt="Gold leaf motif necklace" class="item-image" title="Gold leaf motif necklace"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" alt="Black and White Floral Print Scarf" class="item-image" title="Black and White Floral Print Scarf">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Tuck the blouse into the skirt for a polished look. Drape the scarf loosely around the neck to add elegance. Ensure the pumps peek from under the skirt to show off their color.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> The paisley blouse offers a boho vibe that is perfect for an outdoor setting. The skirt's lightweight leather is suitable for warm temperatures. The pumps add classic elegance, while the scarf introduces a playful print and texture. The combination of textures and colors creates a harmonious yet unexpected look.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 3, Outfit 1 </div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" class="item-image" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2a337a039a0a4d98b4833b48d9928baf.jpg" alt="Black and white paisley ruffle blouse" class="item-image" title="Black and white paisley ruffle blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" class="item-image" title="Gold swirl earrings with pearl center"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/331fc97e712f40fb94a7d005479d1cdb.jpg" alt="White embroidered cowboy boots" class="item-image" title="White embroidered cowboy boots">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Tuck the blouse into the pants for a polished look. Roll the sleeves of the blouse slightly for added casual flair. Let the earrings be the focal accessory by wearing hair up.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> This outfit is ideal for an outdoor wedding due to its combination of elegant and playful elements. The lightweight chiffon blouse and cotton blend pants ensure comfort in warm weather, while the cowboy boots add a surprising twist that suits an outdoor setting. Each piece aligns with the user's classic style by incorporating relaxed wide-leg pants and playful ruffles, creating a harmonious blend of their style DNA.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 3, Outfit 2 <span class="marker">WHITE SNEAKERS</span></div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/ab37e67316304ee7a0293033cdee5672.jpg" alt="Floral Patterned Long-Sleeve Dress" class="item-image" title="Floral Patterned Long-Sleeve Dress"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" alt="Gold leaf motif necklace" class="item-image" title="Gold leaf motif necklace"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" alt="White and Red Classic Leather Sneakers" class="item-image" title="White and Red Classic Leather Sneakers">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Add a partial tuck of the dress to create movement. Layer the gold necklace over the dress for a touch of elegance. Wear the sneakers with no-show socks for a clean look.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> This dress is perfect for an outdoor wedding, offering a flowing silhouette that's both comfortable and elegant. The lightweight fabric is breathable for warm temperatures. The sneakers introduce a playful, relaxed vibe while the gold necklace adds a classic touch, balancing the user's style aspirations.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 3, Outfit 3 </div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b2eefe9b70084b8eae2ce17bba9b3546.jpg" alt="Cream textured tie-front blouse" class="item-image" title="Cream textured tie-front blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/13ae557e53b449bc8d68e07861375e0d.jpg" alt="Sage Green Leather A-line Skirt" class="item-image" title="Sage Green Leather A-line Skirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d3e79387d01e4fe88030ff21d383dae0.jpg" alt="Burgundy patent leather pointed-toe pumps" class="item-image" title="Burgundy patent leather pointed-toe pumps"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/cd9aba82c36248b8bb25d8acfe9b9490.jpg" alt="Leopard Print Square Scarf" class="item-image" title="Leopard Print Square Scarf">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Tie the blouse neatly at the front to highlight the waist. Drape the scarf loosely around the neck for a touch of flair. Keep the pumps polished for an elegant finish.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> This outfit combines chic elements suitable for a wedding with breathable fabrics appropriate for warm weather. The tie-front blouse and A-line skirt provide a relaxed yet structured look. The pumps add a classic elegance, while the scarf introduces a playful pattern, enhancing the user's style DNA.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 4, Outfit 1 </div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" class="item-image" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b2eefe9b70084b8eae2ce17bba9b3546.jpg" alt="Cream textured tie-front blouse" class="item-image" title="Cream textured tie-front blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" class="item-image" title="Gold swirl earrings with pearl center"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/331fc97e712f40fb94a7d005479d1cdb.jpg" alt="White embroidered cowboy boots" class="item-image" title="White embroidered cowboy boots"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" alt="Gold Bar Pendant Necklace" class="item-image" title="Gold Bar Pendant Necklace">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Tie the blouse loosely to enhance the relaxed vibe. Let the blouse's texture stand out against the smooth cotton of the pants. Allow the cowboy boots to peek from underneath the wide-leg pants for a playful touch.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> This outfit is perfect for an outdoor wedding, as the wide-leg pants and tie-front blouse create a relaxed yet classic silhouette suitable for a warm, sunny afternoon. The lightweight cotton and textured fabric are breathable, ensuring comfort in 75-85°F weather. The white pants and embroidered cowboy boots add a playful twist, aligning with the user's style DNA by combining classic pieces with relaxed, unexpected elements.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 4, Outfit 2 <span class="marker">WHITE SNEAKERS</span></div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/ab37e67316304ee7a0293033cdee5672.jpg" alt="Floral Patterned Long-Sleeve Dress" class="item-image" title="Floral Patterned Long-Sleeve Dress"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" alt="White and Red Classic Leather Sneakers" class="item-image" title="White and Red Classic Leather Sneakers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/cd9aba82c36248b8bb25d8acfe9b9490.jpg" alt="Leopard Print Square Scarf" class="item-image" title="Leopard Print Square Scarf"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" alt="Gold leaf motif necklace" class="item-image" title="Gold leaf motif necklace">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Drape the scarf loosely around the neck for a relaxed vibe. Pair the floral dress with sneakers for an unexpected playful touch. Allow the necklace to be a subtle yet elegant detail against the dress's pattern.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> The floral dress is ideal for an afternoon wedding, offering a bohemian yet classic style that suits the occasion. Its lightweight fabric is perfect for the warm weather. Sneakers add a playful element, aligning with the user's desire for a relaxed feel, while the scarf introduces textural contrast and elegance.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 4, Outfit 3 <span class="marker">WHITE SHIRT</span></div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/13ae557e53b449bc8d68e07861375e0d.jpg" alt="Sage Green Leather A-line Skirt" class="item-image" title="Sage Green Leather A-line Skirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" alt="White ruffled button-up shirt" class="item-image" title="White ruffled button-up shirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d3e79387d01e4fe88030ff21d383dae0.jpg" alt="Burgundy patent leather pointed-toe pumps" class="item-image" title="Burgundy patent leather pointed-toe pumps"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" alt="Gold Bar Pendant Necklace" class="item-image" title="Gold Bar Pendant Necklace"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" alt="Black and White Floral Print Scarf" class="item-image" title="Black and White Floral Print Scarf">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Tuck the shirt into the skirt for a polished look. Drape the scarf over the shoulders to add elegance and visual interest. The pumps elevate the overall outfit, adding a sophisticated finish.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> This chic outfit is wedding-appropriate, as the classic silhouette of the A-line skirt and button-up shirt offers a sophisticated yet relaxed look. The lightweight cotton shirt and leather skirt are suitable for warm weather. The pumps add a touch of elegance, while the floral scarf introduces a playful element, effectively honoring the user's style DNA.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 5, Outfit 1 <span class="marker">WHITE SHIRT</span></div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" class="item-image" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" alt="White ruffled button-up shirt" class="item-image" title="White ruffled button-up shirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" class="item-image" title="Gold swirl earrings with pearl center"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d3e79387d01e4fe88030ff21d383dae0.jpg" alt="Burgundy patent leather pointed-toe pumps" class="item-image" title="Burgundy patent leather pointed-toe pumps">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Tuck the ruffled button-up shirt into the wide-leg pants. Ensure the earrings are visible by styling hair back. Finish with the pointed-toe pumps for an elegant touch.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> This outfit is perfect for an outdoor wedding due to its classic and elegant elements like the ruffled shirt and pointed-toe pumps, adding a touch of formality. The lightweight cotton of the shirt and the breathable cotton blend of the pants ensure comfort in warm weather. The outfit aligns with the user's style DNA by combining classic pieces with a relaxed fit in the pants, while the earrings add a playful and elegant touch.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 5, Outfit 2 <span class="marker">WHITE SNEAKERS</span></div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/ab37e67316304ee7a0293033cdee5672.jpg" alt="Floral Patterned Long-Sleeve Dress" class="item-image" title="Floral Patterned Long-Sleeve Dress"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" alt="Gold Bar Pendant Necklace" class="item-image" title="Gold Bar Pendant Necklace"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" alt="White and Red Classic Leather Sneakers" class="item-image" title="White and Red Classic Leather Sneakers">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Add the necklace to draw attention to the neckline. Pair the dress with sneakers for a relaxed, playful twist. Ensure the dress flows freely without additional layers.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> The floral dress is suitable for an outdoor wedding with its elegant and vintage floral pattern. The lightweight fabric ensures comfort in warm temperatures. The sneakers add a relaxed and playful touch, breaking the traditional footwear expectation and aligning with the user's style aspirations.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 5, Outfit 3 </div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/13ae557e53b449bc8d68e07861375e0d.jpg" alt="Sage Green Leather A-line Skirt" class="item-image" title="Sage Green Leather A-line Skirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/a81ac89a43c44f0ebe1f69410bc76ccc.jpg" alt="Black and white polka dot long-sleeve blouse" class="item-image" title="Black and white polka dot long-sleeve blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" alt="Gold leaf motif necklace" class="item-image" title="Gold leaf motif necklace"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/331fc97e712f40fb94a7d005479d1cdb.jpg" alt="White embroidered cowboy boots" class="item-image" title="White embroidered cowboy boots">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Tuck the polka dot blouse into the skirt. Layer the necklace over the blouse. Style the boots with the skirt for a quirky contrast.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> This outfit combines the classic elegance of the polka dot blouse with the playful polka dot pattern and the relaxed fit of the A-line skirt. The cowboy boots add a surprising and playful element appropriate for a sunny outdoor wedding. The lightweight textures keep the outfit suitable for warm weather.</div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Constrained Generation (No White Sneakers/Shirts)</h2>
+        <p>Generated 15 outfits with explicit exclusion of white sneakers and white ruffled shirt</p>
+        <div class="outfit-grid">
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 1, Outfit 1</div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" class="item-image" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b2eefe9b70084b8eae2ce17bba9b3546.jpg" alt="Cream textured tie-front blouse" class="item-image" title="Cream textured tie-front blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" class="item-image" title="Gold swirl earrings with pearl center"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b120e972a0814e2a84dbcc254cd1767c.jpg" alt="Brown woven leather belt" class="item-image" title="Brown woven leather belt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d3e79387d01e4fe88030ff21d383dae0.jpg" alt="Burgundy patent leather pointed-toe pumps" class="item-image" title="Burgundy patent leather pointed-toe pumps">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Tie the blouse in a neat bow at the front. Tuck the front of the blouse into the wide-leg pants to define the waist. Let the gold earrings stand out by keeping other accessories minimal.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> This outfit is perfect for an outdoor wedding due to its elegant yet relaxed vibe, with the cream blouse offering a touch of playfulness through its tie-front detail. The breathable cotton fabric of the pants and lightweight blouse ensure comfort in warm weather. The outfit balances the classic wide-leg silhouette with the playful tie-front, while the gold earrings add a touch of sophistication, aligning with the user's style DNA.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 1, Outfit 2</div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/13ae557e53b449bc8d68e07861375e0d.jpg" alt="Sage Green Leather A-line Skirt" class="item-image" title="Sage Green Leather A-line Skirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d6ce07cd26204333b1f0da076030d980.jpg" alt="Black puff-sleeve smocked blouse" class="item-image" title="Black puff-sleeve smocked blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" alt="Gold Bar Pendant Necklace" class="item-image" title="Gold Bar Pendant Necklace"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg" alt="Black Patent Leather Loafers" class="item-image" title="Black Patent Leather Loafers">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Pair the smocked blouse with the sage green skirt for a flattering silhouette. Let the gold necklace rest just above the neckline of the blouse. Keep the loafers polished for a chic finish.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> The A-line skirt offers a classic and structured base, ideal for a wedding, while the puff-sleeve blouse adds a playful yet relaxed touch. The black loafers offer a surprise element by contrasting with the expected heels, making it suitable for outdoor settings. The leather skirt ensures comfort in warm weather, and the gold necklace adds subtle elegance, perfectly aligning with the user's style aspirations.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 1, Outfit 3</div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d83ddd63b7cd4654bd4a063d19c3876e.jpg" alt="Light blue wide-leg jeans" class="item-image" title="Light blue wide-leg jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/fb74fd751f3d47f39da9104a24cd8d52.jpg" alt="Ivory crochet button-up cardigan" class="item-image" title="Ivory crochet button-up cardigan"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" alt="Gold leaf motif necklace" class="item-image" title="Gold leaf motif necklace"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/331fc97e712f40fb94a7d005479d1cdb.jpg" alt="White embroidered cowboy boots" class="item-image" title="White embroidered cowboy boots">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Layer the crochet cardigan over the jeans, leaving a few buttons open for a relaxed vibe. Allow the gold necklace to peek through the open neckline. The boots should be shown off by slightly tucking the jeans into them.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> This outfit mixes classic elements like wide-leg jeans with the playful and relaxed vibe of the crochet cardigan, making it suitable for an afternoon wedding. The combination of lightweight fabrics ensures comfort in warm weather. The cowboy boots add an unexpected twist, embodying the playful aspect of the user's style DNA, while the gold necklace brings a touch of elegance.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 2, Outfit 1</div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" class="item-image" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b2eefe9b70084b8eae2ce17bba9b3546.jpg" alt="Cream textured tie-front blouse" class="item-image" title="Cream textured tie-front blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" class="item-image" title="Gold swirl earrings with pearl center"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d3e79387d01e4fe88030ff21d383dae0.jpg" alt="Burgundy patent leather pointed-toe pumps" class="item-image" title="Burgundy patent leather pointed-toe pumps"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" alt="Black and White Floral Print Scarf" class="item-image" title="Black and White Floral Print Scarf">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Tie the blouse at the front for a playful detail. Drape the scarf loosely around the neck for an elegant touch and to add interest. Let the pants flow over the pumps to maintain the classic silhouette.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> This outfit is perfect for an outdoor wedding, offering a sophisticated and polished look with the white pants and textured blouse. The lightweight fabrics ensure comfort in warm weather, while the burgundy pumps add a playful pop of color. The outfit honors the user's style DNA by blending classic elements (wide-leg pants), relaxed pieces (tie-front blouse), and playful accessories (gold earrings and floral scarf), while applying intentional contrast through proportional and textural differences.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 2, Outfit 2</div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/13ae557e53b449bc8d68e07861375e0d.jpg" alt="Sage Green Leather A-line Skirt" class="item-image" title="Sage Green Leather A-line Skirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/fb74fd751f3d47f39da9104a24cd8d52.jpg" alt="Ivory crochet button-up cardigan" class="item-image" title="Ivory crochet button-up cardigan"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" alt="Gold Bar Pendant Necklace" class="item-image" title="Gold Bar Pendant Necklace"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c3d14deb47d148c79dec12ec85f9bc27.jpg" alt="Cream knee-high block heel boots" class="item-image" title="Cream knee-high block heel boots">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Leave the cardigan unbuttoned for a relaxed vibe. Position the gold bar pendant necklace over the cardigan to highlight the neck area. Tuck the skirt into the boots for a cohesive look.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> Ideal for a warm, sunny wedding, this outfit offers a chic yet comfortable look with the airy crochet cardigan and structured leather skirt. The cardigan's open design adds a relaxed feel, while the boots introduce an unexpected twist with their modern chic style. The ensemble balances the user's style DNA with classic elements (skirt), relaxed cardigan, and playful accessories (necklace), while ensuring proportional and expectation contrasts.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 2, Outfit 3</div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/ab37e67316304ee7a0293033cdee5672.jpg" alt="Floral Patterned Long-Sleeve Dress" class="item-image" title="Floral Patterned Long-Sleeve Dress"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" alt="Gold leaf motif necklace" class="item-image" title="Gold leaf motif necklace"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/66af2a43a68343a88921acec7a85c0f0.jpg" alt="Taupe suede ankle boots" class="item-image" title="Taupe suede ankle boots">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Cinch the waist with a belt for definition. Let the necklace rest on the neckline of the dress. Tuck the dress slightly into the boots to reveal the ankle.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> This dress is perfect for a wedding, offering a boho-chic aesthetic that remains formal enough for the occasion. The lightweight fabric keeps it cool for warm weather, while the suede boots add a relaxed and playful twist with their casual texture. It combines classic floral patterns with relaxed styling and playful accessories, achieving a harmonious style DNA alignment with contrasting textures and unexpected footwear.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 3, Outfit 1</div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" class="item-image" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/fb74fd751f3d47f39da9104a24cd8d52.jpg" alt="Ivory crochet button-up cardigan" class="item-image" title="Ivory crochet button-up cardigan"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" alt="Gold leaf motif necklace" class="item-image" title="Gold leaf motif necklace"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/fb2f4a3adff44a3cb10bcbc2621b60e7.jpg" alt="Brown sleeveless knit top" class="item-image" title="Brown sleeveless knit top"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d3e79387d01e4fe88030ff21d383dae0.jpg" alt="Burgundy patent leather pointed-toe pumps" class="item-image" title="Burgundy patent leather pointed-toe pumps">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Tuck the brown sleeveless knit top into the white wide-leg pants for a clean silhouette. Wear the ivory cardigan open for a relaxed layer. The gold leaf motif necklace should be worn over the cardigan to add a playful touch. Ensure the pants fall over the pumps without dragging.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> This outfit is perfect for an outdoor afternoon wedding due to its classic yet relaxed style. The lightweight crochet cardigan and sleeveless knit top provide breathability for warm weather. The wide-leg pants add sophistication and the burgundy pumps inject playfulness, aligning with the user's classic, relaxed, and playful style aspirations.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 3, Outfit 2</div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/13ae557e53b449bc8d68e07861375e0d.jpg" alt="Sage Green Leather A-line Skirt" class="item-image" title="Sage Green Leather A-line Skirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b2eefe9b70084b8eae2ce17bba9b3546.jpg" alt="Cream textured tie-front blouse" class="item-image" title="Cream textured tie-front blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" class="item-image" title="Gold swirl earrings with pearl center"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/66af2a43a68343a88921acec7a85c0f0.jpg" alt="Taupe suede ankle boots" class="item-image" title="Taupe suede ankle boots">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Tie the blouse at the waist for a tailored look that complements the A-line skirt. Let the earrings show by pushing hair back or tying it up. The boots should be showcased by allowing the skirt to fall just above them.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> This outfit is suitable for an outdoor wedding with its elegant and playful elements. The lightweight blouse and skirt offer a breezy fit perfect for warm weather. The taupe boots add a relaxed, yet chic touch, making the ensemble feel both classic and playful.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 3, Outfit 3</div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/a81ac89a43c44f0ebe1f69410bc76ccc.jpg" alt="Black and white polka dot long-sleeve blouse" class="item-image" title="Black and white polka dot long-sleeve blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/85ec93b03d6a4bc1bca313bf175b2390.jpg" alt="Royal blue slim-fit chinos" class="item-image" title="Royal blue slim-fit chinos"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" alt="Gold Bar Pendant Necklace" class="item-image" title="Gold Bar Pendant Necklace"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg" alt="Black Patent Leather Loafers" class="item-image" title="Black Patent Leather Loafers">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Tuck the blouse into the chinos for a polished look. The loafers add a classic touch, while the necklace adds a playful glint. Allow the necklace to be the focal point by keeping other accessories minimal.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> This ensemble blends classic and playful elements for an outdoor wedding. The lightweight blouse and chinos are perfect for the warm weather. The playful polka dots and sleek loafers create a stylishly relaxed vibe, aligning with the user's style aspirations.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 4, Outfit 1</div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" class="item-image" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b2eefe9b70084b8eae2ce17bba9b3546.jpg" alt="Cream textured tie-front blouse" class="item-image" title="Cream textured tie-front blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" class="item-image" title="Gold swirl earrings with pearl center"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d3e79387d01e4fe88030ff21d383dae0.jpg" alt="Burgundy patent leather pointed-toe pumps" class="item-image" title="Burgundy patent leather pointed-toe pumps"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" alt="Black and White Floral Print Scarf" class="item-image" title="Black and White Floral Print Scarf">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Partially tuck the cream blouse into the high-waisted pants to emphasize the waist. Drape the scarf softly around the neck without tying to keep it light and airy. The gold earrings add a touch of elegance and should be the focal point, so keep other jewelry minimal.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> This outfit is perfect for an outdoor afternoon wedding due to its light, breathable fabrics like cotton and lightweight textures. The wide-leg pants offer a relaxed yet classic silhouette, while the pumps add elegance and formality, in line with wedding attire. The playful element comes through the scarf's floral pattern and the tie-front blouse, aligning with the user's aspirational relaxed style by keeping the look airy and comfortable.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 4, Outfit 2</div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/13ae557e53b449bc8d68e07861375e0d.jpg" alt="Sage Green Leather A-line Skirt" class="item-image" title="Sage Green Leather A-line Skirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/a81ac89a43c44f0ebe1f69410bc76ccc.jpg" alt="Black and white polka dot long-sleeve blouse" class="item-image" title="Black and white polka dot long-sleeve blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" alt="Gold leaf motif necklace" class="item-image" title="Gold leaf motif necklace"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg" alt="Black Patent Leather Loafers" class="item-image" title="Black Patent Leather Loafers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/cd9aba82c36248b8bb25d8acfe9b9490.jpg" alt="Leopard Print Square Scarf" class="item-image" title="Leopard Print Square Scarf">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Tuck the polka dot blouse into the skirt for a clean, streamlined look. Let the scarf hang loosely around the neck or tie it to the handbag for a playful touch. Layer the gold leaf necklace over the blouse for added elegance.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> The A-line skirt provides a classic silhouette suitable for a wedding, while the playful polka dot pattern adds a touch of whimsy. Lightweight fabrics ensure comfort in warm weather, and the loafers provide a relaxed yet polished look. The leopard scarf and gold necklace add playful and elegant details, complementing the user's style DNA.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 4, Outfit 3</div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/ab37e67316304ee7a0293033cdee5672.jpg" alt="Floral Patterned Long-Sleeve Dress" class="item-image" title="Floral Patterned Long-Sleeve Dress"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/331fc97e712f40fb94a7d005479d1cdb.jpg" alt="White embroidered cowboy boots" class="item-image" title="White embroidered cowboy boots"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" alt="Gold Bar Pendant Necklace" class="item-image" title="Gold Bar Pendant Necklace"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c51d42bf62ad460e9fd31c136aed2679.jpg" alt="Tan suede belt with oval buckle" class="item-image" title="Tan suede belt with oval buckle">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Add the tan belt to cinch the waist of the dress for a more structured silhouette. Let the necklace hang freely over the dress, adding a subtle touch of elegance. The boots should be worn outside the dress hem for a boho-chic appeal.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> The floral dress is perfect for an outdoor wedding, offering a boho vintage charm that matches the playful mood. Lightweight fabric ensures comfort in warm temperatures. The cowboy boots introduce a relaxed, unexpected twist to the ensemble, while the gold necklace and belt add classic and elegant touches, balancing the overall look.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 5, Outfit 1</div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" class="item-image" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b2eefe9b70084b8eae2ce17bba9b3546.jpg" alt="Cream textured tie-front blouse" class="item-image" title="Cream textured tie-front blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" class="item-image" title="Gold swirl earrings with pearl center"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d3e79387d01e4fe88030ff21d383dae0.jpg" alt="Burgundy patent leather pointed-toe pumps" class="item-image" title="Burgundy patent leather pointed-toe pumps"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" alt="Gold Bar Pendant Necklace" class="item-image" title="Gold Bar Pendant Necklace">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Tie the blouse at the front for a relaxed look that complements the high waist of the pants. Let the gold bar pendant necklace drape naturally. Pair with the burgundy pumps to add a pop of color.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> This outfit is perfect for an outdoor wedding due to its elegant yet relaxed components. The lightweight blouse and wide-leg pants ensure comfort in warm weather while maintaining a classic look. The gold accessories add playful and elegant touches, aligning with the user's style DNA. The burgundy pumps introduce an unexpected element, adhering to the Wrong Shoe Theory for contrast.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 5, Outfit 2</div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/13ae557e53b449bc8d68e07861375e0d.jpg" alt="Sage Green Leather A-line Skirt" class="item-image" title="Sage Green Leather A-line Skirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d6ce07cd26204333b1f0da076030d980.jpg" alt="Black puff-sleeve smocked blouse" class="item-image" title="Black puff-sleeve smocked blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" alt="Gold leaf motif necklace" class="item-image" title="Gold leaf motif necklace"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/66af2a43a68343a88921acec7a85c0f0.jpg" alt="Taupe suede ankle boots" class="item-image" title="Taupe suede ankle boots"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" alt="Black and White Floral Print Scarf" class="item-image" title="Black and White Floral Print Scarf">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Tuck the blouse into the skirt to highlight the waist. Drape the scarf loosely around the neck. Wear the boots with the skirt for a playful yet elegant touch.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> Perfect for a wedding, this outfit combines classic elegance with a modern, relaxed vibe. The leather skirt and smocked blouse keep it cool and breathable. The playful scarf and gold necklace add a touch of whimsy, highlighting the user's style DNA. The boots provide an unexpected contrast to the skirt, aligning with the Wrong Shoe Theory.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-title">Iteration 5, Outfit 3</div>
+                <div class="items-container">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/ab37e67316304ee7a0293033cdee5672.jpg" alt="Floral Patterned Long-Sleeve Dress" class="item-image" title="Floral Patterned Long-Sleeve Dress"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/331fc97e712f40fb94a7d005479d1cdb.jpg" alt="White embroidered cowboy boots" class="item-image" title="White embroidered cowboy boots"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" alt="Gold Bar Pendant Necklace" class="item-image" title="Gold Bar Pendant Necklace"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" class="item-image" title="Gold swirl earrings with pearl center">
+                </div>
+                <div class="styling-notes"><strong>Styling:</strong> Pair the dress with the cowboy boots for an unexpected twist. Allow the gold bar pendant to sit prominently against the dress. The earrings add a touch of elegance.</div>
+                <div class="styling-notes"><strong>Why it works:</strong> This outfit is ideal for an afternoon wedding with its boho yet polished vibe. The floral dress is lightweight and breathable for warm weather. Cowboy boots provide a playful and relaxed twist, fitting the Wrong Shoe Theory. The gold accessories add a classic and elegant touch, perfectly balancing the user's style DNA.</div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

@@ -193,15 +193,8 @@ async def generate_outfits(
     Returns job_id immediately. Client should poll /api/jobs/{job_id} for results.
     """
     try:
-        # #region agent log
-        import json; open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a').write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"C","location":"consider_buying.py:189","message":"Endpoint received request","data":{"include_reasoning":include_reasoning,"include_reasoning_type":type(include_reasoning).__name__,"item_id":item_id,"user_id":user_id},"timestamp":int(__import__('time').time()*1000)})+'\n')
-        # #endregion
-        
         # Enqueue outfit generation job
         outfit_queue = get_outfit_queue()
-        # #region agent log
-        import json; open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a').write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"C","location":"consider_buying.py:195","message":"Enqueueing job with params","data":{"include_reasoning":include_reasoning,"include_reasoning_type":type(include_reasoning).__name__},"timestamp":int(__import__('time').time()*1000)})+'\n')
-        # #endregion
         job = outfit_queue.enqueue(
             generate_consider_buying_job,
             user_id=user_id,

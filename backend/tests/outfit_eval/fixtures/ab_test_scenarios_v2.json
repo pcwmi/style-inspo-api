@@ -1,0 +1,53 @@
+[
+  {
+    "id": "kids_dropoff_coffee_peichin",
+    "name": "Kids Drop-off + Business Coffee Meeting (Peichin)",
+    "user_id": "peichin",
+    "scenario_type": "occasion",
+    "occasion": "kids drop-off followed by business coffee meeting",
+    "weather": "mild and sunny",
+    "temperature_range": "60-70°F",
+    "style_profile": {
+      "three_words": {
+        "current": "classic",
+        "aspirational": "relaxed",
+        "feeling": "chic"
+      }
+    },
+    "description": "Test multi-occasion outfit (casual-to-professional transition)"
+  },
+  {
+    "id": "work_meeting_drinks_peichin",
+    "name": "Important Work Meeting + Drinks with Girlfriends (Peichin)",
+    "user_id": "peichin",
+    "scenario_type": "occasion",
+    "occasion": "important work meeting followed by drinks with girlfriends",
+    "weather": "cool and breezy",
+    "temperature_range": "50-60°F",
+    "style_profile": {
+      "three_words": {
+        "current": "classic",
+        "aspirational": "relaxed",
+        "feeling": "chic"
+      }
+    },
+    "description": "Test professional-to-social transition outfit"
+  },
+  {
+    "id": "errands_date_night_peichin",
+    "name": "Errands + Date Night (Peichin)",
+    "user_id": "peichin",
+    "scenario_type": "occasion",
+    "occasion": "running errands followed by date night dinner",
+    "weather": "mild",
+    "temperature_range": "65-75°F",
+    "style_profile": {
+      "three_words": {
+        "current": "classic",
+        "aspirational": "relaxed",
+        "feeling": "chic"
+      }
+    },
+    "description": "Test casual-to-romantic transition outfit"
+  }
+]

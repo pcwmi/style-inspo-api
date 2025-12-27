@@ -1,12 +1,97 @@
 # Model configurations for evaluation
 # Add or remove models as needed
-# Last updated: Nov 2025 with correct model names
+# Last updated: Nov 2025 - Added prompt_version for A/B testing
 
 models:
-  # Anthropic Claude Models
-  - id: claude_sonnet_45
-    name: "Claude Sonnet 4.5"
+  # Anthropic Claude Models - Baseline Prompt
+  - id: claude_sonnet_45_baseline
+    name: "Claude Sonnet 4.5 (Baseline)"
     model: claude-sonnet-4-5-20250929
     temperature: 0.7
     max_tokens: 2000
-    description: "Latest Claude Sonnet (Sept 2025)"
+    prompt_version: baseline_v1
+    description: "Claude Sonnet 4.5 with baseline Style Constitution prompt"
+
+  # Anthropic Claude Models - Fit Constraints Prompt
+  - id: claude_sonnet_45_fit_constraints
+    name: "Claude Sonnet 4.5 (Fit Constraints)"
+    model: claude-sonnet-4-5-20250929
+    temperature: 0.7
+    max_tokens: 2000
+    prompt_version: fit_constraints_v2
+    description: "Claude Sonnet 4.5 with garment fit constraints"
+
+  # OpenAI GPT-4o - Baseline Prompt
+  - id: gpt4o_baseline
+    name: "GPT-4o (Baseline)"
+    model: gpt-4o
+    temperature: 0.7
+    max_tokens: 2000
+    prompt_version: baseline_v1
+    description: "GPT-4o with baseline Style Constitution prompt"
+
+  # OpenAI GPT-4o - Fit Constraints Prompt
+  - id: gpt4o_fit_constraints
+    name: "GPT-4o (Fit Constraints)"
+    model: gpt-4o
+    temperature: 0.7
+    max_tokens: 2000
+    prompt_version: fit_constraints_v2
+    description: "GPT-4o with garment fit constraints"
+
+  # OpenAI GPT-4o Mini - Baseline Prompt
+  - id: gpt4o_mini_baseline
+    name: "GPT-4o Mini (Baseline)"
+    model: gpt-4o-mini
+    temperature: 0.7
+    max_tokens: 2000
+    prompt_version: baseline_v1
+    description: "GPT-4o Mini with baseline Style Constitution prompt"
+
+  # OpenAI GPT-4o Mini - Fit Constraints Prompt
+  - id: gpt4o_mini_fit_constraints
+    name: "GPT-4o Mini (Fit Constraints)"
+    model: gpt-4o-mini
+    temperature: 0.7
+    max_tokens: 2000
+    prompt_version: fit_constraints_v2
+    description: "GPT-4o Mini with garment fit constraints"
+
+  # Google Gemini - Baseline Prompt
+  - id: gemini_2_flash_baseline
+    name: "Gemini 2.0 Flash (Baseline)"
+    model: gemini-2.0-flash-exp
+    temperature: 0.7
+    max_tokens: 2000
+    prompt_version: baseline_v1
+    description: "Gemini 2.0 Flash with baseline Style Constitution prompt"
+
+  # Google Gemini - Fit Constraints Prompt
+  - id: gemini_2_flash_fit_constraints
+    name: "Gemini 2.0 Flash (Fit Constraints)"
+    model: gemini-2.0-flash-exp
+    temperature: 0.7
+    max_tokens: 2000
+    prompt_version: fit_constraints_v2
+    description: "Gemini 2.0 Flash with garment fit constraints"
+
+  # ===== CHAIN-OF-THOUGHT PROMPT (Dec 2025 - Testing 5-star outputs) =====
+  # Testing chain-of-thought reasoning to push models toward creative tail
+
+  # OpenAI GPT-4o - Chain of Thought (PRIMARY TEST)
+  - id: gpt4o_chain_of_thought
+    name: "GPT-4o (Chain-of-Thought)"
+    model: gpt-4o
+    temperature: 0.7
+    max_tokens: 3000  # Increased for reasoning steps
+    prompt_version: chain_of_thought_v1
+    description: "GPT-4o with explicit reasoning steps to avoid 4-star plateau"
+
+  # Claude Sonnet 4.5 - Chain of Thought
+  - id: claude_sonnet_45_chain_of_thought
+    name: "Claude Sonnet 4.5 (Chain-of-Thought)"
+    model: claude-sonnet-4-5-20250929
+    temperature: 0.7
+    max_tokens: 3000  # Increased for reasoning steps
+    prompt_version: chain_of_thought_v1
+    description: "Claude Sonnet 4.5 with explicit reasoning steps"

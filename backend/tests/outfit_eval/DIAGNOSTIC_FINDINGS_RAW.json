@@ -1,0 +1,538 @@
+{
+  "metadata": {
+    "timestamp": "2025-12-04T01:52:46.681869",
+    "user_id": "peichin",
+    "total_wardrobe_items": 54,
+    "scenario": {
+      "occasion": "outdoor wedding in the afternoon",
+      "weather": "sunny and warm",
+      "temperature_range": "75-85\u00b0F",
+      "style_profile": {
+        "three_words": {
+          "current": "classic",
+          "aspirational": "relaxed",
+          "feeling": "playful"
+        }
+      }
+    }
+  },
+  "baseline": [
+    {
+      "iteration": 1,
+      "outfit_num": 1,
+      "items": [
+        "White wide-leg high-waisted pants",
+        "White ruffled button-up shirt",
+        "Gold swirl earrings with pearl center",
+        "White embroidered cowboy boots",
+        "Black and White Floral Print Scarf"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": true,
+      "styling_notes": "Tuck the white ruffled shirt into the white wide-leg pants. Drape the black and white floral print scarf around the neck loosely for a relaxed look. Let the earrings be the focal point by styling the hair back. Keep the pants outside the cowboy boots for a clean look.",
+      "why_it_works": "This outfit is perfect for an outdoor wedding because it balances classic elegance with playful touches, suitable for an afternoon event. The lightweight fabrics in the pants and shirt ensure breathability in warm weather, while the scarf can be removed if it gets too hot. The wide-leg pants and cowboy boots add a relaxed, playful vibe, while the shirt and earrings maintain classic elegance."
+    },
+    {
+      "iteration": 1,
+      "outfit_num": 2,
+      "items": [
+        "Black and white polka dot long-sleeve blouse",
+        "Sage Green Leather A-line Skirt",
+        "Gold Bar Pendant Necklace",
+        "White and Red Classic Leather Sneakers",
+        "Leopard Print Square Scarf"
+      ],
+      "has_white_sneakers": true,
+      "has_white_shirt": false,
+      "styling_notes": "Tuck the polka dot blouse into the sage green A-line skirt for a defined waistline. Knot the leopard print scarf around the neck for a pop of pattern. Wear the gold bar necklace over the blouse. Keep the sneakers clean for a fresh, playful touch.",
+      "why_it_works": "This outfit suits an outdoor wedding with its blend of classic polka dots and playful leopard print, fitting the festive atmosphere. The lightweight blouse and leather skirt are comfortable in warm weather, while the sneakers offer a relaxed, playful twist on traditional footwear choices. The necklace and scarf add intentional detailing, enhancing the outfit's playful and chic elements."
+    },
+    {
+      "iteration": 1,
+      "outfit_num": 3,
+      "items": [
+        "Floral Patterned Long-Sleeve Dress",
+        "Gold leaf motif necklace",
+        "White and Black Distressed Leather Ankle Boots"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": false,
+      "styling_notes": "Add the gold leaf motif necklace over the dress for a touch of elegance. Wear the dress with the ankle boots, allowing the dress to flow naturally over them for a bohemian touch.",
+      "why_it_works": "The floral dress is perfect for an outdoor wedding, offering a boho vintage style that suits the occasion. Its lightweight fabric is ideal for warm weather, while the ankle boots add a playful, relaxed contrast to the dressy floral print. The necklace enhances the overall elegance, making it suitable for the celebratory environment."
+    },
+    {
+      "iteration": 2,
+      "outfit_num": 1,
+      "items": [
+        "White wide-leg high-waisted pants",
+        "Cream tie-front blouse",
+        "White embroidered cowboy boots",
+        "Gold swirl earrings with pearl center",
+        "Gold leaf motif necklace"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": false,
+      "styling_notes": "Tie the blouse in a loose knot to emphasize the relaxed, playful feel. Let the white wide-leg pants flow over the boots for a seamless look. Keep jewelry minimal to let the gold pieces shine.",
+      "why_it_works": "The white wide-leg pants and cream blouse create a light, airy outfit perfect for an outdoor wedding. The lightweight fabrics keep it comfortable in warm weather. Cowboy boots add a playful, unexpected twist, while the gold jewelry ties in classic elegance and a relaxed vibe."
+    },
+    {
+      "iteration": 2,
+      "outfit_num": 2,
+      "items": [
+        "Floral Patterned Long-Sleeve Dress",
+        "Tan suede belt with oval buckle",
+        "White and Red Classic Leather Sneakers",
+        "Gold Bar Pendant Necklace"
+      ],
+      "has_white_sneakers": true,
+      "has_white_shirt": false,
+      "styling_notes": "Use the tan suede belt to cinch the waist for a defined silhouette. Style the sneakers with the dress for a casual touch. Allow the necklace to sit just above the neckline.",
+      "why_it_works": "The floral dress is ideal for an outdoor wedding with its vibrant print and fitted cut. The lightweight fabric is perfect for warm weather. Sneakers add a playful contrast to the dressy setting, while the belt emphasizes the classic style, and the gold necklace adds a relaxed touch."
+    },
+    {
+      "iteration": 2,
+      "outfit_num": 3,
+      "items": [
+        "Black and white paisley ruffle blouse",
+        "Sage Green Leather A-line Skirt",
+        "Burgundy patent leather pointed-toe pumps",
+        "Gold leaf motif necklace",
+        "Black and White Floral Print Scarf"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": false,
+      "styling_notes": "Tuck the blouse into the skirt for a polished look. Drape the scarf loosely around the neck to add elegance. Ensure the pumps peek from under the skirt to show off their color.",
+      "why_it_works": "The paisley blouse offers a boho vibe that is perfect for an outdoor setting. The skirt's lightweight leather is suitable for warm temperatures. The pumps add classic elegance, while the scarf introduces a playful print and texture. The combination of textures and colors creates a harmonious yet unexpected look."
+    },
+    {
+      "iteration": 3,
+      "outfit_num": 1,
+      "items": [
+        "White wide-leg high-waisted pants",
+        "Black and white paisley ruffle blouse",
+        "Gold swirl earrings with pearl center",
+        "White embroidered cowboy boots"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": false,
+      "styling_notes": "Tuck the blouse into the pants for a polished look. Roll the sleeves of the blouse slightly for added casual flair. Let the earrings be the focal accessory by wearing hair up.",
+      "why_it_works": "This outfit is ideal for an outdoor wedding due to its combination of elegant and playful elements. The lightweight chiffon blouse and cotton blend pants ensure comfort in warm weather, while the cowboy boots add a surprising twist that suits an outdoor setting. Each piece aligns with the user's classic style by incorporating relaxed wide-leg pants and playful ruffles, creating a harmonious blend of their style DNA."
+    },
+    {
+      "iteration": 3,
+      "outfit_num": 2,
+      "items": [
+        "Floral Patterned Long-Sleeve Dress",
+        "Gold leaf motif necklace",
+        "White and Red Classic Leather Sneakers"
+      ],
+      "has_white_sneakers": true,
+      "has_white_shirt": false,
+      "styling_notes": "Add a partial tuck of the dress to create movement. Layer the gold necklace over the dress for a touch of elegance. Wear the sneakers with no-show socks for a clean look.",
+      "why_it_works": "This dress is perfect for an outdoor wedding, offering a flowing silhouette that's both comfortable and elegant. The lightweight fabric is breathable for warm temperatures. The sneakers introduce a playful, relaxed vibe while the gold necklace adds a classic touch, balancing the user's style aspirations."
+    },
+    {
+      "iteration": 3,
+      "outfit_num": 3,
+      "items": [
+        "Cream textured tie-front blouse",
+        "Sage Green Leather A-line Skirt",
+        "Burgundy patent leather pointed-toe pumps",
+        "Leopard Print Square Scarf"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": false,
+      "styling_notes": "Tie the blouse neatly at the front to highlight the waist. Drape the scarf loosely around the neck for a touch of flair. Keep the pumps polished for an elegant finish.",
+      "why_it_works": "This outfit combines chic elements suitable for a wedding with breathable fabrics appropriate for warm weather. The tie-front blouse and A-line skirt provide a relaxed yet structured look. The pumps add a classic elegance, while the scarf introduces a playful pattern, enhancing the user's style DNA."
+    },
+    {
+      "iteration": 4,
+      "outfit_num": 1,
+      "items": [
+        "White wide-leg high-waisted pants",
+        "Cream textured tie-front blouse",
+        "Gold swirl earrings with pearl center",
+        "White embroidered cowboy boots",
+        "Gold Bar Pendant Necklace"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": false,
+      "styling_notes": "Tie the blouse loosely to enhance the relaxed vibe. Let the blouse's texture stand out against the smooth cotton of the pants. Allow the cowboy boots to peek from underneath the wide-leg pants for a playful touch.",
+      "why_it_works": "This outfit is perfect for an outdoor wedding, as the wide-leg pants and tie-front blouse create a relaxed yet classic silhouette suitable for a warm, sunny afternoon. The lightweight cotton and textured fabric are breathable, ensuring comfort in 75-85\u00b0F weather. The white pants and embroidered cowboy boots add a playful twist, aligning with the user's style DNA by combining classic pieces with relaxed, unexpected elements."
+    },
+    {
+      "iteration": 4,
+      "outfit_num": 2,
+      "items": [
+        "Floral Patterned Long-Sleeve Dress",
+        "White and Red Classic Leather Sneakers",
+        "Leopard Print Square Scarf",
+        "Gold leaf motif necklace"
+      ],
+      "has_white_sneakers": true,
+      "has_white_shirt": false,
+      "styling_notes": "Drape the scarf loosely around the neck for a relaxed vibe. Pair the floral dress with sneakers for an unexpected playful touch. Allow the necklace to be a subtle yet elegant detail against the dress's pattern.",
+      "why_it_works": "The floral dress is ideal for an afternoon wedding, offering a bohemian yet classic style that suits the occasion. Its lightweight fabric is perfect for the warm weather. Sneakers add a playful element, aligning with the user's desire for a relaxed feel, while the scarf introduces textural contrast and elegance."
+    },
+    {
+      "iteration": 4,
+      "outfit_num": 3,
+      "items": [
+        "Sage Green Leather A-line Skirt",
+        "White ruffled button-up shirt",
+        "Burgundy patent leather pointed-toe pumps",
+        "Gold Bar Pendant Necklace",
+        "Black and White Floral Print Scarf"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": true,
+      "styling_notes": "Tuck the shirt into the skirt for a polished look. Drape the scarf over the shoulders to add elegance and visual interest. The pumps elevate the overall outfit, adding a sophisticated finish.",
+      "why_it_works": "This chic outfit is wedding-appropriate, as the classic silhouette of the A-line skirt and button-up shirt offers a sophisticated yet relaxed look. The lightweight cotton shirt and leather skirt are suitable for warm weather. The pumps add a touch of elegance, while the floral scarf introduces a playful element, effectively honoring the user's style DNA."
+    },
+    {
+      "iteration": 5,
+      "outfit_num": 1,
+      "items": [
+        "White wide-leg high-waisted pants",
+        "White ruffled button-up shirt",
+        "Gold swirl earrings with pearl center",
+        "Burgundy patent leather pointed-toe pumps"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": true,
+      "styling_notes": "Tuck the ruffled button-up shirt into the wide-leg pants. Ensure the earrings are visible by styling hair back. Finish with the pointed-toe pumps for an elegant touch.",
+      "why_it_works": "This outfit is perfect for an outdoor wedding due to its classic and elegant elements like the ruffled shirt and pointed-toe pumps, adding a touch of formality. The lightweight cotton of the shirt and the breathable cotton blend of the pants ensure comfort in warm weather. The outfit aligns with the user's style DNA by combining classic pieces with a relaxed fit in the pants, while the earrings add a playful and elegant touch."
+    },
+    {
+      "iteration": 5,
+      "outfit_num": 2,
+      "items": [
+        "Floral Patterned Long-Sleeve Dress",
+        "Gold Bar Pendant Necklace",
+        "White and Red Classic Leather Sneakers"
+      ],
+      "has_white_sneakers": true,
+      "has_white_shirt": false,
+      "styling_notes": "Add the necklace to draw attention to the neckline. Pair the dress with sneakers for a relaxed, playful twist. Ensure the dress flows freely without additional layers.",
+      "why_it_works": "The floral dress is suitable for an outdoor wedding with its elegant and vintage floral pattern. The lightweight fabric ensures comfort in warm temperatures. The sneakers add a relaxed and playful touch, breaking the traditional footwear expectation and aligning with the user's style aspirations."
+    },
+    {
+      "iteration": 5,
+      "outfit_num": 3,
+      "items": [
+        "Sage Green Leather A-line Skirt",
+        "Black and white polka dot long-sleeve blouse",
+        "Gold leaf motif necklace",
+        "White embroidered cowboy boots"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": false,
+      "styling_notes": "Tuck the polka dot blouse into the skirt. Layer the necklace over the blouse. Style the boots with the skirt for a quirky contrast.",
+      "why_it_works": "This outfit combines the classic elegance of the polka dot blouse with the playful polka dot pattern and the relaxed fit of the A-line skirt. The cowboy boots add a surprising and playful element appropriate for a sunny outdoor wedding. The lightweight textures keep the outfit suitable for warm weather."
+    }
+  ],
+  "constrained": [
+    {
+      "iteration": 1,
+      "outfit_num": 1,
+      "items": [
+        "White wide-leg high-waisted pants",
+        "Cream textured tie-front blouse",
+        "Gold swirl earrings with pearl center",
+        "Brown woven leather belt",
+        "Burgundy patent leather pointed-toe pumps"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": false,
+      "shoe_substitutes": [],
+      "top_substitutes": [
+        "Cream textured tie-front blouse"
+      ],
+      "styling_notes": "Tie the blouse in a neat bow at the front. Tuck the front of the blouse into the wide-leg pants to define the waist. Let the gold earrings stand out by keeping other accessories minimal.",
+      "why_it_works": "This outfit is perfect for an outdoor wedding due to its elegant yet relaxed vibe, with the cream blouse offering a touch of playfulness through its tie-front detail. The breathable cotton fabric of the pants and lightweight blouse ensure comfort in warm weather. The outfit balances the classic wide-leg silhouette with the playful tie-front, while the gold earrings add a touch of sophistication, aligning with the user's style DNA."
+    },
+    {
+      "iteration": 1,
+      "outfit_num": 2,
+      "items": [
+        "Sage Green Leather A-line Skirt",
+        "Black puff-sleeve smocked blouse",
+        "Gold Bar Pendant Necklace",
+        "Black Patent Leather Loafers"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": false,
+      "shoe_substitutes": [],
+      "top_substitutes": [
+        "Black puff-sleeve smocked blouse"
+      ],
+      "styling_notes": "Pair the smocked blouse with the sage green skirt for a flattering silhouette. Let the gold necklace rest just above the neckline of the blouse. Keep the loafers polished for a chic finish.",
+      "why_it_works": "The A-line skirt offers a classic and structured base, ideal for a wedding, while the puff-sleeve blouse adds a playful yet relaxed touch. The black loafers offer a surprise element by contrasting with the expected heels, making it suitable for outdoor settings. The leather skirt ensures comfort in warm weather, and the gold necklace adds subtle elegance, perfectly aligning with the user's style aspirations."
+    },
+    {
+      "iteration": 1,
+      "outfit_num": 3,
+      "items": [
+        "Light blue wide-leg jeans",
+        "Ivory crochet button-up cardigan",
+        "Gold leaf motif necklace",
+        "White embroidered cowboy boots"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": false,
+      "shoe_substitutes": [
+        "White embroidered cowboy boots"
+      ],
+      "top_substitutes": [],
+      "styling_notes": "Layer the crochet cardigan over the jeans, leaving a few buttons open for a relaxed vibe. Allow the gold necklace to peek through the open neckline. The boots should be shown off by slightly tucking the jeans into them.",
+      "why_it_works": "This outfit mixes classic elements like wide-leg jeans with the playful and relaxed vibe of the crochet cardigan, making it suitable for an afternoon wedding. The combination of lightweight fabrics ensures comfort in warm weather. The cowboy boots add an unexpected twist, embodying the playful aspect of the user's style DNA, while the gold necklace brings a touch of elegance."
+    },
+    {
+      "iteration": 2,
+      "outfit_num": 1,
+      "items": [
+        "White wide-leg high-waisted pants",
+        "Cream textured tie-front blouse",
+        "Gold swirl earrings with pearl center",
+        "Burgundy patent leather pointed-toe pumps",
+        "Black and White Floral Print Scarf"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": false,
+      "shoe_substitutes": [],
+      "top_substitutes": [
+        "Cream textured tie-front blouse"
+      ],
+      "styling_notes": "Tie the blouse at the front for a playful detail. Drape the scarf loosely around the neck for an elegant touch and to add interest. Let the pants flow over the pumps to maintain the classic silhouette.",
+      "why_it_works": "This outfit is perfect for an outdoor wedding, offering a sophisticated and polished look with the white pants and textured blouse. The lightweight fabrics ensure comfort in warm weather, while the burgundy pumps add a playful pop of color. The outfit honors the user's style DNA by blending classic elements (wide-leg pants), relaxed pieces (tie-front blouse), and playful accessories (gold earrings and floral scarf), while applying intentional contrast through proportional and textural differences."
+    },
+    {
+      "iteration": 2,
+      "outfit_num": 2,
+      "items": [
+        "Sage Green Leather A-line Skirt",
+        "Ivory crochet button-up cardigan",
+        "Gold Bar Pendant Necklace",
+        "Cream knee-high block heel boots"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": false,
+      "shoe_substitutes": [
+        "Cream knee-high block heel boots"
+      ],
+      "top_substitutes": [],
+      "styling_notes": "Leave the cardigan unbuttoned for a relaxed vibe. Position the gold bar pendant necklace over the cardigan to highlight the neck area. Tuck the skirt into the boots for a cohesive look.",
+      "why_it_works": "Ideal for a warm, sunny wedding, this outfit offers a chic yet comfortable look with the airy crochet cardigan and structured leather skirt. The cardigan's open design adds a relaxed feel, while the boots introduce an unexpected twist with their modern chic style. The ensemble balances the user's style DNA with classic elements (skirt), relaxed cardigan, and playful accessories (necklace), while ensuring proportional and expectation contrasts."
+    },
+    {
+      "iteration": 2,
+      "outfit_num": 3,
+      "items": [
+        "Floral Patterned Long-Sleeve Dress",
+        "Gold leaf motif necklace",
+        "Taupe suede ankle boots"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": false,
+      "shoe_substitutes": [
+        "Taupe suede ankle boots"
+      ],
+      "top_substitutes": [
+        "Floral Patterned Long-Sleeve Dress"
+      ],
+      "styling_notes": "Cinch the waist with a belt for definition. Let the necklace rest on the neckline of the dress. Tuck the dress slightly into the boots to reveal the ankle.",
+      "why_it_works": "This dress is perfect for a wedding, offering a boho-chic aesthetic that remains formal enough for the occasion. The lightweight fabric keeps it cool for warm weather, while the suede boots add a relaxed and playful twist with their casual texture. It combines classic floral patterns with relaxed styling and playful accessories, achieving a harmonious style DNA alignment with contrasting textures and unexpected footwear."
+    },
+    {
+      "iteration": 3,
+      "outfit_num": 1,
+      "items": [
+        "White wide-leg high-waisted pants",
+        "Ivory crochet button-up cardigan",
+        "Gold leaf motif necklace",
+        "Brown sleeveless knit top",
+        "Burgundy patent leather pointed-toe pumps"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": false,
+      "shoe_substitutes": [],
+      "top_substitutes": [
+        "Brown sleeveless knit top"
+      ],
+      "styling_notes": "Tuck the brown sleeveless knit top into the white wide-leg pants for a clean silhouette. Wear the ivory cardigan open for a relaxed layer. The gold leaf motif necklace should be worn over the cardigan to add a playful touch. Ensure the pants fall over the pumps without dragging.",
+      "why_it_works": "This outfit is perfect for an outdoor afternoon wedding due to its classic yet relaxed style. The lightweight crochet cardigan and sleeveless knit top provide breathability for warm weather. The wide-leg pants add sophistication and the burgundy pumps inject playfulness, aligning with the user's classic, relaxed, and playful style aspirations."
+    },
+    {
+      "iteration": 3,
+      "outfit_num": 2,
+      "items": [
+        "Sage Green Leather A-line Skirt",
+        "Cream textured tie-front blouse",
+        "Gold swirl earrings with pearl center",
+        "Taupe suede ankle boots"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": false,
+      "shoe_substitutes": [
+        "Taupe suede ankle boots"
+      ],
+      "top_substitutes": [
+        "Cream textured tie-front blouse"
+      ],
+      "styling_notes": "Tie the blouse at the waist for a tailored look that complements the A-line skirt. Let the earrings show by pushing hair back or tying it up. The boots should be showcased by allowing the skirt to fall just above them.",
+      "why_it_works": "This outfit is suitable for an outdoor wedding with its elegant and playful elements. The lightweight blouse and skirt offer a breezy fit perfect for warm weather. The taupe boots add a relaxed, yet chic touch, making the ensemble feel both classic and playful."
+    },
+    {
+      "iteration": 3,
+      "outfit_num": 3,
+      "items": [
+        "Black and white polka dot long-sleeve blouse",
+        "Royal blue slim-fit chinos",
+        "Gold Bar Pendant Necklace",
+        "Black Patent Leather Loafers"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": false,
+      "shoe_substitutes": [],
+      "top_substitutes": [
+        "Black and white polka dot long-sleeve blouse"
+      ],
+      "styling_notes": "Tuck the blouse into the chinos for a polished look. The loafers add a classic touch, while the necklace adds a playful glint. Allow the necklace to be the focal point by keeping other accessories minimal.",
+      "why_it_works": "This ensemble blends classic and playful elements for an outdoor wedding. The lightweight blouse and chinos are perfect for the warm weather. The playful polka dots and sleek loafers create a stylishly relaxed vibe, aligning with the user's style aspirations."
+    },
+    {
+      "iteration": 4,
+      "outfit_num": 1,
+      "items": [
+        "White wide-leg high-waisted pants",
+        "Cream textured tie-front blouse",
+        "Gold swirl earrings with pearl center",
+        "Burgundy patent leather pointed-toe pumps",
+        "Black and White Floral Print Scarf"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": false,
+      "shoe_substitutes": [],
+      "top_substitutes": [
+        "Cream textured tie-front blouse"
+      ],
+      "styling_notes": "Partially tuck the cream blouse into the high-waisted pants to emphasize the waist. Drape the scarf softly around the neck without tying to keep it light and airy. The gold earrings add a touch of elegance and should be the focal point, so keep other jewelry minimal.",
+      "why_it_works": "This outfit is perfect for an outdoor afternoon wedding due to its light, breathable fabrics like cotton and lightweight textures. The wide-leg pants offer a relaxed yet classic silhouette, while the pumps add elegance and formality, in line with wedding attire. The playful element comes through the scarf's floral pattern and the tie-front blouse, aligning with the user's aspirational relaxed style by keeping the look airy and comfortable."
+    },
+    {
+      "iteration": 4,
+      "outfit_num": 2,
+      "items": [
+        "Sage Green Leather A-line Skirt",
+        "Black and white polka dot long-sleeve blouse",
+        "Gold leaf motif necklace",
+        "Black Patent Leather Loafers",
+        "Leopard Print Square Scarf"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": false,
+      "shoe_substitutes": [],
+      "top_substitutes": [
+        "Black and white polka dot long-sleeve blouse"
+      ],
+      "styling_notes": "Tuck the polka dot blouse into the skirt for a clean, streamlined look. Let the scarf hang loosely around the neck or tie it to the handbag for a playful touch. Layer the gold leaf necklace over the blouse for added elegance.",
+      "why_it_works": "The A-line skirt provides a classic silhouette suitable for a wedding, while the playful polka dot pattern adds a touch of whimsy. Lightweight fabrics ensure comfort in warm weather, and the loafers provide a relaxed yet polished look. The leopard scarf and gold necklace add playful and elegant details, complementing the user's style DNA."
+    },
+    {
+      "iteration": 4,
+      "outfit_num": 3,
+      "items": [
+        "Floral Patterned Long-Sleeve Dress",
+        "White embroidered cowboy boots",
+        "Gold Bar Pendant Necklace",
+        "Tan suede belt with oval buckle"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": false,
+      "shoe_substitutes": [
+        "White embroidered cowboy boots"
+      ],
+      "top_substitutes": [
+        "Floral Patterned Long-Sleeve Dress"
+      ],
+      "styling_notes": "Add the tan belt to cinch the waist of the dress for a more structured silhouette. Let the necklace hang freely over the dress, adding a subtle touch of elegance. The boots should be worn outside the dress hem for a boho-chic appeal.",
+      "why_it_works": "The floral dress is perfect for an outdoor wedding, offering a boho vintage charm that matches the playful mood. Lightweight fabric ensures comfort in warm temperatures. The cowboy boots introduce a relaxed, unexpected twist to the ensemble, while the gold necklace and belt add classic and elegant touches, balancing the overall look."
+    },
+    {
+      "iteration": 5,
+      "outfit_num": 1,
+      "items": [
+        "White wide-leg high-waisted pants",
+        "Cream textured tie-front blouse",
+        "Gold swirl earrings with pearl center",
+        "Burgundy patent leather pointed-toe pumps",
+        "Gold Bar Pendant Necklace"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": false,
+      "shoe_substitutes": [],
+      "top_substitutes": [
+        "Cream textured tie-front blouse"
+      ],
+      "styling_notes": "Tie the blouse at the front for a relaxed look that complements the high waist of the pants. Let the gold bar pendant necklace drape naturally. Pair with the burgundy pumps to add a pop of color.",
+      "why_it_works": "This outfit is perfect for an outdoor wedding due to its elegant yet relaxed components. The lightweight blouse and wide-leg pants ensure comfort in warm weather while maintaining a classic look. The gold accessories add playful and elegant touches, aligning with the user's style DNA. The burgundy pumps introduce an unexpected element, adhering to the Wrong Shoe Theory for contrast."
+    },
+    {
+      "iteration": 5,
+      "outfit_num": 2,
+      "items": [
+        "Sage Green Leather A-line Skirt",
+        "Black puff-sleeve smocked blouse",
+        "Gold leaf motif necklace",
+        "Taupe suede ankle boots",
+        "Black and White Floral Print Scarf"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": false,
+      "shoe_substitutes": [
+        "Taupe suede ankle boots"
+      ],
+      "top_substitutes": [
+        "Black puff-sleeve smocked blouse"
+      ],
+      "styling_notes": "Tuck the blouse into the skirt to highlight the waist. Drape the scarf loosely around the neck. Wear the boots with the skirt for a playful yet elegant touch.",
+      "why_it_works": "Perfect for a wedding, this outfit combines classic elegance with a modern, relaxed vibe. The leather skirt and smocked blouse keep it cool and breathable. The playful scarf and gold necklace add a touch of whimsy, highlighting the user's style DNA. The boots provide an unexpected contrast to the skirt, aligning with the Wrong Shoe Theory."
+    },
+    {
+      "iteration": 5,
+      "outfit_num": 3,
+      "items": [
+        "Floral Patterned Long-Sleeve Dress",
+        "White embroidered cowboy boots",
+        "Gold Bar Pendant Necklace",
+        "Gold swirl earrings with pearl center"
+      ],
+      "has_white_sneakers": false,
+      "has_white_shirt": false,
+      "shoe_substitutes": [
+        "White embroidered cowboy boots"
+      ],
+      "top_substitutes": [
+        "Floral Patterned Long-Sleeve Dress"
+      ],
+      "styling_notes": "Pair the dress with the cowboy boots for an unexpected twist. Allow the gold bar pendant to sit prominently against the dress. The earrings add a touch of elegance.",
+      "why_it_works": "This outfit is ideal for an afternoon wedding with its boho yet polished vibe. The floral dress is lightweight and breathable for warm weather. Cowboy boots provide a playful and relaxed twist, fitting the Wrong Shoe Theory. The gold accessories add a classic and elegant touch, perfectly balancing the user's style DNA."
+    }
+  ],
+  "statistics": {
+    "baseline": {
+      "total_outfits": 15,
+      "white_sneakers_count": 5,
+      "white_sneakers_frequency": 0.3333333333333333,
+      "white_shirt_count": 3,
+      "white_shirt_frequency": 0.2
+    },
+    "constrained": {
+      "total_outfits": 15,
+      "white_sneakers_count": 0,
+      "white_sneakers_frequency": 0.0,
+      "white_shirt_count": 0,
+      "white_shirt_frequency": 0.0
+    }
+  }
+}

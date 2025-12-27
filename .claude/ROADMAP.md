@@ -1,12 +1,12 @@
 # Style Inspo Product Roadmap
 
-*Last updated: 2025-11-07 (Post-Demo Day)*
+*Last updated: 2025-12-01 (Post-Migration)*
 
 ## Current Status
-- ✅ **Tech Validation Phase Complete** - Working multi-user system, S3 storage, core styling engine
-- ✅ **Friend Testing Complete** - 2 demos conducted (Charity, Mia)
-- 🎯 **Current Phase**: Building Daily Outfit Completion Assistant
-- 🚀 **Major Pivot**: From "challenge item styling" → "occasion-based outfit completion"
+- ✅ **Migration Complete** - FastAPI backend + Next.js frontend deployed and working E2E
+- ✅ **Buy Smarter Feature** - URL paste flow working with smart extraction algorithm
+- 🎯 **Current Phase**: Quality, Polish & Growth (Post-Feature-Building)
+- 🔍 **Focus Areas**: Eval quality, product polish, business model, onboarding flow
 
 ---
 
@@ -107,6 +107,73 @@ The more we reduce friction between "I need to get dressed" → "I'm dressed and
 - I use this daily myself
 - Mia tries it when she has a specific piece she wants to wear
 - Complete outfit feels cohesive (not random accessories)
+
+---
+
+### **Phase 2.5: Onboarding UX Improvements** - TBD
+**Status**: ⏸️ Designed, ready to implement
+**Priority**: P1 (UX Designer validated - Dec 7, 2025)
+
+**Goal**: Make the 10-photo upload requirement feel lighter, faster, and more motivating
+
+**Context from UX Critique:**
+- 10-photo minimum is firm product constraint (required to unlock value)
+- Users most likely to abandon during "slog zone" (photos 3-7)
+- Need motivation design, not just friction removal
+
+**Tier 1 Improvements (High Impact, Low Effort - 2-4 hours each):**
+
+1. **Dynamic Encouragement Copy**
+   - Change header/subheader based on photo count progress
+   - 0 photos: "Welcome back [Name]!"
+   - 3-4 photos: "Great start! Keep going..."
+   - 5-7 photos: "You're over halfway there!"
+   - 8-9 photos: "Almost done!"
+   - 10+ photos: "Your closet is ready!"
+   - **Impact**: Reduces perceived effort by 20-30% through motivational anchoring
+
+2. **"Why 10 Photos?" Transparency Callout**
+   - Dismissible info callout explaining minimum requirement
+   - "Our AI needs at least 10 pieces to create outfits that feel like you..."
+   - **Impact**: Reduces friction perception by 15-25% through rationale disclosure
+
+3. **Micro-Celebration at Photo 5**
+   - Brief celebratory modal/toast when user hits halfway point
+   - "Halfway there! 🎉 Just 5 more and you'll unlock..."
+   - **Impact**: Reduces abandonment at photos 5-7 by 30-40%
+
+**Tier 2 Improvements (Medium Impact, Medium Effort - 4-8 hours):**
+
+4. **Category Balance Visual Indicator**
+   - Show category breakdown: "3 tops | 2 bottoms | 1 shoes | 0 accessories"
+   - Gentle nudge: "Tip: Add shoes or accessories for more outfit variety"
+   - **Impact**: Improves first outfit quality by 40-60% through better distribution
+
+5. **Preview of Value at Photo 8-9**
+   - Show blurred teaser of outfit generation
+   - Creates curiosity gap to motivate completion
+   - **Impact**: Increases completion rate by 20-30% for users who reach photo 8
+
+**Success Metrics to Track:**
+- Upload completion rate by photo count (track abandonment at 3, 5, 7, 9 photos)
+- Time spent on upload page by photo count
+- Category distribution quality (% users with balanced mix)
+- First outfit generation quality rating
+
+**Alternative Ideas (Research/Test Later):**
+- Social proof testimonials during upload
+- Upload challenge framing ("The 10-Piece Challenge")
+- Quick start mode with deferred completion (V2)
+
+**Why P1:**
+- Directly impacts onboarding completion (core activation metric)
+- Low effort implementations (Tier 1 = 6-10 hours total)
+- Evidence-based from UX principles (Peak-End Rule, Goal-Gradient Effect, Fogg Behavior Model)
+- Can validate quickly with returning users
+
+**Files to Update:**
+- `/frontend/app/upload/page.tsx` - Upload page component
+- Consider extracting dynamic copy to config for easy iteration
 
 ---
 
@@ -307,74 +374,169 @@ The more we reduce friction between "I need to get dressed" → "I'm dressed and
 
 ---
 
-## 🚀 Immediate Next Actions
+## 🚀 Immediate Next Actions (Dec 2025)
 
-### Week 1: Backend Implementation (Nov 17-24)
-**Status**: 🚀 In Progress (Cursor working)
+### **NEW PHASE: Quality, Polish & Growth**
 
-**Cursor's Focus:**
-- [ ] Set up separate repo (style-inspo-v2)
-- [ ] FastAPI core structure (users, wardrobe, outfits endpoints)
-- [ ] Port Python services (style_engine.py, wardrobe_manager.py, storage_manager.py)
-- [ ] RQ job queue for outfit generation
-- [ ] S3 integration (reuse existing bucket)
-- [ ] Deploy backend to Railway
-- [ ] Test all API endpoints with Postman/curl
+**Status**: ✅ Feature building complete → 🎯 Focus on quality & strategy
 
-**Your Focus:**
-- [ ] Review Cursor's architecture decisions
-- [ ] Test API endpoints as they're built
-- [ ] Provide Python service expertise if Cursor hits blockers
-- [ ] Keep Streamlit production running (no disruption)
+**What Changed (Dec 1 Update):**
+- ✅ Migration to FastAPI + Next.js: DONE (tested E2E, all key flows working)
+- ✅ Buy Smarter feature: DONE (URL paste + smart extraction working)
+- ⏳ Eval system: IN PROGRESS (haven't reviewed results, no model conclusion yet)
+- 🎯 NEW INSIGHT: "Built enough features, time for quality/polish/business"
 
-### Week 2: Frontend Implementation (Nov 24-Dec 1)
-**Status**: ⏳ Pending backend completion
+---
 
-**Cursor's Focus:**
-- [ ] Next.js app structure with Tailwind
-- [ ] Key pages: Dashboard, Occasion, Complete My Look, Reveal
-- [ ] Job polling UI for outfit generation
-- [ ] Outfit cards with save/dislike feedback
-- [ ] Mobile CSS optimization (safe-area, fonts, spacing)
-- [ ] Deploy frontend to Vercel
-- [ ] End-to-end testing of full flows
+### Priority 1: Eval Quality & Model Selection (Week 1)
+**Status**: 🎯 ACTIVE - Complete the eval work
+**Goal**: Make data-driven decisions on outfit quality
 
-**Your Focus:**
-- [ ] Mobile UI review (compare to Streamlit screenshots)
-- [ ] Test all 5 user flows on real iPhone
-- [ ] Provide UX feedback on button placement, spacing, fonts
-- [ ] Verify copy follows COPY_GUIDELINES.md
+**Tasks:**
+1. **Review eval results** (Dec 1-2)
+   - [ ] Analyze `eval_20251128_124930/` results with updated prompts
+   - [ ] Compare `gemini_comparison/` results
+   - [ ] Document: Which model performs better? On what dimensions?
+   - [ ] Extract 3-5 specific insights (e.g., "Gemini better at X, GPT better at Y")
 
-### Week 3: Polish & Dogfooding (Dec 1-8)
-**Status**: ⏳ Pending Weeks 1-2
+2. **Turn insights into improvements** (Dec 3-4)
+   - [ ] Pick ONE specific weakness from eval (e.g., "shoes don't match occasion")
+   - [ ] Update prompt/logic in `style_engine.py` to address it
+   - [ ] Re-run eval on THAT specific scenario
+   - [ ] Validate improvement
 
-**Cursor's Focus:**
-- [ ] Performance optimization (<200ms navigation)
-- [ ] Bug fixes from testing
-- [ ] Mobile polish (final CSS tweaks)
-- [ ] Error handling and edge cases
+3. **Model decision** (Dec 5)
+   - [ ] Decide: Stick with GPT-4o, switch to Gemini, or hybrid approach?
+   - [ ] Document rationale (quality vs cost vs latency trade-offs)
+   - [ ] Update production config if switching models
 
-**Your Focus:**
-- [ ] Daily dogfooding (use new app every morning)
-- [ ] Document bugs and UX issues
-- [ ] Compare to Streamlit experience
-- [ ] Decide cutover timing (when to switch users to new URL)
-- [ ] Send new URL to Mia and friends for testing
+**Success Criteria:**
+- Clear answer to "Which model should we use and why?"
+- At least 1 measurable quality improvement from eval insights
+- Documented eval → improvement feedback loop for future use
 
-### Post-Migration (Dec 8+)
-**Status**: ⏸️ After successful cutover
+---
 
-**Product Work:**
-- [ ] Iterate on homepage design based on usage
-- [ ] Add features deferred from Phase 1
-- [ ] Collect user feedback (Mia, Charity, others)
-- [ ] Plan Phase 2 (pre-compute, PostgreSQL, advanced features)
+### Priority 2: Onboarding Flow Optimization (Week 1-2)
+**Status**: 🎯 ACTIVE - Migration done but onboarding unclear
+**Goal**: Define the ideal new user experience
 
-**Old Immediate Actions (Nov 7 - Deferred):**
-- ⏸️ Build P0/P1/P2 in Streamlit - REPLACED by migration
-- ⏸️ Get Mia to upload wardrobe - WAITING for new app
-- ⏸️ Follow up with Charity - WAITING for new app
-- ⏸️ Decide Charity collaboration - DEFERRED until post-migration
+**Open Questions to Answer:**
+- What's the minimum viable wardrobe? (10 items still right?)
+- What's the onboarding sequence? (Upload → profile → first outfit?)
+- Mobile photo upload UX good enough or needs polish?
+- Do users understand what to upload? (Need examples/guidance?)
+
+**Tasks:**
+1. **Dogfood the current onboarding** (Dec 2-3)
+   - [ ] Fresh install: Go through onboarding as new user
+   - [ ] Time each step, note friction points
+   - [ ] Document: Where did I get confused? What felt slow?
+
+2. **Test with 1-2 fresh users** (Dec 4-6)
+   - [ ] Send app to someone who hasn't seen it (not Mia/Charity)
+   - [ ] Watch them go through onboarding (screen share or in-person)
+   - [ ] Document drop-off points and confusion
+
+3. **Iterate based on findings** (Dec 7-8)
+   - [ ] Update onboarding copy/flow based on learnings
+   - [ ] Add guidance if needed (photo examples, progress indicators)
+   - [ ] Re-test with same user
+
+**Success Criteria:**
+- New user can complete onboarding in <10 mins
+- Clear documentation of "ideal onboarding flow v2"
+- At least 1 user gives feedback "this was easy to understand"
+
+---
+
+### Priority 3: Product Polish (Ongoing)
+**Status**: 🎯 ACTIVE - Post-migration refinement
+**Goal**: Fix bugs, improve UX, raise quality bar
+
+**Tasks:**
+- [ ] Daily dogfooding (use app every morning, document bugs)
+- [ ] Mobile polish pass (fonts, spacing, safe-area edge cases)
+- [ ] Error handling audit (what happens when AI fails? when S3 is down?)
+- [ ] Performance check (any latency regressions from migration?)
+- [ ] Copy audit (does all copy match COPY_GUIDELINES.md tone?)
+
+**Success Criteria:**
+- You use the app daily without workarounds
+- Mobile experience feels "polished" not "functional"
+- All error states handled gracefully
+
+---
+
+### Priority 4: Business Model & Growth Strategy (Week 2-3)
+**Status**: ⏳ PENDING - After quality foundation solid
+**Goal**: Clarify monetization path and growth approach
+
+**Strategic Questions to Answer:**
+1. **Monetization timing**
+   - When to introduce pricing? (now vs after more validation)
+   - Free tier or paid-only?
+   - Trial period? (7 days, 14 days, first outfit free?)
+
+2. **Pricing model**
+   - Per-outfit? Subscription? One-time payment?
+   - What's the right price? ($5/month, $10/month, $15/month?)
+   - How to communicate value/ROI?
+
+3. **Growth channels**
+   - Stylist B2B2C channel? (Roz Kaur partnership?)
+   - Word of mouth? (referral system?)
+   - Paid ads? (Instagram, TikTok?)
+   - Content marketing? (style tips, outfit inspiration?)
+
+4. **User acquisition**
+   - Who's the ICP? (women who work with stylists? busy professionals?)
+   - What's the acquisition funnel? (landing page → demo → signup?)
+   - How do we measure PMF? (retention? NPS? word-of-mouth?)
+
+**Approach:**
+- [ ] Write out current thinking on each question (brain dump style)
+- [ ] Research 3-5 comp apps (pricing, positioning, channels)
+- [ ] Talk to Mia + Charity: "Would you pay? How much? Why?"
+- [ ] Draft business model hypothesis doc
+
+**Success Criteria:**
+- Clear hypothesis on pricing model
+- Clear hypothesis on primary growth channel
+- Validation plan (how we'll test these hypotheses)
+
+---
+
+### DEFERRED (Explicitly Not Doing Now)
+
+**Why:** Feature set is good enough. Focus on quality of what exists, not adding more.
+
+- ⏸️ Pre-compute outfits (Phase 2 vision) - too early, need usage data first
+- ⏸️ Advanced homepage design - iterate after real usage patterns emerge
+- ⏸️ PostgreSQL migration - S3+JSON works fine for now
+- ⏸️ Style education features - not core value prop
+- ⏸️ Try-on API integration - nice-to-have, not must-have
+- ⏸️ Calendar/weather integration - defer until daily usage validated
+
+---
+
+### Migration Retrospective (Completed Nov 17 - Dec 1)
+
+**What Went Well:**
+- ✅ FastAPI backend: All endpoints working, job queue reliable
+- ✅ Next.js frontend: Mobile-first, fast navigation, no Streamlit jank
+- ✅ Buy Smarter: Shipped alongside migration (scope creep but valuable)
+- ✅ E2E testing: Caught issues before user-facing
+
+**What Could've Been Better:**
+- ⚠️ Timeline: 2 weeks → ~2 weeks (on track but felt long)
+- ⚠️ Testing: Could've caught more edge cases with formal test plan
+- ⚠️ Scope: Buy Smarter added mid-migration (extended timeline)
+
+**Key Learnings:**
+- Migration unlocked polish opportunities (CSS control, performance)
+- Feature work during migration = scope creep (but sometimes worth it)
+- E2E testing invaluable even without formal framework
 
 ---
 
@@ -639,6 +801,36 @@ Total time: 2-3 minutes
 
 ---
 
-**Last Updated**: Nov 16, 2025
-**Next Review**: After Architecture Migration (Early Dec 2025)
+---
+
+## 📊 Updated Success Metrics (Dec 2025)
+
+### Immediate (Next 2 Weeks)
+**Focus**: Quality & Polish
+- ⏳ Eval results reviewed and model decision made
+- ⏳ At least 1 quality improvement shipped from eval insights
+- ⏳ Onboarding flow tested with 2+ fresh users
+- ⏳ Daily dogfooding for 7+ days straight
+- ⏳ Mobile polish pass complete
+
+### Medium Term (2-4 Weeks)
+**Focus**: User Testing & Business Model
+- ⏳ Send new app to Mia and Charity for testing
+- ⏳ Business model hypothesis documented
+- ⏳ Pricing strategy decided
+- ⏳ Primary growth channel identified
+- ⏳ Willingness-to-pay validated (at least 2 users)
+
+### Long Term (1-2 Months)
+**Focus**: Early PMF Signals
+- ⏳ 5+ active users (not just friends)
+- ⏳ 3+ users using app 3+ times per week
+- ⏳ At least 1 user says "I'd pay for this"
+- ⏳ Clear answer to "stylist B2B2C channel viable?"
+- ⏳ Documented path to 100 users
+
+---
+
+**Last Updated**: Dec 1, 2025
+**Next Review**: After Eval & Onboarding work (Mid-Dec 2025)
 **Owner**: Pei-Chin

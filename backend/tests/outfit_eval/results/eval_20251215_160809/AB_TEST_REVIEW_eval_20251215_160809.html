@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>A/B Test: Baseline vs Chain-of-Thought</title>
+    <style>
+        body { font-family: system-ui; background: #f5f5f5; padding: 20px; max-width: 1800px; margin: 0 auto; }
+        .scenario { background: white; padding: 30px; margin: 20px 0; border-radius: 8px; }
+        h2 { color: #333; }
+        .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .column { border: 2px solid #ddd; padding: 20px; border-radius: 8px; }
+        .baseline { border-color: #0d6efd; }
+        .cot { border-color: #198754; }
+        .outfit { margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 6px; }
+        .items { display: flex; flex-wrap: wrap; gap: 15px; margin: 15px 0; }
+        img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        img:hover { transform: scale(1.8); z-index: 100; box-shadow: 0 8px 16px rgba(0,0,0,0.3); }
+        .notes { font-size: 14px; margin: 10px 0; line-height: 1.5; }
+        .reasoning {
+            background: #e7f5e7;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 6px;
+            border-left: 4px solid #198754;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .reasoning-title {
+            font-weight: bold;
+            color: #198754;
+            margin-bottom: 10px;
+            font-family: system-ui;
+        }
+        .rating-section {
+            margin-top: 15px;
+            padding: 10px;
+            background: #fff3cd;
+            border-radius: 4px;
+            border-left: 3px solid #ffc107;
+        }
+        .rating-stars {
+            display: flex;
+            gap: 5px;
+            margin: 8px 0;
+        }
+        .star {
+            font-size: 24px;
+            cursor: pointer;
+            color: #ddd;
+            transition: color 0.2s;
+        }
+        .star:hover, .star.active {
+            color: #ffc107;
+        }
+        .notes-input {
+            width: 100%;
+            min-height: 60px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: system-ui;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        .rating-label {
+            font-weight: bold;
+            font-size: 13px;
+            color: #856404;
+        }
+    </style>
+    <script>
+        function setRating(outfitId, rating) {
+            const stars = document.querySelectorAll('#outfit-' + outfitId + ' .star');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+            // Store rating in localStorage
+            localStorage.setItem('rating-' + outfitId, rating);
+        }
+
+        function saveNotes(outfitId) {
+            const notes = document.getElementById('notes-' + outfitId).value;
+            localStorage.setItem('notes-' + outfitId, notes);
+        }
+
+        function loadSavedData() {
+            // Load all saved ratings and notes from localStorage
+            document.querySelectorAll('.outfit').forEach(outfit => {
+                const outfitId = outfit.id.replace('outfit-', '');
+                const savedRating = localStorage.getItem('rating-' + outfitId);
+                const savedNotes = localStorage.getItem('notes-' + outfitId);
+
+                if (savedRating) {
+                    setRating(outfitId, parseInt(savedRating));
+                }
+                if (savedNotes) {
+                    const notesInput = document.getElementById('notes-' + outfitId);
+                    if (notesInput) {
+                        notesInput.value = savedNotes;
+                    }
+                }
+            });
+        }
+
+        window.addEventListener('load', loadSavedData);
+    </script>
+</head>
+<body>
+    <h1>🧪 A/B Test Results: Baseline vs Chain-of-Thought</h1>
+    <p><strong>Test Run:</strong> eval_20251215_160809 | <strong>Items:</strong> 0</p>
+
+    <div class="scenario">
+        <h2>📝 Work Holiday Party (Peichin)</h2>
+        <div class="comparison">
+            <div class="column baseline">
+                <h3>Baseline Prompt</h3>
+
+                <div class="outfit" id="outfit-Work_Holiday_Party_Peichin_baseline_1">
+                    <strong>Outfit 1</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White wide-leg high-waisted pants</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White ruffled button-up shirt</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Burgundy patent leather pointed-toe pumps</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gold swirl earrings with pearl center</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black and White Floral Print Scarf</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Partially tuck the white ruffled button-up shirt into the white wide-leg high-waisted pants for a chic silhouette. Drape the black and white floral print scarf around the neck for added warmth and style. Style the burgundy patent leather pointed-toe pumps with the pants for a polished look.</div>
+                    <div class="notes"><strong>Why:</strong> This outfit is appropriate for a work holiday party with its chic and classic elements, like the white ruffled shirt and elegant pumps. The wide-leg pants and scarf offer layering suitable for 50-60°F weather, providing warmth and style. This outfit honors their chic style DNA with classic pieces (pants and shirt), relaxed elements (scarf), and an elegant touch (pumps and earrings), using proportional contrast between the fitted shirt and loose pants, and textural contrast between the cotton and leather.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_baseline_1', 1)">★</span>
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_baseline_1', 2)">★</span>
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_baseline_1', 3)">★</span>
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_baseline_1', 4)">★</span>
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_baseline_1', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Work_Holiday_Party_Peichin_baseline_1" placeholder="Add your feedback here..." onblur="saveNotes('Work_Holiday_Party_Peichin_baseline_1')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Work_Holiday_Party_Peichin_baseline_2">
+                    <strong>Outfit 2</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Dark Wash Flared Jeans</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Ivory crochet button-up cardigan</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Brown woven leather belt</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White and Red Classic Leather Sneakers</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gold leaf motif necklace</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Layer the ivory crochet button-up cardigan over a simple undershirt for warmth and tuck the dark wash flared jeans into the brown woven leather belt for a defined waist. Pair with white and red classic leather sneakers for a relaxed touch. Add the gold leaf motif necklace for a chic finish.</div>
+                    <div class="notes"><strong>Why:</strong> This outfit works for a work holiday party by blending classic denim with a boho cardigan and sneakers for a relaxed yet chic look. The layers and textures are suitable for the cool weather, with the cardigan offering warmth and the sneakers providing comfort. The style DNA is expressed through classic jeans, relaxed cardigan, and chic necklace, with intentional contrast in textural variety and proportional balance between the fitted jeans and loose cardigan.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_baseline_2', 1)">★</span>
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_baseline_2', 2)">★</span>
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_baseline_2', 3)">★</span>
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_baseline_2', 4)">★</span>
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_baseline_2', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Work_Holiday_Party_Peichin_baseline_2" placeholder="Add your feedback here..." onblur="saveNotes('Work_Holiday_Party_Peichin_baseline_2')"></textarea>
+                    </div>
+                </div>
+
+            </div>
+            <div class="column cot">
+                <h3>Chain-of-Thought Prompt</h3>
+
+                <div class="outfit" id="outfit-Work_Holiday_Party_Peichin_cot_1">
+                    <strong>Outfit 1</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Floral Patterned Long-Sleeve Dress</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black leather mid-calf boots</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Red and black plaid wool scarf</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> </div>
+                    <div class="notes"><strong>Why:</strong> The floral dress is festive and chic, made edgy by the boots, while the plaid scarf adds a classic holiday touch.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_cot_1', 1)">★</span>
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_cot_1', 2)">★</span>
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_cot_1', 3)">★</span>
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_cot_1', 4)">★</span>
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_cot_1', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Work_Holiday_Party_Peichin_cot_1" placeholder="Add your feedback here..." onblur="saveNotes('Work_Holiday_Party_Peichin_cot_1')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Work_Holiday_Party_Peichin_cot_2">
+                    <strong>Outfit 2</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Sage Green Leather A-line Skirt</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Cream textured tie-front blouse</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Burgundy patent leather pointed-toe pumps</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Blouse tucked into the skirt, with sleeves rolled slightly for a relaxed feel. Hair in a sleek ponytail or loose for contrast.</div>
+                    <div class="notes"><strong>Why:</strong> The structured skirt is balanced by the soft blouse, and the pumps add a classic elegance, creating a chic yet relaxed ensemble.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_cot_2', 1)">★</span>
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_cot_2', 2)">★</span>
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_cot_2', 3)">★</span>
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_cot_2', 4)">★</span>
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_cot_2', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Work_Holiday_Party_Peichin_cot_2" placeholder="Add your feedback here..." onblur="saveNotes('Work_Holiday_Party_Peichin_cot_2')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Work_Holiday_Party_Peichin_cot_3">
+                    <strong>Outfit 3</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White wide-leg high-waisted pants</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black and white paisley ruffle blouse</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White and Black Distressed Leather Ankle Boots</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Blouse tucked into the pants with sleeves slightly rolled, boots peeking out from the wide legs. Hair in a messy bun to enhance the relaxed aspect.</div>
+                    <div class="notes"><strong>Why:</strong> Classic wide-leg pants are given a modern twist with edgy boots and a chic blouse, creating an unexpected yet cohesive look.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_cot_3', 1)">★</span>
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_cot_3', 2)">★</span>
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_cot_3', 3)">★</span>
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_cot_3', 4)">★</span>
+                            <span class="star" onclick="setRating('Work_Holiday_Party_Peichin_cot_3', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Work_Holiday_Party_Peichin_cot_3" placeholder="Add your feedback here..." onblur="saveNotes('Work_Holiday_Party_Peichin_cot_3')"></textarea>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="scenario">
+        <h2>📝 Shopping Day in the Mall (Peichin)</h2>
+        <div class="comparison">
+            <div class="column baseline">
+                <h3>Baseline Prompt</h3>
+
+                <div class="outfit" id="outfit-Shopping_Day_in_the_Mall_Peichin_baseline_1">
+                    <strong>Outfit 1</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White wide-leg high-waisted pants</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gray puff-sleeve cropped tee</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White and Red Classic Leather Sneakers</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black and White Floral Print Scarf</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gold Bar Pendant Necklace</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tuck the gray puff-sleeve cropped tee into the high-waisted pants for a polished silhouette. Let the scarf drape loosely around the neck. Pair with the sneakers for a relaxed yet chic vibe. Layer the gold bar pendant necklace over the tee to add a subtle touch of elegance.</div>
+                    <div class="notes"><strong>Why:</strong> This outfit is perfect for a shopping day at the mall, providing comfort and style with the relaxed fit of the pants and sneakers. The cotton tee and scarf add light layering suitable for 60-70°F. Each piece aligns with the style DNA by combining classic elements with relaxed silhouettes and chic accessories. The wide-leg pants and fitted tee create proportional contrast, while the sneakers add a playful twist to a classic ensemble.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_baseline_1', 1)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_baseline_1', 2)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_baseline_1', 3)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_baseline_1', 4)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_baseline_1', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Shopping_Day_in_the_Mall_Peichin_baseline_1" placeholder="Add your feedback here..." onblur="saveNotes('Shopping_Day_in_the_Mall_Peichin_baseline_1')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Shopping_Day_in_the_Mall_Peichin_baseline_2">
+                    <strong>Outfit 2</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Dark Wash Flared Jeans</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White ruffled button-up shirt</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black Patent Leather Loafers</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Leopard Print Square Scarf</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gold leaf motif necklace</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tuck the white ruffled button-up shirt into the dark wash flared jeans. Drape the leopard print scarf around the neck for added texture. Wear the loafers for a polished touch. Add the gold leaf motif necklace under the collar for an elevated look.</div>
+                    <div class="notes"><strong>Why:</strong> </div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_baseline_2', 1)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_baseline_2', 2)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_baseline_2', 3)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_baseline_2', 4)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_baseline_2', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Shopping_Day_in_the_Mall_Peichin_baseline_2" placeholder="Add your feedback here..." onblur="saveNotes('Shopping_Day_in_the_Mall_Peichin_baseline_2')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Shopping_Day_in_the_Mall_Peichin_baseline_3">
+                    <strong>Outfit 3</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Medium wash straight-leg jeans</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black basic short-sleeve tee</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Taupe suede ankle boots</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Red and black plaid wool scarf</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gold swirl earrings with pearl center</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tuck the black tee into the medium wash jeans for a sleek look. Wrap the plaid scarf around the neck for warmth and style. Pair with taupe suede ankle boots for a casual yet chic touch. Add gold swirl earrings to enhance the overall outfit.</div>
+                    <div class="notes"><strong>Why:</strong> This look is ideal for a mall trip due to its balance of comfort and style. The straight-leg jeans and tee are breathable and suitable for the mild temperature. The outfit showcases classic elements with the jeans and tee, relaxed style with the scarf, and chic details with the earrings. Proportional contrast is achieved through the fitted tee and straight-leg jeans, while the taupe boots provide an unexpected pairing with the classic jeans.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_baseline_3', 1)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_baseline_3', 2)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_baseline_3', 3)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_baseline_3', 4)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_baseline_3', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Shopping_Day_in_the_Mall_Peichin_baseline_3" placeholder="Add your feedback here..." onblur="saveNotes('Shopping_Day_in_the_Mall_Peichin_baseline_3')"></textarea>
+                    </div>
+                </div>
+
+            </div>
+            <div class="column cot">
+                <h3>Chain-of-Thought Prompt</h3>
+
+                <div class="outfit" id="outfit-Shopping_Day_in_the_Mall_Peichin_cot_1">
+                    <strong>Outfit 1</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White wide-leg high-waisted pants</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gray puff-sleeve cropped tee</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White and Red Classic Leather Sneakers</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Leopard Print Square Scarf</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tuck the tee into the high-waisted pants, let the scarf drape loosely around the neck, and keep the sneakers clean and polished.</div>
+                    <div class="notes"><strong>Why:</strong> Effortlessly blends classic elegance with casual comfort.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_cot_1', 1)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_cot_1', 2)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_cot_1', 3)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_cot_1', 4)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_cot_1', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Shopping_Day_in_the_Mall_Peichin_cot_1" placeholder="Add your feedback here..." onblur="saveNotes('Shopping_Day_in_the_Mall_Peichin_cot_1')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Shopping_Day_in_the_Mall_Peichin_cot_2">
+                    <strong>Outfit 2</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black and white houndstooth trousers</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White tee with black bow detail</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black Patent Leather Loafers</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gold Bar Pendant Necklace</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tuck the tee into the trousers, ensure the loafers are polished, and let the necklace hang naturally.</div>
+                    <div class="notes"><strong>Why:</strong> Balances timeless style with playful elegance.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_cot_2', 1)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_cot_2', 2)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_cot_2', 3)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_cot_2', 4)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_cot_2', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Shopping_Day_in_the_Mall_Peichin_cot_2" placeholder="Add your feedback here..." onblur="saveNotes('Shopping_Day_in_the_Mall_Peichin_cot_2')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Shopping_Day_in_the_Mall_Peichin_cot_3">
+                    <strong>Outfit 3</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Floral Patterned Long-Sleeve Dress</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Taupe suede ankle boots</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black and White Floral Print Scarf</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gold swirl earrings with pearl center</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Let the dress flow naturally, wrap the scarf loosely around the neck, and ensure the earrings are the focal accessory.</div>
+                    <div class="notes"><strong>Why:</strong> Embraces vintage charm with modern sophistication.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_cot_3', 1)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_cot_3', 2)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_cot_3', 3)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_cot_3', 4)">★</span>
+                            <span class="star" onclick="setRating('Shopping_Day_in_the_Mall_Peichin_cot_3', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Shopping_Day_in_the_Mall_Peichin_cot_3" placeholder="Add your feedback here..." onblur="saveNotes('Shopping_Day_in_the_Mall_Peichin_cot_3')"></textarea>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="scenario">
+        <h2>📝 Long Walk in Park + Coffee Shop (Peichin)</h2>
+        <div class="comparison">
+            <div class="column baseline">
+                <h3>Baseline Prompt</h3>
+
+                <div class="outfit" id="outfit-Long_Walk_in_Park_+_Coffee_Shop_Peichin_baseline_1">
+                    <strong>Outfit 1</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White wide-leg high-waisted pants</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gray puff-sleeve cropped tee</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Taupe button-up cardigan with tie detail</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White and Red Classic Leather Sneakers</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black and White Floral Print Scarf</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tuck the gray puff-sleeve tee into the high-waisted pants. Layer the taupe cardigan over the tee and tie it at the waist for a relaxed finish. Drape the scarf around the neck for warmth and chic style.</div>
+                    <div class="notes"><strong>Why:</strong> </div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_baseline_1', 1)">★</span>
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_baseline_1', 2)">★</span>
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_baseline_1', 3)">★</span>
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_baseline_1', 4)">★</span>
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_baseline_1', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Long_Walk_in_Park_+_Coffee_Shop_Peichin_baseline_1" placeholder="Add your feedback here..." onblur="saveNotes('Long_Walk_in_Park_+_Coffee_Shop_Peichin_baseline_1')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Long_Walk_in_Park_+_Coffee_Shop_Peichin_baseline_2">
+                    <strong>Outfit 2</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Dark Wash Flared Jeans</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Cream textured tie-front blouse</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black leather mid-calf boots</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black and White Floral Print Scarf</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gold Bar Pendant Necklace</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tie the front of the blouse for a polished look and layer it over the flared jeans. Tuck the jeans into the mid-calf boots for a sleek edge. Drape the scarf loosely around the neck and add the necklace as a subtle accessory.</div>
+                    <div class="notes"><strong>Why:</strong> </div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_baseline_2', 1)">★</span>
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_baseline_2', 2)">★</span>
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_baseline_2', 3)">★</span>
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_baseline_2', 4)">★</span>
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_baseline_2', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Long_Walk_in_Park_+_Coffee_Shop_Peichin_baseline_2" placeholder="Add your feedback here..." onblur="saveNotes('Long_Walk_in_Park_+_Coffee_Shop_Peichin_baseline_2')"></textarea>
+                    </div>
+                </div>
+
+            </div>
+            <div class="column cot">
+                <h3>Chain-of-Thought Prompt</h3>
+
+                <div class="outfit" id="outfit-Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_1">
+                    <strong>Outfit 1</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White wide-leg high-waisted pants</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gray puff-sleeve cropped tee</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White and Red Classic Leather Sneakers</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black and White Floral Print Scarf</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tee tucked into pants, scarf loosely draped around the neck, sneakers laced up.</div>
+                    <div class="notes"><strong>Why:</strong> Effortlessly blends comfort with a touch of elegance through contrasting volumes and a patterned scarf.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_1', 1)">★</span>
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_1', 2)">★</span>
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_1', 3)">★</span>
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_1', 4)">★</span>
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_1', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_1" placeholder="Add your feedback here..." onblur="saveNotes('Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_1')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_2">
+                    <strong>Outfit 2</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Ivory crochet button-up cardigan</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Medium wash straight-leg jeans</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Taupe suede ankle boots</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Leopard Print Square Scarf</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Cardigan buttoned with the bottom button open, scarf tied in a loose knot, jeans cuffed slightly above the boots.</div>
+                    <div class="notes"><strong>Why:</strong> Blends vintage charm with modern touches, adding playfulness through pattern contrast.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_2', 1)">★</span>
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_2', 2)">★</span>
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_2', 3)">★</span>
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_2', 4)">★</span>
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_2', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_2" placeholder="Add your feedback here..." onblur="saveNotes('Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_2')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_3">
+                    <strong>Outfit 3</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Sage Green Leather A-line Skirt</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black basic short-sleeve tee</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black leather mid-calf boots</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gold leaf motif necklace</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tee tucked into the skirt, necklace centered, boots laced up.</div>
+                    <div class="notes"><strong>Why:</strong> Combines structured elegance with casual confidence, highlighted by contrasting textures and a refined necklace.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_3', 1)">★</span>
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_3', 2)">★</span>
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_3', 3)">★</span>
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_3', 4)">★</span>
+                            <span class="star" onclick="setRating('Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_3', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_3" placeholder="Add your feedback here..." onblur="saveNotes('Long_Walk_in_Park_+_Coffee_Shop_Peichin_cot_3')"></textarea>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="scenario">
+        <h2>📝 PTA Meeting + Errands (Peichin)</h2>
+        <div class="comparison">
+            <div class="column baseline">
+                <h3>Baseline Prompt</h3>
+
+                <div class="outfit" id="outfit-PTA_Meeting_+_Errands_Peichin_baseline_1">
+                    <strong>Outfit 1</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White wide-leg high-waisted pants</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White ruffled button-up shirt</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black Patent Leather Loafers</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black and White Floral Print Scarf</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gold swirl earrings with pearl center</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tuck the white ruffled button-up shirt into the wide-leg pants. Drape the scarf loosely around the neck for a chic touch. Roll the sleeves of the shirt to just below the elbow for a relaxed vibe. Wear the earrings to add a hint of elegance.</div>
+                    <div class="notes"><strong>Why:</strong> This outfit is suitable for a PTA meeting due to its classic yet chic elements, such as the tailored shirt and wide-leg pants. The mild weather is addressed with lightweight cotton fabrics and optional layering with the scarf for a touch of warmth. The classic style is honored by the structured pants and loafers, while the relaxed aspect is achieved through the wide-leg cut and rolled sleeves, creating a chic overall appearance.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_baseline_1', 1)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_baseline_1', 2)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_baseline_1', 3)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_baseline_1', 4)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_baseline_1', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-PTA_Meeting_+_Errands_Peichin_baseline_1" placeholder="Add your feedback here..." onblur="saveNotes('PTA_Meeting_+_Errands_Peichin_baseline_1')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-PTA_Meeting_+_Errands_Peichin_baseline_2">
+                    <strong>Outfit 2</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Dark Wash Flared Jeans</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Cream textured tie-front blouse</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White and Red Classic Leather Sneakers</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Leopard Print Square Scarf</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gold Bar Pendant Necklace</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tie the front of the blouse for a casual touch. Layer the leopard print scarf around the neck for a bold statement. Let the necklace hang over the blouse. Cuff the jeans slightly to show off the sneakers.</div>
+                    <div class="notes"><strong>Why:</strong> The outfit is perfect for a PTA meeting and running errands, combining business casual with comfort. The mild weather is addressed with the lightweight blouse and the option to add a scarf for cooler moments. The classic style is reflected in the dark jeans, while the relaxed and chic feel comes from the sneakers and bold scarf, creating a balanced yet stylish look.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_baseline_2', 1)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_baseline_2', 2)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_baseline_2', 3)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_baseline_2', 4)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_baseline_2', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-PTA_Meeting_+_Errands_Peichin_baseline_2" placeholder="Add your feedback here..." onblur="saveNotes('PTA_Meeting_+_Errands_Peichin_baseline_2')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-PTA_Meeting_+_Errands_Peichin_baseline_3">
+                    <strong>Outfit 3</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Medium wash straight-leg jeans</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black basic short-sleeve tee</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Taupe suede ankle boots</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gold leaf motif necklace</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gray puff-sleeve cropped tee</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Layer the gray puff-sleeve cropped tee over the black tee for a stylish layered look. Tuck the black tee into the jeans and allow the gray tee to hang loose. Wear the necklace over both tees to add elegance. Let the jeans sit over the ankle boots.</div>
+                    <div class="notes"><strong>Why:</strong> This ensemble is versatile for a PTA meeting and errands, offering a balance of professionalism and comfort. The mild weather is suited to the layered tees, with lightweight textures providing comfort. The classic style is maintained with straight-leg jeans, while the relaxed and chic elements are introduced through the layered tees and elegant necklace.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_baseline_3', 1)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_baseline_3', 2)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_baseline_3', 3)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_baseline_3', 4)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_baseline_3', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-PTA_Meeting_+_Errands_Peichin_baseline_3" placeholder="Add your feedback here..." onblur="saveNotes('PTA_Meeting_+_Errands_Peichin_baseline_3')"></textarea>
+                    </div>
+                </div>
+
+            </div>
+            <div class="column cot">
+                <h3>Chain-of-Thought Prompt</h3>
+
+                <div class="outfit" id="outfit-PTA_Meeting_+_Errands_Peichin_cot_1">
+                    <strong>Outfit 1</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White wide-leg high-waisted pants</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gray puff-sleeve cropped tee</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White and Red Classic Leather Sneakers</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tee tucked into pants, sneakers clean and crisp, adding a casual yet put-together vibe.</div>
+                    <div class="notes"><strong>Why:</strong> The structured wide-leg pants contrast with the relaxed fit and casual sneakers, creating a balanced silhouette.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_cot_1', 1)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_cot_1', 2)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_cot_1', 3)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_cot_1', 4)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_cot_1', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-PTA_Meeting_+_Errands_Peichin_cot_1" placeholder="Add your feedback here..." onblur="saveNotes('PTA_Meeting_+_Errands_Peichin_cot_1')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-PTA_Meeting_+_Errands_Peichin_cot_2">
+                    <strong>Outfit 2</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black basic short-sleeve tee</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Dark Wash Flared Jeans</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Leopard Print Square Scarf</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Scarf tied loosely around the neck, tee tucked in at the front, jeans with a clean hem.</div>
+                    <div class="notes"><strong>Why:</strong> The scarf provides a stylish twist that elevates the overall ensemble.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_cot_2', 1)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_cot_2', 2)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_cot_2', 3)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_cot_2', 4)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_cot_2', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-PTA_Meeting_+_Errands_Peichin_cot_2" placeholder="Add your feedback here..." onblur="saveNotes('PTA_Meeting_+_Errands_Peichin_cot_2')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-PTA_Meeting_+_Errands_Peichin_cot_3">
+                    <strong>Outfit 3</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Floral Patterned Long-Sleeve Dress</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black leather mid-calf boots</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gold swirl earrings with pearl center</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Dress belted at the waist, boots polished, earrings as a focal accessory.</div>
+                    <div class="notes"><strong>Why:</strong> </div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_cot_3', 1)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_cot_3', 2)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_cot_3', 3)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_cot_3', 4)">★</span>
+                            <span class="star" onclick="setRating('PTA_Meeting_+_Errands_Peichin_cot_3', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-PTA_Meeting_+_Errands_Peichin_cot_3" placeholder="Add your feedback here..." onblur="saveNotes('PTA_Meeting_+_Errands_Peichin_cot_3')"></textarea>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="scenario">
+        <h2>📝 Sunday Family Dinner at In-Laws (Peichin)</h2>
+        <div class="comparison">
+            <div class="column baseline">
+                <h3>Baseline Prompt</h3>
+
+                <div class="outfit" id="outfit-Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_1">
+                    <strong>Outfit 1</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White wide-leg high-waisted pants</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Ivory crochet button-up cardigan</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Tan suede belt with oval buckle</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black leather mid-calf boots</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gold swirl earrings with pearl center</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tuck the cardigan into the pants to define the waist, and belt it for a chic finish. Allow the pants to fall over the boots. Keep the earrings visible by styling hair back or in a low bun.</div>
+                    <div class="notes"><strong>Why:</strong> The white pants and ivory cardigan create a classic and relaxed base, perfect for a family dinner. The crochet texture of the cardigan adds warmth for cool weather, while the boots provide additional coverage and chic style. The gold earrings introduce an elegant touch, aligning with the aspiration to feel chic.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_1', 1)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_1', 2)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_1', 3)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_1', 4)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_1', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_1" placeholder="Add your feedback here..." onblur="saveNotes('Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_1')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_2">
+                    <strong>Outfit 2</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Dark Wash Flared Jeans</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White ruffled button-up shirt</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Brown knee-high leather boots</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black and White Floral Print Scarf</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gold leaf motif necklace</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tuck the shirt into the jeans, allowing the ruffles to add interest. Drape the scarf loosely around the neck and keep the necklace visible.</div>
+                    <div class="notes"><strong>Why:</strong> This outfit balances classic and relaxed elements with the jeans and shirt, while the floral scarf adds a chic touch. The dark wash jeans and boots provide warmth suitable for cool temperatures. The ruffled shirt and gold necklace deliver an elegant flair, perfect for a family dinner.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_2', 1)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_2', 2)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_2', 3)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_2', 4)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_2', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_2" placeholder="Add your feedback here..." onblur="saveNotes('Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_2')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_3">
+                    <strong>Outfit 3</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Medium wash straight-leg jeans</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Cream textured tie-front blouse</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Taupe suede ankle boots</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Red and gray plaid button-up shirt</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gold Bar Pendant Necklace</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> </div>
+                    <div class="notes"><strong>Why:</strong> The relaxed fit of the jeans and blouse, combined with the plaid shirt, offers comfort and style for a casual family dinner. The suede boots and layered top provide warmth necessary for cooler temperatures, while the gold necklace adds a chic, understated elegance to the ensemble.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_3', 1)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_3', 2)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_3', 3)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_3', 4)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_3', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_3" placeholder="Add your feedback here..." onblur="saveNotes('Sunday_Family_Dinner_at_In-Laws_Peichin_baseline_3')"></textarea>
+                    </div>
+                </div>
+
+            </div>
+            <div class="column cot">
+                <h3>Chain-of-Thought Prompt</h3>
+
+                <div class="outfit" id="outfit-Sunday_Family_Dinner_at_In-Laws_Peichin_cot_1">
+                    <strong>Outfit 1</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White wide-leg high-waisted pants</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Cream textured tie-front blouse</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Burgundy patent leather pointed-toe pumps</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> The blouse is tucked into the pants to accentuate the high waist, with the tie detail left visible. The pants are ironed for a crisp look, and the pumps add an elegant touch.</div>
+                    <div class="notes"><strong>Why:</strong> The pumps introduce a classic elegance that elevates the entire outfit, making it appropriate for a chic family dinner setting.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_cot_1', 1)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_cot_1', 2)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_cot_1', 3)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_cot_1', 4)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_cot_1', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Sunday_Family_Dinner_at_In-Laws_Peichin_cot_1" placeholder="Add your feedback here..." onblur="saveNotes('Sunday_Family_Dinner_at_In-Laws_Peichin_cot_1')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Sunday_Family_Dinner_at_In-Laws_Peichin_cot_2">
+                    <strong>Outfit 2</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Ivory crochet button-up cardigan</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Medium wash straight-leg jeans</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Taupe suede ankle boots</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gold leaf motif necklace</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> The cardigan is worn open over the jeans, and the necklace is prominently displayed against the neckline. The jeans are cuffed to showcase the ankle boots.</div>
+                    <div class="notes"><strong>Why:</strong> The necklace adds an unexpected elegance without overpowering the relaxed style, creating a balanced visual interest.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_cot_2', 1)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_cot_2', 2)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_cot_2', 3)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_cot_2', 4)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_cot_2', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Sunday_Family_Dinner_at_In-Laws_Peichin_cot_2" placeholder="Add your feedback here..." onblur="saveNotes('Sunday_Family_Dinner_at_In-Laws_Peichin_cot_2')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Sunday_Family_Dinner_at_In-Laws_Peichin_cot_3">
+                    <strong>Outfit 3</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black and white houndstooth trousers</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black puff-sleeve smocked blouse</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Cream knee-high block heel boots</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> The blouse is tucked into the trousers for a polished look, and the boots are prominently displayed with the trousers falling just over the top.</div>
+                    <div class="notes"><strong>Why:</strong> The boots add an unexpected modern chic twist that elevates the classic pattern into a contemporary, stylish outfit.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_cot_3', 1)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_cot_3', 2)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_cot_3', 3)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_cot_3', 4)">★</span>
+                            <span class="star" onclick="setRating('Sunday_Family_Dinner_at_In-Laws_Peichin_cot_3', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Sunday_Family_Dinner_at_In-Laws_Peichin_cot_3" placeholder="Add your feedback here..." onblur="saveNotes('Sunday_Family_Dinner_at_In-Laws_Peichin_cot_3')"></textarea>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="scenario">
+        <h2>📝 Couple Date Night with Another Couple (Peichin)</h2>
+        <div class="comparison">
+            <div class="column baseline">
+                <h3>Baseline Prompt</h3>
+
+                <div class="outfit" id="outfit-Couple_Date_Night_with_Another_Couple_Peichin_baseline_1">
+                    <strong>Outfit 1</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White wide-leg high-waisted pants</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Ivory crochet button-up cardigan</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black and White Floral Print Scarf</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black Patent Leather Loafers</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gold leaf motif necklace</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tuck the cardigan slightly into the high-waisted pants to define the waist. Drape the scarf loosely around the neck for a relaxed look. Let the necklace peek through the cardigan for added elegance.</div>
+                    <div class="notes"><strong>Why:</strong> This outfit is perfect for a couple date night as it combines classic elements with a relaxed, chic vibe. The wide-leg pants and cardigan provide warmth for the cool evening, while the scarf adds a touch of elegance. The loafers are a comfortable yet stylish choice, ensuring the outfit is both chic and functional for a night out. The combination of textures and proportions honors their style DNA, with classic, relaxed, and chic elements present in each piece.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_baseline_1', 1)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_baseline_1', 2)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_baseline_1', 3)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_baseline_1', 4)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_baseline_1', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Couple_Date_Night_with_Another_Couple_Peichin_baseline_1" placeholder="Add your feedback here..." onblur="saveNotes('Couple_Date_Night_with_Another_Couple_Peichin_baseline_1')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Couple_Date_Night_with_Another_Couple_Peichin_baseline_2">
+                    <strong>Outfit 2</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Dark Wash Flared Jeans</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Cream textured tie-front blouse</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Taupe suede ankle boots</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gold Bar Pendant Necklace</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tie the blouse at the front to create a defined waistline. Let the necklace hang over the blouse for a chic touch. Ensure the jeans cover the ankle boots slightly for a streamlined look.</div>
+                    <div class="notes"><strong>Why:</strong> This outfit is suitable for a date night, offering a classic yet relaxed feel with the flared jeans and tie-front blouse. The fabrics and layering are perfect for the cool evening temperature. The suede boots add a chic touch while providing warmth, and the necklace adds elegance, aligning with their aspirational style. Each item harmonizes to express classic, relaxed, and chic, while contrasts in fit and texture add visual interest.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_baseline_2', 1)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_baseline_2', 2)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_baseline_2', 3)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_baseline_2', 4)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_baseline_2', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Couple_Date_Night_with_Another_Couple_Peichin_baseline_2" placeholder="Add your feedback here..." onblur="saveNotes('Couple_Date_Night_with_Another_Couple_Peichin_baseline_2')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Couple_Date_Night_with_Another_Couple_Peichin_baseline_3">
+                    <strong>Outfit 3</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White ruffled button-up shirt</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black and white houndstooth trousers</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black knee-high leather boots</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black and White Floral Print Scarf</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tuck the shirt into the houndstooth trousers for a polished look. Wrap the scarf loosely around the neck, allowing the floral pattern to contrast the houndstooth. Keep the boots visible under the trousers.</div>
+                    <div class="notes"><strong>Why:</strong> This outfit balances classic and chic styles, perfect for a couple date night. The houndstooth trousers and ruffled shirt offer a classic foundation, while the boots and scarf bring in chic elements. The layering and fabric choices are ideal for a cool evening, ensuring comfort and style. This combination respects their style DNA with intentional contrasts in pattern and proportion.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_baseline_3', 1)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_baseline_3', 2)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_baseline_3', 3)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_baseline_3', 4)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_baseline_3', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Couple_Date_Night_with_Another_Couple_Peichin_baseline_3" placeholder="Add your feedback here..." onblur="saveNotes('Couple_Date_Night_with_Another_Couple_Peichin_baseline_3')"></textarea>
+                    </div>
+                </div>
+
+            </div>
+            <div class="column cot">
+                <h3>Chain-of-Thought Prompt</h3>
+
+                <div class="outfit" id="outfit-Couple_Date_Night_with_Another_Couple_Peichin_cot_1">
+                    <strong>Outfit 1</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White wide-leg high-waisted pants</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Cream textured tie-front blouse</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gold swirl earrings with pearl center</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Leopard Print Square Scarf</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Blouse tucked into the pants, scarf tied around the neck, earrings visible with hair pulled back.</div>
+                    <div class="notes"><strong>Why:</strong> Effortlessly mixes elegance with a touch of the unexpected.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_cot_1', 1)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_cot_1', 2)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_cot_1', 3)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_cot_1', 4)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_cot_1', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Couple_Date_Night_with_Another_Couple_Peichin_cot_1" placeholder="Add your feedback here..." onblur="saveNotes('Couple_Date_Night_with_Another_Couple_Peichin_cot_1')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Couple_Date_Night_with_Another_Couple_Peichin_cot_2">
+                    <strong>Outfit 2</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black and white houndstooth trousers</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black puff-sleeve smocked blouse</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White and Red Classic Leather Sneakers</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Red and black plaid wool scarf</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Blouse half-tucked into trousers, scarf draped loosely, sneakers worn with no-show socks.</div>
+                    <div class="notes"><strong>Why:</strong> Pairs tradition with a playful twist.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_cot_2', 1)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_cot_2', 2)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_cot_2', 3)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_cot_2', 4)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_cot_2', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Couple_Date_Night_with_Another_Couple_Peichin_cot_2" placeholder="Add your feedback here..." onblur="saveNotes('Couple_Date_Night_with_Another_Couple_Peichin_cot_2')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Couple_Date_Night_with_Another_Couple_Peichin_cot_3">
+                    <strong>Outfit 3</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Blue button-up shirt</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Sage Green Leather A-line Skirt</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black leather mid-calf boots</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black and White Floral Print Scarf</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into the skirt, scarf tied loosely at the neck, boots zipped up.</div>
+                    <div class="notes"><strong>Why:</strong> Embraces sophistication with a hint of artful surprise.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_cot_3', 1)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_cot_3', 2)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_cot_3', 3)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_cot_3', 4)">★</span>
+                            <span class="star" onclick="setRating('Couple_Date_Night_with_Another_Couple_Peichin_cot_3', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Couple_Date_Night_with_Another_Couple_Peichin_cot_3" placeholder="Add your feedback here..." onblur="saveNotes('Couple_Date_Night_with_Another_Couple_Peichin_cot_3')"></textarea>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="scenario">
+        <h2>📝 NYC Sightseeing Day (Peichin)</h2>
+        <div class="comparison">
+            <div class="column baseline">
+                <h3>Baseline Prompt</h3>
+
+                <div class="outfit" id="outfit-NYC_Sightseeing_Day_Peichin_baseline_1">
+                    <strong>Outfit 1</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White wide-leg high-waisted pants</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gray puff-sleeve cropped tee</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Taupe suede ankle boots</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black and White Floral Print Scarf</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gold swirl earrings with pearl center</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tuck the gray puff-sleeve cropped tee into the high-waisted pants for a neat silhouette. Drape the scarf loosely around the neck to add warmth and style. Let the wide-leg pants fall over the ankle boots.</div>
+                    <div class="notes"><strong>Why:</strong> </div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_baseline_1', 1)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_baseline_1', 2)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_baseline_1', 3)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_baseline_1', 4)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_baseline_1', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-NYC_Sightseeing_Day_Peichin_baseline_1" placeholder="Add your feedback here..." onblur="saveNotes('NYC_Sightseeing_Day_Peichin_baseline_1')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-NYC_Sightseeing_Day_Peichin_baseline_2">
+                    <strong>Outfit 2</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Medium wash straight-leg jeans</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Ivory crochet button-up cardigan</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White and Red Classic Leather Sneakers</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Red and black plaid wool scarf</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gold leaf motif necklace</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Layer the ivory cardigan over the jeans and add the scarf for extra warmth. Let the necklace peek through the cardigan. Roll up the jeans slightly to showcase the sneakers.</div>
+                    <div class="notes"><strong>Why:</strong> </div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_baseline_2', 1)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_baseline_2', 2)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_baseline_2', 3)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_baseline_2', 4)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_baseline_2', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-NYC_Sightseeing_Day_Peichin_baseline_2" placeholder="Add your feedback here..." onblur="saveNotes('NYC_Sightseeing_Day_Peichin_baseline_2')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-NYC_Sightseeing_Day_Peichin_baseline_3">
+                    <strong>Outfit 3</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Dark Wash Flared Jeans</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White ruffled button-up shirt</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black leather mid-calf boots</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Gold Bar Pendant Necklace</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black and white paisley ruffle blouse</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Layer the ruffle blouse over the ruffled shirt for added texture and warmth. Tuck the blouse into the flared jeans and let the boots peek underneath.</div>
+                    <div class="notes"><strong>Why:</strong> </div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_baseline_3', 1)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_baseline_3', 2)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_baseline_3', 3)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_baseline_3', 4)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_baseline_3', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-NYC_Sightseeing_Day_Peichin_baseline_3" placeholder="Add your feedback here..." onblur="saveNotes('NYC_Sightseeing_Day_Peichin_baseline_3')"></textarea>
+                    </div>
+                </div>
+
+            </div>
+            <div class="column cot">
+                <h3>Chain-of-Thought Prompt</h3>
+
+                <div class="outfit" id="outfit-NYC_Sightseeing_Day_Peichin_cot_1">
+                    <strong>Outfit 1</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White wide-leg high-waisted pants</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black puff-sleeve smocked blouse</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black leather mid-calf boots</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> The blouse is tucked into the pants; sleeves slightly puffed for volume.</div>
+                    <div class="notes"><strong>Why:</strong> The structured boots add an unexpected edge to the flowy pants, perfect for city streets.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_cot_1', 1)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_cot_1', 2)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_cot_1', 3)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_cot_1', 4)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_cot_1', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-NYC_Sightseeing_Day_Peichin_cot_1" placeholder="Add your feedback here..." onblur="saveNotes('NYC_Sightseeing_Day_Peichin_cot_1')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-NYC_Sightseeing_Day_Peichin_cot_2">
+                    <strong>Outfit 2</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Dark Wash Flared Jeans</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White tee with black bow detail</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">White and Red Classic Leather Sneakers</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Black and White Floral Print Scarf</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tee is tucked into the jeans, scarf draped loosely for a casual look.</div>
+                    <div class="notes"><strong>Why:</strong> The playful bow adds whimsy, harmonizing with the relaxed vibe of the sneakers.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_cot_2', 1)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_cot_2', 2)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_cot_2', 3)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_cot_2', 4)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_cot_2', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-NYC_Sightseeing_Day_Peichin_cot_2" placeholder="Add your feedback here..." onblur="saveNotes('NYC_Sightseeing_Day_Peichin_cot_2')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-NYC_Sightseeing_Day_Peichin_cot_3">
+                    <strong>Outfit 3</strong>
+                    <div class="items">
+<div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Floral Patterned Long-Sleeve Dress</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Taupe suede ankle boots</div><div style="width:150px;height:150px;background:#ddd;border-radius:8px;font-size:12px;padding:10px;display:flex;align-items:center;justify-content:center;text-align:center">Tan suede belt with oval buckle</div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Dress cinched at the waist with the belt, sleeves rolled slightly for a casual touch.</div>
+                    <div class="notes"><strong>Why:</strong> The belt adds structure and sophistication, enhancing the relaxed dress.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_cot_3', 1)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_cot_3', 2)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_cot_3', 3)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_cot_3', 4)">★</span>
+                            <span class="star" onclick="setRating('NYC_Sightseeing_Day_Peichin_cot_3', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-NYC_Sightseeing_Day_Peichin_cot_3" placeholder="Add your feedback here..." onblur="saveNotes('NYC_Sightseeing_Day_Peichin_cot_3')"></textarea>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

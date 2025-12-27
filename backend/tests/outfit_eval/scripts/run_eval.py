@@ -36,6 +36,69 @@ def load_model_configs(models_path: str) -> List[Dict]:
         return config['models']
 
 
+def load_preset(preset_name: str) -> Dict:
+    """Load eval preset configuration from YAML file."""
+    presets_path = Path(__file__).parent.parent / 'fixtures' / 'eval_presets.yaml'
+    with open(presets_path, 'r') as f:
+        presets = yaml.safe_load(f)
+
+    if preset_name not in presets:
+        available = ', '.join(presets.keys())
+        raise ValueError(f"Preset '{preset_name}' not found. Available presets: {available}")
+
+    return presets[preset_name]
+
+
+def list_available_presets():
+    """Display all available eval presets with descriptions."""
+    presets_path = Path(__file__).parent.parent / 'fixtures' / 'eval_presets.yaml'
+
+    if not presets_path.exists():
+        print("❌ No presets file found at:", presets_path)
+        return
+
+    with open(presets_path, 'r') as f:
+        presets = yaml.safe_load(f)
+
+    print("\n📦 Available Eval Presets:\n")
+    for name, config in presets.items():
+        description = config.get('description', 'No description')
+        print(f"  • {name}")
+        print(f"    {description}")
+        print()
+
+    print("Usage: python3 scripts/run_eval.py --preset <preset_name>")
+    print("Example: python3 scripts/run_eval.py --preset baseline-vs-cot\n")
+
+
+def apply_model_filters(models: List[Dict], model_filter: str = None, model_ids: List[str] = None) -> List[Dict]:
+    """Apply model filters to model configurations."""
+    if model_ids:
+        # Explicit list of model IDs
+        return [m for m in models if m['id'] in model_ids]
+    elif model_filter:
+        # Substring filter on model ID
+        return [m for m in models if model_filter.lower() in m['id'].lower()]
+    return models
+
+
+def apply_scenario_filters(scenarios: List[Dict], scenario_filter: str = None, user_filter: str = None) -> List[Dict]:
+    """Apply filters to test scenarios."""
+    filtered = scenarios
+
+    if scenario_filter:
+        # Substring filter on scenario name or ID
+        filtered = [s for s in filtered
+                   if scenario_filter.lower() in s['name'].lower()
+                   or scenario_filter.lower() in s['id'].lower()]
+
+    if user_filter:
+        # Exact match on user_id
+        filtered = [s for s in filtered if s.get('user_id') == user_filter]
+
+    return filtered
+
+
 def fetch_user_wardrobe(user_id: str) -> List[Dict]:
     """Fetch wardrobe for a user from production storage."""
     print(f"  📦 Fetching wardrobe for user: {user_id}")
@@ -83,18 +146,30 @@ def run_single_evaluation(
 ) -> Dict:
     """Run a single outfit generation evaluation."""
 
-    # Create style engine with specified model
+    # Create style engine with specified model and prompt version
     engine = StyleGenerationEngine(
         model=model_config['model'],
         temperature=model_config['temperature'],
-        max_tokens=model_config['max_tokens']
+        max_tokens=model_config['max_tokens'],
+        prompt_version=model_config.get('prompt_version', 'baseline_v1')  # Default to baseline for backward compatibility
     )
 
     # Prepare parameters based on scenario type
     if scenario['scenario_type'] == 'complete_my_look':
-        # Find anchor item
-        anchor_item = find_anchor_item(wardrobe, scenario.get('anchor_item_name', ''))
-        styling_challenges = [anchor_item] if anchor_item else []
+        # Handle both single anchor (anchor_item_name) and multiple anchors (anchor_items)
+        if 'anchor_items' in scenario:
+            # Multiple anchor items (array)
+            styling_challenges = []
+            for anchor_name in scenario['anchor_items']:
+                anchor_item = find_anchor_item(wardrobe, anchor_name)
+                if anchor_item:
+                    styling_challenges.append(anchor_item)
+        elif 'anchor_item_name' in scenario:
+            # Single anchor item (string)
+            anchor_item = find_anchor_item(wardrobe, scenario['anchor_item_name'])
+            styling_challenges = [anchor_item] if anchor_item else []
+        else:
+            styling_challenges = []
     else:
         styling_challenges = []
 
@@ -115,13 +190,19 @@ def run_single_evaluation(
         success = True
         error = None
 
-        # Calculate cost from last AI call
+        # Calculate cost from last AI call and extract reasoning
         cost_usd = 0.0
         tokens_used = 0
+        reasoning = None
         if hasattr(engine, '_last_ai_response'):
             ai_resp = engine._last_ai_response
             cost_usd = engine.ai_provider.calculate_cost(ai_resp.usage)
             tokens_used = ai_resp.usage.get('total_tokens', 0)
+
+            # Extract chain-of-thought reasoning if present
+            raw_response = ai_resp.content
+            if '===JSON OUTPUT===' in raw_response:
+                reasoning = raw_response.split('===JSON OUTPUT===')[0].strip()
 
     except Exception as e:
         latency = time.time() - start_time
@@ -137,6 +218,7 @@ def run_single_evaluation(
         "model_id": model_config['id'],
         "model_name": model_config['name'],
         "model": model_config['model'],
+        "prompt_version": model_config.get('prompt_version', 'baseline_v1'),
         "iteration": iteration,
         "timestamp": datetime.now().isoformat(),
         "success": success,
@@ -144,6 +226,7 @@ def run_single_evaluation(
         "latency_seconds": latency,
         "cost_usd": cost_usd,
         "tokens_used": tokens_used,
+        "reasoning": reasoning,
         "outfits": outfits,
         "num_outfits": len(outfits) if outfits else 0
     }
@@ -151,12 +234,53 @@ def run_single_evaluation(
 
 def main():
     parser = argparse.ArgumentParser(description='Run outfit generation evaluation')
+    parser.add_argument('--preset', default=None, help='Use named preset from eval_presets.yaml (e.g., quick-test, baseline-vs-cot)')
+    parser.add_argument('--list-presets', action='store_true', help='List all available eval presets and exit')
     parser.add_argument('--scenarios', default='fixtures/test_scenarios.json', help='Path to test scenarios JSON')
     parser.add_argument('--models', default='fixtures/model_configs.yaml', help='Path to model configs YAML')
-    parser.add_argument('--iterations', type=int, default=10, help='Number of iterations per scenario/model')
+    parser.add_argument('--iterations', type=int, default=None, help='Number of iterations per scenario/model')
     parser.add_argument('--output', default=None, help='Output directory (default: results/eval_TIMESTAMP/)')
+    parser.add_argument('--model-filter', default=None, help='Filter to specific model ID (e.g., gpt4o, gemini_2_flash)')
+    parser.add_argument('--scenario-filter', default=None, help='Filter scenarios by name or ID substring (e.g., complete, wedding, boots)')
+    parser.add_argument('--user-filter', default=None, help='Filter scenarios to specific user_id (e.g., peichin)')
 
     args = parser.parse_args()
+
+    # Show presets if requested
+    if args.list_presets:
+        list_available_presets()
+        sys.exit(0)
+
+    # Show presets if run with no meaningful args (helpful default)
+    if (args.preset is None and
+        args.scenarios == 'fixtures/test_scenarios.json' and
+        args.models == 'fixtures/model_configs.yaml' and
+        args.iterations is None and
+        args.model_filter is None):
+        print("ℹ️  No preset or custom configuration specified.\n")
+        list_available_presets()
+        sys.exit(0)
+
+    # Load preset if specified
+    preset_config = None
+    if args.preset:
+        print(f"\n📦 Loading preset: {args.preset}")
+        preset_config = load_preset(args.preset)
+        print(f"  ℹ️  {preset_config.get('description', 'No description')}")
+
+        # Override args with preset values (args can still override preset)
+        if not args.scenarios and preset_config.get('scenarios'):
+            args.scenarios = preset_config['scenarios']
+        if not args.models and preset_config.get('models'):
+            args.models = preset_config['models']
+        if args.iterations is None and preset_config.get('iterations'):
+            args.iterations = preset_config['iterations']
+        if not args.model_filter and preset_config.get('model_filter'):
+            args.model_filter = preset_config['model_filter']
+
+    # Set default iterations if still not set
+    if args.iterations is None:
+        args.iterations = 10
 
     # Load configurations
     print("\n📋 Loading configurations...")
@@ -165,6 +289,19 @@ def main():
 
     print(f"  ✅ Loaded {len(scenarios)} test scenarios")
     print(f"  ✅ Loaded {len(model_configs)} model configurations")
+
+    # Apply filters from preset or command line
+    model_ids = preset_config.get('model_ids') if preset_config else None
+    model_configs = apply_model_filters(model_configs, args.model_filter, model_ids)
+    if model_ids or args.model_filter:
+        print(f"  🔍 Filtered to {len(model_configs)} models")
+
+    # Apply scenario filters (command line overrides preset)
+    scenario_filter = args.scenario_filter or (preset_config.get('scenario_filter') if preset_config else None)
+    user_filter = args.user_filter or (preset_config.get('user_filter') if preset_config else None)
+    scenarios = apply_scenario_filters(scenarios, scenario_filter, user_filter)
+    if scenario_filter or user_filter:
+        print(f"  🔍 Filtered to {len(scenarios)} scenarios")
 
     # Create output directory
     if args.output:

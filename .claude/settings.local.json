@@ -45,7 +45,22 @@
       "Bash(ls:*)",
       "Bash(done)",
       "WebFetch(domain:styleinspo.vercel.app)",
-      "WebFetch(domain:style-inspo-api-production.up.railway.app)"
+      "WebFetch(domain:style-inspo-api-production.up.railway.app)",
+      "Bash(cat:*)",
+      "SlashCommand(/brain-dump Outfit Evaluation Framework - Per-Model Workflow Implementation)",
+      "Bash(STORAGE_TYPE=s3 python3:*)",
+      "Bash(tee:*)",
+      "Bash(do sleep 20 echo '=== Check $i ($(date +%H:%M:%S)) ===' if grep -q 'DIAGNOSTIC TEST COMPLETE' /tmp/diagnostic_peichin.txt)",
+      "Bash(then echo '✅ Test completed!' tail -100 /tmp/diagnostic_peichin.txt break else echo '⏳ Still running...' tail -20 /tmp/diagnostic_peichin.txt)",
+      "Bash(find:*)",
+      "Bash(rq worker:*)",
+      "Bash(npm run dev)",
+      "Bash(open http://localhost:3000/?user=peichin)",
+      "Bash(curl:*)",
+      "Bash(STORAGE_TYPE=s3 venv/bin/python3:*)",
+      "Bash(open \"file:///Users/peichin/Projects/style-inspo-api/backend/tests/outfit_eval/results/eval_20251218_160810/EVAL_REVIEW_eval_20251218_160810.html\")",
+      "Skill(start-the-day)",
+      "Skill(capture)"
     ],
     "deny": [
       "Bash(gh:*)"
@@ -59,7 +74,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "say \"I'm done\""
+            "command": "say \"I'm done mofo\""
           }
         ]
       }

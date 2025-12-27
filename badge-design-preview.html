@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Badge Design Preview - Style Inspo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'bone': '#FAF7F2',
+                        'ink': '#1a1614',
+                        'muted': '#6B625A',
+                        'terracotta': '#C85A3E',
+                        'sand': '#E8DED2',
+                    },
+                    fontFamily: {
+                        'serif': ['Libre Baskerville', 'serif'],
+                        'sans': ['DM Sans', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Libre+Baskerville:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'DM Sans', sans-serif;
+        }
+        .font-serif {
+            font-family: 'Libre Baskerville', serif;
+        }
+    </style>
+</head>
+<body class="bg-bone min-h-screen p-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-serif font-bold text-ink mb-2">Badge Design Options</h1>
+            <p class="text-muted">Preview of "Considering" item badges in different styles</p>
+        </div>
+
+        <!-- Option 1: Subtle Corner Badge -->
+        <div class="mb-12">
+            <h2 class="text-xl font-serif font-bold text-ink mb-4">Option 1: Subtle Corner Badge (Recommended)</h2>
+            <p class="text-muted mb-4">Uses sand/muted colors for an understated, editorial look</p>
+
+            <div class="grid grid-cols-3 md:grid-cols-4 gap-4 bg-white p-6 rounded-lg">
+                <!-- Regular item -->
+                <div class="group relative block aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden">
+                    <div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                        <span class="text-gray-400 text-sm">Regular Item</span>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                        <span class="text-white text-xs font-medium">Black Sweater</span>
+                    </div>
+                </div>
+
+                <!-- Considering item -->
+                <div class="group relative block aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden">
+                    <div class="absolute top-2 right-2 bg-sand/90 backdrop-blur-sm px-2 py-1 rounded-full z-10">
+                        <span class="text-xs font-medium text-muted">Considering</span>
+                    </div>
+                    <div class="w-full h-full bg-gradient-to-br from-blue-200 to-blue-300 flex items-center justify-center">
+                        <span class="text-blue-600 text-sm">Considering</span>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                        <span class="text-white text-xs font-medium">Blue Blazer</span>
+                    </div>
+                </div>
+
+                <!-- Another considering item -->
+                <div class="group relative block aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden">
+                    <div class="absolute top-2 right-2 bg-sand/90 backdrop-blur-sm px-2 py-1 rounded-full z-10">
+                        <span class="text-xs font-medium text-muted">Considering</span>
+                    </div>
+                    <div class="w-full h-full bg-gradient-to-br from-pink-200 to-pink-300 flex items-center justify-center">
+                        <span class="text-pink-600 text-sm">Considering</span>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                        <span class="text-white text-xs font-medium">Silk Dress</span>
+                    </div>
+                </div>
+
+                <!-- Regular item -->
+                <div class="group relative block aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden">
+                    <div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                        <span class="text-gray-400 text-sm">Regular Item</span>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                        <span class="text-white text-xs font-medium">Denim Jeans</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Option 2: Icon + Badge -->
+        <div class="mb-12">
+            <h2 class="text-xl font-serif font-bold text-ink mb-4">Option 2: Icon + Badge</h2>
+            <p class="text-muted mb-4">Shopping bag icon makes it more immediately recognizable</p>
+
+            <div class="grid grid-cols-3 md:grid-cols-4 gap-4 bg-white p-6 rounded-lg">
+                <!-- Regular item -->
+                <div class="group relative block aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden">
+                    <div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                        <span class="text-gray-400 text-sm">Regular Item</span>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                        <span class="text-white text-xs font-medium">Black Sweater</span>
+                    </div>
+                </div>
+
+                <!-- Considering item with icon -->
+                <div class="group relative block aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden">
+                    <div class="absolute top-2 right-2 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full border border-sand flex items-center gap-1 z-10">
+                        <span class="text-base">🛍️</span>
+                        <span class="text-xs font-medium text-muted">Considering</span>
+                    </div>
+                    <div class="w-full h-full bg-gradient-to-br from-blue-200 to-blue-300 flex items-center justify-center">
+                        <span class="text-blue-600 text-sm">Considering</span>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                        <span class="text-white text-xs font-medium">Blue Blazer</span>
+                    </div>
+                </div>
+
+                <!-- Another considering item with icon -->
+                <div class="group relative block aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden">
+                    <div class="absolute top-2 right-2 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full border border-sand flex items-center gap-1 z-10">
+                        <span class="text-base">🛍️</span>
+                        <span class="text-xs font-medium text-muted">Considering</span>
+                    </div>
+                    <div class="w-full h-full bg-gradient-to-br from-pink-200 to-pink-300 flex items-center justify-center">
+                        <span class="text-pink-600 text-sm">Considering</span>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                        <span class="text-white text-xs font-medium">Silk Dress</span>
+                    </div>
+                </div>
+
+                <!-- Regular item -->
+                <div class="group relative block aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden">
+                    <div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                        <span class="text-gray-400 text-sm">Regular Item</span>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                        <span class="text-white text-xs font-medium">Denim Jeans</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Option 3: Terracotta Outline Corner Badge -->
+        <div class="mb-12">
+            <h2 class="text-xl font-serif font-bold text-ink mb-4">Option 3: Terracotta Outline Corner Badge</h2>
+            <p class="text-muted mb-4">Top-right corner placement like Option 1, but with terracotta border and bone background</p>
+
+            <div class="grid grid-cols-3 md:grid-cols-4 gap-4 bg-white p-6 rounded-lg">
+                <!-- Regular item -->
+                <div class="group relative block aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden">
+                    <div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                        <span class="text-gray-400 text-sm">Regular Item</span>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                        <span class="text-white text-xs font-medium">Black Sweater</span>
+                    </div>
+                </div>
+
+                <!-- Considering item with terracotta outline -->
+                <div class="group relative block aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden">
+                    <div class="absolute top-2 right-2 bg-bone backdrop-blur-sm px-2 py-1 rounded-full border border-terracotta z-10">
+                        <span class="text-xs font-medium text-muted">Considering</span>
+                    </div>
+                    <div class="w-full h-full bg-gradient-to-br from-blue-200 to-blue-300 flex items-center justify-center">
+                        <span class="text-blue-600 text-sm">Considering</span>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                        <span class="text-white text-xs font-medium">Blue Blazer</span>
+                    </div>
+                </div>
+
+                <!-- Another considering item with terracotta outline -->
+                <div class="group relative block aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden">
+                    <div class="absolute top-2 right-2 bg-bone backdrop-blur-sm px-2 py-1 rounded-full border border-terracotta z-10">
+                        <span class="text-xs font-medium text-muted">Considering</span>
+                    </div>
+                    <div class="w-full h-full bg-gradient-to-br from-pink-200 to-pink-300 flex items-center justify-center">
+                        <span class="text-pink-600 text-sm">Considering</span>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                        <span class="text-white text-xs font-medium">Silk Dress</span>
+                    </div>
+                </div>
+
+                <!-- Regular item -->
+                <div class="group relative block aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden">
+                    <div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                        <span class="text-gray-400 text-sm">Regular Item</span>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                        <span class="text-white text-xs font-medium">Denim Jeans</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Option 4: Terracotta Pill Badge (Clean & Prominent) -->
+        <div class="mb-12">
+            <h2 class="text-xl font-serif font-bold text-ink mb-4">Option 4: Terracotta Pill Badge (Clean & Prominent)</h2>
+            <p class="text-muted mb-4">Small terracotta pill badge in top-right corner - clear signal without border on card</p>
+
+            <div class="grid grid-cols-3 md:grid-cols-4 gap-4 bg-white p-6 rounded-lg">
+                <!-- Regular item -->
+                <div class="group relative block aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden">
+                    <div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                        <span class="text-gray-400 text-sm">Regular Item</span>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                        <span class="text-white text-xs font-medium">Black Sweater</span>
+                    </div>
+                </div>
+
+                <!-- Considering item with terracotta pill -->
+                <div class="group relative block aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden">
+                    <div class="absolute top-2 right-2 bg-terracotta backdrop-blur-sm px-2 py-0.5 rounded-full z-10">
+                        <span class="text-xs font-medium text-white">Considering</span>
+                    </div>
+                    <div class="w-full h-full bg-gradient-to-br from-blue-200 to-blue-300 flex items-center justify-center">
+                        <span class="text-blue-600 text-sm">Considering</span>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                        <span class="text-white text-xs font-medium">Blue Blazer</span>
+                    </div>
+                </div>
+
+                <!-- Another considering item with terracotta pill -->
+                <div class="group relative block aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden">
+                    <div class="absolute top-2 right-2 bg-terracotta backdrop-blur-sm px-2 py-0.5 rounded-full z-10">
+                        <span class="text-xs font-medium text-white">Considering</span>
+                    </div>
+                    <div class="w-full h-full bg-gradient-to-br from-pink-200 to-pink-300 flex items-center justify-center">
+                        <span class="text-pink-600 text-sm">Considering</span>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                        <span class="text-white text-xs font-medium">Silk Dress</span>
+                    </div>
+                </div>
+
+                <!-- Regular item -->
+                <div class="group relative block aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden">
+                    <div class="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
+                        <span class="text-gray-400 text-sm">Regular Item</span>
+                    </div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                        <span class="text-white text-xs font-medium">Denim Jeans</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison Summary -->
+        <div class="bg-white p-6 rounded-lg">
+            <h2 class="text-xl font-serif font-bold text-ink mb-4">Summary</h2>
+            <div class="space-y-4">
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-sand flex items-center justify-center text-sm font-medium text-ink">1</div>
+                    <div>
+                        <p class="font-medium text-ink">Subtle Corner Badge</p>
+                        <p class="text-sm text-muted">Most understated, matches editorial aesthetic. Uses existing sand/muted palette.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-sand flex items-center justify-center text-sm font-medium text-ink">2</div>
+                    <div>
+                        <p class="font-medium text-ink">Icon + Badge</p>
+                        <p class="text-sm text-muted">More visual, immediately recognizable with shopping bag emoji. Clean white background.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-sand flex items-center justify-center text-sm font-medium text-ink">3</div>
+                    <div>
+                        <p class="font-medium text-ink">Terracotta Outline Corner Badge</p>
+                        <p class="text-sm text-muted">Balanced approach: subtle corner placement with terracotta accent for clear signaling. Bone background with muted text.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-sand flex items-center justify-center text-sm font-medium text-ink">4</div>
+                    <div>
+                        <p class="font-medium text-ink">Terracotta Pill Badge</p>
+                        <p class="text-sm text-muted">Clean, prominent signal with solid terracotta background and white text. No border on card itself.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 p-4 bg-sand/30 rounded-lg">
+                <p class="text-sm text-ink"><span class="font-medium">Recommendation:</span> Option 4 is clean and prominent - uses solid terracotta for immediate recognition without adding borders to the card. Simple and effective.</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center text-sm text-muted">
+            <p>Hover over items to see the hover state effect</p>
+        </div>
+    </div>
+</body>
+</html>

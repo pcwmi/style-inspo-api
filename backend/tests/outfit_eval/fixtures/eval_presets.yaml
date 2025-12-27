@@ -1,0 +1,100 @@
+# Eval Presets - Named configurations for repeatable evaluations
+# Usage: python run_eval.py --preset <preset_name>
+
+# Quick test - single iteration for rapid feedback
+quick-test:
+  description: "Quick test with 1 iteration on a single scenario (baseline only)"
+  models: fixtures/model_configs.yaml
+  model_filter: "gpt4o_baseline"
+  scenarios: fixtures/test_scenarios.json
+  iterations: 1
+
+# Baseline vs Chain-of-Thought comparison (PRIMARY USE CASE)
+baseline-vs-cot:
+  description: "A/B test: Baseline vs Chain-of-Thought prompts on GPT-4o"
+  models: fixtures/model_configs.yaml
+  model_ids:
+    - gpt4o_baseline
+    - gpt4o_chain_of_thought
+  scenarios: fixtures/test_scenarios.json
+  iterations: 1
+
+# All prompt variations on GPT-4o
+prompt-comparison:
+  description: "Compare all prompt variations (baseline, chain-of-thought, fit-constraints) on GPT-4o"
+  models: fixtures/model_configs.yaml
+  model_ids:
+    - gpt4o_baseline
+    - gpt4o_chain_of_thought
+    - gpt4o_fit_constraints
+  scenarios: fixtures/test_scenarios.json
+  iterations: 1
+
+# Model comparison (same prompt across different models)
+model-comparison:
+  description: "Compare GPT-4o vs Claude vs Gemini (all using baseline prompt)"
+  models: fixtures/model_configs.yaml
+  model_ids:
+    - gpt4o_baseline
+    - claude_sonnet_45_baseline
+    - gemini_2_flash_baseline
+  scenarios: fixtures/test_scenarios.json
+  iterations: 1
+
+# Chain-of-thought across models
+cot-across-models:
+  description: "Test chain-of-thought prompt across different models"
+  models: fixtures/model_configs.yaml
+  model_filter: "chain_of_thought"  # All models with chain-of-thought
+  scenarios: fixtures/test_scenarios.json
+  iterations: 1
+
+# Full evaluation - comprehensive test
+full-eval:
+  description: "Complete evaluation across all models and scenarios (expensive!)"
+  models: fixtures/model_configs.yaml
+  scenarios: fixtures/test_scenarios.json
+  iterations: 3
+
+# Peichin's scenarios only
+peichin-test:
+  description: "Test baseline prompt on all Peichin's scenarios"
+  models: fixtures/model_configs.yaml
+  model_filter: "baseline"
+  scenarios: fixtures/test_scenarios.json
+  user_filter: "peichin"
+  iterations: 1
+
+# Gemini-specific test
+gemini-test:
+  description: "Test Gemini models with baseline and fit constraints"
+  models: fixtures/model_configs.yaml
+  model_filter: "gemini"
+  scenarios: fixtures/test_scenarios.json
+  iterations: 1
+
+# Claude-specific test
+claude-test:
+  description: "Test Claude models with all prompt variations"
+  models: fixtures/model_configs.yaml
+  model_filter: "claude"
+  scenarios: fixtures/test_scenarios.json
+  iterations: 1
+
+# Single scenario deep dive
+work-party-deep-dive:
+  description: "Test work holiday party scenario across all prompt variations"
+  models: fixtures/model_configs.yaml
+  model_filter: "gpt4o"
+  scenarios: fixtures/test_scenarios.json
+  scenario_filter: "work_holiday_party"
+  iterations: 3
+
+# Chain-of-thought on complete-my-outfit scenarios (validate anchor handling fix)
+cot-complete-my-outfit:
+  description: "Test chain-of-thought prompt on all complete-my-outfit scenarios to validate anchor handling"
+  models: fixtures/model_configs.yaml
+  model_filter: "chain_of_thought"
+  scenarios: fixtures/test_scenarios.json
+  scenario_filter: "complete"
+  iterations: 1

@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>A/B Test: Baseline vs Chain-of-Thought</title>
+    <style>
+        body { font-family: system-ui; background: #f5f5f5; padding: 20px; max-width: 1800px; margin: 0 auto; }
+        .scenario { background: white; padding: 30px; margin: 20px 0; border-radius: 8px; }
+        h2 { color: #333; }
+        .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .column { border: 2px solid #ddd; padding: 20px; border-radius: 8px; }
+        .baseline { border-color: #0d6efd; }
+        .cot { border-color: #198754; }
+        .outfit { margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 6px; }
+        .items { display: flex; flex-wrap: wrap; gap: 15px; margin: 15px 0; }
+        img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        img:hover { transform: scale(1.8); z-index: 100; box-shadow: 0 8px 16px rgba(0,0,0,0.3); }
+        .notes { font-size: 14px; margin: 10px 0; line-height: 1.5; }
+        .reasoning {
+            background: #e7f5e7;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 6px;
+            border-left: 4px solid #198754;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .reasoning-title {
+            font-weight: bold;
+            color: #198754;
+            margin-bottom: 10px;
+            font-family: system-ui;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 A/B Test Results: Baseline vs Chain-of-Thought</h1>
+    <p><strong>Test Run:</strong> eval_20251211_210952 | <strong>Items:</strong> 54</p>
+
+    <div class="scenario">
+        <h2>📝 Kids Drop-off + Business Coffee Meeting (Peichin)</h2>
+        <div class="comparison">
+            <div class="column baseline">
+                <h3>Baseline Prompt</h3>
+
+                <div class="outfit">
+                    <strong>Outfit 1</strong>
+                    <div class="items">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2e282ef4e797482ca7298f9f1e15ef82.jpg" title="Black basic short-sleeve tee"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg" title="Black Patent Leather Loafers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" title="Gold Bar Pendant Necklace"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" title="Black and White Floral Print Scarf">
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tuck the black tee into the high-waisted pants for a polished look. Drape the scarf loosely around the neck to add elegance and a layer of warmth. Let the necklace rest above the neckline of the tee for a minimalist touch.</div>
+                    <div class="notes"><strong>Why:</strong> This outfit is suitable for both kids drop-off and the business coffee meeting, balancing casual and business casual vibes. The lightweight fabrics and layering are ideal for mild, sunny weather. The classic pants and tee provide a chic foundation, while the loafers add sophistication. The scarf and necklace introduce a relaxed yet chic element, aligning with their style DNA.</div>
+                </div>
+
+                <div class="outfit">
+                    <strong>Outfit 2</strong>
+                    <div class="items">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/f241f1c156fa44afb4c54a6bcc8dcea1.jpg" title="Black and white houndstooth trousers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d3e79387d01e4fe88030ff21d383dae0.jpg" title="Burgundy patent leather pointed-toe pumps"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" title="Gold swirl earrings with pearl center">
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tuck the ruffled shirt into the houndstooth trousers. Style the earrings as the statement accessory. Ensure the pants fall neatly over the pumps for a streamlined silhouette.</div>
+                    <div class="notes"><strong>Why:</strong> This outfit is perfect for the business coffee meeting due to its polished and professional appearance. The crisp cotton shirt and tailored trousers make it suitable for the mild weather. The classic shirt and trousers highlight their classic style, while the pumps and earrings add a chic and relaxed touch.</div>
+                </div>
+
+                <div class="outfit">
+                    <strong>Outfit 3</strong>
+                    <div class="items">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2a337a039a0a4d98b4833b48d9928baf.jpg" title="Black and white paisley ruffle blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/85ec93b03d6a4bc1bca313bf175b2390.jpg" title="Royal blue slim-fit chinos"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" title="White and Red Classic Leather Sneakers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" title="Gold leaf motif necklace">
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Leave the blouse untucked for a more relaxed feel. Let the necklace rest against the blouse to elevate the neckline. Pair with sneakers for a casual yet stylish look.</div>
+                    <div class="notes"><strong>Why:</strong> This outfit transitions seamlessly from a casual kids drop-off to a more stylish coffee meeting. The light fabrics and relaxed fit are perfect for sunny weather. The blouse and chinos create a classic yet relaxed base, while the sneakers and necklace provide a chic, modern twist.</div>
+                </div>
+
+            </div>
+            <div class="column cot">
+                <h3>Chain-of-Thought Prompt</h3>
+
+                <div class="reasoning">
+                    <div class="reasoning-title">🧠 Chain-of-Thought Reasoning Process</div>
+                    ## OUTFIT 1
+
+**FUNCTION:** 
+The outfit needs to seamlessly transition from a casual kids' drop-off to a business coffee meeting, maintaining a chic appearance throughout.
+
+**ANCHOR:** 
+White wide-leg high-waisted pants
+- Why it's the hero: These pants offer a chic and classic base, perfect for dressing up or down.
+- Style words: chic
+
+**SUPPORTING PIECES:**
+- Black basic short-sleeve tee: Provides a relaxed feel with a minimalist touch - carries relaxed
+- Burgundy patent leather pointed-toe pumps: Elevates the look, adding a sophisticated touch for the meeting - carries classic
+- Contrast created: The smooth cotton tee contrasts with the crisp structure of the pants and the glossy finish of the pumps.
+
+**UNEXPECTED ELEMENT:** Burgundy patent leather pointed-toe pumps
+- Breaks: The expectation of casual footwear for a school drop-off.
+- Works because: The pumps add a polished chicness that balances the relaxed tee, effortlessly transitioning the look from casual to business-ready.
+
+**STYLE DNA:** classic ✓ [pumps] | relaxed ✓ [tee] | chic ✓ [pants]
+
+**STORY:** "I'm someone who can effortlessly juggle school drop-offs and business meetings."
+
+**PHYSICAL CHECK:** All pieces work together in terms of fabric weight and structure.
+
+**FINAL OUTFIT:**
+- White wide-leg high-waisted pants
+- Black basic short-sleeve tee
+- Burgundy patent leather pointed-toe pumps
+
+**STYLING:** Tuck the tee into the pants for a polished look. Leave the hair down or in a low ponytail to keep it relaxed.
+
+---
+
+## OUTFIT 2
+
+**FUNCTION:** 
+Create an outfit that feels casual yet chic for the school drop-off and is stylish enough for a coffee meeting.
+
+**ANCHOR:** 
+Dark Wash Flared Jeans
+- Why it's the hero: These jeans offer a classic yet relaxed vibe, suitable for both casual and semi-professional settings.
+- Style words: relaxed
+
+**SUPPORTING PIECES:**
+- Cream textured tie-front blouse: Adds a chic and polished element - carries chic
+- Tan suede belt with oval buckle: Introduces a classic touch with texture contrast - carries classic
+- Contrast created: The smooth denim texture contrasts with the textured fabric of the blouse and the suede of the belt.
+
+**UNEXPECTED ELEMENT:** Tan suede belt with oval buckle
+- Breaks: The convention of using a simple leather belt with jeans.
+- Works because: The suede texture and unique buckle add sophistication and interest without overpowering the outfit.
+
+**STYLE DNA:** classic ✓ [belt] | relaxed ✓ [jeans] | chic ✓ [blouse]
+
+**STORY:** "I'm someone who seamlessly blends comfort with elegance in everyday settings."
+
+**PHYSICAL CHECK:** The fabrics and textures complement each other well, ensuring comfort and style.
+
+**FINAL OUTFIT:**
+- Dark Wash Flared Jeans
+- Cream textured tie-front blouse
+- Tan suede belt with oval buckle
+
+**STYLING:** Tie the blouse neatly at the waist and let the belt peek through. Flare the jeans over simple loafers for a relaxed chic vibe.
+
+---
+
+## OUTFIT 3
+
+**FUNCTION:** 
+Deliver an outfit that exudes a chic vibe suitable for a quick school drop-off and an ensuing business meeting.
+
+**ANCHOR:** 
+Floral Patterned Long-Sleeve Dress
+- Why it's the hero: This dress embraces a boho vintage style that stands out while remaining appropriate for both settings.
+- Style words: chic
+
+**SUPPORTING PIECES:**
+- White and Red Classic Leather Sneakers: Brings a relaxed, playful twist - carries relaxed
+- Leopard Print Square Scarf: Adds a bold, classic statement - carries classic
+- Contrast created: The boho pattern of the dress contrasts with the sporty sneakers and the bold print of the scarf.
+
+**UNEXPECTED ELEMENT:** Leopard Print Square Scarf
+- Breaks: The expectation of pairing florals with similarly soft or muted accessories.
+- Works because: The bold scarf adds an unexpected edge that complements the vintage vibe, creating a balanced yet striking outfit.
+
+**STYLE DNA:** classic ✓ [scarf] | relaxed ✓ [sneakers] | chic ✓ [dress]
+
+**STORY:** "I'm someone who embraces boldness in everyday elegance."
+
+**PHYSICAL CHECK:** The dress and sneakers allow for comfort, while the scarf adds a stylish layer without overwhelming the look.
+
+**FINAL OUTFIT:**
+- Floral Patterned Long-Sleeve Dress
+- White and Red Classic Leather Sneakers
+- Leopard Print Square Scarf
+
+**STYLING:** Tie the scarf loosely around the neck. Keep the dress flowy with sneakers for a chic, relaxed vibe.
+
+---
+                </div>
+
+                <div class="outfit">
+                    <strong>Outfit 1</strong>
+                    <div class="items">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2e282ef4e797482ca7298f9f1e15ef82.jpg" title="Black basic short-sleeve tee"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d3e79387d01e4fe88030ff21d383dae0.jpg" title="Burgundy patent leather pointed-toe pumps">
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tuck the tee into the pants for a polished look. Leave the hair down or in a low ponytail to keep it relaxed.</div>
+                    <div class="notes"><strong>Why:</strong> The pumps add a polished chicness that balances the relaxed tee, effortlessly transitioning the look from casual to business-ready.</div>
+                </div>
+
+                <div class="outfit">
+                    <strong>Outfit 2</strong>
+                    <div class="items">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b6ecfd29000d4c918b4c81e0bf67efa6.jpg" title="Dark Wash Flared Jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b2eefe9b70084b8eae2ce17bba9b3546.jpg" title="Cream textured tie-front blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c51d42bf62ad460e9fd31c136aed2679.jpg" title="Tan suede belt with oval buckle">
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tie the blouse neatly at the waist and let the belt peek through. Flare the jeans over simple loafers for a relaxed chic vibe.</div>
+                    <div class="notes"><strong>Why:</strong> The suede texture and unique buckle add sophistication and interest without overpowering the outfit.</div>
+                </div>
+
+                <div class="outfit">
+                    <strong>Outfit 3</strong>
+                    <div class="items">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/ab37e67316304ee7a0293033cdee5672.jpg" title="Floral Patterned Long-Sleeve Dress"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" title="White and Red Classic Leather Sneakers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/cd9aba82c36248b8bb25d8acfe9b9490.jpg" title="Leopard Print Square Scarf">
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tie the scarf loosely around the neck. Keep the dress flowy with sneakers for a chic, relaxed vibe.</div>
+                    <div class="notes"><strong>Why:</strong> The bold scarf adds an unexpected edge that complements the vintage vibe, creating a balanced yet striking outfit.</div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="scenario">
+        <h2>📝 Important Work Meeting + Drinks with Girlfriends (Peichin)</h2>
+        <div class="comparison">
+            <div class="column baseline">
+                <h3>Baseline Prompt</h3>
+
+                <div class="outfit">
+                    <strong>Outfit 1</strong>
+                    <div class="items">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg" title="Black Patent Leather Loafers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" title="Black and White Floral Print Scarf"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" title="Gold Bar Pendant Necklace">
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> </div>
+                    <div class="notes"><strong>Why:</strong> This outfit is appropriate for the work meeting due to its classic and polished elements like the white ruffled shirt and tailored pants, while the scarf adds a chic touch for drinks with friends. The fabric choices are suitable for the cool weather; the cotton blend pants and layered top provide warmth, while the scarf adds an extra layer. The style DNA is honored with classic elements (shirt and loafers), a relaxed silhouette (wide-leg pants), and chic accessories (scarf and necklace).</div>
+                </div>
+
+                <div class="outfit">
+                    <strong>Outfit 2</strong>
+                    <div class="items">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/f241f1c156fa44afb4c54a6bcc8dcea1.jpg" title="Black and white houndstooth trousers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b2eefe9b70084b8eae2ce17bba9b3546.jpg" title="Cream textured tie-front blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d3e79387d01e4fe88030ff21d383dae0.jpg" title="Burgundy patent leather pointed-toe pumps"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" title="Gold swirl earrings with pearl center">
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> </div>
+                    <div class="notes"><strong>Why:</strong> The houndstooth trousers and pointed-toe pumps ensure this outfit is business-appropriate, while the blouse adds a relaxed and chic vibe, perfect for transitioning to drinks. The fabric weight keeps the wearer comfortable in the cool weather, while the pumps add sophistication. The style DNA is balanced with classic (trousers), relaxed (tie-front blouse), and chic (pumps and earrings) elements.</div>
+                </div>
+
+                <div class="outfit">
+                    <strong>Outfit 3</strong>
+                    <div class="items">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b6ecfd29000d4c918b4c81e0bf67efa6.jpg" title="Dark Wash Flared Jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2e282ef4e797482ca7298f9f1e15ef82.jpg" title="Black basic short-sleeve tee"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/fea051736ba246b991b53dbf7d7b80ed.jpg" title="Black leather mid-calf boots"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2a337a039a0a4d98b4833b48d9928baf.jpg" title="Black and white paisley ruffle blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" title="Gold leaf motif necklace">
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Layer the paisley blouse over the tee and let the ruffles peek out at the neckline. Tuck the jeans into the boots for a sleek profile. Wear the necklace over the blouse for added elegance.</div>
+                    <div class="notes"><strong>Why:</strong> This outfit works for the work meeting due to its structured elements like the jeans and boots, with the blouse adding a professional touch, while also being laid-back enough for drinks later. The layers provide warmth for the cool weather, and the boots keep the look grounded. The style DNA is reflected in the classic (jeans), relaxed (layered tee and blouse), and chic (necklace and boots) components.</div>
+                </div>
+
+            </div>
+            <div class="column cot">
+                <h3>Chain-of-Thought Prompt</h3>
+
+                <div class="reasoning">
+                    <div class="reasoning-title">🧠 Chain-of-Thought Reasoning Process</div>
+                    ## OUTFIT 1 REASONING
+
+FUNCTION: The outfit must transition smoothly from an important work meeting to drinks with girlfriends, maintaining professionalism while adding a relaxed chic vibe.
+
+ANCHOR: Black and White Floral Print Scarf
+- Why it's the hero: The scarf adds an artistic touch that elevates the outfit's visual appeal.
+- Style words: chic
+
+SUPPORTING PIECES:
+- White ruffled button-up shirt: Adds a classic and romantic element to the outfit - carries classic
+- Dark Wash Flared Jeans: Offers a relaxed yet polished base, complementing the structure of the shirt - carries relaxed
+- Burgundy patent leather pointed-toe pumps: Elevates the overall look with elegance and a touch of color - carries chic
+- Contrast created: The structured shirt contrasts with the flared jeans, and the patterned scarf adds visual interest against solid colors.
+
+UNEXPECTED ELEMENT: Burgundy patent leather pointed-toe pumps
+- Breaks: The expectation of typical neutral work shoes.
+- Works because: The pop of burgundy adds a sophisticated twist that ties in with the chicness of the scarf.
+
+STYLE DNA: classic ✓ [White ruffled button-up shirt] | relaxed ✓ [Dark Wash Flared Jeans] | chic ✓ [Black and White Floral Print Scarf]
+
+STORY: "I'm someone who can balance professionalism with a touch of artistry."
+
+PHYSICAL CHECK: All pieces can be worn together comfortably, and the scarf ties the colors and styles together.
+
+FINAL OUTFIT:
+- Black and White Floral Print Scarf
+- White ruffled button-up shirt
+- Dark Wash Flared Jeans
+- Burgundy patent leather pointed-toe pumps
+
+STYLING: Tuck the shirt into the jeans, and drape the scarf loosely around the neck. Roll up the sleeves for a more relaxed look.
+
+---
+
+## OUTFIT 2 REASONING
+
+FUNCTION: This outfit should convey a sense of style and sophistication suitable for both a business meeting and a casual social gathering afterward.
+
+ANCHOR: Floral Patterned Long-Sleeve Dress
+- Why it's the hero: The dress's vibrant pattern creates a standout look that transitions easily between settings.
+- Style words: relaxed, chic
+
+SUPPORTING PIECES:
+- Black leather mid-calf boots: Add an edge and structure, grounding the bohemian vibe of the dress - carries classic
+- Tan suede belt with oval buckle: Defines the waist and introduces a classic element - carries classic
+- Gold leaf motif necklace: Adds a touch of elegance, complementing the floral pattern - carries chic
+- Contrast created: The structured boots contrast with the flowy dress, and the necklace adds a metallic shine against the floral pattern.
+
+UNEXPECTED ELEMENT: Black leather mid-calf boots
+- Breaks: The expectation of pairing a floral dress with more delicate footwear.
+- Works because: The boots add an unexpected edge, balancing the dress's boho vibe and making it versatile for day-to-night.
+
+STYLE DNA: classic ✓ [Tan suede belt with oval buckle] | relaxed ✓ [Floral Patterned Long-Sleeve Dress] | chic ✓ [Gold leaf motif necklace]
+
+STORY: "I'm someone who blends elegance with an edge."
+
+PHYSICAL CHECK: All pieces fit well together, with accessories enhancing the outfit without overpowering it.
+
+FINAL OUTFIT:
+- Floral Patterned Long-Sleeve Dress
+- Black leather mid-calf boots
+- Tan suede belt with oval buckle
+- Gold leaf motif necklace
+
+STYLING: Cinch the dress at the waist with the belt, layer the necklace over the dress, and keep the boots visible by letting the dress fall just above them.
+
+---
+
+## OUTFIT 3 REASONING
+
+FUNCTION: This look needs to be polished enough for a business meeting yet relaxed for a social evening, showcasing personal style with a playful twist.
+
+ANCHOR: Ivory crochet button-up cardigan
+- Why it's the hero: The cardigan's boho vintage style creates a unique and eye-catching texture.
+- Style words: relaxed
+
+SUPPORTING PIECES:
+- Black basic short-sleeve tee: Provides a minimalist base, letting the cardigan stand out - carries classic
+- Light blue wide-leg jeans: Offer a casual and relaxed silhouette - carries relaxed
+- White and Red Classic Leather Sneakers: Add a sporty, chic element with a pop of color - carries chic
+- Contrast created: The texture of the crochet cardigan contrasts with the smoothness of the jeans and tee, while the sneakers add a sporty twist.
+
+UNEXPECTED ELEMENT: White and Red Classic Leather Sneakers
+- Breaks: The expectation of pairing a vintage cardigan with more traditional footwear.
+- Works because: The sneakers inject a modern, sporty element, balancing the vintage style for a casual-chic vibe.
+
+STYLE DNA: classic ✓ [Black basic short-sleeve tee] | relaxed ✓ [Ivory crochet button-up cardigan] | chic ✓ [White and Red Classic Leather Sneakers]
+
+STORY: "I'm someone who mixes vintage charm with modern flair."
+
+PHYSICAL CHECK: The pieces layer well, with the cardigan adding texture and the sneakers providing comfort and style.
+
+FINAL OUTFIT:
+- Ivory crochet button-up cardigan
+- Black basic short-sleeve tee
+- Light blue wide-leg jeans
+- White and Red Classic Leather Sneakers
+
+STYLING: Leave the cardigan open over the tee, tuck the tee into the jeans, and ensure the sneakers' red accents are visible.
+
+---
+                </div>
+
+                <div class="outfit">
+                    <strong>Outfit 1</strong>
+                    <div class="items">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" title="Black and White Floral Print Scarf"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b6ecfd29000d4c918b4c81e0bf67efa6.jpg" title="Dark Wash Flared Jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d3e79387d01e4fe88030ff21d383dae0.jpg" title="Burgundy patent leather pointed-toe pumps">
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tuck the shirt into the jeans, and drape the scarf loosely around the neck. Roll up the sleeves for a more relaxed look.</div>
+                    <div class="notes"><strong>Why:</strong> The outfit balances professionalism with a touch of artistry, making it suitable for both work and social settings.</div>
+                </div>
+
+                <div class="outfit">
+                    <strong>Outfit 2</strong>
+                    <div class="items">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/ab37e67316304ee7a0293033cdee5672.jpg" title="Floral Patterned Long-Sleeve Dress"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/fea051736ba246b991b53dbf7d7b80ed.jpg" title="Black leather mid-calf boots"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c51d42bf62ad460e9fd31c136aed2679.jpg" title="Tan suede belt with oval buckle"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" title="Gold leaf motif necklace">
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Cinch the dress at the waist with the belt, layer the necklace over the dress, and keep the boots visible by letting the dress fall just above them.</div>
+                    <div class="notes"><strong>Why:</strong> This combination blends elegance with an edge, suitable for both day and night events.</div>
+                </div>
+
+                <div class="outfit">
+                    <strong>Outfit 3</strong>
+                    <div class="items">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/fb74fd751f3d47f39da9104a24cd8d52.jpg" title="Ivory crochet button-up cardigan"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2e282ef4e797482ca7298f9f1e15ef82.jpg" title="Black basic short-sleeve tee"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d83ddd63b7cd4654bd4a063d19c3876e.jpg" title="Light blue wide-leg jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" title="White and Red Classic Leather Sneakers">
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> </div>
+                    <div class="notes"><strong>Why:</strong> The mix of vintage charm with modern flair creates an unexpected yet cohesive look.</div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="scenario">
+        <h2>📝 Errands + Date Night (Peichin)</h2>
+        <div class="comparison">
+            <div class="column baseline">
+                <h3>Baseline Prompt</h3>
+
+                <div class="outfit">
+                    <strong>Outfit 1</strong>
+                    <div class="items">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2e282ef4e797482ca7298f9f1e15ef82.jpg" title="Black basic short-sleeve tee"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" title="Gold swirl earrings with pearl center"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" title="White and Red Classic Leather Sneakers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" title="Black and White Floral Print Scarf">
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tuck the black tee into the white wide-leg pants for a polished look. Wrap the scarf loosely around the neck. Pair with the gold swirl earrings for an elegant touch.</div>
+                    <div class="notes"><strong>Why:</strong> This outfit is perfect for running errands and transitions seamlessly into a date night with its chic yet relaxed vibe. The lightweight cotton blend of the pants and tee ensures comfort in mild temperatures of 65-75°F. The wide-leg pants and sneakers provide a relaxed feel, while the scarf and earrings add a chic, classic touch.</div>
+                </div>
+
+                <div class="outfit">
+                    <strong>Outfit 2</strong>
+                    <div class="items">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b6ecfd29000d4c918b4c81e0bf67efa6.jpg" title="Dark Wash Flared Jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b2eefe9b70084b8eae2ce17bba9b3546.jpg" title="Cream textured tie-front blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d3e79387d01e4fe88030ff21d383dae0.jpg" title="Burgundy patent leather pointed-toe pumps"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" title="Gold Bar Pendant Necklace">
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tie the blouse at the front to highlight the waist. Let the gold necklace peek through the blouse neckline. Pair the jeans with the pumps for a touch of elegance.</div>
+                    <div class="notes"><strong>Why:</strong> This outfit balances casual errands with a chic evening look. The mid-weight denim and lightweight blouse make it suitable for the mild weather. The flared jeans provide a relaxed foundation, the tie-front blouse adds a classic touch, and the pumps elevate the overall chicness.</div>
+                </div>
+
+                <div class="outfit">
+                    <strong>Outfit 3</strong>
+                    <div class="items">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/5b174344b6f94c83a97e250b5a34c1ab.jpg" title="Medium wash straight-leg jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/fb74fd751f3d47f39da9104a24cd8d52.jpg" title="Ivory crochet button-up cardigan"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/5bde30719e644a7face5b2968d7db076.jpg" title="White tee with black bow detail"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg" title="Black Patent Leather Loafers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" title="Gold leaf motif necklace">
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Layer the white tee under the cardigan with the bow detail visible. Cuff the jeans slightly to show off the loafers. Let the necklace sit elegantly over the cardigan.</div>
+                    <div class="notes"><strong>Why:</strong> This ensemble is versatile for casual errands and a relaxed dinner. The jeans and cardigan provide comfort for the weather, while the bow detail adds a chic touch. The loafers introduce a classic element, and the necklace elevates the look.</div>
+                </div>
+
+            </div>
+            <div class="column cot">
+                <h3>Chain-of-Thought Prompt</h3>
+
+                <div class="reasoning">
+                    <div class="reasoning-title">🧠 Chain-of-Thought Reasoning Process</div>
+                    ## OUTFIT 1
+
+**FUNCTION:** Transition seamlessly from running errands to a date night dinner while feeling chic and relaxed.
+
+**ANCHOR:** White wide-leg high-waisted pants
+- Why it's the hero: These pants offer a versatile base that feels chic and relaxed, perfect for a day-to-night transition.
+- Style words: chic
+
+**SUPPORTING PIECES:**
+- Cream textured tie-front blouse: Adds a relaxed yet chic vibe with its loose fit and lightweight fabric - carries relaxed
+- Burgundy patent leather pointed-toe pumps: Elevate the outfit for a chic dinner - carries classic
+- Gold swirl earrings with pearl center: Add a touch of elegance, tying the outfit together - carries chic
+- Contrast created: The smooth pants contrast with the textured blouse, while the pumps add a sleek finish.
+
+**UNEXPECTED ELEMENT:** Burgundy patent leather pointed-toe pumps
+- Breaks: The casual nature of running errands.
+- Works because: The pumps add a sophisticated edge, making the whole outfit dinner-ready without losing the relaxed vibe.
+
+**STYLE DNA:** classic ✓ [pumps] | relaxed ✓ [blouse] | chic ✓ [pants]
+
+**STORY:** "I'm someone who effortlessly combines practicality with elegance."
+
+**PHYSICAL CHECK:** All pieces work together, with the pants and blouse offering a cohesive base, and the pumps adding flair.
+
+**FINAL OUTFIT:**
+- White wide-leg high-waisted pants
+- Cream textured tie-front blouse
+- Burgundy patent leather pointed-toe pumps
+- Gold swirl earrings with pearl center
+
+**STYLING:** Tie the blouse in a neat bow, ensuring it sits just above the high waistband of the pants. Let the earrings peek through loose waves or a low ponytail.
+
+---
+
+## OUTFIT 2
+
+**FUNCTION:** Create a look that feels casual yet polished for errands and a relaxed dinner.
+
+**ANCHOR:** Dark Wash Flared Jeans
+- Why it's the hero: These jeans provide a casual chic foundation that's suitable for day and evening.
+- Style words: relaxed
+
+**SUPPORTING PIECES:**
+- White ruffled button-up shirt: Offers a classic touch with its romantic detailing - carries classic
+- Black Patent Leather Loafers: Add a timeless elegance and comfort for walking - carries chic
+- Leopard Print Square Scarf: Introduces a bold statement and texture - carries chic
+- Contrast created: The fitted jeans contrast with the flowy ruffled shirt, and the loafers add a structured element.
+
+**UNEXPECTED ELEMENT:** Leopard Print Square Scarf
+- Breaks: The classic, subdued color palette.
+- Works because: It adds a pop of boldness that complements the overall chic vibe without overpowering the outfit.
+
+**STYLE DNA:** classic ✓ [shirt] | relaxed ✓ [jeans] | chic ✓ [loafers]
+
+**STORY:** "I'm someone who embraces timeless comfort with a touch of daring."
+
+**PHYSICAL CHECK:** The pieces are harmonious, with the scarf adding texture and pattern without clashing.
+
+**FINAL OUTFIT:**
+- Dark Wash Flared Jeans
+- White ruffled button-up shirt
+- Black Patent Leather Loafers
+- Leopard Print Square Scarf
+
+**STYLING:** Tuck the shirt into the jeans, letting the flares flow naturally. Tie the scarf loosely around the neck for a relaxed yet chic effect.
+
+---
+
+## OUTFIT 3
+
+**FUNCTION:** Present a bold, chic look that transitions from errands to an upscale dinner setting.
+
+**ANCHOR:** Black and White Houndstooth Trousers
+- Why it's the hero: These trousers make a statement with their classic chic pattern and fit.
+- Style words: classic
+
+**SUPPORTING PIECES:**
+- Black basic short-sleeve tee: Provides a minimalist base - carries relaxed
+- White and Black Distressed Leather Ankle Boots: Add an edgy, unexpected element - carries chic
+- Gold Bar Pendant Necklace: Offers a touch of elegance and shine - carries chic
+- Contrast created: The structured trousers contrast with the casual tee, while the boots introduce an edgy texture.
+
+**UNEXPECTED ELEMENT:** White and Black Distressed Leather Ankle Boots
+- Breaks: The polished, classic nature of the trousers.
+- Works because: The boots add a modern, edgy twist that makes the outfit feel current and daring.
+
+**STYLE DNA:** classic ✓ [trousers] | relaxed ✓ [tee] | chic ✓ [boots]
+
+**STORY:** "I'm someone who isn't afraid to mix classic elegance with a modern edge."
+
+**PHYSICAL CHECK:** All pieces are cohesive, with the boots providing a bold contrast that enhances the overall outfit.
+
+**FINAL OUTFIT:**
+- Black and White Houndstooth Trousers
+- Black basic short-sleeve tee
+- White and Black Distressed Leather Ankle Boots
+- Gold Bar Pendant Necklace
+
+**STYLING:** Tuck the tee into the trousers for a sleek silhouette. Let the necklace sit on the tee for a touch of shine.
+
+---
+                </div>
+
+                <div class="outfit">
+                    <strong>Outfit 1</strong>
+                    <div class="items">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" title="White wide-leg high-waisted pants"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b2eefe9b70084b8eae2ce17bba9b3546.jpg" title="Cream textured tie-front blouse"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d3e79387d01e4fe88030ff21d383dae0.jpg" title="Burgundy patent leather pointed-toe pumps"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" title="Gold swirl earrings with pearl center">
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tie the blouse in a neat bow, ensuring it sits just above the high waistband of the pants. Let the earrings peek through loose waves or a low ponytail.</div>
+                    <div class="notes"><strong>Why:</strong> The pumps add a sophisticated edge, making the whole outfit dinner-ready without losing the relaxed vibe.</div>
+                </div>
+
+                <div class="outfit">
+                    <strong>Outfit 2</strong>
+                    <div class="items">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b6ecfd29000d4c918b4c81e0bf67efa6.jpg" title="Dark Wash Flared Jeans"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg" title="Black Patent Leather Loafers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/cd9aba82c36248b8bb25d8acfe9b9490.jpg" title="Leopard Print Square Scarf">
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tuck the shirt into the jeans, letting the flares flow naturally. Tie the scarf loosely around the neck for a relaxed yet chic effect.</div>
+                    <div class="notes"><strong>Why:</strong> The scarf adds a pop of boldness that complements the overall chic vibe without overpowering the outfit.</div>
+                </div>
+
+                <div class="outfit">
+                    <strong>Outfit 3</strong>
+                    <div class="items">
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/f241f1c156fa44afb4c54a6bcc8dcea1.jpg" title="Black and white houndstooth trousers"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2e282ef4e797482ca7298f9f1e15ef82.jpg" title="Black basic short-sleeve tee"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1e1f015ce81489997c2f77d046b6497.jpg" title="White and Black Distressed Leather Ankle Boots"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" title="Gold Bar Pendant Necklace">
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Tuck the tee into the trousers for a sleek silhouette. Let the necklace sit on the tee for a touch of shine.</div>
+                    <div class="notes"><strong>Why:</strong> The boots add a modern, edgy twist that makes the outfit feel current and daring.</div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

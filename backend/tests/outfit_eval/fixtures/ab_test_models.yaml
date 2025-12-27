@@ -1,0 +1,15 @@
+models:
+- id: gpt4o_baseline
+  name: GPT-4o (Baseline)
+  model: gpt-4o
+  temperature: 0.7
+  max_tokens: 2000
+  prompt_version: baseline_v1
+  description: GPT-4o with baseline Style Constitution prompt
+- id: gpt4o_chain_of_thought
+  name: GPT-4o (Chain-of-Thought)
+  model: gpt-4o
+  temperature: 0.7
+  max_tokens: 3000
+  prompt_version: chain_of_thought_v1
+  description: GPT-4o with explicit reasoning steps to avoid 4-star plateau

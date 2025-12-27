@@ -1,0 +1,121 @@
+[
+  {
+    "id": "work_holiday_party",
+    "name": "Work Holiday Party (Peichin)",
+    "user_id": "peichin",
+    "scenario_type": "occasion",
+    "occasion": "work holiday party",
+    "weather": "cool and crisp",
+    "temperature_range": "50-60°F",
+    "style_profile": {
+      "three_words": {
+        "current": "classic",
+        "aspirational": "relaxed",
+        "feeling": "chic"
+      }
+    },
+    "description": "Test holiday party outfit (business casual to cocktail)"
+  },
+  {
+    "id": "shopping_mall",
+    "name": "Shopping Day in the Mall (Peichin)",
+    "user_id": "peichin",
+    "scenario_type": "occasion",
+    "occasion": "shopping day at the mall",
+    "weather": "mild",
+    "temperature_range": "60-70°F",
+    "style_profile": {
+      "three_words": {
+        "current": "classic",
+        "aspirational": "relaxed",
+        "feeling": "chic"
+      }
+    },
+    "description": "Test casual shopping outfit"
+  },
+  {
+    "id": "park_walk_coffee",
+    "name": "Long Walk in Park + Coffee Shop (Peichin)",
+    "user_id": "peichin",
+    "scenario_type": "occasion",
+    "occasion": "long walk in the park followed by coffee shop",
+    "weather": "cool and breezy",
+    "temperature_range": "55-65°F",
+    "style_profile": {
+      "three_words": {
+        "current": "classic",
+        "aspirational": "relaxed",
+        "feeling": "chic"
+      }
+    },
+    "description": "Test active casual outfit with transition"
+  },
+  {
+    "id": "pta_errands",
+    "name": "PTA Meeting + Errands (Peichin)",
+    "user_id": "peichin",
+    "scenario_type": "occasion",
+    "occasion": "kids school PTA meeting followed by errands",
+    "weather": "mild and sunny",
+    "temperature_range": "65-75°F",
+    "style_profile": {
+      "three_words": {
+        "current": "classic",
+        "aspirational": "relaxed",
+        "feeling": "chic"
+      }
+    },
+    "description": "Test mom-life multi-tasking outfit"
+  },
+  {
+    "id": "family_dinner",
+    "name": "Sunday Family Dinner at In-Laws (Peichin)",
+    "user_id": "peichin",
+    "scenario_type": "occasion",
+    "occasion": "sunday family dinner at the in-laws",
+    "weather": "cool",
+    "temperature_range": "50-60°F",
+    "style_profile": {
+      "three_words": {
+        "current": "classic",
+        "aspirational": "relaxed",
+        "feeling": "chic"
+      }
+    },
+    "description": "Test smart casual family event outfit"
+  },
+  {
+    "id": "couple_date",
+    "name": "Couple Date Night with Another Couple (Peichin)",
+    "user_id": "peichin",
+    "scenario_type": "occasion",
+    "occasion": "couple date night with another couple",
+    "weather": "cool evening",
+    "temperature_range": "55-65°F",
+    "style_profile": {
+      "three_words": {
+        "current": "classic",
+        "aspirational": "relaxed",
+        "feeling": "chic"
+      }
+    },
+    "description": "Test smart casual to cocktail date outfit"
+  },
+  {
+    "id": "nyc_sightseeing",
+    "name": "NYC Sightseeing Day (Peichin)",
+    "user_id": "peichin",
+    "scenario_type": "occasion",
+    "occasion": "sightseeing day with lots of walking in NYC",
+    "weather": "cool and breezy",
+    "temperature_range": "50-60°F",
+    "style_profile": {
+      "three_words": {
+        "current": "classic",
+        "aspirational": "relaxed",
+        "feeling": "chic"
+      }
+    },
+    "description": "Test comfortable stylish walking outfit"
+  }
+]

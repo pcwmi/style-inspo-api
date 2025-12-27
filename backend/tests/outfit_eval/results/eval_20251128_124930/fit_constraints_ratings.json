@@ -1,0 +1,72 @@
+{
+  "occasion_wedding_peichin_claude_sonnet_45_fit_constraints_0_1": {
+    "rating": 1,
+    "notes": "the. belt would be covered by the blouse (i.e. can't see)"
+  },
+  "occasion_wedding_peichin_claude_sonnet_45_fit_constraints_1_0": {
+    "rating": 4
+  },
+  "occasion_wedding_peichin_claude_sonnet_45_fit_constraints_0_2": {
+    "rating": 4
+  },
+  "occasion_wedding_peichin_claude_sonnet_45_fit_constraints_1_1": {
+    "rating": 3
+  },
+  "occasion_wedding_peichin_claude_sonnet_45_fit_constraints_1_2": {
+    "rating": 4
+  },
+  "occasion_wedding_peichin_gpt4o_fit_constraints_0_1": {
+    "rating": 4,
+    "notes": "sneakers might be too casual for a wedding. but overall a good outfit. "
+  },
+  "occasion_wedding_peichin_gpt4o_fit_constraints_0_2": {
+    "rating": 2
+  },
+  "occasion_wedding_peichin_gpt4o_fit_constraints_4_1": {
+    "rating": 2
+  },
+  "occasion_wedding_peichin_gpt4o_fit_constraints_0_0": {
+    "rating": 4,
+    "notes": "I like the white on white with heals. feels like a good fit for outdoors. "
+  },
+  "date_night_peichin_gpt4o_fit_constraints_0_0": {
+    "rating": 5
+  },
+  "date_night_peichin_gpt4o_fit_constraints_0_1": {
+    "rating": 2,
+    "notes": "\"Tuck the white ruffled shirt into the flared jeans for a balanced silhouette.\" this styling makes zero sense - the focal point is the ruffle. the outfit itself (without tucked in) it not bad. "
+  },
+  "date_night_peichin_gpt4o_fit_constraints_0_2": {
+    "rating": 4,
+    "notes": "not bad, but can add more visual interesting / feminine layer on the top"
+  },
+  "casual_weekend_heather_gpt4o_fit_constraints_0_1": {
+    "rating": 4
+  },
+  "casual_weekend_heather_gpt4o_fit_constraints_0_0": {
+    "rating": 4
+  },
+  "casual_weekend_heather_gpt4o_fit_constraints_0_2": {
+    "rating": 3
+  },
+  "complete_boots_peichin_gpt4o_fit_constraints_0_0": {
+    "rating": 4
+  },
+  "complete_boots_peichin_gpt4o_fit_constraints_0_1": {
+    "rating": 4
+  },
+  "complete_boots_peichin_gpt4o_fit_constraints_0_2": {
+    "rating": 2,
+    "notes": "scarf with the knit the texture doesn't quite match. "
+  },
+  "occasion_work_meeting_heather_gpt4o_fit_constraints_0_1": {
+    "rating": 4
+  },
+  "occasion_work_meeting_heather_gpt4o_fit_constraints_0_0": {
+    "rating": 4
+  },
+  "occasion_work_meeting_heather_gpt4o_fit_constraints_0_2": {
+    "rating": 2,
+    "notes": "the salmon color shirt has more a casual vibe, similarly the cargo pants are too casual"
+  }
+}

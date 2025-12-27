@@ -4,9 +4,11 @@
 A personal AI styling assistant that helps users style challenging wardrobe pieces using generative AI. Built with Next.js (React/TypeScript) frontend, FastAPI backend, OpenAI GPT-4o for outfit generation, and Runway ML for AI-generated outfit visualizations.
 
 ## Key Documents
-- **PRODUCT_VISION.md**: Product vision, user needs, and core use cases (mood-based styling, "How Item", inspiration translation)
-- **STYLE_CONSTITUTION.md**: Core styling principles (Style DNA Alignment, Intentional Contrast, Intentional Details)
-- **CLAUDE.md**: Strategic context, roadmap priorities, and development history (READ FIRST for project direction)
+All key documents are located in `.claude/` directory:
+- **`.claude/PRODUCT_VISION.md`**: Product vision, user needs, and core use cases (mood-based styling, "How Item", inspiration translation)
+- **`.claude/ROADMAP.md`**: Roadmap that's updated regularly - current sprint priorities, strategic decisions, and development history
+- **`.claude/STYLE_CONSTITUTION.md`**: Core styling principles (Style DNA Alignment, Intentional Contrast, Intentional Details)
+- **`.claude/CLAUDE.md`**: Strategic context, roadmap priorities, and development history (READ FIRST for project direction)
 
 ## Technical Architecture
 
@@ -89,10 +91,10 @@ A personal AI styling assistant that helps users style challenging wardrobe piec
 
 ## Project Context Rules
 Before acting on any design or code generation:
-1. Read and respect context from key documents
+1. Read and respect context from key documents in `.claude/` directory
 2. Use Figma MCP data only within constraints defined there:
    - Align all UI and API changes with the project purpose
-   - Prioritize roadmap milestones listed in roadmap.md
+   - Prioritize roadmap milestones listed in `.claude/ROADMAP.md`
 3. When conflicts arise between design and roadmap, ask for clarification.
 
 ## Workflow Guardrails
@@ -108,6 +110,43 @@ Before acting on any design or code generation:
 - When background tasks should allow forward progress, test UI availability while jobs are still running to ensure UI gating supports pending analysis
 - Test onboarding flow with different user states (new, partial, complete) before deploying
 - Verify API data format conversions (style_words array ↔ three_words dict) work correctly
+
+## E2E Testing Methodology (REQUIRED)
+**CRITICAL: Always perform end-to-end testing before implementing fixes. Never assume a fix will work without testing the full user flow.**
+
+### Diagnosis Process (Before Any Fix)
+1. **Test the Full User Flow**: Don't test individual components in isolation. Test the complete flow:
+   - User action → Frontend request → Backend processing → Data storage → Frontend display
+   - Use browser tools to test actual user interactions when possible
+   - Trace data through each transformation step
+
+2. **Verify What's Actually Stored**: 
+   - Check JSON files/database to see what data is persisted
+   - Don't assume data is saved correctly - verify it
+   - Inspect actual API responses, not just expected responses
+
+3. **Check Data at Each Transformation Point**:
+   - API extraction output → FormData sent → Backend receives → Analysis data → Stored data → Frontend receives → UI displays
+   - Log or inspect data at each step to find where it's lost
+
+4. **Test with Real Data**: 
+   - Use actual URLs/data from production
+   - Test with browser automation tools when available
+   - Inspect network requests/responses in browser dev tools
+   - Check browser console for errors
+
+5. **Root Cause Analysis**:
+   - Don't fix symptoms - find where data is actually lost
+   - Test each component individually only AFTER testing the full flow
+   - Document findings at each step before proposing fixes
+
+### When Diagnosing Issues
+- **DO**: Test extraction API → Test add-item API with extracted data → Check stored JSON → Check frontend API response → Check UI display
+- **DON'T**: Test only extraction API → Assume the rest works → Make a fix based on assumptions
+
+### When Implementing Fixes
+- **DO**: Make minimal changes → Test full flow again → Verify data at each step → Confirm fix works end-to-end
+- **DON'T**: Make multiple changes at once → Assume changes work → Skip verification steps
 
 
 

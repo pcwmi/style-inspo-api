@@ -17,9 +17,9 @@
     "description": "Test elegant occasion-based outfit generation"
   },
   {
-    "id": "occasion_work_meeting_heather",
-    "name": "Occasion: Important Work Meeting followed by drinks with girlfriends (Heather)",
-    "user_id": "heather",
+    "id": "occasion_work_meeting_peichin",
+    "name": "Occasion: Important Work Meeting followed by drinks with girlfriends (Peichin)",
+    "user_id": "peichin",
     "scenario_type": "occasion",
     "occasion": "important client presentation followed by drinks with girlfriends",
     "weather": "cool",
@@ -52,9 +52,9 @@
     "description": "Test complete-my-look with anchor piece"
   },
   {
-    "id": "casual_weekend_heather",
-    "name": "Casual Weekend Outing (Heather)",
-    "user_id": "heather",
+    "id": "casual_weekend_peichin",
+    "name": "Casual Weekend Outing (Peichin)",
+    "user_id": "peichin",
     "scenario_type": "occasion",
     "occasion": "casual coffee with friends followed with some errands",
     "weather": "mild",
@@ -84,5 +84,83 @@
       }
     },
     "description": "Test dressy occasion outfit generation"
+  },
+  {
+    "id": "complete_sage_skirt_peichin",
+    "name": "Complete My Look: Sage Green Leather A-Line Skirt (Peichin)",
+    "user_id": "peichin",
+    "scenario_type": "complete_my_look",
+    "anchor_item_name": "Sage green leather A-line skirt",
+    "occasion": "casual day out",
+    "weather": "mild and partly cloudy",
+    "temperature_range": "60-70°F",
+    "style_profile": {
+      "three_words": {
+        "current": "classic",
+        "aspirational": "relaxed",
+        "feeling": "playful"
+      }
+    },
+    "description": "Test complete-my-look with sage green leather skirt"
+  },
+  {
+    "id": "complete_dress_loafers_peichin",
+    "name": "Complete My Look: Olive Green Dress + Black Patent Loafers (Peichin)",
+    "user_id": "peichin",
+    "scenario_type": "complete_my_look",
+    "anchor_items": [
+      "Olive green textured long-sleeve dress",
+      "Black Patent Leather Loafers"
+    ],
+    "occasion": "brunch with friends",
+    "weather": "cool and breezy",
+    "temperature_range": "55-65°F",
+    "style_profile": {
+      "three_words": {
+        "current": "classic",
+        "aspirational": "relaxed",
+        "feeling": "playful"
+      }
+    },
+    "description": "Test complete-my-look with multiple anchor pieces"
+  },
+  {
+    "id": "complete_houndstooth_trousers_peichin",
+    "name": "Complete My Look: Black and White Houndstooth Trousers (Peichin)",
+    "user_id": "peichin",
+    "scenario_type": "complete_my_look",
+    "anchor_item_name": "Black and white houndstooth trousers",
+    "occasion": "casual office day",
+    "weather": "cool",
+    "temperature_range": "60-70°F",
+    "style_profile": {
+      "three_words": {
+        "current": "casual",
+        "aspirational": "polished",
+        "feeling": "chic"
+      }
+    },
+    "description": "Test complete-my-look with statement trousers"
+  },
+  {
+    "id": "complete_coat_blouse_peichin",
+    "name": "Complete My Look: Tan Leather Coat + Paisley Ruffle Blouse (Peichin)",
+    "user_id": "peichin",
+    "scenario_type": "complete_my_look",
+    "anchor_items": [
+      "Tan leather long coat",
+      "Black and white paisley ruffle blouse"
+    ],
+    "occasion": "autumn day in the city",
+    "weather": "crisp and cool",
+    "temperature_range": "50-60°F",
+    "style_profile": {
+      "three_words": {
+        "current": "classic",
+        "aspirational": "relaxed",
+        "feeling": "playful"
+      }
+    },
+    "description": "Test complete-my-look with multiple anchor pieces (coat + blouse)"
   }
 ]

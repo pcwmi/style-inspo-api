@@ -85,9 +85,6 @@ class StyleGenerationEngine:
         prompt_template = PromptLibrary.get_prompt(self.prompt_version)
 
         # Build context for the template
-        # #region agent log
-        import json; open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a').write(json.dumps({"sessionId":"debug-session","runId":"prompt-check","hypothesisId":"wardrobe","location":"style_engine.py:88","message":"Creating prompt context","data":{"available_items_count":len(available_items),"styling_challenges_count":len(styling_challenges),"available_items_sample":[item.get("id","no-id") for item in available_items[:3]],"styling_challenges_sample":[item.get("id","no-id") for item in styling_challenges[:3]]},"timestamp":int(__import__('time').time()*1000)})+'\n')
-        # #endregion
         context = PromptContext(
             user_profile=user_profile,
             available_items=available_items,
@@ -99,9 +96,6 @@ class StyleGenerationEngine:
 
         # Generate prompt using the template
         prompt = prompt_template.build(context)
-        # #region agent log
-        import json; wardrobe_section_start = prompt.find("## AVAILABLE WARDROBE"); wardrobe_section_end = prompt.find("---", wardrobe_section_start + 1) if wardrobe_section_start >= 0 else -1; wardrobe_section = prompt[wardrobe_section_start:wardrobe_section_end] if wardrobe_section_start >= 0 else "NOT FOUND"; open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a').write(json.dumps({"sessionId":"debug-session","runId":"prompt-check","hypothesisId":"wardrobe","location":"style_engine.py:99","message":"Prompt built","data":{"wardrobe_section_length":len(wardrobe_section),"wardrobe_section_preview":wardrobe_section[:500] if len(wardrobe_section) > 0 else "EMPTY"},"timestamp":int(__import__('time').time()*1000)})+'\n')
-        # #endregion
 
         return prompt
 
@@ -473,9 +467,6 @@ class StyleGenerationEngine:
             
             # Store raw response BEFORE parsing (for debug mode)
             raw_response = ai_response
-            # #region agent log
-            import json; open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a').write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"D","location":"style_engine.py:469","message":"raw_response captured","data":{"raw_response_length":len(raw_response) if raw_response else 0,"has_json_marker":"===JSON OUTPUT===" in (raw_response or ""),"first_100_chars":(raw_response or "")[:100]},"timestamp":int(__import__('time').time()*1000)})+'\n')
-            # #endregion
 
             # DEBUG: Log provider metadata
             self._safe_stderr_write(f"\n📊 Provider: {self.ai_provider.provider_name} | Model: {ai_result.model}\n")
@@ -652,9 +643,6 @@ class StyleGenerationEngine:
 
             # Return based on include_raw_response flag
             if include_raw_response:
-                # #region agent log
-                import json; open('/Users/peichin/Projects/style-inspo/.cursor/debug.log', 'a').write(json.dumps({"sessionId":"debug-session","runId":"run1","hypothesisId":"D","location":"style_engine.py:646","message":"returning with raw_response","data":{"raw_response_length":len(raw_response) if raw_response else 0,"combinations_count":len(combinations),"has_json_marker":"===JSON OUTPUT===" in (raw_response or "")},"timestamp":int(__import__('time').time()*1000)})+'\n')
-                # #endregion
                 return (combinations, raw_response)
             else:
                 return combinations
