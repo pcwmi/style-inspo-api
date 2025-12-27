@@ -5,6 +5,7 @@ import { Suspense, useState, useEffect } from 'react'
 import { api } from '@/lib/api'
 import Link from 'next/link'
 import { STYLE_WORD_CHIPS, STYLE_FEELING_CHIPS, getRandomChips } from '@/lib/styleWords'
+import { posthog } from '@/lib/posthog'
 
 function WordsPageContent() {
   const searchParams = useSearchParams()
@@ -64,6 +65,11 @@ function WordsPageContent() {
           aspirational: word2.trim(),
           feeling: word3.trim()
         }
+      })
+      posthog.capture('words_completed', {
+        word1: word1.trim(),
+        word2: word2.trim(),
+        word3: word3.trim()
       })
       router.push(`/upload?user=${user}`)
     } catch (error: any) {

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { api } from '@/lib/api'
+import { posthog } from '@/lib/posthog'
 
 interface OutfitCardProps {
     outfit: any
@@ -27,6 +28,9 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
                 outfit,
                 feedback: selectedFeedback
             })
+            posthog.capture('outfit_saved', {
+                outfit_id: outfit.id
+            })
             alert('Outfit saved!')
             setSaving(false)
         } catch (error) {
@@ -43,6 +47,9 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
                 user_id: user,
                 outfit,
                 reason: dislikeReason === 'Other' ? `Other: ${otherReasonText}` : dislikeReason
+            })
+            posthog.capture('outfit_disliked', {
+                outfit_id: outfit.id
             })
             alert('Feedback recorded')
             setDisliking(false)

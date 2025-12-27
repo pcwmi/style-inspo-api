@@ -5,6 +5,7 @@ import { Suspense, useState, useRef, useEffect } from 'react'
 import { api } from '@/lib/api'
 import Link from 'next/link'
 import PhotoGuidelines from '@/components/PhotoGuidelines'
+import { posthog } from '@/lib/posthog'
 
 // Try to import image compression (optional)
 let imageCompression: any = null
@@ -95,6 +96,9 @@ function UploadPageContent() {
   // Auto-route to dashboard when 10+ photos uploaded
   useEffect(() => {
     if (!loadingProfile && wardrobeCount >= 10 && hasProfile) {
+      posthog.capture('upload_completed', {
+        item_count: wardrobeCount
+      })
       router.push(`/?user=${user}`)
     }
   }, [wardrobeCount, hasProfile, loadingProfile, user, router])

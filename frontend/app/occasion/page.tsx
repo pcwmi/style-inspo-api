@@ -5,6 +5,7 @@ import { Suspense } from 'react'
 import { useState } from 'react'
 import { api } from '@/lib/api'
 import Link from 'next/link'
+import { posthog } from '@/lib/posthog'
 
 const OCCASIONS = [
   'School drop-off',
@@ -37,6 +38,11 @@ function OccasionPageContent() {
         mode: 'occasion',
         mock: user === 'test',
         include_reasoning: debugMode
+      })
+
+      posthog.capture('outfit_generated', {
+        occasions: [...selectedOccasions, customOccasion].filter(Boolean),
+        mode: 'occasion'
       })
 
       // Redirect with debug param if enabled
