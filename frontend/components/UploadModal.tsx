@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react'
 import { api } from '@/lib/api'
 import imageCompression from 'browser-image-compression'
 // @ts-ignore
@@ -11,6 +11,10 @@ interface UploadModalProps {
     user: string
 }
 
+export interface UploadModalRef {
+    triggerFileInput: () => void
+}
+
 interface FileStatus {
     file: File
     status: 'pending' | 'compressing' | 'uploading' | 'complete' | 'error'
@@ -21,29 +25,26 @@ interface FileStatus {
     jobId?: string
 }
 
-export default function UploadModal({ isOpen, onClose, onUploadComplete, user }: UploadModalProps) {
+const UploadModal = forwardRef<UploadModalRef, UploadModalProps>(({ isOpen, onClose, onUploadComplete, user }, ref) => {
     const [uploads, setUploads] = useState<FileStatus[]>([])
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [isDragOver, setIsDragOver] = useState(false)
+    const [isMobile, setIsMobile] = useState(false)
 
-    // Auto-trigger file input on mobile when modal opens
+    // Detect mobile on mount
     useEffect(() => {
-        if (isOpen && uploads.length === 0) {
-            // Detect if on mobile/touch device
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
-                           ('ontouchstart' in window) ||
-                           (navigator.maxTouchPoints > 0)
+        const mobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+                      ('ontouchstart' in window) ||
+                      (navigator.maxTouchPoints > 0)
+        setIsMobile(mobile)
+    }, [])
 
-            if (isMobile) {
-                // Small delay to ensure modal is rendered
-                setTimeout(() => {
-                    fileInputRef.current?.click()
-                }, 100)
-            }
+    // Expose triggerFileInput method to parent
+    useImperativeHandle(ref, () => ({
+        triggerFileInput: () => {
+            fileInputRef.current?.click()
         }
-    }, [isOpen, uploads.length])
-
-    if (!isOpen) return null
+    }))
 
     const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
@@ -221,7 +222,7 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete, user }:
 
                 {uploads.length === 0 ? (
                     <div
-                        className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${isDragOver ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
+                        className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer ${isDragOver ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400 active:bg-gray-50'
                             }`}
                         onDragOver={(e) => { e.preventDefault(); setIsDragOver(true) }}
                         onDragLeave={() => setIsDragOver(false)}
@@ -235,9 +236,10 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete, user }:
                             multiple
                             accept="image/*"
                             onChange={handleFileSelect}
+                            capture="environment"
                         />
                         <div className="text-4xl mb-4">📷</div>
-                        <p className="text-gray-600 font-medium mb-2">Click to upload or drag photos here</p>
+                        <p className="text-gray-600 font-medium mb-2">{isMobile ? 'Tap to upload photos' : 'Click to upload or drag photos here'}</p>
                         <p className="text-sm text-gray-400">JPG, PNG up to 10MB</p>
                     </div>
                 ) : (
@@ -282,4 +284,8 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete, user }:
             </div>
         </div>
     )
-}
+})
+
+UploadModal.displayName = 'UploadModal'
+
+export default UploadModal

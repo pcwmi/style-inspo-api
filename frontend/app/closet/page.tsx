@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { api } from '@/lib/api'
 import { useWardrobe, useConsiderBuying } from '@/lib/queries'
-import UploadModal from '@/components/UploadModal'
+import UploadModal, { UploadModalRef } from '@/components/UploadModal'
 import PhotoGuidelines from '@/components/PhotoGuidelines'
 
 const CATEGORIES = ['All', 'Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Shoes', 'Accessories', 'Considering']
@@ -27,6 +27,7 @@ function ClosetContent() {
     const [analyzingCount, setAnalyzingCount] = useState(0)
     const [showDeleteAllModal, setShowDeleteAllModal] = useState(false)
     const [deletingAll, setDeletingAll] = useState(false)
+    const uploadModalRef = useRef<UploadModalRef>(null)
 
     // Sync activeCategory with URL param on mount and when param changes
     useEffect(() => {
@@ -81,14 +82,42 @@ function ClosetContent() {
         if (!hasSeenGuidelines) {
             setShowGuidelines(true)
         } else {
-            setShowUploadModal(true)
+            // Check if mobile
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+                           ('ontouchstart' in window) ||
+                           (navigator.maxTouchPoints > 0)
+
+            if (isMobile) {
+                // On mobile, trigger file input directly (within user gesture)
+                setShowUploadModal(true)
+                // Small delay to ensure modal is rendered
+                setTimeout(() => {
+                    uploadModalRef.current?.triggerFileInput()
+                }, 50)
+            } else {
+                // On desktop, show modal normally
+                setShowUploadModal(true)
+            }
         }
     }
 
     const handleGuidelinesContinue = () => {
         localStorage.setItem(`photo_guidelines_seen_${user}`, 'true')
         setShowGuidelines(false)
+
+        // Check if mobile
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+                       ('ontouchstart' in window) ||
+                       (navigator.maxTouchPoints > 0)
+
         setShowUploadModal(true)
+
+        if (isMobile) {
+            // On mobile, trigger file input directly
+            setTimeout(() => {
+                uploadModalRef.current?.triggerFileInput()
+            }, 50)
+        }
     }
 
     const handleUploadComplete = (count: number, jobIds: string[]) => {
@@ -323,6 +352,7 @@ function ClosetContent() {
             />
 
             <UploadModal
+                ref={uploadModalRef}
                 isOpen={showUploadModal}
                 onClose={() => setShowUploadModal(false)}
                 onUploadComplete={handleUploadComplete}
