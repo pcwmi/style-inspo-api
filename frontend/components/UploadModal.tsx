@@ -43,6 +43,18 @@ const UploadModal = forwardRef<UploadModalRef, UploadModalProps>(({ isOpen, onCl
     useImperativeHandle(ref, () => ({
         triggerFileInput: () => {
             fileInputRef.current?.click()
+            // On mobile, show modal after file input is triggered so user sees upload progress
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+                           ('ontouchstart' in window) ||
+                           (navigator.maxTouchPoints > 0)
+            if (isMobile) {
+                // Wait a bit for file picker to open, then show modal for when files are selected
+                setTimeout(() => {
+                    if (!isOpen) {
+                        // File picker is open, we'll show modal when they select files
+                    }
+                }, 100)
+            }
         }
     }))
 
@@ -207,8 +219,25 @@ const UploadModal = forwardRef<UploadModalRef, UploadModalProps>(({ isOpen, onCl
         return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
     }
 
+    // Always render the hidden file input (so ref works), but only show modal UI when needed
+    const shouldShowModal = isOpen || uploads.length > 0
+
     return (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <>
+            {/* Always render hidden file input for ref access */}
+            <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                multiple
+                accept="image/*"
+                onChange={handleFileSelect}
+                capture="environment"
+            />
+
+            {/* Only show modal UI when open or processing uploads */}
+            {shouldShowModal && (
+                <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl animate-in fade-in zoom-in duration-200">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-serif font-semibold">Upload Photos</h2>
@@ -229,15 +258,6 @@ const UploadModal = forwardRef<UploadModalRef, UploadModalProps>(({ isOpen, onCl
                         onDrop={handleDrop}
                         onClick={() => fileInputRef.current?.click()}
                     >
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            className="hidden"
-                            multiple
-                            accept="image/*"
-                            onChange={handleFileSelect}
-                            capture="environment"
-                        />
                         <div className="text-4xl mb-4">📷</div>
                         <p className="text-gray-600 font-medium mb-2">{isMobile ? 'Tap to upload photos' : 'Click to upload or drag photos here'}</p>
                         <p className="text-sm text-gray-400">JPG, PNG up to 10MB</p>
@@ -283,6 +303,8 @@ const UploadModal = forwardRef<UploadModalRef, UploadModalProps>(({ isOpen, onCl
                 )}
             </div>
         </div>
+            )}
+        </>
     )
 })
 

@@ -88,12 +88,8 @@ function ClosetContent() {
                            (navigator.maxTouchPoints > 0)
 
             if (isMobile) {
-                // On mobile, trigger file input directly (within user gesture)
-                setShowUploadModal(true)
-                // Small delay to ensure modal is rendered
-                setTimeout(() => {
-                    uploadModalRef.current?.triggerFileInput()
-                }, 50)
+                // On mobile, trigger file input directly WITHOUT showing modal
+                uploadModalRef.current?.triggerFileInput()
             } else {
                 // On desktop, show modal normally
                 setShowUploadModal(true)
@@ -110,13 +106,11 @@ function ClosetContent() {
                        ('ontouchstart' in window) ||
                        (navigator.maxTouchPoints > 0)
 
-        setShowUploadModal(true)
-
         if (isMobile) {
-            // On mobile, trigger file input directly
-            setTimeout(() => {
-                uploadModalRef.current?.triggerFileInput()
-            }, 50)
+            // On mobile, trigger file input directly WITHOUT showing modal
+            uploadModalRef.current?.triggerFileInput()
+        } else {
+            setShowUploadModal(true)
         }
     }
 
