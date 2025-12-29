@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { api } from '@/lib/api'
 import imageCompression from 'browser-image-compression'
 // @ts-ignore
@@ -25,6 +25,23 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete, user }:
     const [uploads, setUploads] = useState<FileStatus[]>([])
     const fileInputRef = useRef<HTMLInputElement>(null)
     const [isDragOver, setIsDragOver] = useState(false)
+
+    // Auto-trigger file input on mobile when modal opens
+    useEffect(() => {
+        if (isOpen && uploads.length === 0) {
+            // Detect if on mobile/touch device
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+                           ('ontouchstart' in window) ||
+                           (navigator.maxTouchPoints > 0)
+
+            if (isMobile) {
+                // Small delay to ensure modal is rendered
+                setTimeout(() => {
+                    fileInputRef.current?.click()
+                }, 100)
+            }
+        }
+    }, [isOpen, uploads.length])
 
     if (!isOpen) return null
 
