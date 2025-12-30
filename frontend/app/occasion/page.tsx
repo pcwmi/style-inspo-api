@@ -31,23 +31,20 @@ function OccasionPageContent() {
   const handleGenerate = async () => {
     setGenerating(true)
     try {
-      const { job_id } = await api.generateOutfits({
-        user_id: user,
-        occasions: [...selectedOccasions, customOccasion].filter(Boolean),
-        temperature_range: undefined,
-        mode: 'occasion',
-        mock: user === 'test',
-        include_reasoning: debugMode
-      })
-
       posthog.capture('outfit_generated', {
         occasions: [...selectedOccasions, customOccasion].filter(Boolean),
         mode: 'occasion'
       })
 
-      // Redirect with debug param if enabled
-      const debugParam = debugMode ? '&debug=true' : ''
-      router.push(`/reveal?user=${user}&job=${job_id}${debugParam}`)
+      // Redirect with streaming params
+      const params = new URLSearchParams({
+        user: user,
+        mode: 'occasion',
+        occasions: [...selectedOccasions, customOccasion].filter(Boolean).join(','),
+        stream: 'true'
+      })
+      if (debugMode) params.append('debug', 'true')
+      router.push(`/reveal?${params.toString()}`)
     } catch (error) {
       console.error('Error generating outfits:', error)
       alert('Failed to generate outfits. Please try again.')

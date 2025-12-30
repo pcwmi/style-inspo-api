@@ -16,6 +16,12 @@ function RevealPageContent() {
   const user = searchParams.get('user') || 'default'
   const jobId = searchParams.get('job')
   const debugMode = searchParams.get('debug') === 'true'
+  const streamMode = searchParams.get('stream') === 'true'
+  const mode = searchParams.get('mode') || 'occasion'
+  const occasions = searchParams.get('occasions') || ''
+  const anchorItems = searchParams.get('anchor_items') || ''
+  const weatherCondition = searchParams.get('weather_condition') || ''
+  const temperatureRange = searchParams.get('temperature_range') || ''
 
   const [outfits, setOutfits] = useState<any[]>([])
   const [reasoning, setReasoning] = useState<string | null>(null)
@@ -27,172 +33,230 @@ function RevealPageContent() {
   const [currentOutfit, setCurrentOutfit] = useState<number>(0)
 
   useEffect(() => {
-    if (!jobId) {
-      setStatus('error')
-      setError('No job ID provided')
-      return
-    }
-
-    // TypeScript now knows jobId is string after the check above
-    const validJobId = jobId
-
     let eventSource: EventSource | null = null
     let pollInterval: NodeJS.Timeout | null = null
 
-    const startSSEStreaming = () => {
+    if (streamMode) {
+      // NEW: Direct streaming mode
+      const params = new URLSearchParams({
+        user_id: user,
+        mode: mode,
+      })
+      if (occasions) params.append('occasions', occasions)
+      if (anchorItems) params.append('anchor_items', anchorItems)
+      if (weatherCondition) params.append('weather_condition', weatherCondition)
+      if (temperatureRange) params.append('temperature_range', temperatureRange)
+      if (debugMode) params.append('include_reasoning', 'true')
+
       try {
-        eventSource = new EventSource(`${API_URL}/api/jobs/${validJobId}/stream`)
-
-        eventSource.addEventListener('progress', (e) => {
-          const data = JSON.parse(e.data)
-          setProgress(data.progress)
-          setCurrentOutfit(data.current_outfit || 0)
-
-          // Update status message
-          if (data.message) {
-            setStreamedContent(data.message)
-          }
-        })
+        eventSource = new EventSource(`${API_URL}/api/outfits/generate/stream?${params.toString()}`)
 
         eventSource.addEventListener('outfit', (e) => {
           const data = JSON.parse(e.data)
-          console.log(`Outfit ${data.outfit_number} being generated...`)
+          console.log(`Outfit ${data.outfit_number} received`)
+          // APPEND outfit to array (not replace)
+          setOutfits(prev => [...prev, data.outfit])
           setCurrentOutfit(data.outfit_number)
+          setStreamedContent(`Outfit ${data.outfit_number} ready!`)
         })
 
         eventSource.addEventListener('complete', (e) => {
-          const result = JSON.parse(e.data)
-          const outfitsArray = result.outfits || []
-          console.log('SSE complete, outfits:', outfitsArray.length)
-          setOutfits(outfitsArray)
-
-          // Extract reasoning if debug mode
-          if (debugMode && result.reasoning) {
-            console.log('Setting reasoning from SSE, length:', result.reasoning.length)
-            setReasoning(result.reasoning)
+          const data = JSON.parse(e.data)
+          console.log('Streaming complete, total outfits:', data.total)
+          
+          // Extract reasoning if debug mode and available
+          if (debugMode && data.reasoning) {
+            setReasoning(data.reasoning)
           }
-
+          
           setStatus('complete')
           eventSource?.close()
         })
 
         eventSource.addEventListener('error', (e: Event) => {
-          console.warn('SSE error, falling back to polling', e)
+          console.error('Streaming error', e)
           eventSource?.close()
-
-          // Fall back to polling
-          startPolling()
+          setStatus('error')
+          setError('Streaming failed. Please try again.')
         })
 
       } catch (err) {
-        console.warn('SSE not supported, using polling', err)
-        startPolling()
+        console.error('SSE not supported', err)
+        setStatus('error')
+        setError('Streaming not supported in this browser.')
       }
-    }
+    } else if (jobId) {
+      // EXISTING: Job-based polling mode (keep existing code)
+      const validJobId = jobId
 
-    const startPolling = () => {
-      // Existing polling logic as fallback
-      let pollCounter = 0
-      const MAX_POLLS = 90
-
-      const pollJob = async () => {
-        pollCounter++
-        setPollCount(pollCounter)
-
-        if (pollCounter > MAX_POLLS) {
-          setStatus('error')
-          setError('Generation taking longer than expected...')
-          return
-        }
-
+      const startSSEStreaming = () => {
         try {
-          const result = await api.getJobStatus(validJobId)
+          eventSource = new EventSource(`${API_URL}/api/jobs/${validJobId}/stream`)
 
-          // Update progress if available
-          if (result.progress !== undefined) {
-            setProgress(result.progress)
-          }
+          eventSource.addEventListener('progress', (e) => {
+            const data = JSON.parse(e.data)
+            setProgress(data.progress)
+            setCurrentOutfit(data.current_outfit || 0)
 
-          if (result.status === 'complete') {
-            const outfitsArray = result.result?.outfits || []
-            console.log('Polling complete, outfits:', outfitsArray.length)
+            // Update status message
+            if (data.message) {
+              setStreamedContent(data.message)
+            }
+          })
+
+          eventSource.addEventListener('outfit', (e) => {
+            const data = JSON.parse(e.data)
+            console.log(`Outfit ${data.outfit_number} being generated...`)
+            setCurrentOutfit(data.outfit_number)
+          })
+
+          eventSource.addEventListener('complete', (e) => {
+            const result = JSON.parse(e.data)
+            const outfitsArray = result.outfits || []
+            console.log('SSE complete, outfits:', outfitsArray.length)
             setOutfits(outfitsArray)
 
-            if (debugMode && result.result?.reasoning) {
-              console.log('Setting reasoning from polling, length:', result.result.reasoning.length)
-              setReasoning(result.result.reasoning)
+            // Extract reasoning if debug mode
+            if (debugMode && result.reasoning) {
+              console.log('Setting reasoning from SSE, length:', result.reasoning.length)
+              setReasoning(result.reasoning)
             }
 
             setStatus('complete')
-            if (pollInterval) clearInterval(pollInterval)
-          } else if (result.status === 'failed') {
-            setStatus('error')
-            const errorMsg = result.error || 'Generation failed'
-            setError(errorMsg.length > 500 ? errorMsg.substring(0, 500) + '...' : errorMsg)
-            if (pollInterval) clearInterval(pollInterval)
-          }
-        } catch (err: any) {
-          // Handle 404 (job not found) specially
-          if (err.message?.includes('404') || err.message?.includes('not found')) {
-            setStatus('error')
-            setError('Job not found. The job may have expired or the worker may not be running. Please try generating outfits again.')
-          } else {
-            setStatus('error')
-            setError(err.message || 'Failed to check job status. Please check your connection and try again.')
-          }
-          if (pollInterval) clearInterval(pollInterval)
+            eventSource?.close()
+          })
+
+          eventSource.addEventListener('error', (e: Event) => {
+            console.warn('SSE error, falling back to polling', e)
+            eventSource?.close()
+
+            // Fall back to polling
+            startPolling()
+          })
+
+        } catch (err) {
+          console.warn('SSE not supported, using polling', err)
+          startPolling()
         }
       }
 
-      pollJob()
-      pollInterval = setInterval(pollJob, 2000)
-    }
+      const startPolling = () => {
+        // Existing polling logic as fallback
+        let pollCounter = 0
+        const MAX_POLLS = 90
 
-    // Try SSE first
-    startSSEStreaming()
+        const pollJob = async () => {
+          pollCounter++
+          setPollCount(pollCounter)
+
+          if (pollCounter > MAX_POLLS) {
+            setStatus('error')
+            setError('Generation taking longer than expected...')
+            return
+          }
+
+          try {
+            const result = await api.getJobStatus(validJobId)
+
+            // Update progress if available
+            if (result.progress !== undefined) {
+              setProgress(result.progress)
+            }
+
+            if (result.status === 'complete') {
+              const outfitsArray = result.result?.outfits || []
+              console.log('Polling complete, outfits:', outfitsArray.length)
+              setOutfits(outfitsArray)
+
+              if (debugMode && result.result?.reasoning) {
+                console.log('Setting reasoning from polling, length:', result.result.reasoning.length)
+                setReasoning(result.result.reasoning)
+              }
+
+              setStatus('complete')
+              if (pollInterval) clearInterval(pollInterval)
+            } else if (result.status === 'failed') {
+              setStatus('error')
+              const errorMsg = result.error || 'Generation failed'
+              setError(errorMsg.length > 500 ? errorMsg.substring(0, 500) + '...' : errorMsg)
+              if (pollInterval) clearInterval(pollInterval)
+            }
+          } catch (err: any) {
+            // Handle 404 (job not found) specially
+            if (err.message?.includes('404') || err.message?.includes('not found')) {
+              setStatus('error')
+              setError('Job not found. The job may have expired or the worker may not be running. Please try generating outfits again.')
+            } else {
+              setStatus('error')
+              setError(err.message || 'Failed to check job status. Please check your connection and try again.')
+            }
+            if (pollInterval) clearInterval(pollInterval)
+          }
+        }
+
+        pollJob()
+        pollInterval = setInterval(pollJob, 2000)
+      }
+
+      // Try SSE first
+      startSSEStreaming()
+    } else {
+      setStatus('error')
+      setError('No job ID or streaming params provided')
+    }
 
     return () => {
       eventSource?.close()
       if (pollInterval) clearInterval(pollInterval)
     }
-  }, [jobId, debugMode])
+  }, [streamMode, jobId, mode, occasions, anchorItems, weatherCondition, temperatureRange, user, debugMode])
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-bone flex items-center justify-center page-container">
-        <div className="text-center px-4 max-w-sm">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-sand border-t-terracotta mx-auto mb-4"></div>
-
-          {/* Show current progress message */}
-          <p className="text-ink text-base font-medium mb-2">
-            {streamedContent || 'Creating your outfits...'}
-          </p>
-
-          {/* Show which outfit is being created */}
-          {currentOutfit > 0 && (
-            <p className="text-muted text-sm mb-2">
-              Outfit {currentOutfit} of 3
-            </p>
+      <div className="min-h-screen bg-bone page-container">
+        <div className="max-w-2xl mx-auto px-4 py-4 md:py-8">
+          {/* Show any outfits we've received so far */}
+          {outfits.length > 0 && (
+            <>
+              <h1 className="text-2xl md:text-3xl font-bold mb-5 md:mb-8">
+                Here's what could work for your day
+              </h1>
+              {outfits.map((outfit, idx) => (
+                <OutfitCard
+                  key={idx}
+                  outfit={outfit}
+                  user={user}
+                  index={idx + 1}
+                />
+              ))}
+            </>
           )}
 
-          {/* Progress bar */}
-          {progress > 0 && (
-            <div className="mt-4">
-              <div className="w-full bg-sand rounded-full h-2 mb-2">
-                <div
-                  className="bg-terracotta h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%` }}
-                ></div>
+          {/* Show loading indicator for remaining outfits */}
+          <div className="text-center px-4 py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-4 border-sand border-t-terracotta mx-auto mb-4"></div>
+            <p className="text-ink text-base font-medium">
+              {outfits.length === 0
+                ? 'Creating your first outfit...'
+                : `Creating outfit ${outfits.length + 1} of 3...`}
+            </p>
+            {!streamMode && progress > 0 && (
+              <div className="mt-4">
+                <div className="w-full bg-sand rounded-full h-2 mb-2">
+                  <div
+                    className="bg-terracotta h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
+                <p className="text-xs text-muted">{progress}% complete</p>
               </div>
-              <p className="text-xs text-muted">{progress}% complete</p>
-            </div>
-          )}
-
-          {pollCount > 30 && (
-            <p className="text-xs text-muted mt-2">
-              Still processing... ({Math.floor(pollCount * 2)}s elapsed)
-            </p>
-          )}
+            )}
+            {!streamMode && pollCount > 30 && (
+              <p className="text-xs text-muted mt-2">
+                Still processing... ({Math.floor(pollCount * 2)}s elapsed)
+              </p>
+            )}
+          </div>
         </div>
       </div>
     )

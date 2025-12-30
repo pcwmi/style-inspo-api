@@ -219,35 +219,19 @@ function ConsiderBuyingContent() {
         // #endregion
         
         try {
-            // Enqueue job directly (same pattern as complete flow)
-            const formData = new FormData()
-            formData.append('item_id', itemId)
-            formData.append('use_existing_similar', 'false')
-            formData.append('user_id', user)
-            formData.append('include_reasoning', debugMode.toString())
-
-            const res = await fetch(`${API_URL}/api/consider-buying/generate-outfits`, {
-                method: 'POST',
-                body: formData
+            // Redirect with streaming params (consider-buying item is the anchor)
+            const params = new URLSearchParams({
+                user: user,
+                mode: 'complete',
+                anchor_items: itemId,  // The consider-buying item ID
+                stream: 'true'
             })
-
-            if (!res.ok) {
-                throw new Error('Failed to generate outfits')
-            }
-
-            const data = await res.json()
-            const jobId = data.job_id
-
-            if (!jobId) {
-                throw new Error('No job_id returned from API')
-            }
-
-            // Redirect to reveal page with job_id and debug param (same as complete flow)
-            const debugParam = debugMode ? '&debug=true' : ''
+            if (debugMode) params.append('debug', 'true')
+            
             // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/5d81dfeb-73bf-4177-b032-99de96bc199e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'consider-buying/page.tsx:243',message:'Redirecting to reveal',data:{debugMode,debugParam,jobId,redirectUrl:`/reveal?user=${user}&job=${jobId}${debugParam}`},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+            fetch('http://127.0.0.1:7242/ingest/5d81dfeb-73bf-4177-b032-99de96bc199e',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'consider-buying/page.tsx:243',message:'Redirecting to reveal with streaming',data:{debugMode,params:params.toString(),redirectUrl:`/reveal?${params.toString()}`},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
             // #endregion
-            router.push(`/reveal?user=${user}&job=${jobId}${debugParam}`)
+            router.push(`/reveal?${params.toString()}`)
         } catch (err: any) {
             console.error('Error generating outfits:', err)
             setError(err.message || 'Failed to generate outfits. Please try again.')

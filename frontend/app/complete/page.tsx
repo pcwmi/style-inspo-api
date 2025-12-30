@@ -46,14 +46,6 @@ function CompletePageContent() {
     
     setGenerating(true)
     try {
-      const { job_id } = await api.generateOutfits({
-        user_id: user,
-        anchor_items: selectedItems,
-        temperature_range: undefined,
-        mode: 'complete',
-        include_reasoning: debugMode
-      })
-
       // Track outfit generation with anchor items
       const selectedItemNames = allItems
         .filter((item: any) => selectedItems.includes(item.id))
@@ -66,9 +58,15 @@ function CompletePageContent() {
         anchor_count: selectedItems.length
       })
 
-      // Redirect with debug param if enabled
-      const debugParam = debugMode ? '&debug=true' : ''
-      router.push(`/reveal?user=${user}&job=${job_id}${debugParam}`)
+      // Redirect with streaming params
+      const params = new URLSearchParams({
+        user: user,
+        mode: 'complete',
+        anchor_items: selectedItems.join(','),
+        stream: 'true'
+      })
+      if (debugMode) params.append('debug', 'true')
+      router.push(`/reveal?${params.toString()}`)
     } catch (error) {
       console.error('Error generating outfits:', error)
       alert('Failed to generate outfits. Please try again.')
