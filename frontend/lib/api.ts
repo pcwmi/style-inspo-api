@@ -62,14 +62,6 @@ export const api = {
     return res.json()
   },
 
-  async fixOrientation(userId: string) {
-    const res = await fetch(`${API_URL}/api/wardrobe/${userId}/fix-orientation`, {
-      method: 'POST'
-    })
-    if (!res.ok) throw new Error('Failed to fix orientation')
-    return res.json()
-  },
-
   async removeBackground(file: File, userId: string) {
     const formData = new FormData()
     formData.append('image_file', file)

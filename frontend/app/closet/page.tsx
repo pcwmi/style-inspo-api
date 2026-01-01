@@ -29,7 +29,6 @@ function ClosetContent() {
     const [analyzingCount, setAnalyzingCount] = useState(0)
     const [showDeleteAllModal, setShowDeleteAllModal] = useState(false)
     const [deletingAll, setDeletingAll] = useState(false)
-    const [fixingOrientation, setFixingOrientation] = useState(false)
 
     // Sync activeCategory with URL param on mount and when param changes
     useEffect(() => {
@@ -128,20 +127,6 @@ function ClosetContent() {
         checkJobs()
     }
 
-    const handleFixOrientation = async () => {
-        setFixingOrientation(true)
-        try {
-            const response = await api.fixOrientation(user)
-            alert(`Fixed ${response.fixed_count} images out of ${response.total_items}`)
-            await refetchWardrobe()
-        } catch (e) {
-            console.error('Error fixing orientation:', e)
-            alert('Failed to fix orientation')
-        } finally {
-            setFixingOrientation(false)
-        }
-    }
-
     const CATEGORY_ALIASES: Record<string, string[]> = {
         'Shoes': ['footwear'],
     }
@@ -225,19 +210,6 @@ function ClosetContent() {
                         className="w-full py-2 text-red-600 font-medium border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50 text-sm"
                     >
                         {deletingAll ? 'Deleting...' : `Delete All (${considerBuyingData.items.length} items)`}
-                    </button>
-                </div>
-            )}
-
-            {/* Fix Orientation Button (all users, all categories) */}
-            {activeCategory !== 'Considering' && wardrobeData?.items && wardrobeData.items.length > 0 && (
-                <div className="px-4 py-2 border-b border-gray-100">
-                    <button
-                        onClick={handleFixOrientation}
-                        disabled={fixingOrientation}
-                        className="w-full py-2 text-blue-600 font-medium border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors disabled:opacity-50 text-sm"
-                    >
-                        {fixingOrientation ? 'Fixing orientation...' : 'Fix Image Orientation'}
                     </button>
                 </div>
             )}
