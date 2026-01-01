@@ -318,7 +318,8 @@ class WardrobeManager:
             # Rotate image
             from io import BytesIO
             img = Image.open(BytesIO(image_data))
-            
+            img = ImageOps.exif_transpose(img)  # Apply EXIF orientation before rotating
+
             # Rotate clockwise (negative angle for PIL rotate)
             # PIL rotate is counter-clockwise, so -90 is 90 degrees clockwise
             rotated_img = img.rotate(-degrees, expand=True)

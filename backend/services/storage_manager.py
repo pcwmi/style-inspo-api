@@ -114,8 +114,12 @@ class StorageManager:
         
         # Resize if too large
         image.thumbnail((800, 800), Image.Resampling.LANCZOS)
+
+        # Strip EXIF data to prevent browsers from re-applying orientation
+        if 'exif' in image.info:
+            del image.info['exif']
         image.save(file_path, quality=85, optimize=True)
-        
+
         return file_path
     
     def _save_to_s3(self, image: Image.Image, filename: str, subfolder: Optional[str] = None) -> str:
@@ -128,7 +132,11 @@ class StorageManager:
         
         # Resize if too large
         image.thumbnail((800, 800), Image.Resampling.LANCZOS)
-        
+
+        # Strip EXIF data to prevent browsers from re-applying orientation
+        if 'exif' in image.info:
+            del image.info['exif']
+
         # Convert to bytes
         buffer = BytesIO()
         image.save(buffer, format='JPEG', quality=85, optimize=True)
