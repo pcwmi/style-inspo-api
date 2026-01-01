@@ -6,7 +6,8 @@ import { useState } from 'react'
 import { useWardrobe, useConsiderBuying } from '@/lib/queries'
 import { posthog } from '@/lib/posthog'
 import Link from 'next/link'
-import Image from 'next/image'
+import CategoryTabs from '@/components/CategoryTabs'
+import WardrobeGrid from '@/components/WardrobeGrid'
 
 function CompletePageContent() {
   const searchParams = useSearchParams()
@@ -139,76 +140,30 @@ function CompletePageContent() {
         </p>
 
         {/* Category tabs */}
-        <div className="flex gap-2 overflow-x-auto pb-3 mb-4 -mx-4 px-4 scrollbar-hide">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition min-h-[44px] ${
-                activeCategory === cat
-                  ? 'bg-terracotta text-white'
-                  : 'bg-sand text-ink hover:bg-terracotta/10'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+        <CategoryTabs
+          categories={categories}
+          activeCategory={activeCategory}
+          onCategoryChange={setActiveCategory}
+        />
 
         {/* Item selection grid */}
-        {filteredItems.length === 0 ? (
-          <div className="text-center py-12 text-muted">
-            <p>No items in {activeCategory}</p>
-          </div>
-        ) : (
-        <div className="grid grid-cols-3 md:grid-cols-4 gap-3 md:gap-4 mb-5 md:mb-6">
-          {filteredItems.map((item: any) => {
-            const isSelected = selectedItems.includes(item.id)
-            const imagePath = item.system_metadata?.image_path || item.image_path
-            const isConsidering = item.id.startsWith('consider_')
-
-            return (
-              <button
-                key={item.id}
-                onClick={() => toggleItem(item.id)}
-                className={`border-2 rounded-lg p-2.5 md:p-3 text-left transition min-h-[44px] ${
-                  isSelected
-                    ? 'border-terracotta bg-terracotta text-white'
-                    : 'border-[rgba(26,22,20,0.12)] bg-white hover:border-terracotta/50'
-                }`}
-              >
-            {imagePath && (
-              <div className="relative w-full aspect-square mb-2 rounded overflow-hidden bg-sand">
-                {/* Considering badge */}
-                {isConsidering && (
-                  <div className="absolute top-2 right-2 bg-terracotta backdrop-blur-sm px-2 py-0.5 rounded-full z-10">
-                    <span className="text-xs font-medium text-white">Considering</span>
-                  </div>
-                )}
-                {imagePath.startsWith('http') ? (
-                  <img
-                    src={imagePath}
-                    alt={item.styling_details?.name || 'Item'}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <Image
-                    src={`/${imagePath}`}
-                    alt={item.styling_details?.name || 'Item'}
-                    fill
-                    className="object-cover"
-                  />
-                )}
-              </div>
-            )}
-                <p className="text-sm font-medium truncate leading-tight">
-                  {item.styling_details?.name || 'Unnamed Item'}
-                </p>
-              </button>
-            )
-          })}
+        <div className="mt-4">
+          {filteredItems.length === 0 ? (
+            <div className="text-center py-12 text-muted">
+              <p>No items in {activeCategory}</p>
+            </div>
+          ) : (
+            <div className="mb-5 md:mb-6">
+              <WardrobeGrid
+                items={filteredItems}
+                user={user}
+                selectionMode={true}
+                selectedItems={selectedItems}
+                onItemSelect={toggleItem}
+              />
+            </div>
+          )}
         </div>
-        )}
 
         {/* Generate button */}
         <button
