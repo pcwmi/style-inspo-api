@@ -5,6 +5,7 @@ from .base import PromptTemplate
 from .baseline_v1 import BaselinePromptV1
 from .fit_constraints_v2 import FitConstraintsPromptV2
 from .chain_of_thought_v1 import ChainOfThoughtPromptV1
+from .chain_of_thought_streaming_v1 import ChainOfThoughtStreamingV1
 
 
 class PromptLibrary:
@@ -20,6 +21,7 @@ class PromptLibrary:
         "baseline_v1": BaselinePromptV1,
         "fit_constraints_v2": FitConstraintsPromptV2,
         "chain_of_thought_v1": ChainOfThoughtPromptV1,
+        "chain_of_thought_streaming_v1": ChainOfThoughtStreamingV1,
     }
 
     @classmethod
