@@ -320,6 +320,11 @@ IMPORTANT: Return ONLY valid JSON. Start with [ and end with ]. Use exact item n
             if fabric_weight:
                 parts.append(f"weight: {fabric_weight}")
 
+            # Add design_details (patterns, embellishments) - critical for pattern clash prevention
+            design_details = _first_non_empty(details.get("design_details"), item.get("design_details"))
+            if design_details and design_details.lower() not in ['none', 'solid/plain', 'n/a', 'not specified']:
+                parts.append(f"design: {design_details}")
+
             key_fields = [
                 ("style", details.get("style") or item.get("style")),
                 ("fit", details.get("fit") or item.get("fit")),

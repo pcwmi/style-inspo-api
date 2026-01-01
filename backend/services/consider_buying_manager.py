@@ -225,7 +225,8 @@ class ConsiderBuyingManager:
                 "fit": analysis_data.get('fit', 'Unknown'),
                 "brand": analysis_data.get('brand'),
                 "trend_status": analysis_data.get('trend_status', 'Unknown'),
-                "styling_notes": analysis_data.get('styling_notes', '')
+                "styling_notes": analysis_data.get('styling_notes', ''),
+                "design_details": analysis_data.get('design_details', 'solid/plain')
             },
             "structured_attrs": {
                 "subcategory": analysis_data.get('sub_category', 'Unknown'),
@@ -342,7 +343,7 @@ class ConsiderBuyingManager:
                     allowed_fields = [
                         "name", "category", "sub_category", "colors",
                         "cut", "texture", "style", "fit", "brand",
-                        "trend_status", "styling_notes"
+                        "trend_status", "styling_notes", "design_details"
                     ]
 
                     for field in allowed_fields:

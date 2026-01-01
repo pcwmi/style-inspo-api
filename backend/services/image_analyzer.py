@@ -169,7 +169,7 @@ class GPTVisionAnalyzer(ImageAnalyzer):
               "colors": ["primary color", "secondary color"] (array),
               "fabric": "Primary fabric (cotton, wool, cashmere, leather, suede, silk, linen, denim, polyester, blend)",
               "cut": "Design/silhouette (e.g. 'cropped', 'A-line', 'wide-leg', 'boyfriend style')",
-              "design_details": "Distinctive features: cutouts, slits, keyholes, hardware, embellishments, straps, ties; 'none' if none",
+              "design_details": "Distinctive features: patterns (check, plaid, stripes, houndstooth, floral, animal print, geometric, abstract), cutouts, slits, keyholes, hardware, embellishments, straps, ties; 'solid/plain' if no pattern or distinctive features",
               "texture": "Materials/fabric feel (e.g. 'smooth leather', 'chunky knit', 'distressed denim')",
               "style": "Aesthetic/vibe (e.g. 'minimalist chic', 'boho vintage', 'edgy street style')",
               "fit": "Specific fit term: fitted, oversized, relaxed, structured, cropped, flowy",
