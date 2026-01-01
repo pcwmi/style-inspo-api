@@ -1,9 +1,9 @@
 'use client'
 
 import { useSearchParams, useRouter } from 'next/navigation'
-import { Suspense } from 'react'
-import { useState, useEffect } from 'react'
-import { api } from '@/lib/api'
+import { Suspense, useMemo } from 'react'
+import { useState } from 'react'
+import { useWardrobe, useConsiderBuying } from '@/lib/queries'
 import { posthog } from '@/lib/posthog'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -13,30 +13,39 @@ function CompletePageContent() {
   const router = useRouter()
   const user = searchParams.get('user') || 'default'
   const debugMode = searchParams.get('debug') === 'true'
-  
-  const [wardrobe, setWardrobe] = useState<any>(null)
-  const [consideringItems, setConsideringItems] = useState<any>(null)
+
+  // React Query hooks - automatic caching (shares cache with closet/dashboard)
+  const { data: wardrobeData, isLoading: wardrobeLoading } = useWardrobe(user)
+  const { data: consideringData, isLoading: consideringLoading } = useConsiderBuying(user, 'considering')
+
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [generating, setGenerating] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [activeCategory, setActiveCategory] = useState('All')
 
-  useEffect(() => {
-    async function fetchItems() {
-      try {
-        const [wardrobeData, consideringData] = await Promise.all([
-          api.getWardrobe(user),
-          api.getConsiderBuyingItems(user, 'considering')
-        ])
-        setWardrobe(wardrobeData)
-        setConsideringItems(consideringData)
-      } catch (error) {
-        console.error('Error fetching items:', error)
-      } finally {
-        setLoading(false)
-      }
+  // Category tabs (matching closet page)
+  const categories = ['All', 'Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Shoes', 'Accessories', 'Bags', 'Considering']
+
+  // Merge wardrobe and considering items
+  const allItems = useMemo(() => [
+    ...(wardrobeData?.items || []),
+    ...(consideringData?.items || [])
+  ], [wardrobeData, consideringData])
+
+  // Filter items by category
+  const filteredItems = useMemo(() => {
+    if (activeCategory === 'All') return allItems
+    if (activeCategory === 'Considering') {
+      return allItems.filter(item => item.id?.startsWith('consider_'))
     }
-    fetchItems()
-  }, [user])
+    // For regular categories, exclude considering items and filter by category
+    return allItems.filter(item =>
+      !item.id?.startsWith('consider_') &&
+      item.styling_details?.category?.toLowerCase() === activeCategory.toLowerCase()
+    )
+  }, [allItems, activeCategory])
+
+  // Only show loading on first load (no cached data)
+  const loading = (wardrobeLoading && !wardrobeData) || (consideringLoading && !consideringData)
 
   const handleGenerate = async () => {
     if (selectedItems.length === 0) {
@@ -93,12 +102,6 @@ function CompletePageContent() {
     )
   }
 
-  // Merge wardrobe and considering items for display
-  const allItems = [
-    ...(wardrobe?.items || []),
-    ...(consideringItems?.items || [])
-  ]
-
   if (allItems.length === 0) {
     return (
       <div className="min-h-screen bg-bone page-container">
@@ -131,13 +134,35 @@ function CompletePageContent() {
         <h1 className="text-2xl md:text-3xl font-bold mb-2">
           Start with a piece you want to wear
         </h1>
-        <p className="text-muted mb-5 md:mb-8 text-base leading-relaxed">
+        <p className="text-muted mb-4 text-base leading-relaxed">
           Select 1-2 items you want to wear today, and we'll complete the outfit
         </p>
 
+        {/* Category tabs */}
+        <div className="flex gap-2 overflow-x-auto pb-3 mb-4 -mx-4 px-4 scrollbar-hide">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setActiveCategory(cat)}
+              className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition min-h-[44px] ${
+                activeCategory === cat
+                  ? 'bg-terracotta text-white'
+                  : 'bg-sand text-ink hover:bg-terracotta/10'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
         {/* Item selection grid */}
-        <div className="grid grid-cols-2 gap-3 md:gap-4 mb-5 md:mb-6">
-          {allItems.map((item: any) => {
+        {filteredItems.length === 0 ? (
+          <div className="text-center py-12 text-muted">
+            <p>No items in {activeCategory}</p>
+          </div>
+        ) : (
+        <div className="grid grid-cols-3 md:grid-cols-4 gap-3 md:gap-4 mb-5 md:mb-6">
+          {filteredItems.map((item: any) => {
             const isSelected = selectedItems.includes(item.id)
             const imagePath = item.system_metadata?.image_path || item.image_path
             const isConsidering = item.id.startsWith('consider_')
@@ -183,6 +208,7 @@ function CompletePageContent() {
             )
           })}
         </div>
+        )}
 
         {/* Generate button */}
         <button

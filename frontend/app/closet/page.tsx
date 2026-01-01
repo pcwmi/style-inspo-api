@@ -69,7 +69,11 @@ function ClosetContent() {
         ? (considerBuyingData?.items || [])
         : (wardrobeData?.items || [])
 
-    const loading = activeCategory === 'Considering' ? considerBuyingLoading : wardrobeLoading
+    // Only show loading skeleton on first load (no cached data yet)
+    // This prevents the brief flash when navigating back with cached data
+    const loading = activeCategory === 'Considering'
+        ? (considerBuyingLoading && !considerBuyingData)
+        : (wardrobeLoading && !wardrobeData)
 
     const fetchWardrobe = async () => {
         await refetchWardrobe()

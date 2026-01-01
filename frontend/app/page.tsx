@@ -66,7 +66,9 @@ function DashboardContent() {
     checkOnboarding()
   }, [user, userParam, wardrobeLoading, router])
 
-  if (loading) {
+  // Only show loading spinner on first load (no cached data yet)
+  // This prevents the brief flash when navigating back with cached data
+  if (loading && !wardrobe) {
     return (
       <div className="min-h-screen bg-bone flex items-center justify-center page-container">
         <div className="text-center px-4">
