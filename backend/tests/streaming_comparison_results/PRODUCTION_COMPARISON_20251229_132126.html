@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Production Streaming Comparison</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        .header h1 { margin: 0 0 10px 0; }
+        .header p { margin: 5px 0; opacity: 0.9; }
+        .scenario {
+            background: white;
+            padding: 30px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #1a1a1a; }
+        h2 { color: #333; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; }
+        .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .column { border: 2px solid #ddd; padding: 20px; border-radius: 8px; }
+        .column.version-a { border-color: #007bff; }
+        .column.version-b { border-color: #28a745; }
+        .version-header {
+            padding: 15px;
+            margin: -20px -20px 20px -20px;
+            border-radius: 6px 6px 0 0;
+        }
+        .version-a .version-header { background: #e7f1ff; }
+        .version-b .version-header { background: #e8f5e9; }
+        .version-header h3 { margin: 0 0 5px 0; }
+        .stats { font-size: 12px; color: #666; }
+        .stats span { margin-right: 15px; }
+        .outfit {
+            margin: 20px 0;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 6px;
+            border-left: 4px solid #666;
+        }
+        .version-a .outfit { border-left-color: #007bff; }
+        .version-b .outfit { border-left-color: #28a745; }
+        .outfit h4 { margin: 0 0 15px 0; }
+        .items { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
+        img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        img:hover {
+            transform: scale(2.5);
+            z-index: 1000;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        .item-placeholder {
+            width: 120px;
+            height: 120px;
+            background: #eee;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #999;
+            text-align: center;
+            padding: 5px;
+        }
+        .styling {
+            font-style: italic;
+            color: #555;
+            margin: 10px 0;
+            padding: 10px;
+            background: #fff;
+            border-radius: 4px;
+        }
+        .why {
+            color: #333;
+            margin: 10px 0;
+            padding: 10px;
+            background: #fff;
+            border-radius: 4px;
+        }
+        .timing-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .timing-summary table { width: 100%; border-collapse: collapse; }
+        .timing-summary th, .timing-summary td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .winner { background: #d4edda; font-weight: bold; }
+        .big-winner {
+            background: #28a745;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 18px;
+        }
+        .constraint-pass { color: #28a745; }
+        .constraint-fail { color: #dc3545; }
+        .judge-section {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .timeline {
+            display: flex;
+            margin: 20px 0;
+            background: #f0f0f0;
+            border-radius: 20px;
+            height: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+        .timeline-bar {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .timeline-a { background: #007bff; }
+        .timeline-b { background: #28a745; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Production Streaming Comparison</h1>
+        <p><strong>Using actual ChainOfThoughtPromptV1 production prompts</strong></p>
+        <p>Prompt length: ~25,464 characters | Total time: ~19.7s</p>
+        <p>Version A: All JSON at end | Version B: Interleaved JSON per outfit</p>
+    </div>
+
+    <div class="scenario">
+        <h2>Casual Weekend Outing</h2>
+        <p><strong>Occasion:</strong> casual coffee with friends followed by some errands</p>
+        <p><strong>Style:</strong> casual + polished + chic</p>
+
+        <div class="big-winner">
+            Version B delivers first outfit <strong>9.3 seconds faster</strong>
+        </div>
+
+        <div class="timing-summary">
+            <h4>Timing Comparison</h4>
+            <table>
+                <tr>
+                    <th>Metric</th>
+                    <th>Version A</th>
+                    <th>Version B</th>
+                    <th>Difference</th>
+                </tr>
+                <tr>
+                    <td>First token</td>
+                    <td>1.80s</td>
+                    <td>1.16s</td>
+                    <td>-0.64s</td>
+                </tr>
+                <tr>
+                    <td><strong>First outfit JSON available</strong></td>
+                    <td>15.97s</td>
+                    <td class="winner">6.66s</td>
+                    <td><strong>-9.31s</strong></td>
+                </tr>
+                <tr>
+                    <td>Total completion time</td>
+                    <td>19.74s</td>
+                    <td>19.55s</td>
+                    <td>-0.20s</td>
+                </tr>
+                <tr>
+                    <td>Constraint (no item in 3+ outfits)</td>
+                    <td class="constraint-pass">PASS</td>
+                    <td class="constraint-pass">PASS</td>
+                    <td>Both pass</td>
+                </tr>
+            </table>
+        </div>
+
+        <h4>Visual Timeline: When can user see first outfit?</h4>
+        <p><strong>Version A</strong> (wait for all reasoning, then JSON at end):</p>
+        <div class="timeline">
+            <div class="timeline-bar timeline-a" style="width: 80.87874452702782%;">Wait 16.0s</div>
+            <div class="timeline-bar" style="background: #0056b3; width: 19.12125547297218%;">JSON</div>
+        </div>
+
+        <p><strong>Version B</strong> (JSON after each outfit's reasoning):</p>
+        <div class="timeline">
+            <div class="timeline-bar timeline-b" style="width: 34.07717498738212%;">6.7s</div>
+            <div class="timeline-bar" style="background: #1e7e34; width: 29.29519953390059%;">O2</div>
+            <div class="timeline-bar" style="background: #155724; width: 36.627625478717285%;">O3</div>
+        </div>
+
+        <div class="comparison">
+            <div class="column version-a">
+                <div class="version-header">
+                    <h3>Version A (All JSON at end)</h3>
+                    <div class="stats">
+                        <span>Total: 19.74s</span>
+                        <span>First JSON: 15.97s</span>
+                        <span>3 outfits extracted</span>
+                    </div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 1</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" title="White wide-leg high-waisted pants">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/82846646f9a2420a8e69a1b5351ff49f.jpg" alt="Gray puff-sleeve cropped tee" title="Gray puff-sleeve cropped tee">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" alt="White and Red Classic Leather Sneakers" title="White and Red Classic Leather Sneakers">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" alt="Black and White Floral Print Scarf" title="Black and White Floral Print Scarf">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Tee tucked into pants, scarf loosely draped around the neck, sneakers worn with no-show socks.</div>
+                    <div class="why"><strong>Why it works:</strong> This outfit combines comfort with chic elegance, featuring the wide-leg pants as a polished base. The gray tee adds casual ease, while the floral scarf introduces an unexpected chic element. Sneakers keep it grounded in casual style.</div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 2</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b6ecfd29000d4c918b4c81e0bf67efa6.jpg" alt="Dark Wash Flared Jeans" title="Dark Wash Flared Jeans">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2e282ef4e797482ca7298f9f1e15ef82.jpg" alt="Black basic short-sleeve tee" title="Black basic short-sleeve tee">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/cd9aba82c36248b8bb25d8acfe9b9490.jpg" alt="Leopard Print Square Scarf" title="Leopard Print Square Scarf">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c3d14deb47d148c79dec12ec85f9bc27.jpg" alt="Cream knee-high block heel boots" title="Cream knee-high block heel boots">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Tee tucked into jeans, scarf tied around the neck, jeans worn over the boots.</div>
+                    <div class="why"><strong>Why it works:</strong> This ensemble blends classic with playful, centering on retro flared jeans and a basic tee for casual flair. The leopard scarf adds an unexpected chic twist, while cream boots elevate the look with polished style.</div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 3</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/3665aeb45e1646209dd3462200a45df8_1765844368.jpg" alt="Olive green textured long-sleeve dress" title="Olive green textured long-sleeve dress">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/66af2a43a68343a88921acec7a85c0f0.jpg" alt="Taupe suede ankle boots" title="Taupe suede ankle boots">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" alt="Gold Bar Pendant Necklace" title="Gold Bar Pendant Necklace">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2549b284e7f840018e6236876333cfe5.jpg" alt="Brown slouchy leather shoulder bag" title="Brown slouchy leather shoulder bag">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Dress worn alone, necklace layered over the dress, bag worn crossbody.</div>
+                    <div class="why"><strong>Why it works:</strong> This outfit highlights effortless elegance with the olive dress as a chic anchor. The taupe boots add casual style, while the gold necklace provides a polished touch. The brown bag enhances the casual chic vibe.</div>
+                </div>
+
+            </div>
+            <div class="column version-b">
+                <div class="version-header">
+                    <h3>Version B (Interleaved JSON)</h3>
+                    <div class="stats">
+
+                        <span>Total: 19.55s</span>
+                        <span>First JSON: 6.66s</span>
+                        <span>3 outfits extracted</span>
+                    </div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 1</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" title="White wide-leg high-waisted pants">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/82846646f9a2420a8e69a1b5351ff49f.jpg" alt="Gray puff-sleeve cropped tee" title="Gray puff-sleeve cropped tee">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" alt="White and Red Classic Leather Sneakers" title="White and Red Classic Leather Sneakers">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" alt="Black and White Floral Print Scarf" title="Black and White Floral Print Scarf">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Tuck the tee into the pants for a sleek look. Drape the scarf loosely over the shoulders. Let the pants flow over the sneakers.</div>
+                    <div class="why"><strong>Why it works:</strong> This outfit is perfect for a casual coffee meetup and errands, combining comfort with a chic flair. The wide-leg pants provide a polished base, while the scarf adds an unexpected, artistic touch that elevates the entire look.</div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 2</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/6da8589821b7409594dac0a890ff48f0.jpg" alt="Black mock-neck long sleeve base layer" title="Black mock-neck long sleeve base layer">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/5b174344b6f94c83a97e250b5a34c1ab.jpg" alt="Medium wash straight-leg jeans" title="Medium wash straight-leg jeans">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg" alt="Black Patent Leather Loafers" title="Black Patent Leather Loafers">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" alt="Gold Bar Pendant Necklace" title="Gold Bar Pendant Necklace">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Tuck the base layer into the jeans. Slightly cuff the jeans above the loafers for a relaxed finish. Position the necklace prominently.</div>
+                    <div class="why"><strong>Why it works:</strong> This outfit harmonizes casual and polished elements, perfect for a laid-back meeting. The base layer provides a sleek foundation, while the loafers add an unexpected polished twist, making the ensemble both chic and comfortable.</div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 3</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/3665aeb45e1646209dd3462200a45df8_1765844368.jpg" alt="Olive green textured long-sleeve dress" title="Olive green textured long-sleeve dress">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/66af2a43a68343a88921acec7a85c0f0.jpg" alt="Taupe suede ankle boots" title="Taupe suede ankle boots">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" title="Gold swirl earrings with pearl center">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2aa36a23bd26480c96a023e648dde746.jpg" alt="Brown suede crossbody bag with gold hardware" title="Brown suede crossbody bag with gold hardware">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Wear the dress loose for comfort. Pair with the boots worn over tights if necessary. Use the crossbody bag for easy access.</div>
+                    <div class="why"><strong>Why it works:</strong> This outfit is ideal for a day out, offering a chic yet comfortable look. The dress serves as a stylish focal point, while the earrings add unexpected elegance, making the ensemble both polished and casual.</div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="judge-section">
+            <h4>Your Quality Judgment</h4>
+            <p>Which version produced better outfits?</p>
+            <p>Consider: item selection, styling creativity, "why it works" reasoning, variety across outfits</p>
+            <p><strong>Note:</strong> Outfit 1 is identical in both versions. Look at Outfits 2 & 3 for differences.</p>
+        </div>
+    </div>
+
+    <div class="scenario">
+        <h2>Conclusion</h2>
+        <p><strong>Timing validation:</strong> Version B delivers first outfit <strong>9.3 seconds faster</strong> at production scale.</p>
+        <p><strong>This exceeds</strong> our hypothesis based on simplified prompts (~4s advantage).</p>
+        <p><strong>Constraint compliance:</strong> Both versions passed (no item in 3+ outfits).</p>
+        <p><strong>Quality:</strong> [Your judgment above]</p>
+    </div>
+</body>
+</html>

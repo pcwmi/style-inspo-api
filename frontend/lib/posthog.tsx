@@ -51,3 +51,4 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
 // Export for manual event tracking
 export { posthog }
 
+

@@ -1,0 +1,1631 @@
+STREAMING TIME STUDY RAW DATA
+======================================================================
+
+Timestamp: 2025-12-26T18:22:30.757499
+Model: gpt-4o
+Total time: 15.52s
+Total chunks: 1454
+
+MARKER TIMES:
+  FIRST_TOKEN: 1.443s
+  JSON_SEPARATOR: 12.551s
+  JSON_ARRAY_START: 12.576s
+  COMPLETE: 15.519s
+
+
+ALL CHUNKS:
+----------------------------------------------------------------------
+[   1.443s] ##
+[   1.443s]  O
+[   1.454s] UTF
+[   1.454s] IT
+[   1.465s]  
+[   1.466s] 1
+[   1.478s]  RE
+[   1.478s] ASON
+[   1.494s] ING
+[   1.494s] \n\n
+[   1.505s] **
+[   1.506s] FUNCTION
+[   1.531s] :**
+[   1.531s]   \n
+[   1.574s] Feel
+[   1.574s]  put
+[   1.595s] -t
+[   1.596s] ogether
+[   1.607s]  and
+[   1.608s]  stylish
+[   1.633s]  for
+[   1.633s]  a
+[   1.633s]  casual
+[   1.634s]  weekend
+[   1.644s]  brunch
+[   1.644s]  while
+[   1.668s]  maintaining
+[   1.668s]  comfort
+[   1.736s] .\n\n
+[   1.736s] **
+[   1.752s] ANCH
+[   1.752s] OR
+[   1.765s] :**
+[   1.765s]   \n
+[   1.781s] Camel
+[   1.781s]  wool
+[   1.810s]  coat
+[   1.810s]   \n
+[   1.813s] -
+[   1.813s]  Why
+[   1.823s]  it's
+[   1.824s]  the
+[   1.837s]  hero
+[   1.837s] :
+[   1.866s]  Its
+[   1.866s]  structured
+[   1.898s]  silhouette
+[   1.899s]  and
+[   1.913s]  classic
+[   1.913s]  color
+[   1.938s]  add
+[   1.938s]  polish
+[   1.968s]  and
+[   1.968s]  refinement
+[   1.998s]  to
+[   1.998s]  any
+[   2.028s]  casual
+[   2.029s]  ensemble
+[   2.045s] .
+[   2.046s]   \n
+[   2.058s] -
+[   2.058s]  Style
+[   2.060s]  words
+[   2.060s] :
+[   2.074s]  classic
+[   2.074s] ,
+[   2.097s]  confident
+[   2.097s]   \n\n
+[   2.153s] **
+[   2.154s] SUP
+[   2.154s] PORT
+[   2.154s] ING
+[   2.163s]  PIE
+[   2.163s] CES
+[   2.176s] :**
+[   2.176s]   \n
+[   2.204s] -
+[   2.205s]  White
+[   2.219s]  linen
+[   2.219s]  button
+[   2.233s] -down
+[   2.233s]  shirt
+[   2.259s] :
+[   2.259s]  Provides
+[   2.293s]  a
+[   2.293s]  crisp
+[   2.301s] ,
+[   2.301s]  clean
+[   2.325s]  base
+[   2.325s]  layer
+[   2.352s]  -
+[   2.352s]  carries
+[   2.366s]  classic
+[   2.367s]   \n
+[   2.393s] -
+[   2.393s]  High
+[   2.406s] -wa
+[   2.406s] isted
+[   2.419s]  wide
+[   2.419s] -leg
+[   2.421s]  jeans
+[   2.421s] :
+[   2.434s]  Adds
+[   2.434s]  a
+[   2.436s]  relaxed
+[   2.436s] ,
+[   2.457s]  yet
+[   2.457s]  stylish
+[   2.485s]  bottom
+[   2.485s]  choice
+[   2.510s]  -
+[   2.510s]  carries
+[   2.524s]  edgy
+[   2.524s]   \n
+[   2.550s] -
+[   2.550s]  White
+[   2.564s]  leather
+[   2.564s]  sneakers
+[   2.564s] :
+[   2.564s]  Keeps
+[   2.579s]  the
+[   2.579s]  look
+[   2.591s]  laid
+[   2.591s] -back
+[   2.617s]  and
+[   2.617s]  comfortable
+[   2.643s]  -
+[   2.643s]  carries
+[   2.671s]  confident
+[   2.671s]   \n
+[   2.683s] -
+[   2.683s]  Contrast
+[   2.683s]  created
+[   2.683s] :
+[   2.714s]  The
+[   2.714s]  structured
+[   2.739s]  coat
+[   2.739s]  contrasts
+[   2.745s]  with
+[   2.745s]  the
+[   2.753s]  relaxed
+[   2.753s]  jeans
+[   2.798s]  and
+[   2.798s]  shirt
+[   2.815s] ,
+[   2.816s]  providing
+[   2.835s]  a
+[   2.835s]  balance
+[   2.848s]  between
+[   2.848s]  casual
+[   2.871s]  and
+[   2.871s]  polished
+[   2.938s]  elements
+[   2.939s] .\n\n
+[   2.954s] **
+[   2.954s] UN
+[   2.955s] EXPECTED
+[   2.955s]  ELEMENT
+[   2.969s] :**
+[   2.970s]   \n
+[   3.015s] White
+[   3.015s]  linen
+[   3.027s]  button
+[   3.028s] -down
+[   3.028s]  shirt
+[   3.028s]   \n
+[   3.042s] -
+[   3.042s]  Break
+[   3.057s] s
+[   3.057s] :
+[   3.089s]  Typically
+[   3.089s] ,
+[   3.117s]  linen
+[   3.117s]  shirts
+[   3.151s]  are
+[   3.151s]  considered
+[   3.179s]  more
+[   3.180s]  suited
+[   3.214s]  for
+[   3.214s]  summer
+[   3.238s] ,
+[   3.238s]  not
+[   3.269s]  early
+[   3.270s]  fall
+[   3.291s]  with
+[   3.291s]  a
+[   3.308s]  wool
+[   3.308s]  coat
+[   3.323s] .
+[   3.323s]   \n
+[   3.339s] -
+[   3.339s]  Works
+[   3.340s]  because
+[   3.340s] :
+[   3.370s]  The
+[   3.370s]  lightweight
+[   3.399s]  linen
+[   3.399s]  contrasts
+[   3.416s]  with
+[   3.417s]  the
+[   3.428s]  wool
+[   3.428s] ,
+[   3.454s]  creating
+[   3.454s]  an
+[   3.481s]  interesting
+[   3.482s]  text
+[   3.510s] ural
+[   3.510s]  play
+[   3.540s]  that
+[   3.540s]  works
+[   3.565s]  for
+[   3.565s]  a
+[   3.580s]  transitional
+[   3.580s]  season
+[   3.594s] .
+[   3.594s]   \n\n
+[   3.607s] **
+[   3.607s] STYLE
+[   3.608s]  DNA
+[   3.608s] :**
+[   3.633s]   \n
+[   3.634s] classic
+[   3.662s]  ✓
+[   3.663s]  camel
+[   3.681s]  wool
+[   3.681s]  coat
+[   3.691s]  |
+[   3.691s]  edgy
+[   3.719s]  ✓
+[   3.719s]  jeans
+[   3.734s]  |
+[   3.734s]  confident
+[   3.734s]  ✓
+[   3.734s]  sneakers
+[   3.749s]   \n\n
+[   3.749s] **
+[   3.752s] COM
+[   3.752s] PLE
+[   3.762s] TING
+[   3.762s]  THE
+[   3.763s]  LOOK
+[   3.763s] :**
+[   3.791s]   \n
+[   3.791s] -
+[   3.819s]  Gold
+[   3.819s]  hoop
+[   3.847s]  earrings
+[   3.847s] :
+[   3.874s]  Add
+[   3.874s]  a
+[   3.879s]  touch
+[   3.879s]  of
+[   3.899s]  sophistication
+[   3.899s]  and
+[   3.926s]  complete
+[   3.927s]  the
+[   3.939s]  look
+[   3.939s] .
+[   3.962s]   \n\n
+[   3.962s] **
+[   3.976s] ST
+[   3.977s] ORY
+[   3.986s] :**
+[   3.987s]   \n
+[   4.002s] "I'm
+[   4.002s]  someone
+[   4.026s]  who
+[   4.027s]  effortlessly
+[   4.160s]  combines
+[   4.160s]  comfort
+[   4.175s]  with
+[   4.175s]  style
+[   4.199s] ,
+[   4.199s]  making
+[   4.285s]  the
+[   4.285s]  unexpected
+[   4.325s]  work
+[   4.325s]  seamlessly
+[   4.341s] ."\n\n
+[   4.341s] **
+[   4.341s] PH
+[   4.355s] YSICAL
+[   4.355s]  CHECK
+[   4.371s] :**
+[   4.372s]   \n
+[   4.388s] All
+[   4.388s]  pieces
+[   4.429s]  work
+[   4.429s]  together
+[   4.460s]  for
+[   4.460s]  a
+[   4.478s]  layered
+[   4.478s] ,
+[   4.494s]  stylish
+[   4.494s] ,
+[   4.525s]  and
+[   4.525s]  comfortable
+[   4.546s]  brunch
+[   4.546s]  look
+[   4.563s] .\n\n
+[   4.563s] **
+[   4.578s] FINAL
+[   4.579s]  O
+[   4.579s] UTF
+[   4.579s] IT
+[   4.598s] :**
+[   4.598s]   \n
+[   4.599s] -
+[   4.599s]  Camel
+[   4.632s]  wool
+[   4.633s]  coat
+[   4.633s]   \n
+[   4.633s] -
+[   4.657s]  White
+[   4.657s]  linen
+[   4.666s]  button
+[   4.667s] -down
+[   4.674s]  shirt
+[   4.674s]   \n
+[   4.675s] -
+[   4.675s]  High
+[   4.689s] -wa
+[   4.689s] isted
+[   4.727s]  wide
+[   4.728s] -leg
+[   4.729s]  jeans
+[   4.729s]   \n
+[   4.742s] -
+[   4.742s]  White
+[   4.759s]  leather
+[   4.759s]  sneakers
+[   4.764s]   \n
+[   4.764s] -
+[   4.775s]  Gold
+[   4.776s]  hoop
+[   4.777s]  earrings
+[   4.777s]   \n\n
+[   4.778s] **
+[   4.778s] ST
+[   4.796s] YL
+[   4.796s] ING
+[   4.810s] :**
+[   4.810s]   \n
+[   4.844s] The
+[   4.844s]  shirt
+[   4.877s]  is
+[   4.877s]  half
+[   4.940s] -t
+[   4.940s] ucked
+[   4.971s]  into
+[   4.971s]  the
+[   4.990s]  jeans
+[   4.991s]  to
+[   5.008s]  add
+[   5.008s]  a
+[   5.041s]  relaxed
+[   5.042s]  vibe
+[   5.073s] ,
+[   5.074s]  sleeves
+[   5.092s]  slightly
+[   5.092s]  rolled
+[   5.155s] .
+[   5.155s]  Coat
+[   5.187s]  worn
+[   5.187s]  open
+[   5.233s] .\n\n
+[   5.233s] ---\n\n
+[   5.234s] ##
+[   5.234s]  O
+[   5.244s] UTF
+[   5.245s] IT
+[   5.257s]  
+[   5.257s] 2
+[   5.257s]  RE
+[   5.257s] ASON
+[   5.261s] ING
+[   5.261s] \n\n
+[   5.271s] **
+[   5.272s] FUNCTION
+[   5.288s] :**
+[   5.288s]   \n
+[   5.322s] Stand
+[   5.323s]  out
+[   5.345s]  with
+[   5.345s]  an
+[   5.376s]  edgy
+[   5.376s]  flair
+[   5.390s]  at
+[   5.390s]  brunch
+[   5.433s]  while
+[   5.433s]  remaining
+[   5.454s]  approachable
+[   5.454s]  and
+[   5.470s]  chic
+[   5.470s] .\n\n
+[   5.486s] **
+[   5.486s] ANCH
+[   5.496s] OR
+[   5.496s] :**
+[   5.502s]   \n
+[   5.502s] Black
+[   5.530s]  leather
+[   5.530s]  midi
+[   5.560s]  skirt
+[   5.560s]   \n
+[   5.581s] -
+[   5.582s]  Why
+[   5.591s]  it's
+[   5.591s]  the
+[   5.613s]  hero
+[   5.613s] :
+[   5.630s]  The
+[   5.630s]  skirt
+[   5.696s] ’s
+[   5.697s]  sleek
+[   5.697s]  leather
+[   5.697s]  adds
+[   5.716s]  an
+[   5.716s]  unexpected
+[   5.736s]  edge
+[   5.736s]  to
+[   5.755s]  a
+[   5.756s]  brunch
+[   5.775s]  setting
+[   5.776s] .
+[   5.788s]   \n
+[   5.788s] -
+[   5.801s]  Style
+[   5.801s]  words
+[   5.802s] :
+[   5.802s]  edgy
+[   5.816s] ,
+[   5.816s]  confident
+[   5.816s]   \n\n
+[   5.816s] **
+[   5.836s] SUP
+[   5.836s] PORT
+[   5.845s] ING
+[   5.845s]  PIE
+[   5.850s] CES
+[   5.850s] :**
+[   5.861s]   \n
+[   5.861s] -
+[   5.876s]  Navy
+[   5.876s]  bre
+[   5.892s] ton
+[   5.892s]  stripe
+[   5.923s]  tee
+[   5.923s] :
+[   5.923s]  Adds
+[   5.929s]  a
+[   5.929s]  classic
+[   5.956s]  pattern
+[   5.956s]  and
+[   5.991s]  balances
+[   5.992s]  the
+[   6.006s]  skirt
+[   6.006s] ’s
+[   6.042s]  edge
+[   6.042s]  -
+[   6.059s]  carries
+[   6.060s]  classic
+[   6.072s]   \n
+[   6.072s] -
+[   6.074s]  Black
+[   6.075s]  ankle
+[   6.103s]  boots
+[   6.103s] :
+[   6.110s]  Rein
+[   6.110s] force
+[   6.130s]  the
+[   6.130s]  edgy
+[   6.143s]  vibe
+[   6.144s]  and
+[   6.169s]  offer
+[   6.169s]  comfortable
+[   6.186s]  sophistication
+[   6.186s]  -
+[   6.211s]  carries
+[   6.211s]  edgy
+[   6.221s]   \n
+[   6.221s] -
+[   6.234s]  Denim
+[   6.234s]  jacket
+[   6.258s] :
+[   6.259s]  Soft
+[   6.280s] ens
+[   6.280s]  the
+[   6.288s]  look
+[   6.288s]  with
+[   6.317s]  a
+[   6.317s]  casual
+[   6.341s]  touch
+[   6.341s]  and
+[   6.368s]  adds
+[   6.369s]  structure
+[   6.371s]  -
+[   6.372s]  carries
+[   6.391s]  confident
+[   6.391s]   \n
+[   6.396s] -
+[   6.396s]  Contrast
+[   6.399s]  created
+[   6.399s] :
+[   6.422s]  The
+[   6.422s]  soft
+[   6.463s] ,
+[   6.463s]  classic
+[   6.502s]  tee
+[   6.502s]  contrasts
+[   6.531s]  with
+[   6.531s]  the
+[   6.531s]  leather
+[   6.531s]  skirt
+[   6.555s] ,
+[   6.555s]  while
+[   6.574s]  the
+[   6.574s]  denim
+[   6.585s]  jacket
+[   6.585s]  provides
+[   6.613s]  a
+[   6.613s]  casual
+[   6.626s]  balance
+[   6.626s]  to
+[   6.642s]  the
+[   6.642s]  outfit
+[   6.651s] .\n\n
+[   6.651s] **
+[   6.654s] UN
+[   6.654s] EXPECTED
+[   6.668s]  ELEMENT
+[   6.668s] :**
+[   6.682s]   \n
+[   6.682s] N
+[   6.691s] avy
+[   6.691s]  bre
+[   6.695s] ton
+[   6.695s]  stripe
+[   6.697s]  tee
+[   6.697s]   \n
+[   6.701s] -
+[   6.701s]  Break
+[   6.730s] s
+[   6.731s] :
+[   6.749s]  Str
+[   6.749s] ipes
+[   6.759s]  are
+[   6.759s]  often
+[   6.785s]  paired
+[   6.786s]  with
+[   6.814s]  more
+[   6.815s]  casual
+[   6.833s]  elements
+[   6.834s] ,
+[   6.856s]  not
+[   6.856s]  typically
+[   6.884s]  with
+[   6.884s]  leather
+[   6.896s] .
+[   6.896s]   \n
+[   6.908s] -
+[   6.908s]  Works
+[   6.915s]  because
+[   6.915s] :
+[   6.991s]  The
+[   6.992s]  classic
+[   7.004s]  pattern
+[   7.004s]  of
+[   7.031s]  the
+[   7.031s]  stripes
+[   7.057s]  adds
+[   7.057s]  a
+[   7.081s]  timeless
+[   7.081s]  element
+[   7.150s]  that
+[   7.150s]  contrasts
+[   7.164s]  interesting
+[   7.164s] ly
+[   7.189s]  with
+[   7.189s]  the
+[   7.217s]  modern
+[   7.218s]  edge
+[   7.249s]  of
+[   7.249s]  the
+[   7.275s]  leather
+[   7.275s] .
+[   7.276s]   \n\n
+[   7.276s] **
+[   7.291s] STYLE
+[   7.291s]  DNA
+[   7.306s] :**
+[   7.306s]   \n
+[   7.328s] classic
+[   7.329s]  ✓
+[   7.354s]  tee
+[   7.354s]  |
+[   7.368s]  edgy
+[   7.368s]  ✓
+[   7.382s]  skirt
+[   7.382s]  |
+[   7.395s]  confident
+[   7.395s]  ✓
+[   7.395s]  boots
+[   7.395s]   \n\n
+[   7.411s] **
+[   7.411s] COM
+[   7.413s] PLE
+[   7.413s] TING
+[   7.425s]  THE
+[   7.426s]  LOOK
+[   7.438s] :**
+[   7.438s]   \n
+[   7.514s] -
+[   7.514s]  Brown
+[   7.535s]  leather
+[   7.535s]  cross
+[   7.536s] body
+[   7.536s]  bag
+[   7.559s] :
+[   7.559s]  Adds
+[   7.602s]  a
+[   7.602s]  warm
+[   7.626s]  contrast
+[   7.626s]  and
+[   7.638s]  functionality
+[   7.638s] .
+[   7.651s]   \n\n
+[   7.651s] **
+[   7.677s] ST
+[   7.677s] ORY
+[   7.677s] :**
+[   7.677s]   \n
+[   7.687s] "I'm
+[   7.687s]  someone
+[   7.698s]  who
+[   7.698s]  blends
+[   7.713s]  timeless
+[   7.713s]  patterns
+[   7.743s]  with
+[   7.744s]  bold
+[   7.758s]  materials
+[   7.758s] ,
+[   7.789s]  making
+[   7.789s]  a
+[   7.803s]  statement
+[   7.803s]  without
+[   7.851s]  saying
+[   7.851s]  a
+[   7.865s]  word
+[   7.865s] ."\n\n
+[   7.865s] **
+[   7.865s] PH
+[   7.870s] YSICAL
+[   7.870s]  CHECK
+[   7.888s] :**
+[   7.888s]   \n
+[   7.909s] Each
+[   7.909s]  piece
+[   7.938s]  complements
+[   7.939s]  the
+[   7.963s]  others
+[   7.963s] ,
+[   7.990s]  ensuring
+[   7.990s]  the
+[   8.016s]  outfit
+[   8.017s]  is
+[   8.047s]  cohesive
+[   8.047s]  and
+[   8.061s]  stylish
+[   8.061s] .\n\n
+[   8.062s] **
+[   8.062s] FINAL
+[   8.074s]  O
+[   8.074s] UTF
+[   8.085s] IT
+[   8.085s] :**
+[   8.096s]   \n
+[   8.096s] -
+[   8.100s]  Black
+[   8.100s]  leather
+[   8.125s]  midi
+[   8.125s]  skirt
+[   8.126s]   \n
+[   8.127s] -
+[   8.127s]  Navy
+[   8.127s]  bre
+[   8.132s] ton
+[   8.132s]  stripe
+[   8.142s]  tee
+[   8.142s]   \n
+[   8.150s] -
+[   8.150s]  Black
+[   8.150s]  ankle
+[   8.150s]  boots
+[   8.150s]   \n
+[   8.208s] -
+[   8.208s]  Denim
+[   8.278s]  jacket
+[   8.278s]   \n
+[   8.285s] -
+[   8.285s]  Brown
+[   8.291s]  leather
+[   8.291s]  cross
+[   8.298s] body
+[   8.298s]  bag
+[   8.307s]   \n\n
+[   8.307s] **
+[   8.309s] ST
+[   8.309s] YL
+[   8.313s] ING
+[   8.313s] :**
+[   8.324s]   \n
+[   8.324s] T
+[   8.349s] ee
+[   8.350s]  is
+[   8.370s]  tucked
+[   8.371s]  into
+[   8.380s]  the
+[   8.380s]  skirt
+[   8.406s]  to
+[   8.406s]  define
+[   8.418s]  the
+[   8.418s]  waist
+[   8.469s] .
+[   8.469s]  Jacket
+[   8.500s]  is
+[   8.500s]  dr
+[   8.529s] aped
+[   8.530s]  over
+[   8.554s]  the
+[   8.554s]  shoulders
+[   8.581s]  for
+[   8.581s]  a
+[   8.609s]  relaxed
+[   8.609s]  look
+[   8.636s] .\n\n
+[   8.636s] ---\n\n
+[   8.650s] ##
+[   8.650s]  O
+[   8.671s] UTF
+[   8.672s] IT
+[   8.679s]  
+[   8.680s] 3
+[   8.681s]  RE
+[   8.681s] ASON
+[   8.689s] ING
+[   8.689s] \n\n
+[   8.695s] **
+[   8.695s] FUNCTION
+[   8.709s] :**
+[   8.709s]   \n
+[   8.776s] Ex
+[   8.776s] ude
+[   8.812s]  warmth
+[   8.812s]  and
+[   8.829s]  coz
+[   8.829s] iness
+[   8.846s]  while
+[   8.847s]  maintaining
+[   8.867s]  a
+[   8.867s]  fashionable
+[   8.884s]  edge
+[   8.884s]  for
+[   8.900s]  a
+[   8.900s]  weekend
+[   8.903s]  outing
+[   8.904s] .\n\n
+[   8.905s] **
+[   8.905s] ANCH
+[   8.920s] OR
+[   8.920s] :**
+[   8.922s]   \n
+[   8.922s] Cream
+[   8.935s]  chunky
+[   8.935s]  knit
+[   8.953s]  sweater
+[   8.953s]   \n
+[   8.954s] -
+[   8.954s]  Why
+[   8.968s]  it's
+[   8.968s]  the
+[   8.982s]  hero
+[   8.982s] :
+[   9.015s]  Its
+[   9.015s]  oversized
+[   9.049s] ,
+[   9.050s]  cozy
+[   9.077s]  nature
+[   9.078s]  offers
+[   9.108s]  comfort
+[   9.108s]  and
+[   9.131s]  style
+[   9.131s] ,
+[   9.140s]  perfect
+[   9.140s]  for
+[   9.156s]  a
+[   9.156s]  casual
+[   9.174s]  setting
+[   9.175s] .
+[   9.193s]   \n
+[   9.194s] -
+[   9.225s]  Style
+[   9.225s]  words
+[   9.257s] :
+[   9.257s]  classic
+[   9.273s] ,
+[   9.274s]  confident
+[   9.281s]   \n\n
+[   9.281s] **
+[   9.287s] SUP
+[   9.287s] PORT
+[   9.290s] ING
+[   9.290s]  PIE
+[   9.303s] CES
+[   9.303s] :**
+[   9.317s]   \n
+[   9.317s] -
+[   9.334s]  Navy
+[   9.334s]  ple
+[   9.352s] ated
+[   9.352s]  trousers
+[   9.406s] :
+[   9.406s]  Provide
+[   9.408s]  a
+[   9.408s]  structured
+[   9.427s]  and
+[   9.427s]  tailored
+[   9.441s]  contrast
+[   9.442s]  to
+[   9.458s]  the
+[   9.458s]  oversized
+[   9.458s]  sweater
+[   9.459s]  -
+[   9.479s]  carries
+[   9.479s]  classic
+[   9.479s]   \n
+[   9.479s] -
+[   9.535s]  Black
+[   9.535s]  str
+[   9.551s] appy
+[   9.551s]  sandals
+[   9.552s] :
+[   9.552s]  Add
+[   9.594s]  a
+[   9.594s]  surprising
+[   9.609s]  touch
+[   9.610s]  of
+[   9.649s]  elegance
+[   9.649s]  and
+[   9.686s]  unexpected
+[   9.687s]  season
+[   9.714s] ality
+[   9.714s]  -
+[   9.743s]  carries
+[   9.743s]  edgy
+[   9.754s]   \n
+[   9.755s] -
+[   9.772s]  Silk
+[   9.772s]  scarf
+[   9.786s] :
+[   9.786s]  Adds
+[   9.803s]  a
+[   9.803s]  pop
+[   9.843s]  of
+[   9.843s]  pattern
+[   9.858s]  and
+[   9.858s]  texture
+[   9.893s]  around
+[   9.893s]  the
+[   9.930s]  neckline
+[   9.931s]  -
+[   9.956s]  carries
+[   9.956s]  confident
+[   9.972s]   \n
+[   9.972s] -
+[   9.972s]  Contrast
+[   9.972s]  created
+[   9.996s] :
+[   9.996s]  The
+[  10.100s]  relaxed
+[  10.101s]  fit
+[  10.153s]  of
+[  10.153s]  the
+[  10.179s]  sweater
+[  10.179s]  contrasts
+[  10.195s]  with
+[  10.195s]  the
+[  10.223s]  tailored
+[  10.223s]  trousers
+[  10.235s] ,
+[  10.235s]  while
+[  10.260s]  the
+[  10.260s]  sandals
+[  10.285s]  add
+[  10.285s]  a
+[  10.315s]  surprising
+[  10.315s] ,
+[  10.338s]  airy
+[  10.339s]  element
+[  10.352s] .\n\n
+[  10.352s] **
+[  10.363s] UN
+[  10.363s] EXPECTED
+[  10.382s]  ELEMENT
+[  10.382s] :**
+[  10.394s]   \n
+[  10.394s] Black
+[  10.462s]  str
+[  10.462s] appy
+[  10.482s]  sandals
+[  10.482s]   \n
+[  10.490s] -
+[  10.490s]  Break
+[  10.503s] s
+[  10.503s] :
+[  10.537s]  Typically
+[  10.537s]  reserved
+[  10.565s]  for
+[  10.566s]  warmer
+[  10.566s]  months
+[  10.567s] ,
+[  10.593s]  not
+[  10.593s]  paired
+[  10.595s]  with
+[  10.595s]  a
+[  10.625s]  chunky
+[  10.625s]  sweater
+[  10.625s] .
+[  10.626s]   \n
+[  10.638s] -
+[  10.638s]  Works
+[  10.639s]  because
+[  10.639s] :
+[  10.661s]  The
+[  10.661s]  contrast
+[  10.663s]  between
+[  10.663s]  the
+[  10.692s]  cozy
+[  10.692s]  sweater
+[  10.722s]  and
+[  10.722s]  the
+[  10.744s]  elegant
+[  10.744s]  sandals
+[  10.779s]  creates
+[  10.779s]  an
+[  10.802s]  intriguing
+[  10.802s]  juxtap
+[  10.826s] osition
+[  10.826s] ,
+[  10.851s]  elev
+[  10.851s] ating
+[  10.867s]  the
+[  10.867s]  look
+[  10.890s] .
+[  10.890s]   \n\n
+[  10.905s] **
+[  10.905s] STYLE
+[  10.916s]  DNA
+[  10.916s] :**
+[  10.963s]   \n
+[  10.963s] classic
+[  10.993s]  ✓
+[  10.993s]  sweater
+[  11.009s]  |
+[  11.010s]  edgy
+[  11.041s]  ✓
+[  11.041s]  sandals
+[  11.042s]  |
+[  11.042s]  confident
+[  11.069s]  ✓
+[  11.069s]  scarf
+[  11.098s]   \n\n
+[  11.098s] **
+[  11.113s] COM
+[  11.114s] PLE
+[  11.114s] TING
+[  11.114s]  THE
+[  11.137s]  LOOK
+[  11.137s] :**
+[  11.144s]   \n
+[  11.144s] -
+[  11.175s]  Black
+[  11.175s]  leather
+[  11.188s]  belt
+[  11.189s] :
+[  11.230s]  Defines
+[  11.231s]  the
+[  11.257s]  waist
+[  11.258s] ,
+[  11.273s]  adding
+[  11.273s]  structure
+[  11.290s]  to
+[  11.290s]  the
+[  11.313s]  sweater
+[  11.314s] .
+[  11.349s]   \n\n
+[  11.349s] **
+[  11.353s] ST
+[  11.353s] ORY
+[  11.365s] :**
+[  11.365s]   \n
+[  11.379s] "I'm
+[  11.379s]  someone
+[  11.429s]  who
+[  11.430s]  can
+[  11.472s]  make
+[  11.472s]  cozy
+[  11.497s]  look
+[  11.498s]  chic
+[  11.528s] ,
+[  11.528s]  embracing
+[  11.558s]  unexpected
+[  11.558s]  combinations
+[  11.597s]  with
+[  11.597s]  confidence
+[  11.614s] ."\n\n
+[  11.615s] **
+[  11.619s] PH
+[  11.619s] YSICAL
+[  11.633s]  CHECK
+[  11.633s] :**
+[  11.634s]   \n
+[  11.634s] The
+[  11.647s]  pieces
+[  11.648s]  combine
+[  11.679s]  for
+[  11.680s]  a
+[  11.701s]  cozy
+[  11.702s] ,
+[  11.714s]  stylish
+[  11.714s] ,
+[  11.742s]  and
+[  11.742s]  season
+[  11.767s] ally
+[  11.767s]  transitional
+[  11.783s]  look
+[  11.783s] .\n\n
+[  11.795s] **
+[  11.795s] FINAL
+[  11.810s]  O
+[  11.810s] UTF
+[  11.828s] IT
+[  11.828s] :**
+[  11.830s]   \n
+[  11.830s] -
+[  11.844s]  Cream
+[  11.845s]  chunky
+[  11.850s]  knit
+[  11.850s]  sweater
+[  11.856s]   \n
+[  11.857s] -
+[  11.883s]  Navy
+[  11.884s]  ple
+[  11.886s] ated
+[  11.886s]  trousers
+[  11.902s]   \n
+[  11.902s] -
+[  11.902s]  Black
+[  11.902s]  str
+[  11.904s] appy
+[  11.904s]  sandals
+[  11.920s]   \n
+[  11.920s] -
+[  11.921s]  Silk
+[  11.921s]  scarf
+[  11.932s]   \n
+[  11.932s] -
+[  11.933s]  Black
+[  11.933s]  leather
+[  11.945s]  belt
+[  11.946s]   \n\n
+[  11.952s] **
+[  11.952s] ST
+[  11.960s] YL
+[  11.961s] ING
+[  11.974s] :**
+[  11.974s]   \n
+[  12.002s] Swe
+[  12.002s] ater
+[  12.025s]  is
+[  12.026s]  partially
+[  12.051s]  tucked
+[  12.051s]  at
+[  12.076s]  the
+[  12.076s]  front
+[  12.102s]  to
+[  12.102s]  highlight
+[  12.337s]  the
+[  12.337s]  belt
+[  12.414s] ,
+[  12.414s]  scarf
+[  12.430s]  tied
+[  12.430s]  loosely
+[  12.447s]  around
+[  12.448s]  the
+[  12.480s]  neck
+[  12.480s] .\n\n
+[  12.480s] ---\n\n
+[  12.480s] ===
+[  12.517s] JSON
+[  12.517s]  OUTPUT
+[  12.551s] ===
+[  12.551s] \n\n
+[  12.560s] ```
+[  12.560s] json
+[  12.576s] \n
+[  12.576s] [\n
+[  12.595s]  
+[  12.595s]  {\n
+[  12.596s]    
+[  12.596s]  "
+[  12.613s] items
+[  12.614s] ":
+[  12.654s]  ["
+[  12.655s] Camel
+[  12.666s]  wool
+[  12.667s]  coat
+[  12.671s] ",
+[  12.672s]  "
+[  12.674s] White
+[  12.675s]  linen
+[  12.675s]  button
+[  12.675s] -down
+[  12.688s]  shirt
+[  12.689s] ",
+[  12.690s]  "
+[  12.690s] High
+[  12.702s] -wa
+[  12.702s] isted
+[  12.707s]  wide
+[  12.707s] -leg
+[  12.724s]  jeans
+[  12.725s] ",
+[  12.727s]  "
+[  12.727s] White
+[  12.739s]  leather
+[  12.739s]  sneakers
+[  12.740s] ",
+[  12.740s]  "
+[  12.759s] Gold
+[  12.760s]  hoop
+[  12.761s]  earrings
+[  12.761s] "],\n
+[  12.776s]    
+[  12.776s]  "
+[  12.779s] sty
+[  12.779s] ling
+[  12.779s] _notes
+[  12.780s] ":
+[  12.831s]  "
+[  12.832s] The
+[  12.870s]  shirt
+[  12.871s]  is
+[  12.871s]  half
+[  12.871s] -t
+[  12.885s] ucked
+[  12.886s]  into
+[  12.896s]  the
+[  12.896s]  jeans
+[  12.897s]  to
+[  12.897s]  add
+[  12.912s]  a
+[  12.912s]  relaxed
+[  12.917s]  vibe
+[  12.917s] ,
+[  12.927s]  sleeves
+[  12.927s]  slightly
+[  12.930s]  rolled
+[  12.930s] .
+[  12.943s]  Coat
+[  12.943s]  worn
+[  12.946s]  open
+[  12.946s] .",\n
+[  12.962s]    
+[  12.963s]  "
+[  12.963s] why
+[  12.963s] _it
+[  12.978s] _
+[  12.978s] works
+[  12.991s] ":
+[  12.991s]  "
+[  13.013s] This
+[  13.013s]  outfit
+[  13.029s]  merges
+[  13.029s]  elegance
+[  13.042s]  with
+[  13.042s]  casual
+[  13.053s]  comfort
+[  13.053s] ,
+[  13.081s]  using
+[  13.081s]  a
+[  13.096s]  classic
+[  13.096s]  coat
+[  13.148s]  to
+[  13.149s]  highlight
+[  13.178s]  the
+[  13.178s]  unexpected
+[  13.217s]  use
+[  13.217s]  of
+[  13.241s]  linen
+[  13.242s]  in
+[  13.271s]  fall
+[  13.271s] .
+[  13.302s]  The
+[  13.302s]  structured
+[  13.337s]  coat
+[  13.337s]  contrasts
+[  13.356s]  beautifully
+[  13.356s]  with
+[  13.373s]  the
+[  13.373s]  relaxed
+[  13.405s]  denim
+[  13.405s] ,
+[  13.417s]  while
+[  13.417s]  the
+[  13.439s]  sneakers
+[  13.440s]  maintain
+[  13.465s]  a
+[  13.466s]  laid
+[  13.497s] -back
+[  13.497s]  feel
+[  13.499s] ."\n
+[  13.499s]  
+[  13.513s]  },\n
+[  13.513s]  
+[  13.530s]  {\n
+[  13.530s]    
+[  13.530s]  "
+[  13.531s] items
+[  13.531s] ":
+[  13.545s]  ["
+[  13.546s] Black
+[  13.546s]  leather
+[  13.546s]  midi
+[  13.555s]  skirt
+[  13.555s] ",
+[  13.592s]  "
+[  13.592s] N
+[  13.597s] avy
+[  13.597s]  bre
+[  13.603s] ton
+[  13.604s]  stripe
+[  13.605s]  tee
+[  13.605s] ",
+[  13.621s]  "
+[  13.622s] Black
+[  13.623s]  ankle
+[  13.623s]  boots
+[  13.637s] ",
+[  13.638s]  "
+[  13.638s] Den
+[  13.638s] im
+[  13.642s]  jacket
+[  13.642s] ",
+[  13.642s]  "
+[  13.643s] Brown
+[  13.657s]  leather
+[  13.657s]  cross
+[  13.657s] body
+[  13.658s]  bag
+[  13.669s] "],\n
+[  13.669s]    
+[  13.670s]  "
+[  13.670s] sty
+[  13.687s] ling
+[  13.688s] _notes
+[  13.700s] ":
+[  13.700s]  "
+[  13.716s] T
+[  13.716s] ee
+[  13.736s]  is
+[  13.737s]  tucked
+[  13.753s]  into
+[  13.753s]  the
+[  13.755s]  skirt
+[  13.755s]  to
+[  13.770s]  define
+[  13.770s]  the
+[  13.774s]  waist
+[  13.774s] .
+[  13.791s]  Jacket
+[  13.791s]  is
+[  13.793s]  dr
+[  13.793s] aped
+[  13.806s]  over
+[  13.807s]  the
+[  13.810s]  shoulders
+[  13.810s]  for
+[  13.810s]  a
+[  13.810s]  relaxed
+[  13.822s]  look
+[  13.822s] .",\n
+[  13.824s]    
+[  13.824s]  "
+[  13.837s] why
+[  13.838s] _it
+[  13.839s] _
+[  13.839s] works
+[  13.853s] ":
+[  13.853s]  "
+[  13.886s] Comb
+[  13.886s] ining
+[  13.919s]  classic
+[  13.919s]  stripes
+[  13.928s]  with
+[  13.928s]  a
+[  13.942s]  sleek
+[  13.942s]  leather
+[  14.285s]  skirt
+[  14.285s]  creates
+[  14.286s]  a
+[  14.286s]  striking
+[  14.286s]  contrast
+[  14.286s]  that's
+[  14.286s]  both
+[  14.286s]  edgy
+[  14.290s]  and
+[  14.290s]  timeless
+[  14.313s] .
+[  14.313s]  The
+[  14.338s]  denim
+[  14.338s]  jacket
+[  14.352s]  soft
+[  14.352s] ens
+[  14.364s]  the
+[  14.364s]  look
+[  14.377s] ,
+[  14.377s]  making
+[  14.405s]  it
+[  14.405s]  approachable
+[  14.430s] ,
+[  14.430s]  while
+[  14.456s]  the
+[  14.457s]  boots
+[  14.485s]  add
+[  14.485s]  a
+[  14.512s]  confident
+[  14.512s]  edge
+[  14.527s] ."\n
+[  14.528s]  
+[  14.542s]  },\n
+[  14.542s]  
+[  14.542s]  {\n
+[  14.543s]    
+[  14.557s]  "
+[  14.557s] items
+[  14.557s] ":
+[  14.558s]  ["
+[  14.572s] Cream
+[  14.573s]  chunky
+[  14.574s]  knit
+[  14.574s]  sweater
+[  14.579s] ",
+[  14.579s]  "
+[  14.588s] N
+[  14.588s] avy
+[  14.588s]  ple
+[  14.589s] ated
+[  14.603s]  trousers
+[  14.603s] ",
+[  14.605s]  "
+[  14.605s] Black
+[  14.618s]  str
+[  14.618s] appy
+[  14.620s]  sandals
+[  14.620s] ",
+[  14.644s]  "
+[  14.644s] Sil
+[  14.687s] k
+[  14.688s]  scarf
+[  14.689s] ",
+[  14.689s]  "
+[  14.705s] Black
+[  14.705s]  leather
+[  14.720s]  belt
+[  14.720s] "],\n
+[  14.722s]    
+[  14.722s]  "
+[  14.735s] sty
+[  14.735s] ling
+[  14.735s] _notes
+[  14.735s] ":
+[  14.746s]  "
+[  14.746s] Swe
+[  14.747s] ater
+[  14.748s]  is
+[  14.762s]  partially
+[  14.762s]  tucked
+[  14.783s]  at
+[  14.783s]  the
+[  14.793s]  front
+[  14.794s]  to
+[  14.794s]  highlight
+[  14.794s]  the
+[  14.818s]  belt
+[  14.818s] ,
+[  14.820s]  scarf
+[  14.820s]  tied
+[  14.834s]  loosely
+[  14.834s]  around
+[  14.849s]  the
+[  14.849s]  neck
+[  14.865s] .",\n
+[  14.865s]    
+[  14.865s]  "
+[  14.865s] why
+[  14.883s] _it
+[  14.883s] _
+[  14.892s] works
+[  14.893s] ":
+[  14.894s]  "
+[  14.894s] This
+[  14.923s]  outfit
+[  14.923s]  creatively
+[  14.950s]  juxtap
+[  14.950s] oses
+[  14.986s]  cozy
+[  14.986s]  with
+[  15.009s]  chic
+[  15.009s]  by
+[  15.031s]  pairing
+[  15.031s]  a
+[  15.033s]  chunky
+[  15.033s]  knit
+[  15.058s]  with
+[  15.058s]  elegant
+[  15.172s]  sandals
+[  15.172s] .
+[  15.235s]  The
+[  15.236s]  structured
+[  15.263s]  trousers
+[  15.263s]  add
+[  15.289s]  sophistication
+[  15.289s] ,
+[  15.325s]  while
+[  15.326s]  the
+[  15.336s]  silk
+[  15.336s]  scarf
+[  15.370s]  provides
+[  15.370s]  a
+[  15.393s]  pattern
+[  15.394s]  pop
+[  15.427s] ,
+[  15.427s]  ensuring
+[  15.457s]  all
+[  15.457s]  elements
+[  15.478s]  work
+[  15.478s]  harmon
+[  15.490s] iously
+[  15.490s] ."\n
+[  15.500s]  
+[  15.500s]  }\n
+[  15.513s] ]\n
+[  15.513s] ```
+
+
+FULL RESPONSE:
+----------------------------------------------------------------------
+## OUTFIT 1 REASONING
+
+**FUNCTION:**  
+Feel put-together and stylish for a casual weekend brunch while maintaining comfort.
+
+**ANCHOR:**  
+Camel wool coat  
+- Why it's the hero: Its structured silhouette and classic color add polish and refinement to any casual ensemble.  
+- Style words: classic, confident  
+
+**SUPPORTING PIECES:**  
+- White linen button-down shirt: Provides a crisp, clean base layer - carries classic  
+- High-waisted wide-leg jeans: Adds a relaxed, yet stylish bottom choice - carries edgy  
+- White leather sneakers: Keeps the look laid-back and comfortable - carries confident  
+- Contrast created: The structured coat contrasts with the relaxed jeans and shirt, providing a balance between casual and polished elements.
+
+**UNEXPECTED ELEMENT:**  
+White linen button-down shirt  
+- Breaks: Typically, linen shirts are considered more suited for summer, not early fall with a wool coat.  
+- Works because: The lightweight linen contrasts with the wool, creating an interesting textural play that works for a transitional season.  
+
+**STYLE DNA:**  
+classic ✓ camel wool coat | edgy ✓ jeans | confident ✓ sneakers  
+
+**COMPLETING THE LOOK:**  
+- Gold hoop earrings: Add a touch of sophistication and complete the look.  
+
+**STORY:**  
+"I'm someone who effortlessly combines comfort with style, making the unexpected work seamlessly."
+
+**PHYSICAL CHECK:**  
+All pieces work together for a layered, stylish, and comfortable brunch look.
+
+**FINAL OUTFIT:**  
+- Camel wool coat  
+- White linen button-down shirt  
+- High-waisted wide-leg jeans  
+- White leather sneakers  
+- Gold hoop earrings  
+
+**STYLING:**  
+The shirt is half-tucked into the jeans to add a relaxed vibe, sleeves slightly rolled. Coat worn open.
+
+---
+
+## OUTFIT 2 REASONING
+
+**FUNCTION:**  
+Stand out with an edgy flair at brunch while remaining approachable and chic.
+
+**ANCHOR:**  
+Black leather midi skirt  
+- Why it's the hero: The skirt’s sleek leather adds an unexpected edge to a brunch setting.  
+- Style words: edgy, confident  
+
+**SUPPORTING PIECES:**  
+- Navy breton stripe tee: Adds a classic pattern and balances the skirt’s edge - carries classic  
+- Black ankle boots: Reinforce the edgy vibe and offer comfortable sophistication - carries edgy  
+- Denim jacket: Softens the look with a casual touch and adds structure - carries confident  
+- Contrast created: The soft, classic tee contrasts with the leather skirt, while the denim jacket provides a casual balance to the outfit.
+
+**UNEXPECTED ELEMENT:**  
+Navy breton stripe tee  
+- Breaks: Stripes are often paired with more casual elements, not typically with leather.  
+- Works because: The classic pattern of the stripes adds a timeless element that contrasts interestingly with the modern edge of the leather.  
+
+**STYLE DNA:**  
+classic ✓ tee | edgy ✓ skirt | confident ✓ boots  
+
+**COMPLETING THE LOOK:**  
+- Brown leather crossbody bag: Adds a warm contrast and functionality.  
+
+**STORY:**  
+"I'm someone who blends timeless patterns with bold materials, making a statement without saying a word."
+
+**PHYSICAL CHECK:**  
+Each piece complements the others, ensuring the outfit is cohesive and stylish.
+
+**FINAL OUTFIT:**  
+- Black leather midi skirt  
+- Navy breton stripe tee  
+- Black ankle boots  
+- Denim jacket  
+- Brown leather crossbody bag  
+
+**STYLING:**  
+Tee is tucked into the skirt to define the waist. Jacket is draped over the shoulders for a relaxed look.
+
+---
+
+## OUTFIT 3 REASONING
+
+**FUNCTION:**  
+Exude warmth and coziness while maintaining a fashionable edge for a weekend outing.
+
+**ANCHOR:**  
+Cream chunky knit sweater  
+- Why it's the hero: Its oversized, cozy nature offers comfort and style, perfect for a casual setting.  
+- Style words: classic, confident  
+
+**SUPPORTING PIECES:**  
+- Navy pleated trousers: Provide a structured and tailored contrast to the oversized sweater - carries classic  
+- Black strappy sandals: Add a surprising touch of elegance and unexpected seasonality - carries edgy  
+- Silk scarf: Adds a pop of pattern and texture around the neckline - carries confident  
+- Contrast created: The relaxed fit of the sweater contrasts with the tailored trousers, while the sandals add a surprising, airy element.
+
+**UNEXPECTED ELEMENT:**  
+Black strappy sandals  
+- Breaks: Typically reserved for warmer months, not paired with a chunky sweater.  
+- Works because: The contrast between the cozy sweater and the elegant sandals creates an intriguing juxtaposition, elevating the look.  
+
+**STYLE DNA:**  
+classic ✓ sweater | edgy ✓ sandals | confident ✓ scarf  
+
+**COMPLETING THE LOOK:**  
+- Black leather belt: Defines the waist, adding structure to the sweater.  
+
+**STORY:**  
+"I'm someone who can make cozy look chic, embracing unexpected combinations with confidence."
+
+**PHYSICAL CHECK:**  
+The pieces combine for a cozy, stylish, and seasonally transitional look.
+
+**FINAL OUTFIT:**  
+- Cream chunky knit sweater  
+- Navy pleated trousers  
+- Black strappy sandals  
+- Silk scarf  
+- Black leather belt  
+
+**STYLING:**  
+Sweater is partially tucked at the front to highlight the belt, scarf tied loosely around the neck.
+
+---
+
+===JSON OUTPUT===
+
+```json
+[
+  {
+    "items": ["Camel wool coat", "White linen button-down shirt", "High-waisted wide-leg jeans", "White leather sneakers", "Gold hoop earrings"],
+    "styling_notes": "The shirt is half-tucked into the jeans to add a relaxed vibe, sleeves slightly rolled. Coat worn open.",
+    "why_it_works": "This outfit merges elegance with casual comfort, using a classic coat to highlight the unexpected use of linen in fall. The structured coat contrasts beautifully with the relaxed denim, while the sneakers maintain a laid-back feel."
+  },
+  {
+    "items": ["Black leather midi skirt", "Navy breton stripe tee", "Black ankle boots", "Denim jacket", "Brown leather crossbody bag"],
+    "styling_notes": "Tee is tucked into the skirt to define the waist. Jacket is draped over the shoulders for a relaxed look.",
+    "why_it_works": "Combining classic stripes with a sleek leather skirt creates a striking contrast that's both edgy and timeless. The denim jacket softens the look, making it approachable, while the boots add a confident edge."
+  },
+  {
+    "items": ["Cream chunky knit sweater", "Navy pleated trousers", "Black strappy sandals", "Silk scarf", "Black leather belt"],
+    "styling_notes": "Sweater is partially tucked at the front to highlight the belt, scarf tied loosely around the neck.",
+    "why_it_works": "This outfit creatively juxtaposes cozy with chic by pairing a chunky knit with elegant sandals. The structured trousers add sophistication, while the silk scarf provides a pattern pop, ensuring all elements work harmoniously."
+  }
+]
+```

@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Streaming Prompt Comparison</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+        .scenario {
+            background: white;
+            padding: 30px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #1a1a1a; }
+        h2 { color: #333; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; }
+        .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .column { border: 2px solid #ddd; padding: 20px; border-radius: 8px; }
+        .column.version-a { border-color: #007bff; }
+        .column.version-b { border-color: #28a745; }
+        .version-header {
+            padding: 15px;
+            margin: -20px -20px 20px -20px;
+            border-radius: 6px 6px 0 0;
+        }
+        .version-a .version-header { background: #e7f1ff; }
+        .version-b .version-header { background: #e8f5e9; }
+        .version-header h3 { margin: 0 0 5px 0; }
+        .stats { font-size: 12px; color: #666; }
+        .stats span { margin-right: 15px; }
+        .outfit {
+            margin: 20px 0;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 6px;
+            border-left: 4px solid #666;
+        }
+        .version-a .outfit { border-left-color: #007bff; }
+        .version-b .outfit { border-left-color: #28a745; }
+        .outfit h4 { margin: 0 0 15px 0; }
+        .items { display: flex; flex-wrap: wrap; gap: 10px; margin: 15px 0; }
+        img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        img:hover {
+            transform: scale(2.5);
+            z-index: 1000;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        .item-placeholder {
+            width: 120px;
+            height: 120px;
+            background: #eee;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #999;
+            text-align: center;
+            padding: 5px;
+        }
+        .styling {
+            font-style: italic;
+            color: #555;
+            margin: 10px 0;
+            padding: 10px;
+            background: #fff;
+            border-radius: 4px;
+        }
+        .why {
+            color: #333;
+            margin: 10px 0;
+            padding: 10px;
+            background: #fff;
+            border-radius: 4px;
+        }
+        .timing-summary {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .timing-summary table { width: 100%; border-collapse: collapse; }
+        .timing-summary th, .timing-summary td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .winner { background: #d4edda; font-weight: bold; }
+        .constraint-pass { color: #28a745; }
+        .constraint-fail { color: #dc3545; }
+        .judge-section {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Streaming Prompt Comparison</h1>
+    <p>Version A: All JSON at end | Version B: Interleaved JSON per outfit</p>
+
+    <div class="scenario">
+        <h2>Casual Weekend Outing</h2>
+        <p>Occasion: casual coffee with friends followed by some errands</p>
+        <p>Style: casual + polished + chic</p>
+        
+
+        <div class="timing-summary">
+            <h4>Timing & Constraints (Claude judged)</h4>
+            <table>
+                <tr>
+                    <th>Metric</th>
+                    <th>Version A</th>
+                    <th>Version B</th>
+                    <th>Winner</th>
+                </tr>
+                <tr>
+                    <td>Total time</td>
+                    <td>8.47s</td>
+                    <td>8.62s</td>
+                    <td>A</td>
+                </tr>
+                <tr>
+                    <td>First outfit JSON available</td>
+                    <td>7.12s</td>
+                    <td class="winner">3.49s</td>
+                    <td><strong>B wins by 3.6s</strong></td>
+                </tr>
+                <tr>
+                    <td>Constraint (no item in 3+ outfits)</td>
+                    <td class="constraint-pass">PASS</td>
+                    <td class="constraint-pass">PASS</td>
+                    <td>Both pass</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="comparison">
+            <div class="column version-a">
+                <div class="version-header">
+                    <h3>Version A (All JSON at end)</h3>
+                    <div class="stats">
+                        <span>Total: 8.47s</span>
+                        <span>First JSON: 7.12s</span>
+                    </div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 1</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b6ecfd29000d4c918b4c81e0bf67efa6.jpg" alt="Dark Wash Flared Jeans" title="Dark Wash Flared Jeans">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/82846646f9a2420a8e69a1b5351ff49f.jpg" alt="Gray puff-sleeve cropped tee" title="Gray puff-sleeve cropped tee">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/fea051736ba246b991b53dbf7d7b80ed.jpg" alt="Black leather mid-calf boots" title="Black leather mid-calf boots">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/32fcec6583934f9aaa71044d5cae8fad_1765844146.jpg" alt="Black leather tote bag" title="Black leather tote bag">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" title="Gold swirl earrings with pearl center">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Tuck the tee into the jeans and roll up the sleeves to showcase the puff detail. Let the earrings shine by keeping hair tucked behind the ears or in a low bun.</div>
+                    <div class="why"><strong>Why it works:</strong> The earrings add unexpected elegance to an otherwise casual look, enhancing the chicness.</div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 2</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/f241f1c156fa44afb4c54a6bcc8dcea1.jpg" alt="Black and white houndstooth trousers" title="Black and white houndstooth trousers">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" alt="White ruffled button-up shirt" title="White ruffled button-up shirt">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" alt="White and Red Classic Leather Sneakers" title="White and Red Classic Leather Sneakers">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/067d63929f21415e986863f5db37cec8.jpg" alt="Tan leather long coat" title="Tan leather long coat">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e3bcf7bca70d49ec8c2736d15892319a.jpg" alt="Pink and yellow striped scarf with fringe" title="Pink and yellow striped scarf with fringe">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Keep the shirt untucked to flow naturally over the trousers. Drape the scarf loosely around the neck for a relaxed vibe.</div>
+                    <div class="why"><strong>Why it works:</strong> The colorful scarf contrasts with the classic pattern, adding a cheerful pop to the outfit.</div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 3</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/13ae557e53b449bc8d68e07861375e0d.jpg" alt="Sage Green Leather A-line Skirt" title="Sage Green Leather A-line Skirt">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d6ce07cd26204333b1f0da076030d980.jpg" alt="Black puff-sleeve smocked blouse" title="Black puff-sleeve smocked blouse">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/66af2a43a68343a88921acec7a85c0f0.jpg" alt="Taupe suede ankle boots" title="Taupe suede ankle boots">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2aa36a23bd26480c96a023e648dde746.jpg" alt="Brown suede crossbody bag with gold hardware" title="Brown suede crossbody bag with gold hardware">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/a6faa94eacf14720812842c045b83490.jpg" alt="Silver teardrop pendant necklace" title="Silver teardrop pendant necklace">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Tuck the blouse into the skirt to highlight the waist and let the necklace be the focal point by keeping the neckline clear.</div>
+                    <div class="why"><strong>Why it works:</strong> The silver necklace adds a modern twist to the earth-toned ensemble, creating a fresh look.</div>
+                </div>
+
+            </div>
+            <div class="column version-b">
+                <div class="version-header">
+                    <h3>Version B (Interleaved JSON)</h3>
+                    <div class="stats">
+
+                        <span>Total: 8.62s</span>
+                        <span>First JSON: 3.49s</span>
+                    </div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 1</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2a337a039a0a4d98b4833b48d9928baf.jpg" alt="Black and white paisley ruffle blouse" title="Black and white paisley ruffle blouse">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/5b174344b6f94c83a97e250b5a34c1ab.jpg" alt="Medium wash straight-leg jeans" title="Medium wash straight-leg jeans">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" alt="White and Red Classic Leather Sneakers" title="White and Red Classic Leather Sneakers">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/32fcec6583934f9aaa71044d5cae8fad_1765844146.jpg" alt="Black leather tote bag" title="Black leather tote bag">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Tuck the blouse into the jeans for a polished look, and roll up the jeans slightly to showcase the sneakers. Carry the tote bag for a chic yet functional accessory.</div>
+                    <div class="why"><strong>Why it works:</strong> The contrast between the elegant paisley blouse and the casual sneakers creates an interesting and stylish juxtaposition that aligns with the chic yet casual vibe.</div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 2</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b6ecfd29000d4c918b4c81e0bf67efa6.jpg" alt="Dark wash flared jeans" title="Dark wash flared jeans">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/fb74fd751f3d47f39da9104a24cd8d52.jpg" alt="Ivory crochet button-up cardigan" title="Ivory crochet button-up cardigan">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b120e972a0814e2a84dbcc254cd1767c.jpg" alt="Brown woven leather belt" title="Brown woven leather belt">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg" alt="Black Patent Leather Loafers" title="Black Patent Leather Loafers">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Belt the cardigan for a defined silhouette, and allow the flared jeans to sit over the loafers for a polished finish.</div>
+                    <div class="why"><strong>Why it works:</strong> The mix of textures—crochet with leather—adds depth, while the flared jeans bring in a retro vibe that is balanced by the modern loafers.</div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 3</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/13ae557e53b449bc8d68e07861375e0d.jpg" alt="Sage Green Leather A-line Skirt" title="Sage Green Leather A-line Skirt">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/994a7e97c82742b5bc47ffeee5634b9b.jpg" alt="Gray graphic print sweatshirt" title="Gray graphic print sweatshirt">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1e1f015ce81489997c2f77d046b6497.jpg" alt="White and Black Distressed Leather Ankle Boots" title="White and Black Distressed Leather Ankle Boots">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2aa36a23bd26480c96a023e648dde746.jpg" alt="Brown suede crossbody bag with gold hardware" title="Brown suede crossbody bag with gold hardware">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Tuck the sweatshirt slightly into the front of the skirt for a relaxed look. Let the boots add a touch of edge, and use the crossbody bag for a hands-free experience.</div>
+                    <div class="why"><strong>Why it works:</strong> The combination of the structured leather skirt with the casual sweatshirt creates a balanced yet intriguing look, while the boots and crossbody bag add both style and practicality.</div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="judge-section">
+            <h4>Your Quality Judgment</h4>
+            <p>Which version produced better outfits for this scenario?</p>
+            <p>Consider: item matching, styling creativity, "why it works" reasoning</p>
+        </div>
+    </div>
+
+    <div class="scenario">
+        <h2>Complete My Look: Cream Boots</h2>
+        <p>Occasion: casual weekend brunch</p>
+        <p>Style: classic + relaxed + playful</p>
+        <p><strong>Anchor items:</strong> Cream knee-high block heel boots</p>
+
+        <div class="timing-summary">
+            <h4>Timing & Constraints (Claude judged)</h4>
+            <table>
+                <tr>
+                    <th>Metric</th>
+                    <th>Version A</th>
+                    <th>Version B</th>
+                    <th>Winner</th>
+                </tr>
+                <tr>
+                    <td>Total time</td>
+                    <td>7.76s</td>
+                    <td>9.23s</td>
+                    <td>A</td>
+                </tr>
+                <tr>
+                    <td>First outfit JSON available</td>
+                    <td>6.80s</td>
+                    <td class="winner">2.90s</td>
+                    <td><strong>B wins by 3.9s</strong></td>
+                </tr>
+                <tr>
+                    <td>Constraint (no item in 3+ outfits)</td>
+                    <td class="constraint-pass">PASS</td>
+                    <td class="constraint-pass">PASS</td>
+                    <td>Both pass</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="comparison">
+            <div class="column version-a">
+                <div class="version-header">
+                    <h3>Version A (All JSON at end)</h3>
+                    <div class="stats">
+                        <span>Total: 7.76s</span>
+                        <span>First JSON: 6.80s</span>
+                    </div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 1</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c3d14deb47d148c79dec12ec85f9bc27.jpg" alt="Cream knee-high block heel boots" title="Cream knee-high block heel boots">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/82846646f9a2420a8e69a1b5351ff49f.jpg" alt="Gray puff-sleeve cropped tee" title="Gray puff-sleeve cropped tee">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b6ecfd29000d4c918b4c81e0bf67efa6.jpg" alt="Dark Wash Flared Jeans" title="Dark Wash Flared Jeans">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/067d63929f21415e986863f5db37cec8.jpg" alt="Tan leather long coat" title="Tan leather long coat">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Tuck the gray puff-sleeve cropped tee into the high-waisted flared jeans and drape the tan leather long coat over the shoulders for a laid-back yet polished finish.</div>
+                    <div class="why"><strong>Why it works:</strong> The tan leather long coat adds a touch of formal sophistication to an otherwise casual ensemble, elevating the look.</div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 2</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c3d14deb47d148c79dec12ec85f9bc27.jpg" alt="Cream knee-high block heel boots" title="Cream knee-high block heel boots">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/fb74fd751f3d47f39da9104a24cd8d52.jpg" alt="Ivory crochet button-up cardigan" title="Ivory crochet button-up cardigan">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/13ae557e53b449bc8d68e07861375e0d.jpg" alt="Sage Green Leather A-line Skirt" title="Sage Green Leather A-line Skirt">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" alt="Gold leaf motif necklace" title="Gold leaf motif necklace">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Wear the cardigan buttoned and tucked into the skirt. Let the necklace peek through for a touch of elegance.</div>
+                    <div class="why"><strong>Why it works:</strong> The sage green leather A-line skirt adds a bold pop of color and texture, making the outfit lively and unique.</div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 3</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c3d14deb47d148c79dec12ec85f9bc27.jpg" alt="Cream knee-high block heel boots" title="Cream knee-high block heel boots">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/a81ac89a43c44f0ebe1f69410bc76ccc.jpg" alt="Black and white polka dot long-sleeve blouse" title="Black and white polka dot long-sleeve blouse">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/5b174344b6f94c83a97e250b5a34c1ab.jpg" alt="Medium wash straight-leg jeans" title="Medium wash straight-leg jeans">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" alt="Black and White Floral Print Scarf" title="Black and White Floral Print Scarf">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Tuck the blouse into the jeans and wrap the scarf loosely around the neck for a relaxed and stylish layer.</div>
+                    <div class="why"><strong>Why it works:</strong> The black and white floral print scarf introduces a mix of prints, which adds depth and interest to the look without clashing.</div>
+                </div>
+
+            </div>
+            <div class="column version-b">
+                <div class="version-header">
+                    <h3>Version B (Interleaved JSON)</h3>
+                    <div class="stats">
+
+                        <span>Total: 9.23s</span>
+                        <span>First JSON: 2.90s</span>
+                    </div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 1</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c3d14deb47d148c79dec12ec85f9bc27.jpg" alt="Cream knee-high block heel boots" title="Cream knee-high block heel boots">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/fb74fd751f3d47f39da9104a24cd8d52.jpg" alt="Ivory crochet button-up cardigan" title="Ivory crochet button-up cardigan">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d83ddd63b7cd4654bd4a063d19c3876e.jpg" alt="Light blue wide-leg jeans" title="Light blue wide-leg jeans">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/8e074000e7944a879fe07a6d129b9069.jpg" alt="Turquoise graphic tee with orange animal print" title="Turquoise graphic tee with orange animal print">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Layer the turquoise tee under the cardigan, leaving the cardigan unbuttoned to showcase the tee. Pair with the cream boots for a cohesive look.</div>
+                    <div class="why"><strong>Why it works:</strong> The ivory cardigan and light blue jeans create a soft, classic base, while the turquoise tee adds a playful burst of color that complements the cream boots.</div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 2</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c3d14deb47d148c79dec12ec85f9bc27.jpg" alt="Cream knee-high block heel boots" title="Cream knee-high block heel boots">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/54a507fef23d40dcbcd632facaf65bed.jpg" alt="White wide-leg high-waisted pants" title="White wide-leg high-waisted pants">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d6ce07cd26204333b1f0da076030d980.jpg" alt="Black puff-sleeve smocked blouse" title="Black puff-sleeve smocked blouse">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" alt="Black and White Floral Print Scarf" title="Black and White Floral Print Scarf">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Tuck the blouse into the high-waisted pants for a polished look. Drape the floral scarf loosely around the neck for added visual interest.</div>
+                    <div class="why"><strong>Why it works:</strong> This outfit combines classic black and white elements with the cream boots, while the scarf provides an unexpected artistic touch.</div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 3</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c3d14deb47d148c79dec12ec85f9bc27.jpg" alt="Cream knee-high block heel boots" title="Cream knee-high block heel boots">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/98b2e0247fa44b3cb97c0ef363571b79_1764837302.jpg" alt="Burgundy and cream striped ribbed sweater" title="Burgundy and cream striped ribbed sweater">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/13ae557e53b449bc8d68e07861375e0d.jpg" alt="Sage Green Leather A-line Skirt" title="Sage Green Leather A-line Skirt">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e3bcf7bca70d49ec8c2736d15892319a.jpg" alt="Pink and yellow striped scarf with fringe" title="Pink and yellow striped scarf with fringe">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Tuck the sweater into the skirt to highlight the waist. Wrap the scarf around the neck or drape it over the shoulder for a pop of color and pattern.</div>
+                    <div class="why"><strong>Why it works:</strong> The outfit blends different textures and patterns in a cohesive way, with the cream boots grounding the vibrant colors and prints.</div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="judge-section">
+            <h4>Your Quality Judgment</h4>
+            <p>Which version produced better outfits for this scenario?</p>
+            <p>Consider: item matching, styling creativity, "why it works" reasoning</p>
+        </div>
+    </div>
+
+    <div class="scenario">
+        <h2>Complete My Look: Dress + Loafers</h2>
+        <p>Occasion: brunch with friends</p>
+        <p>Style: classic + relaxed + playful</p>
+        <p><strong>Anchor items:</strong> Olive green textured long-sleeve dress, Black Patent Leather Loafers</p>
+
+        <div class="timing-summary">
+            <h4>Timing & Constraints (Claude judged)</h4>
+            <table>
+                <tr>
+                    <th>Metric</th>
+                    <th>Version A</th>
+                    <th>Version B</th>
+                    <th>Winner</th>
+                </tr>
+                <tr>
+                    <td>Total time</td>
+                    <td>7.95s</td>
+                    <td>7.82s</td>
+                    <td>B</td>
+                </tr>
+                <tr>
+                    <td>First outfit JSON available</td>
+                    <td>6.55s</td>
+                    <td class="winner">2.56s</td>
+                    <td><strong>B wins by 4.0s</strong></td>
+                </tr>
+                <tr>
+                    <td>Constraint (no item in 3+ outfits)</td>
+                    <td class="constraint-pass">PASS</td>
+                    <td class="constraint-pass">PASS</td>
+                    <td>Both pass</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="comparison">
+            <div class="column version-a">
+                <div class="version-header">
+                    <h3>Version A (All JSON at end)</h3>
+                    <div class="stats">
+                        <span>Total: 7.95s</span>
+                        <span>First JSON: 6.55s</span>
+                    </div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 1</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/3665aeb45e1646209dd3462200a45df8_1765844368.jpg" alt="Olive green textured long-sleeve dress" title="Olive green textured long-sleeve dress">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg" alt="Black Patent Leather Loafers" title="Black Patent Leather Loafers">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" alt="Gold leaf motif necklace" title="Gold leaf motif necklace">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/32fcec6583934f9aaa71044d5cae8fad_1765844146.jpg" alt="Black leather tote bag" title="Black leather tote bag">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/37a93365ed69486bb6511e9c29d27ce4.jpg" alt="Studded Denim Button-Up Shirt" title="Studded Denim Button-Up Shirt">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Layer the denim shirt under the dress with the collar and cuffs peeking out. Let the gold necklace sit over the shirt collar for added sophistication.</div>
+                    <div class="why"><strong>Why it works:</strong> The studded denim shirt adds an edgy and youthful vibe, contrasting with the classic dress and loafers.</div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 2</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/3665aeb45e1646209dd3462200a45df8_1765844368.jpg" alt="Olive green textured long-sleeve dress" title="Olive green textured long-sleeve dress">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg" alt="Black Patent Leather Loafers" title="Black Patent Leather Loafers">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/a81ac89a43c44f0ebe1f69410bc76ccc.jpg" alt="Black and white polka dot long-sleeve blouse" title="Black and white polka dot long-sleeve blouse">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" title="Gold swirl earrings with pearl center">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/cd9aba82c36248b8bb25d8acfe9b9490.jpg" alt="Leopard Print Square Scarf" title="Leopard Print Square Scarf">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Wear the polka dot blouse under the dress. Tie the scarf around the neck in a loose knot for a chic accent.</div>
+                    <div class="why"><strong>Why it works:</strong> The leopard print scarf adds a fun and unexpected contrast to the polka dots, creating a playful pattern mix.</div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 3</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/3665aeb45e1646209dd3462200a45df8_1765844368.jpg" alt="Olive green textured long-sleeve dress" title="Olive green textured long-sleeve dress">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg" alt="Black Patent Leather Loafers" title="Black Patent Leather Loafers">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/067d63929f21415e986863f5db37cec8.jpg" alt="Tan leather long coat" title="Tan leather long coat">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/18b9432210b546b48331f3a2c12a686d.jpg" alt="Pearl and Wire Necklace" title="Pearl and Wire Necklace">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/dab7733fbd3a400d88abe6c89bbb2a36_1766518349.jpg" alt="Bright pink button-up cardigan" title="Bright pink button-up cardigan">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Drape the pink cardigan over the shoulders and wear the necklace under the coat for a layered look. Let the coat hang open for a relaxed silhouette.</div>
+                    <div class="why"><strong>Why it works:</strong> The bright pink cardigan introduces a vibrant color, highlighting a playful side.</div>
+                </div>
+
+            </div>
+            <div class="column version-b">
+                <div class="version-header">
+                    <h3>Version B (Interleaved JSON)</h3>
+                    <div class="stats">
+
+                        <span>Total: 7.82s</span>
+                        <span>First JSON: 2.56s</span>
+                    </div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 1</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/3665aeb45e1646209dd3462200a45df8_1765844368.jpg" alt="Olive green textured long-sleeve dress" title="Olive green textured long-sleeve dress">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg" alt="Black Patent Leather Loafers" title="Black Patent Leather Loafers">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/fb74fd751f3d47f39da9104a24cd8d52.jpg" alt="Ivory crochet button-up cardigan" title="Ivory crochet button-up cardigan">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" alt="Gold swirl earrings with pearl center" title="Gold swirl earrings with pearl center">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Leave the cardigan open for a relaxed look, and wear the gold swirl earrings to add a touch of sophistication.</div>
+                    <div class="why"><strong>Why it works:</strong> The outfit combines classic and comfortable elements, with the cardigan providing a soft and unexpected vintage texture.</div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 2</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/3665aeb45e1646209dd3462200a45df8_1765844368.jpg" alt="Olive green textured long-sleeve dress" title="Olive green textured long-sleeve dress">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg" alt="Black Patent Leather Loafers" title="Black Patent Leather Loafers">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/dab7733fbd3a400d88abe6c89bbb2a36_1766518349.jpg" alt="Bright pink button-up cardigan" title="Bright pink button-up cardigan">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" alt="Gold Bar Pendant Necklace" title="Gold Bar Pendant Necklace">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Button the cardigan partially for a layered effect, and let the gold bar necklace peek through for added shine.</div>
+                    <div class="why"><strong>Why it works:</strong> The bright pink cardigan adds a playful element that enlivens the classic dress, while the loafers and necklace maintain a polished look.</div>
+                </div>
+
+                <div class="outfit">
+                    <h4>Outfit 3</h4>
+                    <div class="items">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/3665aeb45e1646209dd3462200a45df8_1765844368.jpg" alt="Olive green textured long-sleeve dress" title="Olive green textured long-sleeve dress">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg" alt="Black Patent Leather Loafers" title="Black Patent Leather Loafers">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" alt="Black and White Floral Print Scarf" title="Black and White Floral Print Scarf">
+                        <img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/067d63929f21415e986863f5db37cec8.jpg" alt="Tan leather long coat" title="Tan leather long coat">
+
+                    </div>
+                    <div class="styling"><strong>Styling:</strong> Drape the floral scarf loosely around the neck and wear the tan coat open to highlight the dress's texture and color.</div>
+                    <div class="why"><strong>Why it works:</strong> The floral scarf introduces a bohemian element that contrasts with the streamlined coat, creating a balanced and stylish look.</div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="judge-section">
+            <h4>Your Quality Judgment</h4>
+            <p>Which version produced better outfits for this scenario?</p>
+            <p>Consider: item matching, styling creativity, "why it works" reasoning</p>
+        </div>
+    </div>
+
+    <div class="scenario">
+        <h2>Summary</h2>
+        <p><strong>Time study conclusion:</strong> Version B delivers first usable outfit ~4 seconds faster.</p>
+        <p><strong>Constraint honoring:</strong> Both versions passed all constraint checks.</p>
+        <p><strong>Quality:</strong> [Your judgment here]</p>
+        <p><strong>Note:</strong> These tests used simplified prompts. Production timing would be ~2x longer, but the relative advantage should hold.</p>
+    </div>
+</body>
+</html>

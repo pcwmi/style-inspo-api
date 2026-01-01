@@ -196,3 +196,36 @@ Virtual environment handles all dependencies via `requirements.txt`.
 - [ ] Validate in production immediately after each push
 - [ ] If first fix doesn't work, diagnose why before adding more fixes
 - [ ] Production environment is source of truth, not local dev
+
+### Lesson 7: Validate Specs Solve the Actual Problem (Dec 2025 SSE Streaming)
+**Problem**: Created a "streaming" spec that only set a static progress message, leaving users staring at "Creating outfit 1 of 3..." for 20 seconds with no updates.
+
+**What went wrong**:
+- Optimized for "easy to implement" instead of "solves the problem"
+- True streaming requires piping tokens through SSE as they generate
+- Instead, spec only added 4 lines of `job.meta` updates at START and END of generation
+- Rationalized it as "MVP" when it was actually useless
+- Buried the real solution in "Future Enhancements (out of scope)"
+
+**The useless spec said**:
+```
+"For MVP, we'll emit progress events at job milestones rather than during AI generation"
+```
+This means: set message once, wait 20 seconds, done. That's not streaming.
+
+**Prevention checklist**:
+- [ ] Before handing spec to Cursor, walk through UX second-by-second: "At t=0 user sees X, at t=5 they see Y, at t=20 they see Z"
+- [ ] Ask: "Does this actually solve the problem during the slow part?"
+- [ ] If labeling something "MVP", be explicit: "This MVP won't help during the 20s wait, only before/after"
+- [ ] Don't bury the real solution in "Future Enhancements" without flagging it
+- [ ] When user says "streaming to reduce latency", validate: are we actually streaming content, or just setting a loading message?
+
+**First-principles validation for streaming features**:
+- OpenAI's streaming API sends tokens as they generate (every ~50-100ms)
+- True streaming = user sees text appearing character by character
+- Fake streaming = set a message once, wait for full response, show result
+- Before implementing, run a time study to understand what actually gets generated when
+
+**Claude Code + Cursor workflow improvement**:
+- Claude Code creates spec → Claude Code validates UX second-by-second → User approves → Cursor implements
+- If Claude Code can't demo "user sees X at t=5", the spec isn't ready
