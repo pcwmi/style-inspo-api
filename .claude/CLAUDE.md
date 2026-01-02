@@ -229,3 +229,79 @@ This means: set message once, wait 20 seconds, done. That's not streaming.
 **Claude Code + Cursor workflow improvement**:
 - Claude Code creates spec → Claude Code validates UX second-by-second → User approves → Cursor implements
 - If Claude Code can't demo "user sees X at t=5", the spec isn't ready
+
+### Lesson 8: Always Test Locally BEFORE Commit/Push
+**Problem**: Committed and pushed code without testing locally first, resulting in broken production deploy.
+
+**What happened** (Jan 2026 HEIC orientation fix):
+- Wrote fix for HEIC image orientation
+- Created todo list: "Modify code → Commit/Push → Test"
+- Pushed untested code to production
+- Code had a bug (double rotation)
+- Had to push a second fix after local testing revealed the issue
+
+**Why this matters**:
+- Production deploys take time (~2 min)
+- Users may see broken features
+- Git history cluttered with "fix the fix" commits
+- Debugging in production is harder than local
+
+**Correct workflow**:
+1. Write the code change
+2. **Test locally** with real data (not mocked)
+3. Verify the fix works as expected
+4. THEN commit and push
+
+**Prevention checklist**:
+- [ ] Before ANY commit: "Have I tested this locally?"
+- [ ] For image processing: test with actual image files
+- [ ] For API changes: test with curl/Postman locally
+- [ ] TodoWrite should ALWAYS have "Test locally" BEFORE "Commit/Push"
+- [ ] If you can't test locally, explicitly acknowledge the risk
+
+**TodoWrite template for code changes**:
+```
+1. Implement the fix
+2. Test locally with real data   ← MUST come before commit
+3. Commit and push
+4. Verify in production
+```
+
+### Lesson 9: Full-Stack Integration Debugging (Jan 2026 - Image Orientation)
+
+**Problem**: Simple bug (missing `preserveExif: true`) took 5 pushes over a month to fix.
+
+**What happened**:
+- Nov-Dec 2025: Fixed backend EXIF handling multiple times
+- Jan 1, 2026: Added backend HEIC support
+- Jan 2, 2026: Finally fixed frontend - issue was `browser-image-compression` stripping EXIF
+
+**Why advanced models couldn't help**:
+- We tested backend in isolation (test_exif_integration.py) ✅
+- Backend test bypassed frontend, so it passed
+- We kept asking model to fix backend when bug was in frontend
+- **Models can't fix bad methodology** - if you test the wrong thing, model will fix the wrong thing
+
+**Root cause of delay**:
+1. **Tested components, not integration** - backend test bypassed frontend
+2. **Didn't trace full flow** - Browser → Compression → Upload → Backend
+3. **Assumed library defaults** - didn't check `browser-image-compression` docs
+4. **Wrong scope** - fixed backend (last step) when bug was in step 2
+
+**Prevention checklist**:
+- [ ] For bugs spanning frontend/backend: trace ENTIRE flow first
+- [ ] Test with production-like data flow (real browser uploads, not Python mocks)
+- [ ] When 2+ fixes don't work: widen scope, check integration points
+- [ ] For third-party libraries: check defaults, don't assume "right behavior"
+- [ ] Component tests are necessary but not sufficient - need integration tests
+
+**Debugging template for full-stack issues**:
+```
+1. Map the full data flow (every step from user to storage)
+2. Test each step with production-like data
+3. Check library defaults and configurations
+4. Don't assume any step works - verify each one
+5. If stuck after 2 attempts, trace end-to-end before more fixes
+```
+
+**Key insight**: The fix was 1 line (`preserveExif: true`) but took a month because we debugged the wrong component. Advanced models can't compensate for testing the wrong thing.
