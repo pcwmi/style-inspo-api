@@ -83,35 +83,19 @@ class WardrobeManager:
             # Generate unique filename
             unique_filename = f"{uuid.uuid4().hex}.jpg"  # Always save as JPEG for S3
 
-            # Check if HEIC file and extract EXIF orientation before PIL loses it
-            # (pillow-heif doesn't preserve EXIF orientation in image.info)
-            heic_orientation = None
+            # Register HEIF opener so PIL can open HEIC files from iPhone
+            # pillow_heif automatically handles EXIF orientation when opening
             try:
-                import pillow_heif
-                uploaded_file.seek(0)
-                heif_file = pillow_heif.read_heif(uploaded_file)
-                exif_bytes = heif_file.info.get('exif')
-                if exif_bytes:
-                    import piexif
-                    exif_dict = piexif.load(exif_bytes)
-                    heic_orientation = exif_dict.get("0th", {}).get(piexif.ImageIFD.Orientation)
-            except Exception:
-                pass  # Not a HEIC file or no EXIF
+                from pillow_heif import register_heif_opener
+                register_heif_opener()
+            except ImportError:
+                pass  # pillow_heif not installed
 
-            # Load image with PIL
-            uploaded_file.seek(0)
+            # Load and process image
             image = Image.open(uploaded_file)
-
-            # Apply orientation fix
-            if heic_orientation and heic_orientation != 1:
-                # HEIC: Manual rotation (PIL rotate is counter-clockwise)
-                # EXIF orientation: 1=Normal, 3=180°, 6=90°CW, 8=90°CCW
-                rotation_map = {3: 180, 6: 270, 8: 90}
-                if heic_orientation in rotation_map:
-                    image = image.rotate(rotation_map[heic_orientation], expand=True)
-            else:
-                # Non-HEIC: Standard exif_transpose (works for JPEG)
-                image = ImageOps.exif_transpose(image)
+            # Apply EXIF orientation for non-HEIC files (JPEG, PNG)
+            # Note: pillow_heif already handles orientation for HEIC
+            image = ImageOps.exif_transpose(image)
 
             # Convert RGBA to RGB for JPEG compatibility (PNG with transparency -> JPEG)
             if image.mode in ('RGBA', 'LA', 'P'):
