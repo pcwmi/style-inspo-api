@@ -108,16 +108,19 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete, user }:
             const file = newUploads[i].file
 
             try {
-                // 1. Rotate
+                // 1. Skip frontend rotation - backend handles EXIF orientation
+                // (EXIF.js doesn't work for HEIC files, and browser-image-compression
+                // now preserves EXIF so backend can handle it)
                 updateFileStatus(file.name, 'compressing', 10)
-                const rotatedFile = await rotateImage(file)
+                const rotatedFile = file
 
                 // 2. Compress
                 updateFileStatus(file.name, 'compressing', 30)
                 const options = {
                     maxSizeMB: 1,
                     maxWidthOrHeight: 1920,
-                    useWebWorker: true
+                    useWebWorker: true,
+                    preserveExif: true  // Keep EXIF so backend can handle orientation
                 }
                 const compressedFile = await imageCompression(rotatedFile, options)
 
