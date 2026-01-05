@@ -33,7 +33,9 @@
       "Bash(rq worker:*)",
       "Bash(STORAGE_TYPE=:*)",
       "Skill(start-the-day)",
-      "Skill(capture)"
+      "Skill(capture)",
+      "Bash(chmod:*)",
+      "Bash(.claude/scripts/bash-command-validator.sh)"
     ],
     "deny": [
       "Bash(gh:*)"
@@ -65,22 +67,13 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Bash(git push:*)",
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/scripts/check-untracked.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash(git commit:*)",
-        "hooks": [
-          {
-            "type": "command",
-            "command": ".claude/scripts/run-smoke-tests.sh",
+            "command": ".claude/scripts/bash-command-validator.sh",
             "timeout": 60,
-            "statusMessage": "Running smoke tests..."
+            "statusMessage": "Validating bash command (git push: check untracked files | git commit: run smoke tests)"
           }
         ]
       }
