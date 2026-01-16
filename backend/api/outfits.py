@@ -163,21 +163,37 @@ async def generate_outfits_stream(
 
                 # Enrich outfit with full item data (images, etc.)
                 enriched_items = []
-                
+
+                # Build anchor item lookup for priority matching (anchor items MUST show images)
+                anchor_lookup = {item.get("id"): item for item in anchor_item_objects} if mode == "complete" else {}
+
                 for item_name in outfit.get("items", []):
-                    # Find matching item in wardrobe first
                     matched = None
-                    for item in all_items:
-                        item_display_name = item.get("styling_details", {}).get("name", "")
-                        if item_display_name.lower() == item_name.lower():
-                            matched = item
+                    item_name_lower = item_name.lower()
+
+                    # FIRST: Try to match anchor items with fuzzy matching
+                    # This ensures user-selected items always show their images
+                    for anchor_id, anchor_item in anchor_lookup.items():
+                        anchor_name = anchor_item.get("styling_details", {}).get("name", "").lower()
+                        # Fuzzy match: check if anchor name contains AI name or vice versa
+                        if anchor_name and (anchor_name in item_name_lower or item_name_lower in anchor_name):
+                            matched = anchor_item
+                            logger.info(f"Anchor match: '{item_name}' -> '{anchor_name}' (ID: {anchor_id})")
                             break
-                    
-                    # If not found in wardrobe, check consider-buying items
+
+                    # SECOND: Try exact name match in wardrobe
+                    if not matched:
+                        for item in all_items:
+                            item_display_name = item.get("styling_details", {}).get("name", "")
+                            if item_display_name.lower() == item_name_lower:
+                                matched = item
+                                break
+
+                    # THIRD: Try exact name match in consider-buying items
                     if not matched:
                         for item in considering_items_for_match:
                             item_display_name = item.get("styling_details", {}).get("name", "")
-                            if item_display_name.lower() == item_name.lower():
+                            if item_display_name.lower() == item_name_lower:
                                 matched = item
                                 break
 
