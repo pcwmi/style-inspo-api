@@ -136,9 +136,55 @@ class SavedOutfitsManager:
         
         if enrich_with_current_images:
             saved_outfits = self._enrich_with_current_images(saved_outfits)
-        
+
         return saved_outfits
-    
+
+    def get_outfit_by_id(self, outfit_id: str) -> Optional[Dict]:
+        """Get a specific saved outfit by ID.
+
+        Args:
+            outfit_id: The outfit ID to retrieve
+
+        Returns:
+            Outfit dict if found, None otherwise
+        """
+        data = self._read_json()
+        saved_outfits = data.get("saved", [])
+
+        for outfit in saved_outfits:
+            if outfit.get("id") == outfit_id:
+                return outfit
+
+        return None
+
+    def update_outfit_visualization(self, outfit_id: str, visualization_url: str) -> bool:
+        """Update visualization URL for an existing outfit.
+
+        Args:
+            outfit_id: The outfit ID to update
+            visualization_url: The permanent visualization image URL
+
+        Returns:
+            True if updated, False if outfit not found
+        """
+        data = self._read_json()
+        saved_outfits = data.get("saved", [])
+
+        updated = False
+        for outfit in saved_outfits:
+            if outfit.get("id") == outfit_id:
+                outfit["visualization_url"] = visualization_url
+                outfit["visualization_updated_at"] = _now_iso()
+                updated = True
+                break
+
+        if updated:
+            data["last_updated"] = _now_iso()
+            self._atomic_write(data)
+            return True
+
+        return False
+
     def _enrich_with_current_images(self, saved_outfits: List[Dict]) -> List[Dict]:
         """Enrich saved outfit items with current image_paths from wardrobe.
         
