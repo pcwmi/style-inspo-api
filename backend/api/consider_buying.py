@@ -70,12 +70,15 @@ async def extract_from_url(request: ExtractRequest, user_id: str = Query(...)):
         error: str or None
     }
     """
+    logger.info(f"[EXTRACT-URL] user={user_id} url={request.url}")
     extractor = ProductExtractor()
     success, data, error = extractor.extract_from_url(request.url)
 
     if success:
+        logger.info(f"[EXTRACT-URL] SUCCESS user={user_id} title={data.get('title', 'unknown')}")
         return {"success": True, "data": data, "error": None}
     else:
+        logger.warning(f"[EXTRACT-URL] FAILED user={user_id} url={request.url} error={error}")
         return {"success": False, "data": None, "error": error}
 
 

@@ -35,7 +35,14 @@
       "Skill(start-the-day)",
       "Skill(capture)",
       "Bash(chmod:*)",
-      "Bash(.claude/scripts/bash-command-validator.sh)"
+      "Bash(.claude/scripts/bash-command-validator.sh)",
+      "WebFetch(domain:docs.dev.runwayml.com)",
+      "WebFetch(domain:academy.runwayml.com)",
+      "WebFetch(domain:help.runwayml.com)",
+      "WebFetch(domain:runwayml.com)",
+      "Skill(vercel:logs)",
+      "Skill(railway-logs)",
+      "Bash(railway:*)"
     ],
     "deny": [
       "Bash(gh:*)"
@@ -43,17 +50,6 @@
     "ask": []
   },
   "hooks": {
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "say \"I'm done\""
-          }
-        ]
-      }
-    ],
     "PermissionRequest": [
       {
         "matcher": "",
