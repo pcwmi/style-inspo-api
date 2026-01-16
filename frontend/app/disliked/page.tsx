@@ -86,9 +86,34 @@ function DislikedPageContent() {
                     {outfit.items?.map((item: any, idx: number) => {
                       const imagePath = item.image_path || item.system_metadata?.image_path
                       const itemName = item.name || `Item ${idx + 1}`
+                      const isSynthetic = !imagePath && item.category === "unknown"
                       return (
-                        <div key={idx} className="relative aspect-square rounded overflow-hidden bg-gray-100">
-                          {imagePath ? (
+                        <div key={idx} className={`relative aspect-square rounded overflow-hidden ${
+                          isSynthetic
+                            ? 'bg-gradient-to-br from-sand to-bone border-2 border-dashed border-terracotta/30'
+                            : 'bg-gray-100'
+                        }`}>
+                          {isSynthetic ? (
+                            <>
+                              {/* "Suggested" badge */}
+                              <div className="absolute top-2 left-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md shadow-sm">
+                                <div className="flex items-center gap-1.5 justify-center">
+                                  <svg className="w-3 h-3 text-terracotta" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z"/>
+                                  </svg>
+                                  <span className="text-[10px] font-medium text-terracotta uppercase tracking-wide">
+                                    Suggested
+                                  </span>
+                                </div>
+                              </div>
+                              {/* Item name */}
+                              <div className="absolute inset-0 flex items-center justify-center p-3 pt-10">
+                                <p className="text-center text-sm font-medium text-ink leading-tight">
+                                  {itemName}
+                                </p>
+                              </div>
+                            </>
+                          ) : imagePath ? (
                             imagePath.startsWith('http') ? (
                               <img
                                 src={imagePath}
