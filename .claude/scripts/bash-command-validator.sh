@@ -20,7 +20,8 @@ if [[ "$tool_name" != "Bash" ]]; then
 fi
 
 # Validation Rule 1: Check for untracked files before git push
-if [[ "$command" =~ ^git\ push ]]; then
+# Note: Using pattern without ^ anchor to match chained commands (e.g., "git add && git push")
+if [[ "$command" =~ git\ push ]]; then
     echo "🔍 Checking for untracked code files..." >&2
 
     untracked=$(git status --porcelain 2>/dev/null | grep '^??' | grep -E '\.(py|tsx?|js)$')
@@ -38,7 +39,8 @@ if [[ "$command" =~ ^git\ push ]]; then
 fi
 
 # Validation Rule 2: Run smoke tests before git commit
-if [[ "$command" =~ ^git\ commit ]]; then
+# Note: Using pattern without ^ anchor to match chained commands (e.g., "git add && git commit")
+if [[ "$command" =~ git\ commit ]]; then
     echo "🔥 Running smoke tests before commit..." >&2
 
     SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
