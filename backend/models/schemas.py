@@ -104,7 +104,38 @@ class ProfileResponse(BaseModel):
     user_id: str
     three_words: Optional[Dict[str, str]] = None
     daily_emotion: Optional[Dict[str, str]] = None
+    model_descriptor: Optional[str] = None
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
+
+
+# Visualization Models
+class VisualizationRequest(BaseModel):
+    """Request to generate outfit visualization"""
+    user_id: str
+    outfit_id: str
+    provider: Optional[str] = "runway"  # Default to Runway ML
+    force_regenerate: bool = False  # If True, regenerate even if cached
+
+
+class VisualizationResponse(BaseModel):
+    """Response when starting visualization generation"""
+    job_id: str
+    status: str  # "queued", "processing", "complete", "failed"
+    estimated_time: int = 40  # seconds
+    visualization_url: Optional[str] = None  # Populated when complete or cached
+
+
+# Model Descriptor Models
+class DescriptorRequest(BaseModel):
+    """Request to save user's model descriptor"""
+    user_id: str
+    descriptor: str  # Free text description of user's physical appearance
+
+
+class DescriptorResponse(BaseModel):
+    """Response after saving descriptor"""
+    status: str
+    descriptor: str
 
 

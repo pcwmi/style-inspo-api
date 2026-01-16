@@ -3,9 +3,8 @@
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useState, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
-import { Tooltip } from '../../components/ui/Tooltip';
-
+import { VisualizedOutfitCard } from '@/components/VisualizedOutfitCard'
+import { ModelDescriptorModal } from '@/components/ModelDescriptorModal'
 import { api } from '@/lib/api'
 
 function SavedPageContent() {
@@ -15,21 +14,54 @@ function SavedPageContent() {
   const [outfits, setOutfits] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string>('')
+  const [hasDescriptor, setHasDescriptor] = useState<boolean | null>(null)
+  const [showDescriptorModal, setShowDescriptorModal] = useState(false)
+  const [pendingVisualizationOutfitId, setPendingVisualizationOutfitId] = useState<string | null>(null)
 
   useEffect(() => {
-    async function fetchSavedOutfits() {
+    async function fetchData() {
       try {
         setLoading(true)
-        const result = await api.getSavedOutfits(user)
-        setOutfits(result.outfits || [])
+        // Fetch saved outfits and user profile in parallel
+        const [outfitsResult, profileResult] = await Promise.all([
+          api.getSavedOutfits(user),
+          api.getProfile(user)
+        ])
+        setOutfits(outfitsResult.outfits || [])
+        setHasDescriptor(!!profileResult.model_descriptor)
       } catch (err: any) {
         setError(err.message || 'Failed to load saved outfits')
       } finally {
         setLoading(false)
       }
     }
-    fetchSavedOutfits()
+    fetchData()
   }, [user])
+
+  // Handle visualize button click - check for descriptor first
+  const handleVisualize = (outfitId: string) => {
+    if (!hasDescriptor) {
+      setPendingVisualizationOutfitId(outfitId)
+      setShowDescriptorModal(true)
+    }
+    // If hasDescriptor, the VisualizedOutfitCard will handle it directly
+  }
+
+  // Handle descriptor saved - start the pending visualization
+  const handleDescriptorSaved = (descriptor: string) => {
+    setHasDescriptor(true)
+    setShowDescriptorModal(false)
+    // The card will pick up that hasDescriptor is now true and can proceed
+  }
+
+  // Update outfit in state when visualization completes
+  const handleVisualizationComplete = (outfitId: string, url: string) => {
+    setOutfits(prev => prev.map(outfit =>
+      (outfit.id === outfitId || outfit.outfit_id === outfitId)
+        ? { ...outfit, visualization_url: url }
+        : outfit
+    ))
+  }
 
   if (loading) {
     return (
@@ -79,119 +111,37 @@ function SavedPageContent() {
           <div className="space-y-4 md:space-y-6">
             {outfits.map((saved: any) => {
               const outfit = saved.outfit_data || saved
+              const outfitId = saved.id || saved.outfit_id
               return (
-                <div key={saved.id} className="bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-4 md:p-6 shadow-sm">
-                  {/* Outfit images */}
-                  <div className="grid grid-cols-3 gap-2 mb-4">
-                    {outfit.items?.map((item: any, idx: number) => {
-                      const imagePath = item.image_path || item.system_metadata?.image_path
-                      const itemName = item.name || `Item ${idx + 1}`
-                      const isConsidering = item.id?.startsWith('consider_')
-                      return (
-                        <div key={idx} className="relative aspect-square rounded overflow-hidden bg-gray-100">
-                          {/* Considering badge */}
-                          {isConsidering && (
-                            <div className="absolute top-2 right-2 bg-terracotta backdrop-blur-sm px-2 py-0.5 rounded-full z-10">
-                              <span className="text-xs font-medium text-white">Considering</span>
-                            </div>
-                          )}
-                          {imagePath ? (
-                            imagePath.startsWith('http') ? (
-                              <img
-                                src={imagePath}
-                                alt={itemName}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  // If image fails to load, show placeholder with item name
-                                  const target = e.currentTarget
-                                  target.style.display = 'none'
-                                  const parent = target.parentElement
-                                  if (parent) {
-                                    const placeholder = document.createElement('div')
-                                    placeholder.className = 'w-full h-full flex flex-col items-center justify-center text-muted text-xs bg-sand p-2'
-                                    placeholder.innerHTML = `<div class="text-center">${itemName}</div>`
-                                    parent.appendChild(placeholder)
-                                  }
-                                }}
-                              />
-                            ) : (
-                              <Image
-                                src={`/${imagePath}`}
-                                alt={itemName}
-                                fill
-                                className="object-cover"
-                                onError={() => {
-                                  // Next.js Image component handles errors internally
-                                  // But we can add a fallback if needed
-                                }}
-                              />
-                            )
-                          ) : (
-                            <div className="w-full h-full flex flex-col items-center justify-center text-muted text-xs bg-sand p-2">
-                              <div className="text-center">{itemName}</div>
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-
-                  {/* Styling notes */}
-                  {outfit.styling_notes && (
-                    <div className="mb-3 md:mb-4">
-                      <h3 className="font-semibold mb-2 text-base">How to Style</h3>
-                      <p className="text-ink text-sm md:text-base leading-relaxed">{outfit.styling_notes}</p>
-                    </div>
-                  )}
-
-                  {/* Why it works */}
-                  {outfit.why_it_works && (
-                    <div className="mb-3 md:mb-4">
-                      <h3 className="font-semibold mb-2 text-base">Why This Works</h3>
-                      <p className="text-ink text-sm md:text-base leading-relaxed">{outfit.why_it_works}</p>
-                    </div>
-                  )}
-
-                  {/* User reason if provided */}
-                  {saved.user_reason && (
-                    <div className="mb-3 md:mb-4">
-                      <h3 className="font-semibold mb-2 text-base">Your Note</h3>
-                      <p className="text-muted text-sm md:text-base italic">"{saved.user_reason}"</p>
-                    </div>
-                  )}
-
-                  {/* Context (Occasion, Weather) */}
-                  {saved.context && (
-                    <div className="mb-3 md:mb-4 flex flex-wrap gap-2">
-                      {saved.context.occasions && saved.context.occasions.length > 0 && (
-                        <Tooltip content={saved.context.occasions.join(", ")}>
-                          <span
-                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sand text-ink max-w-[200px] truncate cursor-help"
-                          >
-                            {saved.context.occasions.join(", ")}
-                          </span>
-                        </Tooltip>
-                      )}
-                      {saved.context.temperature_range && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100">
-                          {saved.context.temperature_range}
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Saved date */}
-                  {saved.saved_at && (
-                    <p className="text-xs text-muted">
-                      Saved {new Date(saved.saved_at).toLocaleDateString()}
-                    </p>
-                  )}
-                </div>
+                <VisualizedOutfitCard
+                  key={outfitId}
+                  outfit={outfit}
+                  outfitId={outfitId}
+                  outfitName={outfit.vibe_keywords?.[0] || 'Saved Outfit'}
+                  visualizationUrl={saved.visualization_url}
+                  user={user}
+                  showVisualizeButton={true}
+                  allowSave={false}
+                  hasDescriptor={hasDescriptor === true}
+                  onVisualize={() => handleVisualize(outfitId)}
+                  onVisualizationComplete={(url) => handleVisualizationComplete(outfitId, url)}
+                />
               )
             })}
           </div>
         )}
       </div>
+
+      {/* Model Descriptor Modal */}
+      <ModelDescriptorModal
+        isOpen={showDescriptorModal}
+        userId={user}
+        onClose={() => {
+          setShowDescriptorModal(false)
+          setPendingVisualizationOutfitId(null)
+        }}
+        onSaved={handleDescriptorSaved}
+      />
     </div>
   )
 }

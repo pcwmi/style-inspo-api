@@ -78,8 +78,8 @@ class UserProfileManager:
         if user_id != self.user_id:
             _safe_stderr_write(f"⚠️ WARNING: get_profile called with user_id={user_id} but manager initialized for {self.user_id}\n")
         profile = self._read_json()
-        # Return None if profile is empty (no style_words)
-        if not profile or "style_words" not in profile:
+        # Return None if profile is empty (no style_words and no model_descriptor)
+        if not profile or ("style_words" not in profile and "model_descriptor" not in profile):
             return None
         return profile
 
@@ -221,10 +221,11 @@ class UserProfileManager:
                     return {}
             
             # New single-user format: Check if it's a valid profile structure
-            if "style_words" in data:
+            # Profile is valid if it has style_words OR model_descriptor (or other profile fields)
+            if "style_words" in data or "model_descriptor" in data:
                 _safe_stderr_write(f"✅ Found profile for user {self.user_id}\n")
                 return data
-            
+
             # Unexpected structure
             _safe_stderr_write(f"⚠️ Unexpected data structure in profile JSON for user {self.user_id}, returning empty profile\n")
             return {}

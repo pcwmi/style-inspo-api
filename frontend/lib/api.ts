@@ -212,5 +212,40 @@ export const api = {
     })
     if (!res.ok) throw new Error('Failed to rotate considering item')
     return res.json()
+  },
+
+  // Visualization
+  async generateVisualization(request: {
+    user_id: string
+    outfit_id: string
+    force_regenerate?: boolean
+  }) {
+    const res = await fetch(`${API_URL}/api/visualization/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(request)
+    })
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ detail: res.statusText }))
+      throw new Error(errorData.detail || 'Failed to generate visualization')
+    }
+    return res.json()
+  },
+
+  // Model Descriptor
+  async saveDescriptor(request: {
+    user_id: string
+    descriptor: string
+  }) {
+    const res = await fetch(`${API_URL}/api/user/descriptor`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(request)
+    })
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ detail: res.statusText }))
+      throw new Error(errorData.detail || 'Failed to save descriptor')
+    }
+    return res.json()
   }
 }
