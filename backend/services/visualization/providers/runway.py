@@ -105,13 +105,13 @@ class RunwayProvider(ImageGenerationProvider):
             # Create prompt
             prompt = self._create_outfit_prompt(request, model_descriptor=descriptor)
 
-            logger.info(f"Runway prompt (length: {len(prompt)}): {prompt[:200]}...")
+            logger.info(f"Runway prompt (length: {len(prompt)}):\n{prompt}")
 
             # Build payload
             payload = {
                 "model": self.model,
                 "promptText": prompt,
-                "ratio": "1920:1080",  # Landscape
+                "ratio": "1080:1920",  # Portrait (better for single-model full-body shots)
             }
 
             # Add reference images
@@ -350,10 +350,11 @@ class RunwayProvider(ImageGenerationProvider):
 
             prompt = (
                 f"{descriptor_block}"
-                f"A confident woman wearing {outfit_description}.\n\n"
+                f"A single confident woman, full-body shot, wearing {outfit_description}.\n\n"
                 f"{styling_section}"
                 f"{style_desc}\n"
                 f"{mood_desc}\n\n"
+                "ONE person only. Full body from head to toe. "
                 f"{duplication_guard} "
                 "Fashion photography, editorial style, clean background, professional lighting."
             )
