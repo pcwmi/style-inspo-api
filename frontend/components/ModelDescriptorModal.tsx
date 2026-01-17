@@ -12,10 +12,11 @@ interface ModelDescriptorModalProps {
 }
 
 // Example descriptors that represent diverse body types authentically
+// Note: Using "5 foot X" format instead of 5'4" to avoid quote character issues
 const EXAMPLE_DESCRIPTORS = [
-  "5'4\", Asian, chest length wavy black hair, not skinny but not fat either",
-  "5'8\", white with fair skin, brunette shoulder length hair, athletic build",
-  "5'5\", black, medium build, natural curls, wear tortoise glasses"
+  "5 foot 4, Asian, chest length wavy black hair, not skinny but not fat either",
+  "5 foot 8, white with fair skin, brunette shoulder length hair, athletic build",
+  "5 foot 5, black, medium build, natural curls, wears tortoise glasses"
 ]
 
 export function ModelDescriptorModal({
@@ -86,7 +87,7 @@ export function ModelDescriptorModal({
               }}
               className="w-full border border-gray-200 rounded-lg p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-terracotta/50"
               rows={3}
-              placeholder="e.g., 5'4&quot;, Asian, shoulder-length hair, average build"
+              placeholder="e.g., 5 foot 4, Asian, shoulder-length hair, average build"
             />
           </div>
 

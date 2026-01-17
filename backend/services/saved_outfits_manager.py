@@ -65,7 +65,7 @@ class SavedOutfitsManager:
             self._migrate_from_local_if_needed()
             _MIGRATION_FLAG[user_id] = True
 
-    def save_outfit(self, outfit_combo, reason: str = "", occasion: Optional[str] = None, context: Optional[Dict] = None) -> bool:
+    def save_outfit(self, outfit_combo, reason: str = "", occasion: Optional[str] = None, context: Optional[Dict] = None) -> Optional[str]:
         """Save an outfit combination for the current user.
 
         Args:
@@ -73,6 +73,9 @@ class SavedOutfitsManager:
             reason: Optional user feedback on why they like it
             occasion: Optional occasion context (deprecated, use context dict)
             context: Optional context dict with occasions, weather, temp
+
+        Returns:
+            The saved outfit ID on success, None on failure.
         """
         try:
             data = self._read_json()
@@ -101,8 +104,9 @@ class SavedOutfitsManager:
                 # First item is typically the challenge item
                 challenge_item_id = outfit_combo.items[0].get("id")
 
+            outfit_id = str(uuid.uuid4())
             saved_outfit = {
-                "id": str(uuid.uuid4()),
+                "id": outfit_id,
                 "outfit_data": outfit_data,
                 "user_reason": reason.strip(),
                 "challenge_item_id": challenge_item_id,
@@ -116,11 +120,11 @@ class SavedOutfitsManager:
             data["last_updated"] = _now_iso()
 
             self._atomic_write(data)
-            return True
+            return outfit_id
 
         except Exception as e:
             print(f"Error saving outfit: {e}")
-            return False
+            return None
 
     def get_saved_outfits(self, enrich_with_current_images: bool = True) -> List[Dict]:
         """Get all saved outfits for the current user (newest first).

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { api } from '@/lib/api'
 import { posthog } from '@/lib/posthog'
 
@@ -19,20 +20,21 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
     const [selectedFeedback, setSelectedFeedback] = useState<string[]>([])
     const [dislikeReason, setDislikeReason] = useState('')
     const [otherReasonText, setOtherReasonText] = useState('')
+    const [savedOutfitId, setSavedOutfitId] = useState<string | null>(null)
 
     const handleSave = async () => {
-        setSaving(true)
         try {
-            await api.saveOutfit({
+            const response = await api.saveOutfit({
                 user_id: user,
                 outfit,
                 feedback: selectedFeedback
             })
             posthog.capture('outfit_saved', {
-                outfit_id: outfit.id,
+                outfit_id: response.outfit_id,
                 feedback: selectedFeedback
             })
-            alert('Outfit saved!')
+            // Store the saved outfit ID to show visualization CTA
+            setSavedOutfitId(response.outfit_id)
             setSaving(false)
         } catch (error) {
             console.error('Error saving outfit:', error)
@@ -142,7 +144,27 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
             {/* Actions */}
             {(allowSave || allowDislike) && (
                 <>
-                    {!saving && !disliking ? (
+                    {savedOutfitId ? (
+                        // Saved state - show success and visualization CTA
+                        <div className="mt-4 border-t border-[rgba(26,22,20,0.12)] pt-4">
+                            <div className="flex items-center gap-2 mb-4 text-green-700">
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span className="font-medium">Outfit saved!</span>
+                            </div>
+                            <Link
+                                href={`/saved?user=${user}`}
+                                className="w-full bg-terracotta text-white py-3 px-6 rounded-lg hover:opacity-90 active:opacity-80 min-h-[48px] flex items-center justify-center gap-2"
+                            >
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                                See it on a model
+                            </Link>
+                        </div>
+                    ) : !saving && !disliking ? (
                         <div className="flex gap-3">
                             {allowSave && (
                                 <button
