@@ -181,20 +181,22 @@ async def generate_outfits_stream(
                             logger.info(f"Anchor match: '{item_name}' -> '{anchor_name}' (ID: {anchor_id})")
                             break
 
-                    # SECOND: Try exact name match in wardrobe
+                    # SECOND: Try fuzzy name match in wardrobe (substring matching)
                     if not matched:
                         for item in all_items:
-                            item_display_name = item.get("styling_details", {}).get("name", "")
-                            if item_display_name.lower() == item_name_lower:
+                            item_display_name = item.get("styling_details", {}).get("name", "").lower()
+                            if item_display_name and (item_display_name in item_name_lower or item_name_lower in item_display_name):
                                 matched = item
+                                logger.info(f"Fuzzy wardrobe match: '{item_name}' -> '{item_display_name}'")
                                 break
 
-                    # THIRD: Try exact name match in consider-buying items
+                    # THIRD: Try fuzzy name match in consider-buying items
                     if not matched:
                         for item in considering_items_for_match:
-                            item_display_name = item.get("styling_details", {}).get("name", "")
-                            if item_display_name.lower() == item_name_lower:
+                            item_display_name = item.get("styling_details", {}).get("name", "").lower()
+                            if item_display_name and (item_display_name in item_name_lower or item_name_lower in item_display_name):
                                 matched = item
+                                logger.info(f"Fuzzy consider-buying match: '{item_name}' -> '{item_display_name}'")
                                 break
 
                     if matched:
@@ -308,16 +310,16 @@ async def save_outfit(request: SaveOutfitRequest):
     try:
         manager = SavedOutfitsManager(user_id=request.user_id)
         outfit_wrapper = OutfitDictWrapper(request.outfit)
-        success = manager.save_outfit(
+        outfit_id = manager.save_outfit(
             outfit_combo=outfit_wrapper,
             reason=", ".join(request.feedback) if request.feedback else "",
             context=outfit_wrapper.context
         )
-        
-        if not success:
+
+        if not outfit_id:
             raise HTTPException(status_code=500, detail="Failed to save outfit")
-        
-        return {"success": True, "message": "Outfit saved"}
+
+        return {"success": True, "message": "Outfit saved", "outfit_id": outfit_id}
     except HTTPException:
         raise
     except Exception as e:
