@@ -121,7 +121,6 @@ function SavedPageContent() {
                   visualizationUrl={saved.visualization_url}
                   user={user}
                   showVisualizeButton={true}
-                  allowSave={false}
                   hasDescriptor={hasDescriptor === true}
                   onVisualize={() => handleVisualize(outfitId)}
                   onVisualizationComplete={(url) => handleVisualizationComplete(outfitId, url)}

@@ -29,11 +29,8 @@ interface VisualizedOutfitCardProps {
   visualizationUrl?: string
   user: string
   showVisualizeButton?: boolean
-  allowSave?: boolean
-  compact?: boolean
   hasDescriptor?: boolean  // If false, onVisualize() is called but API call is skipped (parent shows modal)
   onVisualize?: () => void
-  onSave?: () => void
   onVisualizationComplete?: (url: string) => void
 }
 
@@ -46,11 +43,8 @@ export function VisualizedOutfitCard({
   visualizationUrl: initialVisualizationUrl,
   user,
   showVisualizeButton = true,
-  allowSave = false,
-  compact = false,
   hasDescriptor = true,  // Default true so standalone usage works
   onVisualize,
-  onSave,
   onVisualizationComplete
 }: VisualizedOutfitCardProps) {
   const [visualizationUrl, setVisualizationUrl] = useState(initialVisualizationUrl)
@@ -61,10 +55,6 @@ export function VisualizedOutfitCard({
   const [statusMessage, setStatusMessage] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [imageExpanded, setImageExpanded] = useState(false)
-
-  // Saving state
-  const [saving, setSaving] = useState(false)
-  const [selectedFeedback, setSelectedFeedback] = useState<string[]>([])
 
   // Handle visualization generation
   const handleVisualize = async () => {
@@ -139,31 +129,13 @@ export function VisualizedOutfitCard({
     }
   }
 
-  // Handle save outfit
-  const handleSave = async () => {
-    try {
-      await api.saveOutfit({
-        user_id: user,
-        outfit,
-        feedback: selectedFeedback
-      })
-      posthog.capture('outfit_saved', { outfit_id: outfitId, feedback: selectedFeedback })
-      if (onSave) onSave()
-      setSaving(false)
-      alert('Outfit saved!')
-    } catch (e: any) {
-      console.error('Error saving outfit:', e)
-      alert('Failed to save outfit')
-    }
-  }
-
   // Get image path for an item
   const getImagePath = (item: OutfitItem) => {
     return item.system_metadata?.image_path || item.image_path
   }
 
   return (
-    <div className={`bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-4 md:p-6 mb-4 md:mb-6 shadow-sm ${compact ? 'max-w-sm' : ''}`}>
+    <div className="bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-4 md:p-6 mb-4 md:mb-6 shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between mb-3 md:mb-4">
         <h2 className="text-lg md:text-xl font-semibold">{outfitName || 'Outfit'}</h2>
@@ -377,70 +349,14 @@ export function VisualizedOutfitCard({
       )}
 
       {/* Styling Notes - matches original OutfitCard */}
-      {!compact && (
-        <>
-          <div className="mb-3 md:mb-4">
-            <h3 className="font-semibold mb-2 text-base">How to Style</h3>
-            <p className="text-ink text-sm md:text-base leading-relaxed">{outfit.styling_notes}</p>
-          </div>
-          <div className="mb-3 md:mb-4">
-            <h3 className="font-semibold mb-2 text-base">Why This Works</h3>
-            <p className="text-ink text-sm md:text-base leading-relaxed">{outfit.why_it_works}</p>
-          </div>
-        </>
-      )}
-
-      {/* Save Button (for reveal page) */}
-      {allowSave && !saving && (
-        <div className="flex gap-3">
-          <button
-            onClick={() => setSaving(true)}
-            className="flex-1 bg-terracotta text-white py-3 px-6 rounded-lg hover:opacity-90 active:opacity-80 min-h-[48px] flex items-center justify-center"
-          >
-            Save Outfit
-          </button>
-        </div>
-      )}
-
-      {/* Save Form */}
-      {saving && (
-        <div className="mt-4 border-t border-[rgba(26,22,20,0.12)] pt-4">
-          <h3 className="text-lg font-semibold mb-4">What do you love about it?</h3>
-          <div className="space-y-2.5 mb-4">
-            {['Perfect for my occasions', 'Feels authentic to my style', 'Never thought to combine these pieces', 'Love the vibe'].map(option => (
-              <label key={option} className="flex items-center space-x-3 cursor-pointer min-h-[44px] py-1">
-                <input
-                  type="checkbox"
-                  checked={selectedFeedback.includes(option)}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      setSelectedFeedback([...selectedFeedback, option])
-                    } else {
-                      setSelectedFeedback(selectedFeedback.filter(f => f !== option))
-                    }
-                  }}
-                  className="w-5 h-5 rounded border-[rgba(26,22,20,0.12)] flex-shrink-0"
-                />
-                <span className="text-base leading-relaxed flex-1">{option}</span>
-              </label>
-            ))}
-          </div>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              onClick={handleSave}
-              className="flex-1 bg-terracotta text-white py-3 px-6 rounded-lg hover:opacity-90 active:opacity-80 min-h-[48px] flex items-center justify-center"
-            >
-              Save
-            </button>
-            <button
-              onClick={() => setSaving(false)}
-              className="flex-1 bg-sand text-ink py-3 px-6 rounded-lg hover:bg-sand/80 active:bg-sand/70 min-h-[48px] flex items-center justify-center"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
+      <div className="mb-3 md:mb-4">
+        <h3 className="font-semibold mb-2 text-base">How to Style</h3>
+        <p className="text-ink text-sm md:text-base leading-relaxed">{outfit.styling_notes}</p>
+      </div>
+      <div className="mb-3 md:mb-4">
+        <h3 className="font-semibold mb-2 text-base">Why This Works</h3>
+        <p className="text-ink text-sm md:text-base leading-relaxed">{outfit.why_it_works}</p>
+      </div>
 
       {/* Fullscreen Modal */}
       {imageExpanded && visualizationUrl && (
