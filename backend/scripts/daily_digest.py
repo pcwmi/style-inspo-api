@@ -136,6 +136,20 @@ def format_outfit_items(items: List[Dict], max_items: int = 4) -> str:
     return " + ".join(names)
 
 
+def format_outfit_with_images(items: List[Dict], indent: str = "             ") -> List[str]:
+    """Format outfit items with image links."""
+    lines = []
+    for item in items:
+        name = item.get("name", "Unknown")
+        image_path = item.get("image_path", "")
+        if image_path:
+            lines.append(f"{indent}• {name}")
+            lines.append(f"{indent}  {image_path}")
+        else:
+            lines.append(f"{indent}• {name}")
+    return lines
+
+
 def generate_user_digest(
     user_id: str,
     generations: List[Dict],
@@ -217,15 +231,20 @@ def generate_user_digest(
                             used_save_ids.add(save_id)
                             break
 
-            output.append(f"   Outfit {i}: {items_str}")
+            output.append(f"   Outfit {i}:")
+            # Show item names with image links
+            output.extend(format_outfit_with_images(items, indent="      "))
 
             if was_saved:
+                # Include link to saved outfits page
+                saved_url = f"https://styleinspo.vercel.app/saved?user={user_id}"
                 if save_feedback:
-                    output.append(f"             ✅ SAVED - feedback: \"{save_feedback}\"")
+                    output.append(f"      ✅ SAVED - \"{save_feedback}\"")
                 else:
-                    output.append(f"             ✅ SAVED")
+                    output.append(f"      ✅ SAVED")
+                output.append(f"      🔗 {saved_url}")
             else:
-                output.append(f"             ❌ Not saved")
+                output.append(f"      ❌ Not saved")
 
             output.append("")
 
