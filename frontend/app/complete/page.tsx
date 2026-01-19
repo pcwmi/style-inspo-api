@@ -15,6 +15,7 @@ function CompletePageContent() {
   const router = useRouter()
   const user = searchParams.get('user') || 'default'
   const debugMode = searchParams.get('debug') === 'true'
+  const mockMode = searchParams.get('mock') === 'true'
 
   // React Query hooks - automatic caching (shares cache with closet/dashboard)
   const { data: wardrobeData, isLoading: wardrobeLoading } = useWardrobe(user)
@@ -102,6 +103,7 @@ function CompletePageContent() {
         stream: 'true'
       })
       if (debugMode) params.append('debug', 'true')
+      if (mockMode) params.append('mock', 'true')
       router.push(`/reveal?${params.toString()}`)
     } catch (error) {
       console.error('Error generating outfits:', error)

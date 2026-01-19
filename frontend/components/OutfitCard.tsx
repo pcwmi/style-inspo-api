@@ -1,10 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { api } from '@/lib/api'
 import { posthog } from '@/lib/posthog'
+import { ModelDescriptorModal } from './ModelDescriptorModal'
+
+type VisualizationState = 'idle' | 'checking_descriptor' | 'generating' | 'complete' | 'error'
 
 interface OutfitCardProps {
     outfit: any
@@ -14,13 +18,27 @@ interface OutfitCardProps {
     allowDislike?: boolean
 }
 
+// Helper for mock mode delays
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+
 export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike = true }: OutfitCardProps) {
+    const searchParams = useSearchParams()
+    const mockMode = searchParams.get('mock') === 'true'
+
     const [saving, setSaving] = useState(false)
     const [disliking, setDisliking] = useState(false)
     const [selectedFeedback, setSelectedFeedback] = useState<string[]>([])
     const [dislikeReason, setDislikeReason] = useState('')
     const [otherReasonText, setOtherReasonText] = useState('')
     const [savedOutfitId, setSavedOutfitId] = useState<string | null>(null)
+
+    // Visualization states
+    const [vizState, setVizState] = useState<VisualizationState>('idle')
+    const [vizProgress, setVizProgress] = useState(0)
+    const [vizUrl, setVizUrl] = useState<string | null>(null)
+    const [vizError, setVizError] = useState<string | null>(null)
+    const [showDescriptorModal, setShowDescriptorModal] = useState(false)
+    const [imageExpanded, setImageExpanded] = useState(false)
 
     const handleSave = async () => {
         try {
@@ -62,6 +80,105 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
             alert('Failed to record feedback')
             setDisliking(false)
         }
+    }
+
+    // Handle visualization generation
+    const handleVisualize = async () => {
+        if (!savedOutfitId) return
+
+        // Mock mode: simulate progress without API calls
+        if (mockMode) {
+            setVizState('generating')
+            setVizProgress(0)
+            setVizError(null)
+
+            // Simulate 5 second progress
+            for (let i = 0; i <= 100; i += 20) {
+                await sleep(1000)
+                setVizProgress(i)
+            }
+
+            // Use a placeholder image
+            setVizUrl('https://style-inspo.s3.us-east-2.amazonaws.com/visualizations/placeholder.jpg')
+            setVizState('complete')
+            posthog.capture('visualization_complete', { outfit_id: savedOutfitId, mock: true })
+            return
+        }
+
+        // Check for descriptor first
+        setVizState('checking_descriptor')
+        try {
+            const profile = await api.getProfile(user)
+            if (!profile.model_descriptor) {
+                // No descriptor - show modal
+                setShowDescriptorModal(true)
+                setVizState('idle')
+                return
+            }
+
+            // Has descriptor - start visualization
+            await startVisualization()
+        } catch (e: any) {
+            setVizError(e.message || 'Failed to check profile')
+            setVizState('error')
+        }
+    }
+
+    // Called after descriptor is saved or if user already has one
+    const startVisualization = async () => {
+        if (!savedOutfitId) return
+
+        setVizState('generating')
+        setVizProgress(0)
+        setVizError(null)
+
+        try {
+            const response = await api.generateVisualization({
+                user_id: user,
+                outfit_id: savedOutfitId
+            })
+
+            // If cached, we get immediate result
+            if (response.status === 'complete' && response.visualization_url) {
+                setVizUrl(response.visualization_url)
+                setVizState('complete')
+                posthog.capture('visualization_complete', { outfit_id: savedOutfitId, cached: true })
+                return
+            }
+
+            // Poll for completion
+            const jobId = response.job_id
+            const pollInterval = setInterval(async () => {
+                try {
+                    const status = await api.getJobStatus(jobId)
+                    setVizProgress(status.progress || 0)
+
+                    if (status.status === 'complete' && status.result?.image_url) {
+                        clearInterval(pollInterval)
+                        setVizUrl(status.result.image_url)
+                        setVizState('complete')
+                        posthog.capture('visualization_complete', { outfit_id: savedOutfitId, cached: false })
+                    } else if (status.status === 'failed') {
+                        clearInterval(pollInterval)
+                        setVizError(status.error || 'Visualization failed')
+                        setVizState('error')
+                        posthog.capture('visualization_failed', { outfit_id: savedOutfitId, error: status.error })
+                    }
+                } catch (e) {
+                    console.error('Error polling job:', e)
+                }
+            }, 2000)
+        } catch (e: any) {
+            setVizError(e.message || 'Failed to start visualization')
+            setVizState('error')
+            posthog.capture('visualization_error', { outfit_id: savedOutfitId, error: e.message })
+        }
+    }
+
+    // Called when descriptor modal saves successfully
+    const handleDescriptorSaved = async () => {
+        setShowDescriptorModal(false)
+        await startVisualization()
     }
 
     return (
@@ -145,24 +262,128 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
             {(allowSave || allowDislike) && (
                 <>
                     {savedOutfitId ? (
-                        // Saved state - show success and visualization CTA
+                        // Saved state - show visualization inline
                         <div className="mt-4 border-t border-[rgba(26,22,20,0.12)] pt-4">
-                            <div className="flex items-center gap-2 mb-4 text-green-700">
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                </svg>
-                                <span className="font-medium">Outfit saved!</span>
-                            </div>
-                            <Link
-                                href={`/saved?user=${user}`}
-                                className="w-full bg-terracotta text-white py-3 px-6 rounded-lg hover:opacity-90 active:opacity-80 min-h-[48px] flex items-center justify-center gap-2"
-                            >
-                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                                See it on a model
-                            </Link>
+                            {/* Visualization complete - show image */}
+                            {vizState === 'complete' && vizUrl ? (
+                                <div>
+                                    <div
+                                        className="aspect-[4/5] rounded-lg overflow-hidden cursor-pointer relative bg-gradient-to-b from-purple-50 to-pink-50 mb-4"
+                                        onClick={() => setImageExpanded(true)}
+                                    >
+                                        <img
+                                            src={vizUrl}
+                                            alt="Outfit visualization"
+                                            className="w-full h-full object-cover"
+                                        />
+                                        <div className="absolute bottom-2 right-2 bg-white/80 px-2 py-1 rounded-full text-xs">
+                                            Tap to expand
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2 mb-4 text-green-700">
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span className="font-medium">Outfit saved!</span>
+                                    </div>
+                                    <Link
+                                        href={`/saved?user=${user}`}
+                                        className="w-full border border-[rgba(26,22,20,0.12)] text-ink py-3 px-6 rounded-lg hover:bg-sand/30 min-h-[48px] flex items-center justify-center"
+                                    >
+                                        View all saved outfits
+                                    </Link>
+                                </div>
+                            ) : vizState === 'generating' ? (
+                                // Generating - show progress
+                                <div>
+                                    <p className="font-bold text-ink text-center mb-4">Generating visualization...</p>
+                                    <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+                                        <div
+                                            className="bg-terracotta h-2 rounded-full transition-all duration-300"
+                                            style={{ width: `${vizProgress}%` }}
+                                        />
+                                    </div>
+                                    <div className="space-y-2 text-sm mb-6">
+                                        <div className="flex items-center gap-2">
+                                            {vizProgress >= 20 ? (
+                                                <span className="text-green-500">&#10003;</span>
+                                            ) : (
+                                                <span className="text-terracotta animate-spin">&#8635;</span>
+                                            )}
+                                            <span className={vizProgress >= 20 ? 'text-gray-400' : 'text-ink font-medium'}>
+                                                Loading outfit data
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            {vizProgress >= 90 ? (
+                                                <span className="text-green-500">&#10003;</span>
+                                            ) : vizProgress >= 30 ? (
+                                                <span className="text-terracotta animate-spin">&#8635;</span>
+                                            ) : (
+                                                <span className="text-gray-300">&#9675;</span>
+                                            )}
+                                            <span className={vizProgress >= 30 && vizProgress < 90 ? 'text-ink font-medium' : 'text-gray-400'}>
+                                                Creating visualization with AI
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            {vizProgress >= 100 ? (
+                                                <span className="text-green-500">&#10003;</span>
+                                            ) : (
+                                                <span className="text-gray-300">&#9675;</span>
+                                            )}
+                                            <span className={vizProgress >= 90 && vizProgress < 100 ? 'text-ink font-medium' : 'text-gray-400'}>
+                                                Finalizing image
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-center text-gray-400">
+                                        This takes about 30-40 seconds.
+                                    </p>
+                                </div>
+                            ) : vizState === 'error' ? (
+                                // Error state
+                                <div>
+                                    <div className="flex items-center gap-2 mb-4 text-green-700">
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span className="font-medium">Outfit saved!</span>
+                                    </div>
+                                    <p className="text-sm text-red-500 text-center mb-4">{vizError}</p>
+                                    <button
+                                        onClick={handleVisualize}
+                                        className="w-full bg-terracotta text-white py-3 px-6 rounded-lg hover:opacity-90 active:opacity-80 min-h-[48px] flex items-center justify-center gap-2"
+                                    >
+                                        Retry visualization
+                                    </button>
+                                </div>
+                            ) : (
+                                // Idle - show CTA button
+                                <div>
+                                    <div className="flex items-center gap-2 mb-4 text-green-700">
+                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span className="font-medium">Outfit saved!</span>
+                                    </div>
+                                    <button
+                                        onClick={handleVisualize}
+                                        disabled={vizState === 'checking_descriptor'}
+                                        className="w-full bg-terracotta text-white py-3 px-6 rounded-lg hover:opacity-90 active:opacity-80 min-h-[48px] flex items-center justify-center gap-2 disabled:opacity-50"
+                                    >
+                                        {vizState === 'checking_descriptor' ? (
+                                            <span className="animate-spin">&#8635;</span>
+                                        ) : (
+                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                        )}
+                                        See it on a model
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     ) : !saving && !disliking ? (
                         <div className="flex gap-3">
@@ -264,6 +485,34 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
                         </div>
                     )}
                 </>
+            )}
+
+            {/* Descriptor Modal */}
+            <ModelDescriptorModal
+                isOpen={showDescriptorModal}
+                userId={user}
+                onClose={() => setShowDescriptorModal(false)}
+                onSaved={handleDescriptorSaved}
+            />
+
+            {/* Fullscreen Image Modal */}
+            {imageExpanded && vizUrl && (
+                <div
+                    className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+                    onClick={() => setImageExpanded(false)}
+                >
+                    <button
+                        className="absolute top-4 right-4 text-white text-2xl z-10"
+                        onClick={() => setImageExpanded(false)}
+                    >
+                        ✕
+                    </button>
+                    <img
+                        src={vizUrl}
+                        alt="Outfit visualization fullscreen"
+                        className="max-w-full max-h-full object-contain"
+                    />
+                </div>
             )}
         </div>
     )
