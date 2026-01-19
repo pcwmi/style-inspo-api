@@ -5,6 +5,7 @@ import { Suspense, useMemo } from 'react'
 import { useState } from 'react'
 import { useWardrobe, useConsiderBuying } from '@/lib/queries'
 import { posthog } from '@/lib/posthog'
+import { getSubCategories, filterBySubCategory, WardrobeItem } from '@/lib/categoryUtils'
 import Link from 'next/link'
 import CategoryTabs from '@/components/CategoryTabs'
 import WardrobeGrid from '@/components/WardrobeGrid'
@@ -22,6 +23,7 @@ function CompletePageContent() {
   const [selectedItems, setSelectedItems] = useState<string[]>([])
   const [generating, setGenerating] = useState(false)
   const [activeCategory, setActiveCategory] = useState('All')
+  const [activeSubCategory, setActiveSubCategory] = useState<string | null>(null)
 
   // Category tabs (matching closet page)
   const categories = ['All', 'Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Shoes', 'Accessories', 'Bags', 'Considering']
@@ -32,8 +34,8 @@ function CompletePageContent() {
     ...(consideringData?.items || [])
   ], [wardrobeData, consideringData])
 
-  // Filter items by category
-  const filteredItems = useMemo(() => {
+  // Filter items by main category (before sub-filtering)
+  const categoryItems = useMemo(() => {
     if (activeCategory === 'All') return allItems
     if (activeCategory === 'Considering') {
       return allItems.filter(item => item.id?.startsWith('consider_'))
@@ -44,6 +46,30 @@ function CompletePageContent() {
       item.styling_details?.category?.toLowerCase() === activeCategory.toLowerCase()
     )
   }, [allItems, activeCategory])
+
+  // Compute sub-categories for the current category
+  // Always show sub-filters when they exist (no threshold)
+  const subCategories = useMemo(() => {
+    // Only compute for non-special categories
+    if (activeCategory === 'All' || activeCategory === 'Considering') {
+      return []
+    }
+    return getSubCategories(categoryItems as WardrobeItem[], activeCategory)
+  }, [categoryItems, activeCategory])
+
+  // Apply sub-category filter
+  const filteredItems = useMemo(() => {
+    if (activeSubCategory && subCategories.length > 0) {
+      return filterBySubCategory(categoryItems as WardrobeItem[], activeCategory, activeSubCategory)
+    }
+    return categoryItems
+  }, [categoryItems, activeCategory, activeSubCategory, subCategories])
+
+  // Handle category change - reset sub-category
+  const handleCategoryChange = (cat: string) => {
+    setActiveCategory(cat)
+    setActiveSubCategory(null)
+  }
 
   // Only show loading on first load (no cached data)
   const loading = (wardrobeLoading && !wardrobeData) || (consideringLoading && !consideringData)
@@ -143,7 +169,10 @@ function CompletePageContent() {
         <CategoryTabs
           categories={categories}
           activeCategory={activeCategory}
-          onCategoryChange={setActiveCategory}
+          onCategoryChange={handleCategoryChange}
+          subCategories={subCategories}
+          activeSubCategory={activeSubCategory}
+          onSubCategoryChange={setActiveSubCategory}
         />
 
         {/* Item selection grid */}

@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { api } from '@/lib/api'
 import { useWardrobe, useConsiderBuying } from '@/lib/queries'
+import { getSubCategories, filterBySubCategory, WardrobeItem } from '@/lib/categoryUtils'
 import UploadModal from '@/components/UploadModal'
 import PhotoGuidelines from '@/components/PhotoGuidelines'
 import CategoryTabs from '@/components/CategoryTabs'
@@ -24,6 +25,7 @@ function ClosetContent() {
     const { data: considerBuyingData, isLoading: considerBuyingLoading, refetch: refetchConsiderBuying } = useConsiderBuying(user, 'considering')
 
     const [activeCategory, setActiveCategory] = useState('All')
+    const [activeSubCategory, setActiveSubCategory] = useState<string | null>(null)
     const [showUploadModal, setShowUploadModal] = useState(false)
     const [showGuidelines, setShowGuidelines] = useState(false)
     const [analyzingCount, setAnalyzingCount] = useState(0)
@@ -53,6 +55,8 @@ function ClosetContent() {
         }
 
         setActiveCategory(newCategory)
+        // Reset sub-category when switching main categories
+        setActiveSubCategory(null)
 
         // Update URL
         const params = new URLSearchParams(searchParams.toString())
@@ -144,8 +148,8 @@ function ClosetContent() {
         return false
     }
 
-    // Client-side filtering with useMemo - instant category switching
-    const filteredItems = useMemo(() => {
+    // Get items for the current category (before sub-filtering)
+    const categoryItems = useMemo(() => {
         // For "Considering" tab, show all considering items (no category filtering needed)
         if (activeCategory === 'Considering') {
             return items
@@ -153,6 +157,25 @@ function ClosetContent() {
         // For other categories, filter by category
         return items.filter((item: any) => matchesCategory(item, activeCategory))
     }, [items, activeCategory])
+
+    // Compute sub-categories for the current category
+    // Always show sub-filters when they exist (no threshold)
+    const subCategories = useMemo(() => {
+        // Only compute for non-special categories
+        if (activeCategory === 'All' || activeCategory === 'Considering') {
+            return []
+        }
+        return getSubCategories(categoryItems as WardrobeItem[], activeCategory)
+    }, [categoryItems, activeCategory])
+
+    // Client-side filtering with useMemo - instant category switching
+    const filteredItems = useMemo(() => {
+        // Apply sub-category filter if active
+        if (activeSubCategory && subCategories.length > 0) {
+            return filterBySubCategory(categoryItems as WardrobeItem[], activeCategory, activeSubCategory)
+        }
+        return categoryItems
+    }, [categoryItems, activeCategory, activeSubCategory, subCategories])
 
     const getCategoryCount = (cat: string) => {
         // For "All", count only wardrobe items (NOT considering items)
@@ -186,6 +209,9 @@ function ClosetContent() {
                     activeCategory={activeCategory}
                     onCategoryChange={handleCategoryClick}
                     getCategoryCount={getCategoryCount}
+                    subCategories={subCategories}
+                    activeSubCategory={activeSubCategory}
+                    onSubCategoryChange={setActiveSubCategory}
                 />
             </div>
 
