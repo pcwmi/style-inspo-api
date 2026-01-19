@@ -18,12 +18,13 @@ python scripts/daily_digest.py $ARGUMENTS
 - `YYYY-MM-DD`: Shows digest for specific date
 - `--exclude user1 user2`: Exclude specific users (default: peichin)
 - `--exclude`: Include all users (no exclusions)
+- `-v, --verbose`: Show full details (default is compact mode with URLs)
 - `--users`: List all users with data
 
 ## Examples
 
 ```bash
-# Yesterday's digest (default)
+# Yesterday's digest (compact mode, ~30 lines with URLs)
 python scripts/daily_digest.py
 
 # Today's digest
@@ -32,22 +33,27 @@ python scripts/daily_digest.py 2026-01-19
 # Include all users (for debugging)
 python scripts/daily_digest.py 2026-01-19 --exclude
 
+# Full verbose output (153+ lines with all item details)
+python scripts/daily_digest.py 2026-01-19 -v
+
 # List users
 python scripts/daily_digest.py --users
 ```
 
 ## What it Shows
 
-For each active user:
-- Timestamp of each generation session
-- Mode: "Plan my day" (occasion) or "Complete my look" (anchors)
-- Context: occasion text or anchor items
-- Each generated outfit with item names
-- Save status: SAVED (with feedback), Not saved, or DISLIKED
+**Compact mode (default):**
+- Each user with session count and save count
+- Drop-off warning if user left without saving
+- Each outfit with S3 image URL (first item)
+- Save status with feedback
 
-Summary stats:
+**Verbose mode (-v):**
+- Full outfit details with all item names and URLs
+- Complete styling context
+
+**Summary stats:**
 - Active user count
-- Generation sessions
 - Total outfits generated
 - Save rate
 

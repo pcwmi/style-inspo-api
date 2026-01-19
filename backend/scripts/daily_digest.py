@@ -363,6 +363,155 @@ def generate_daily_digest(date_str: str, exclude_users: List[str] = None) -> str
     return "\n".join(output)
 
 
+def generate_compact_digest(date_str: str, exclude_users: List[str] = None) -> str:
+    """Generate a compact daily digest with visible URLs (~40 lines max)."""
+    output = []
+
+    # Header
+    try:
+        date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+        formatted_date = date_obj.strftime("%b %d, %Y")
+    except Exception:
+        formatted_date = date_str
+
+    output.append(f"📊 Style Inspo Daily Digest - {formatted_date}")
+    output.append("")
+
+    # Get all users
+    all_users = get_all_users_with_data()
+    exclude_users = exclude_users or []
+
+    # Filter and collect data
+    active_users = []
+    user_data = {}
+
+    for user_id in all_users:
+        if user_id in exclude_users:
+            continue
+
+        generations = load_generations_for_date(user_id, date_str)
+        if generations:
+            active_users.append(user_id)
+            saved_outfits = load_saved_outfits(user_id)
+            user_data[user_id] = {
+                "generations": generations,
+                "saved_outfits": saved_outfits
+            }
+
+    output.append(f"👥 Active Users: {len(active_users)}")
+    if exclude_users:
+        output.append(f"   (excluding: {', '.join(exclude_users)})")
+    output.append("")
+
+    if not active_users:
+        output.append("No outfit generations recorded for this day.")
+        return "\n".join(output)
+
+    # Generate compact per-user sections
+    total_outfits = 0
+    total_saves = 0
+
+    for user_id in active_users:
+        data = user_data[user_id]
+        generations = data["generations"]
+        saved_outfits = data["saved_outfits"]
+
+        # Build saved outfit lookup for this date
+        saves_today = [
+            saved for saved in saved_outfits
+            if date_str in saved.get("saved_at", "")
+        ]
+
+        user_saves = 0
+        user_outfits = 0
+        used_save_ids = set()
+
+        # Count sessions and check for drop-off
+        for gen in generations:
+            gen_timestamp = parse_timestamp(gen.get("timestamp", ""))
+            outfits = gen.get("outfits", [])
+            user_outfits += len(outfits)
+
+            for outfit in outfits:
+                items = outfit.get("items", [])
+                for saved in saves_today:
+                    if saved.get("id") in used_save_ids:
+                        continue
+                    saved_items = saved.get("outfit_data", {}).get("items", [])
+                    saved_timestamp = parse_timestamp(saved.get("saved_at", ""))
+                    if gen_timestamp and saved_timestamp:
+                        if saved_timestamp >= gen_timestamp:
+                            if outfit_items_match(items, saved_items):
+                                user_saves += 1
+                                used_save_ids.add(saved.get("id"))
+                                break
+
+        total_outfits += user_outfits
+        total_saves += user_saves
+
+        # User header with drop-off indicator
+        drop_off = " ⚠️ drop-off" if user_saves == 0 and user_outfits > 0 else ""
+        output.append(f"{user_id.upper()} - {len(generations)} session(s), {user_saves} saved{drop_off}")
+
+        # Show each session compactly
+        used_save_ids = set()  # Reset for detail output
+        for gen in generations:
+            gen_timestamp_str = gen.get("timestamp", "")
+            gen_timestamp = parse_timestamp(gen_timestamp_str)
+            time_str = format_time(gen_timestamp_str)
+            mode = gen.get("mode", "unknown")
+            outfits = gen.get("outfits", [])
+
+            if mode == "occasion":
+                occasion = gen.get("occasion", "Not specified")
+                output.append(f"  {time_str} \"{occasion}\" → {len(outfits)} outfits")
+            else:
+                anchor_names = gen.get("anchor_item_names", [])
+                anchor_str = ", ".join(anchor_names[:2]) if anchor_names else "items"
+                output.append(f"  {time_str} Complete look ({anchor_str}) → {len(outfits)} outfits")
+
+            # Show each outfit with first item's image URL
+            for i, outfit in enumerate(outfits, 1):
+                items = outfit.get("items", [])
+                first_item = items[0] if items else {}
+                first_name = first_item.get("name", "Unknown")[:30]
+                image_url = first_item.get("image_path", "")
+
+                # Check if saved
+                was_saved = False
+                save_feedback = None
+                for saved in saves_today:
+                    if saved.get("id") in used_save_ids:
+                        continue
+                    saved_items = saved.get("outfit_data", {}).get("items", [])
+                    saved_timestamp = parse_timestamp(saved.get("saved_at", ""))
+                    if gen_timestamp and saved_timestamp:
+                        if saved_timestamp >= gen_timestamp:
+                            if outfit_items_match(items, saved_items):
+                                was_saved = True
+                                save_feedback = saved.get("user_reason", "")
+                                used_save_ids.add(saved.get("id"))
+                                break
+
+                if was_saved:
+                    feedback_str = f' "{save_feedback}"' if save_feedback else ""
+                    output.append(f"    ✅ Outfit {i} SAVED{feedback_str}: {first_name}")
+                else:
+                    output.append(f"    ❌ Outfit {i}: {first_name}")
+
+                # Always show the image URL
+                if image_url:
+                    output.append(f"       {image_url}")
+
+        output.append("")
+
+    # Summary
+    save_rate = (total_saves / total_outfits * 100) if total_outfits > 0 else 0
+    output.append(f"📈 Summary: {total_outfits} generated, {total_saves} saved ({save_rate:.0f}%)")
+
+    return "\n".join(output)
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Generate daily usage digest for Style Inspo"
@@ -382,6 +531,11 @@ def main():
         nargs="*",
         default=["peichin"],
         help="Users to exclude (default: peichin)"
+    )
+    parser.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+        help="Show full details (default is compact mode)"
     )
 
     args = parser.parse_args()
@@ -403,8 +557,11 @@ def main():
         yesterday = datetime.now(timezone.utc) - timedelta(days=1)
         date_str = yesterday.strftime("%Y-%m-%d")
 
-    # Generate digest
-    digest = generate_daily_digest(date_str, exclude_users=args.exclude)
+    # Generate digest (compact by default, verbose with -v)
+    if args.verbose:
+        digest = generate_daily_digest(date_str, exclude_users=args.exclude)
+    else:
+        digest = generate_compact_digest(date_str, exclude_users=args.exclude)
     print(digest)
 
 
