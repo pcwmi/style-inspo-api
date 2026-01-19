@@ -57,6 +57,7 @@ const SUB_CATEGORY_KEYWORDS: Record<string, Record<string, string[]>> = {
 // This prevents "sweatshirt cardigan" from being categorized as Hoodies & Sweatshirts
 const EXCLUSION_PATTERNS: Record<string, string[]> = {
   'sweatshirt': ['cardigan', 'blazer', 'jacket', 'structured'],
+  'short': ['skirt'],  // "short skirt" → Skirts, not Shorts
 }
 
 export interface WardrobeItem {
