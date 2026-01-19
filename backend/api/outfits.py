@@ -7,19 +7,75 @@ from fastapi.responses import StreamingResponse
 import asyncio
 import json
 import logging
-import datetime
+import os
+from datetime import datetime, timezone
 
 from models.schemas import OutfitRequest, OutfitGenerationResponse, SaveOutfitRequest, DislikeOutfitRequest, OutfitContext
 from workers.outfit_worker import generate_outfits_job
 from services.saved_outfits_manager import SavedOutfitsManager
 from services.disliked_outfits_manager import DislikedOutfitsManager
 from services.prompts.library import PromptLibrary
+from services.storage_manager import StorageManager
 from core.redis import get_redis_connection
 from core.config import get_settings
 from rq import Queue
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+
+def log_generation_to_s3(
+    user_id: str,
+    mode: str,
+    outfits: list,
+    occasion: str = None,
+    anchor_items: list = None,
+    anchor_item_names: list = None
+):
+    """
+    Log outfit generation to S3 for analytics/daily digest.
+    Appends to daily log file: {user_id}/generations/{YYYY-MM-DD}.json
+    """
+    try:
+        storage_type = os.getenv("STORAGE_TYPE", "local")
+        storage = StorageManager(storage_type=storage_type, user_id=user_id)
+
+        # Get today's date for the log file
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        log_filename = f"generations/{today}.json"
+
+        # Load existing log for today (or empty list)
+        try:
+            existing_data = storage.load_json(log_filename)
+            generations = existing_data.get("generations", [])
+        except Exception:
+            generations = []
+
+        # Create generation log entry
+        generation_entry = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "mode": mode,
+            "outfits": outfits
+        }
+
+        # Add mode-specific context
+        if mode == "occasion" and occasion:
+            generation_entry["occasion"] = occasion
+        elif mode == "complete" and anchor_items:
+            generation_entry["anchor_item_ids"] = anchor_items
+            if anchor_item_names:
+                generation_entry["anchor_item_names"] = anchor_item_names
+
+        # Append to today's log
+        generations.append(generation_entry)
+
+        # Save back to S3
+        storage.save_json({"generations": generations}, log_filename)
+        logger.info(f"Logged generation for {user_id}: {mode} mode, {len(outfits)} outfits")
+
+    except Exception as e:
+        # Don't fail the request if logging fails
+        logger.error(f"Failed to log generation for {user_id}: {e}")
 
 # Lazy initialization of RQ queue (only when needed)
 def get_outfit_queue():
@@ -71,9 +127,9 @@ async def generate_outfits_stream(
             all_items = wardrobe_manager.get_wardrobe_items("all")
 
             # Determine available items and anchor items based on mode
+            anchor_item_objects = []  # Initialize for both modes
             if mode == "complete" and anchor_items:
                 anchor_item_ids = [id.strip() for id in anchor_items.split(",")]
-                anchor_item_objects = []
                 
                 # Get anchor items (can be from wardrobe OR considering items)
                 for item_id in anchor_item_ids:
@@ -130,6 +186,7 @@ async def generate_outfits_stream(
             # Stream outfits
             outfit_num = 0
             cumulative_reasoning = ""  # Track reasoning text for debug mode
+            generated_outfits = []  # Collect for logging
             
             # Also check consider-buying items for matching (needed for complete mode with consider-buying anchors)
             considering_items_for_match = []
@@ -222,8 +279,33 @@ async def generate_outfits_stream(
                     "context": context.model_dump()
                 }
 
+                # Collect for logging (exclude context to keep logs lean)
+                generated_outfits.append({
+                    "items": enriched_items,
+                    "styling_notes": outfit.get("styling_notes", ""),
+                    "why_it_works": outfit.get("why_it_works", ""),
+                    "confidence_level": outfit.get("confidence_level", "medium"),
+                    "vibe_keywords": outfit.get("vibe_keywords", [])
+                })
+
                 yield f"event: outfit\ndata: {json.dumps({'outfit_number': outfit_num, 'outfit': enriched_outfit})}\n\n"
                 await asyncio.sleep(0)  # Allow event loop to process
+
+            # Log generation to S3 for analytics/daily digest
+            anchor_item_ids_list = [id.strip() for id in anchor_items.split(",")] if anchor_items else None
+            anchor_item_names_list = [
+                item.get("styling_details", {}).get("name", "Unknown")
+                for item in anchor_item_objects
+            ] if mode == "complete" and anchor_item_objects else None
+
+            log_generation_to_s3(
+                user_id=user_id,
+                mode=mode,
+                outfits=generated_outfits,
+                occasion=occasion_str,
+                anchor_items=anchor_item_ids_list,
+                anchor_item_names=anchor_item_names_list
+            )
 
             # For reasoning, we need to get it from the streaming response
             # The streaming prompt includes reasoning, but we'd need to modify the engine to expose it
