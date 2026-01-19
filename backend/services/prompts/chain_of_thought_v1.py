@@ -137,6 +137,22 @@ Complete: "This outfit says: I'm someone who ___"
 
 7. Show reasoning for each step
 
+8. **No two pants in the same outfit**: A person can only wear one pair of pants at a time.
+
+9. **No two shoes in the same outfit**: A person can only wear one pair of shoes at a time.
+
+10. **Bottoms layering rule**: Wearing pants under a skirt is rare and requires specific silhouettes:
+    - INVALID: Wide-leg/flared pants under any skirt (too much bulk)
+    - INVALID: Any pants under a short/fitted skirt (nowhere for fabric to go)
+    - VALID: Skinny jeans or leggings under a long, flowing skirt
+    - DEFAULT: One bottom per outfit unless the silhouette works physically
+
+11. **Layering order rule**: Each layer must be looser than the previous:
+    - INVALID: Oversized top under fitted sweater (sleeves won't fit)
+    - INVALID: Loose blouse under tight cardigan (bunches up)
+    - VALID: Fitted tee under oversized cardigan
+    - Order: fitted → relaxed → oversized
+
 ---
 {self._format_critical_anchor_reminder(has_anchor_items, anchor_items_text if has_anchor_items else "", len(context.styling_challenges) if has_anchor_items else None)}
 ## OUTPUT FORMAT
