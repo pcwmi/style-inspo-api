@@ -405,7 +405,12 @@ def main():
     # Determine date (using Pacific time)
     pacific = ZoneInfo("America/Los_Angeles")
     if args.date:
-        date_str = args.date
+        if args.date.lower() == "today":
+            date_str = datetime.now(pacific).strftime("%Y-%m-%d")
+        elif args.date.lower() == "yesterday":
+            date_str = (datetime.now(pacific) - timedelta(days=1)).strftime("%Y-%m-%d")
+        else:
+            date_str = args.date
     else:
         yesterday = datetime.now(pacific) - timedelta(days=1)
         date_str = yesterday.strftime("%Y-%m-%d")
