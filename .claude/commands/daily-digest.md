@@ -1,16 +1,18 @@
 # Daily Usage Digest
 
-Generate a daily briefing of Style Inspo usage showing who used the app, what they did, and the outcomes.
+Generate a visual HTML digest of Style Inspo usage showing outfit compositions, save rates, and user feedback.
 
 ## Usage
 
-Run the digest script from the backend directory:
+Run the HTML digest generator from the backend directory:
 
 ```bash
 cd /Users/peichin/Projects/style-inspo-api/backend
 source venv/bin/activate
-python scripts/daily_digest.py $ARGUMENTS
+python scripts/generate_digest_html.py $ARGUMENTS
 ```
+
+This generates an HTML file and automatically opens it in your browser.
 
 ## Arguments
 
@@ -18,50 +20,56 @@ python scripts/daily_digest.py $ARGUMENTS
 - `YYYY-MM-DD`: Shows digest for specific date
 - `--exclude user1 user2`: Exclude specific users (default: peichin)
 - `--exclude`: Include all users (no exclusions)
-- `-v, --verbose`: Show full details (default is compact mode with URLs)
-- `--users`: List all users with data
+- `--no-open`: Generate file without opening browser
+- `-o, --output`: Custom output file path
 
 ## Examples
 
 ```bash
-# Yesterday's digest (compact mode, ~30 lines with URLs)
-python scripts/daily_digest.py
+# Yesterday's digest (auto-opens in browser)
+python scripts/generate_digest_html.py
 
 # Today's digest
-python scripts/daily_digest.py 2026-01-19
+python scripts/generate_digest_html.py 2026-01-19
 
 # Include all users (for debugging)
-python scripts/daily_digest.py 2026-01-19 --exclude
+python scripts/generate_digest_html.py 2026-01-19 --exclude
 
-# Full verbose output (153+ lines with all item details)
-python scripts/daily_digest.py 2026-01-19 -v
-
-# List users
-python scripts/daily_digest.py --users
+# Generate without opening browser
+python scripts/generate_digest_html.py 2026-01-19 --no-open
 ```
 
-## What it Shows
+## What the HTML Shows
 
-**Compact mode (default):**
-- Each user with session count and save count
-- Drop-off warning if user left without saving
-- Each outfit with S3 image URL (first item)
-- Save status with feedback
+Each outfit displayed as a visual card (replicating the OutfitCard pattern):
+- **3-column grid** of all items in the outfit
+- **Green badge** for saved outfits with user feedback
+- **Red badge** for unsaved outfits
+- **Styling notes** and "Why it works" explanations
+- **Drop-off warning** if user left without saving
 
-**Verbose mode (-v):**
-- Full outfit details with all item names and URLs
-- Complete styling context
-
-**Summary stats:**
+**Summary stats at top:**
 - Active user count
 - Total outfits generated
-- Save rate
+- Save rate percentage
+
+## Output
+
+- HTML file: `digest-{YYYY-MM-DD}.html` in current directory
+- Auto-opens in default browser (unless `--no-open`)
+
+## CLI Text Version (Fallback)
+
+For text-only output, use the original script:
+
+```bash
+python scripts/daily_digest.py 2026-01-19
+```
 
 ## Data Sources
 
 - S3: `{user}/generations/{date}.json` - All generated outfits
 - S3: `{user}/saved_outfits.json` - Saved outfit records
-- PostHog (optional): Enhanced event data when configured
 
 ## Note
 
