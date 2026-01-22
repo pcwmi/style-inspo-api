@@ -17,11 +17,13 @@ Configuration:
 """
 
 import os
+import io
 import requests
 import time
 import base64
 import logging
 from typing import Dict, List, Optional
+from PIL import Image
 from .base import (
     ImageGenerationProvider,
     ImageGenerationRequest,
@@ -398,6 +400,18 @@ class RunwayProvider(ImageGenerationProvider):
             for i, image_path in enumerate(request.garment_images):
                 try:
                     image_data = self._fetch_image_data(image_path)
+
+                    # Load image and ensure valid aspect ratio for Runway
+                    img = Image.open(io.BytesIO(image_data))
+                    if img.mode == 'RGBA':
+                        img = img.convert('RGB')
+                    img = self._ensure_valid_aspect_ratio(img)
+
+                    # Re-encode the (possibly padded) image
+                    buffer = io.BytesIO()
+                    img.save(buffer, format='JPEG', quality=90)
+                    image_data = buffer.getvalue()
+
                     data_url = self._encode_image_to_data_url(image_data, image_path)
 
                     reference_images.append({
@@ -409,6 +423,46 @@ class RunwayProvider(ImageGenerationProvider):
                     continue
 
         return reference_images
+
+    def _ensure_valid_aspect_ratio(self, img: Image.Image, min_ratio: float = 0.5) -> Image.Image:
+        """
+        Ensure image meets minimum aspect ratio by padding if needed.
+
+        Runway requires width/height >= 0.5. For narrow images (like shopping app
+        screenshots at 369x800), we pad with white background to meet the requirement.
+
+        Args:
+            img: PIL Image object
+            min_ratio: Minimum width/height ratio (default 0.5 per Runway API)
+
+        Returns:
+            Original image if valid, or padded image if too narrow
+        """
+        current_ratio = img.width / img.height if img.height > 0 else 0
+
+        if current_ratio >= min_ratio:
+            return img  # Already valid
+
+        # Calculate new width to meet minimum ratio
+        new_width = int(img.height * min_ratio)
+
+        # Convert to RGB if needed (for consistent output)
+        if img.mode == 'RGBA':
+            img = img.convert('RGB')
+
+        # Create new canvas with white background
+        new_img = Image.new('RGB', (new_width, img.height), (255, 255, 255))
+
+        # Center original image on canvas
+        x_offset = (new_width - img.width) // 2
+        new_img.paste(img, (x_offset, 0))
+
+        logger.info(
+            f"Padded narrow image: {img.width}x{img.height} (ratio {current_ratio:.3f}) "
+            f"→ {new_width}x{img.height} (ratio {min_ratio})"
+        )
+
+        return new_img
 
     def _fetch_image_data(self, image_path: str) -> bytes:
         """
