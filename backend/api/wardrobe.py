@@ -9,6 +9,7 @@ import logging
 
 from services.wardrobe_manager import WardrobeManager
 from services.image_analyzer import create_image_analyzer
+from services.activity_logger import log_activity
 from models.schemas import WardrobeResponse, WardrobeItemResponse
 from workers.outfit_worker import analyze_item_job
 from core.redis import get_redis_connection
@@ -90,11 +91,23 @@ async def delete_item(user_id: str, item_id: str):
     """Delete wardrobe item"""
     try:
         manager = WardrobeManager(user_id=user_id)
+
+        # Get item info before deletion for logging
+        items = manager.get_wardrobe_items("all")
+        item_info = next((i for i in items if i.get("id") == item_id), None)
+        item_name = item_info.get("styling_details", {}).get("name", "Unknown") if item_info else "Unknown"
+
         success = manager.delete_wardrobe_item(item_id)
-        
+
         if not success:
             raise HTTPException(status_code=404, detail="Item not found")
-        
+
+        # Log activity
+        log_activity(user_id, "item_deleted", {
+            "item_id": item_id,
+            "name": item_name
+        })
+
         return {"success": True, "message": "Item deleted"}
     except HTTPException:
         raise

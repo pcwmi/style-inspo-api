@@ -7,6 +7,7 @@ import logging
 
 from models.schemas import ProfileUpdate, ProfileResponse, DescriptorRequest, DescriptorResponse
 from services.user_profile_manager import UserProfileManager
+from services.activity_logger import log_activity
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -56,19 +57,27 @@ async def update_profile(user_id: str, profile: ProfileUpdate):
     """Update user style profile"""
     try:
         profile_manager = UserProfileManager(user_id=user_id)
-        
+
         # Build profile dict
         profile_data = {}
         if profile.three_words:
             profile_data["three_words"] = profile.three_words
         if profile.daily_emotion:
             profile_data["daily_emotion"] = profile.daily_emotion
-        
+
         success = profile_manager.save_profile(profile_data)
-        
+
         if not success:
             raise HTTPException(status_code=500, detail="Failed to save profile")
-        
+
+        # Log activity
+        if profile.three_words:
+            log_activity(user_id, "style_words_updated", {
+                "current": profile.three_words.get("current"),
+                "aspirational": profile.three_words.get("aspirational"),
+                "feeling": profile.three_words.get("feeling")
+            })
+
         return {"success": True, "message": "Profile updated"}
     except HTTPException:
         raise
@@ -108,6 +117,11 @@ async def save_descriptor(request: DescriptorRequest):
 
         if not success:
             raise HTTPException(status_code=500, detail="Failed to save descriptor")
+
+        # Log activity
+        log_activity(request.user_id, "descriptor_saved", {
+            "descriptor_length": len(request.descriptor.strip())
+        })
 
         return DescriptorResponse(
             status="saved",

@@ -505,13 +505,21 @@ def analyze_item_job(user_id, file_path, filename, use_real_ai=True):
         if job:
             job.meta['progress'] = 100
             job.save_meta()
-        
+
+        # Log activity
+        from services.activity_logger import log_activity
+        log_activity(user_id, "item_uploaded", {
+            "item_id": item_data["id"] if item_data else None,
+            "name": analysis.get("name", "Unknown"),
+            "category": analysis.get("category", "unknown")
+        })
+
         # Clean up staged file
         try:
             storage.delete_file(file_path)
         except Exception as e:
-            logger.warning(f"Failed to cleanup staged file {file_path}: {e}") 
-        
+            logger.warning(f"Failed to cleanup staged file {file_path}: {e}")
+
         return {
             "item_id": item_data["id"] if item_data else None,
             "analysis": analysis,

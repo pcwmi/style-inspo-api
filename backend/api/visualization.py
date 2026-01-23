@@ -9,6 +9,7 @@ from models.schemas import VisualizationRequest, VisualizationResponse, JobStatu
 from workers.visualization_worker import visualize_outfit_job
 from core.redis import get_redis_connection
 from rq import Queue
+from services.activity_logger import log_activity
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -88,6 +89,13 @@ async def generate_visualization(request: VisualizationRequest):
         )
 
         logger.info(f"Enqueued visualization job {job.id}")
+
+        # Log activity
+        log_activity(request.user_id, "visualization_started", {
+            "outfit_id": request.outfit_id,
+            "job_id": job.id,
+            "provider": request.provider or "runway"
+        })
 
         return VisualizationResponse(
             job_id=job.id,

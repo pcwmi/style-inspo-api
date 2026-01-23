@@ -14,6 +14,7 @@ from models.schemas import OutfitRequest, OutfitGenerationResponse, SaveOutfitRe
 from workers.outfit_worker import generate_outfits_job
 from services.saved_outfits_manager import SavedOutfitsManager
 from services.disliked_outfits_manager import DislikedOutfitsManager
+from services.activity_logger import log_activity
 from services.prompts.library import PromptLibrary
 from services.storage_manager import StorageManager
 from core.redis import get_redis_connection
@@ -72,6 +73,14 @@ def log_generation_to_s3(
         # Save back to S3
         storage.save_json({"generations": generations}, log_filename)
         logger.info(f"Logged generation for {user_id}: {mode} mode, {len(outfits)} outfits")
+
+        # Also log to unified activity log
+        log_activity(user_id, "outfit_generated", {
+            "mode": mode,
+            "outfit_count": len(outfits),
+            "occasion": occasion if mode == "occasion" else None,
+            "anchor_items": anchor_item_names if mode == "complete" else None
+        })
 
     except Exception as e:
         # Don't fail the request if logging fails
@@ -401,6 +410,13 @@ async def save_outfit(request: SaveOutfitRequest):
         if not outfit_id:
             raise HTTPException(status_code=500, detail="Failed to save outfit")
 
+        # Log activity
+        log_activity(request.user_id, "outfit_saved", {
+            "outfit_id": outfit_id,
+            "reason": ", ".join(request.feedback) if request.feedback else "",
+            "item_count": len(outfit_wrapper.items)
+        })
+
         return {"success": True, "message": "Outfit saved", "outfit_id": outfit_id}
     except HTTPException:
         raise
@@ -420,10 +436,16 @@ async def dislike_outfit(request: DislikeOutfitRequest):
             reason=request.reason or "",
             context=outfit_wrapper.context
         )
-        
+
         if not success:
             raise HTTPException(status_code=500, detail="Failed to record dislike")
-        
+
+        # Log activity
+        log_activity(request.user_id, "outfit_disliked", {
+            "reason": request.reason or "",
+            "item_count": len(outfit_wrapper.items)
+        })
+
         return {"success": True, "message": "Feedback recorded"}
     except HTTPException:
         raise

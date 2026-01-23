@@ -95,11 +95,29 @@ def visualize_outfit_job(user_id: str, outfit_id: str, provider_name: str = "run
             job.meta['status_message'] = "Complete!"
             job.save_meta()
 
+        # Log activity
+        from services.activity_logger import log_activity
+        log_activity(user_id, "visualization_complete", {
+            "outfit_id": outfit_id,
+            "duration_sec": round(result['latency_ms'] / 1000, 1),
+            "image_url": result.get('image_url', ''),
+            "provider": result.get('provider', provider_name)
+        })
+
         logger.info(f"Visualization job completed: outfit={outfit_id}, latency={result['latency_ms']}ms")
         return result
 
     except Exception as e:
         logger.error(f"Error in visualize_outfit_job: {e}", exc_info=True)
+
+        # Log failure
+        from services.activity_logger import log_activity
+        log_activity(user_id, "visualization_failed", {
+            "outfit_id": outfit_id,
+            "error": str(e),
+            "duration_sec": round((time.time() - start_time), 1)
+        })
+
         if job:
             job.meta['error'] = str(e)
             job.meta['status_message'] = f"Failed: {str(e)}"

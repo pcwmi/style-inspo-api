@@ -65,6 +65,42 @@ def load_saved_outfits(user_id: str) -> List[Dict]:
         return []
 
 
+def load_activities_for_date(user_id: str, date_str: str) -> List[Dict]:
+    """Load activity log for a specific user and date."""
+    try:
+        storage = StorageManager(storage_type="s3", user_id=user_id)
+        log_filename = f"activity/{date_str}.json"
+        data = storage.load_json(log_filename)
+        return data.get("activities", [])
+    except Exception:
+        return []
+
+
+def summarize_activities(activities: List[Dict]) -> Dict:
+    """Summarize activities by type."""
+    summary = {
+        "outfit_generated": [],
+        "outfit_saved": [],
+        "outfit_disliked": [],
+        "visualization_started": [],
+        "visualization_complete": [],
+        "visualization_failed": [],
+        "descriptor_saved": [],
+        "style_words_updated": [],
+        "consider_buying_added": [],
+        "consider_buying_decided": [],
+        "consider_buying_deleted": [],
+        "consider_buying_cleared": [],
+        "item_uploaded": [],
+        "item_deleted": [],
+    }
+    for activity in activities:
+        action = activity.get("action", "")
+        if action in summary:
+            summary[action].append(activity)
+    return summary
+
+
 def format_time(timestamp_str: str) -> str:
     """Format ISO timestamp to readable time."""
     try:
@@ -108,12 +144,16 @@ def generate_html(date_str: str, exclude_users: List[str] = None) -> str:
         if user_id in exclude_users:
             continue
         generations = load_generations_for_date(user_id, date_str)
-        if generations:
+        activities = load_activities_for_date(user_id, date_str)
+        # User is active if they have generations OR activities
+        if generations or activities:
             active_users.append(user_id)
             saved_outfits = load_saved_outfits(user_id)
             user_data[user_id] = {
                 "generations": generations,
-                "saved_outfits": saved_outfits
+                "saved_outfits": saved_outfits,
+                "activities": activities,
+                "activity_summary": summarize_activities(activities)
             }
 
     # Calculate stats
@@ -256,6 +296,60 @@ def generate_html(date_str: str, exclude_users: List[str] = None) -> str:
             padding: 60px 20px;
             color: #666;
         }}
+        .activity-summary {{
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }}
+        .activity-summary h3 {{
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            color: #0369a1;
+        }}
+        .activity-list {{
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            font-size: 13px;
+        }}
+        .activity-list li {{
+            padding: 4px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }}
+        .activity-icon {{
+            width: 18px;
+            text-align: center;
+        }}
+        .viz-section {{
+            background: #fefce8;
+            border: 1px solid #facc15;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }}
+        .viz-section h3 {{
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            color: #a16207;
+        }}
+        .viz-item {{
+            font-size: 13px;
+            padding: 4px 0;
+        }}
+        .viz-success {{ color: #16a34a; }}
+        .viz-failed {{ color: #dc2626; }}
+        .raw-log-link {{
+            font-size: 11px;
+            color: #64748b;
+            text-decoration: none;
+        }}
+        .raw-log-link:hover {{
+            text-decoration: underline;
+        }}
     </style>
 </head>
 <body>
@@ -275,6 +369,7 @@ def generate_html(date_str: str, exclude_users: List[str] = None) -> str:
             data = user_data[user_id]
             generations = data["generations"]
             saved_outfits = data["saved_outfits"]
+            activity_summary = data.get("activity_summary", {})
 
             # Build saved lookup for this date
             saves_today = [
@@ -289,6 +384,84 @@ def generate_html(date_str: str, exclude_users: List[str] = None) -> str:
             html += f"""
         <div class="user-section">
             <div class="user-header">{user_id.upper()}</div>
+"""
+
+            # Add activity summary if there are activities
+            if any(activity_summary.values()):
+                html += """            <div class="activity-summary">
+                <h3>Activity Summary</h3>
+                <ul class="activity-list">
+"""
+                # Visualizations
+                viz_complete = len(activity_summary.get("visualization_complete", []))
+                viz_failed = len(activity_summary.get("visualization_failed", []))
+                if viz_complete or viz_failed:
+                    html += f'                    <li><span class="activity-icon">🖼️</span> {viz_complete + viz_failed} visualizations ({viz_complete} succeeded, {viz_failed} failed)</li>\n'
+
+                # Descriptor updates
+                if activity_summary.get("descriptor_saved"):
+                    html += '                    <li><span class="activity-icon">📝</span> Updated model descriptor</li>\n'
+
+                # Style words updates
+                if activity_summary.get("style_words_updated"):
+                    words = activity_summary["style_words_updated"][0].get("details", {})
+                    html += f'                    <li><span class="activity-icon">✨</span> Style words: {words.get("current", "?")} → {words.get("aspirational", "?")}</li>\n'
+
+                # Consider buying
+                cb_added = len(activity_summary.get("consider_buying_added", []))
+                if cb_added:
+                    html += f'                    <li><span class="activity-icon">🛒</span> {cb_added} item(s) added to consider-buying</li>\n'
+
+                cb_decided = activity_summary.get("consider_buying_decided", [])
+                if cb_decided:
+                    bought = sum(1 for d in cb_decided if d.get("details", {}).get("decision") == "bought")
+                    passed = sum(1 for d in cb_decided if d.get("details", {}).get("decision") == "passed")
+                    if bought:
+                        html += f'                    <li><span class="activity-icon">💳</span> {bought} item(s) marked as bought</li>\n'
+                    if passed:
+                        html += f'                    <li><span class="activity-icon">👋</span> {passed} item(s) passed on</li>\n'
+
+                # Item uploads
+                uploaded = len(activity_summary.get("item_uploaded", []))
+                if uploaded:
+                    html += f'                    <li><span class="activity-icon">📤</span> {uploaded} item(s) uploaded to wardrobe</li>\n'
+
+                # Item deletions
+                deleted = len(activity_summary.get("item_deleted", []))
+                if deleted:
+                    html += f'                    <li><span class="activity-icon">🗑️</span> {deleted} item(s) deleted from wardrobe</li>\n'
+
+                # Consider-buying deletions
+                cb_deleted = len(activity_summary.get("consider_buying_deleted", []))
+                cb_cleared = activity_summary.get("consider_buying_cleared", [])
+                if cb_deleted:
+                    html += f'                    <li><span class="activity-icon">❌</span> {cb_deleted} item(s) removed from consider-buying</li>\n'
+                if cb_cleared:
+                    count = cb_cleared[0].get("details", {}).get("deleted_count", 0)
+                    html += f'                    <li><span class="activity-icon">🧹</span> Cleared all consider-buying items ({count} total)</li>\n'
+
+                html += """                </ul>
+            </div>
+"""
+
+            # Add visualization details if any
+            viz_activities = activity_summary.get("visualization_complete", []) + activity_summary.get("visualization_failed", [])
+            if viz_activities:
+                html += """            <div class="viz-section">
+                <h3>Visualization Details</h3>
+"""
+                for viz in viz_activities:
+                    details = viz.get("details", {})
+                    duration = details.get("duration_sec", "?")
+                    if "error" in details:
+                        html += f'                <div class="viz-item viz-failed">❌ Failed: {details.get("error", "Unknown error")}</div>\n'
+                    else:
+                        image_url = details.get("image_url", "")
+                        if image_url:
+                            html += f'                <div class="viz-item viz-success">✅ Completed in {duration}s - <a href="{image_url}" target="_blank">View image</a></div>\n'
+                        else:
+                            html += f'                <div class="viz-item viz-success">✅ Completed in {duration}s</div>\n'
+                html += """            </div>
 """
 
             for gen in generations:

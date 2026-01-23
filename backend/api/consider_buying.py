@@ -11,6 +11,7 @@ import os
 
 from services.consider_buying_manager import ConsiderBuyingManager
 from services.product_extractor import ProductExtractor
+from services.activity_logger import log_activity
 from services.wardrobe_manager import WardrobeManager
 from services.image_analyzer import create_image_analyzer
 from services.storage_manager import StorageManager
@@ -173,6 +174,14 @@ async def add_item(
         item_data["similar_items_in_wardrobe"] = [s["item"]["id"] for s in similar_items]
         cb_manager._save_consider_buying_data()
 
+        # Log activity
+        log_activity(user_id, "consider_buying_added", {
+            "item_id": item_data.get("id"),
+            "name": item_data.get("styling_details", {}).get("name", "Unknown"),
+            "price": price,
+            "source_url": source_url
+        })
+
         return {
             "item": item_data,
             "similar_items": similar_items
@@ -312,6 +321,15 @@ async def record_decision(request: DecisionRequest, user_id: str = Query(...)):
             
             logger.info(f"Moved item {request.item_id} from consider_buying to wardrobe as {wardrobe_item['id']}")
 
+        # Log activity
+        log_activity(user_id, "consider_buying_decided", {
+            "item_id": request.item_id,
+            "name": item_name,
+            "decision": request.decision,
+            "reason": request.reason,
+            "price": item_price
+        })
+
         # Return decision with item info for all decisions
         return {
             "success": True,
@@ -354,8 +372,19 @@ async def delete_item(item_id: str, user_id: str = Query(...)):
     """
     try:
         cb_manager = ConsiderBuyingManager(user_id=user_id)
+
+        # Get item info before deletion for logging
+        item = next((i for i in cb_manager.get_items() if i["id"] == item_id), None)
+        item_name = item.get("styling_details", {}).get("name", "Unknown") if item else "Unknown"
+
         cb_manager.delete_item(item_id)
-        
+
+        # Log activity
+        log_activity(user_id, "consider_buying_deleted", {
+            "item_id": item_id,
+            "name": item_name
+        })
+
         return {
             "success": True,
             "message": "Item deleted successfully"
@@ -378,6 +407,12 @@ async def delete_all_items(user_id: str = Query(...)):
         # Clear all items
         cb_manager.consider_buying_data["items"] = []
         cb_manager._save_consider_buying_data()
+
+        # Log activity
+        if deleted_count > 0:
+            log_activity(user_id, "consider_buying_cleared", {
+                "deleted_count": deleted_count
+            })
 
         return {
             "success": True,
