@@ -98,3 +98,38 @@ cot-complete-my-outfit:
   scenarios: fixtures/test_scenarios.json
   scenario_filter: "complete"
   iterations: 1
+
+# ===== WEATHER CONSTRAINTS A/B TEST (Jan 2026) =====
+
+# Weather A/B test - CoT vs CoT+Weather on GPT-4o (PRIMARY TEST)
+weather-ab-test:
+  description: "A/B test: Chain-of-Thought vs Chain-of-Thought+Weather on cold weather scenarios"
+  models: fixtures/model_configs.yaml
+  model_ids:
+    - gpt4o_chain_of_thought
+    - gpt4o_chain_of_thought_weather
+  scenarios: fixtures/weather_test_scenarios.json
+  iterations: 1
+
+# Weather A/B test - Quick single scenario
+weather-quick-test:
+  description: "Quick test: Single cold weather scenario (47°F) comparing CoT vs CoT+Weather"
+  models: fixtures/model_configs.yaml
+  model_ids:
+    - gpt4o_chain_of_thought
+    - gpt4o_chain_of_thought_weather
+  scenarios: fixtures/weather_test_scenarios.json
+  scenario_filter: "cold_weather_47f_coffee"
+  iterations: 1
+
+# Weather test across models (GPT-4o and Claude)
+weather-cross-model:
+  description: "Weather constraints test across GPT-4o and Claude"
+  models: fixtures/model_configs.yaml
+  model_ids:
+    - gpt4o_chain_of_thought
+    - gpt4o_chain_of_thought_weather
+    - claude_sonnet_45_chain_of_thought
+    - claude_sonnet_45_chain_of_thought_weather
+  scenarios: fixtures/weather_test_scenarios.json
+  iterations: 1

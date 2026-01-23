@@ -1,0 +1,140 @@
+[
+  {
+    "id": "cold_weather_47f_coffee",
+    "name": "Cold Weather (47°F): Coffee meeting",
+    "user_id": "peichin",
+    "scenario_type": "occasion",
+    "occasion": "coffee meeting, it's 47 degrees outside",
+    "weather": "cold",
+    "temperature_range": "47°F",
+    "style_profile": {
+      "three_words": {
+        "current": "classic",
+        "aspirational": "relaxed",
+        "feeling": "playful"
+      }
+    },
+    "description": "Test cold weather (47°F) - should require layers/jacket"
+  },
+  {
+    "id": "cold_weather_40f_errands",
+    "name": "Cold Weather (40°F): Weekend errands",
+    "user_id": "peichin",
+    "scenario_type": "occasion",
+    "occasion": "weekend errands and grocery shopping",
+    "weather": "cold and windy",
+    "temperature_range": "40°F",
+    "style_profile": {
+      "three_words": {
+        "current": "casual",
+        "aspirational": "polished",
+        "feeling": "chic"
+      }
+    },
+    "description": "Test cold weather (40°F) - must have warm outerwear"
+  },
+  {
+    "id": "cold_weather_45f_work",
+    "name": "Cold Weather (45°F): Work from coffee shop",
+    "user_id": "peichin",
+    "scenario_type": "occasion",
+    "occasion": "working from a coffee shop all day",
+    "weather": "chilly morning",
+    "temperature_range": "45°F",
+    "style_profile": {
+      "three_words": {
+        "current": "classic",
+        "aspirational": "relaxed",
+        "feeling": "playful"
+      }
+    },
+    "description": "Test cold weather (45°F) - needs warm layer"
+  },
+  {
+    "id": "cool_weather_55f_brunch",
+    "name": "Cool Weather (55°F): Brunch with friends",
+    "user_id": "peichin",
+    "scenario_type": "occasion",
+    "occasion": "brunch with friends at outdoor patio",
+    "weather": "cool and crisp",
+    "temperature_range": "55°F",
+    "style_profile": {
+      "three_words": {
+        "current": "classic",
+        "aspirational": "relaxed",
+        "feeling": "playful"
+      }
+    },
+    "description": "Test cool weather (55°F) - should have light layer option"
+  },
+  {
+    "id": "cold_weather_freetext_only",
+    "name": "Cold Weather (Free Text Only): 47 degrees in occasion",
+    "user_id": "peichin",
+    "scenario_type": "occasion",
+    "occasion": "going to a business meeting, it's 47 degrees and cloudy outside",
+    "weather": null,
+    "temperature_range": null,
+    "style_profile": {
+      "three_words": {
+        "current": "casual",
+        "aspirational": "polished",
+        "feeling": "chic"
+      }
+    },
+    "description": "Test if model extracts temperature from free text occasion field"
+  },
+  {
+    "id": "warm_weather_80f_beach",
+    "name": "Warm Weather (80°F): Beach day",
+    "user_id": "peichin",
+    "scenario_type": "occasion",
+    "occasion": "casual beach day with friends",
+    "weather": "sunny and warm",
+    "temperature_range": "80°F",
+    "style_profile": {
+      "three_words": {
+        "current": "classic",
+        "aspirational": "relaxed",
+        "feeling": "playful"
+      }
+    },
+    "description": "Control: Warm weather - should NOT have heavy layers"
+  },
+  {
+    "id": "complete_look_cold_47f",
+    "name": "Complete My Look (47°F): Cream boots in cold weather",
+    "user_id": "peichin",
+    "scenario_type": "complete_my_look",
+    "anchor_item_name": "Cream knee-high block heel boots",
+    "occasion": "lunch meeting",
+    "weather": "cold",
+    "temperature_range": "47°F",
+    "style_profile": {
+      "three_words": {
+        "current": "classic",
+        "aspirational": "relaxed",
+        "feeling": "playful"
+      }
+    },
+    "description": "Test complete-my-look with cold weather - must include warm layer"
+  },
+  {
+    "id": "complete_look_cold_42f_coat",
+    "name": "Complete My Look (42°F): Tan leather coat",
+    "user_id": "peichin",
+    "scenario_type": "complete_my_look",
+    "anchor_item_name": "Tan leather long coat",
+    "occasion": "city walk and museum visit",
+    "weather": "cold",
+    "temperature_range": "42°F",
+    "style_profile": {
+      "three_words": {
+        "current": "classic",
+        "aspirational": "relaxed",
+        "feeling": "playful"
+      }
+    },
+    "description": "Test complete-my-look with coat anchor - coat should be in outfit"
+  }
+]

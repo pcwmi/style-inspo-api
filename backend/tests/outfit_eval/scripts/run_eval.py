@@ -100,10 +100,21 @@ def apply_scenario_filters(scenarios: List[Dict], scenario_filter: str = None, u
 
 
 def fetch_user_wardrobe(user_id: str) -> List[Dict]:
-    """Fetch wardrobe for a user from production storage."""
+    """Fetch wardrobe for a user from fixtures or production storage."""
     print(f"  📦 Fetching wardrobe for user: {user_id}")
 
-    # Debug: Check storage configuration
+    # First, try to load from local fixtures (for testing without S3 access)
+    fixture_path = Path(__file__).parent.parent / 'fixtures' / 'wardrobes' / f'{user_id}_wardrobe.json'
+    if fixture_path.exists():
+        print(f"  🔧 Loading wardrobe from fixture: {fixture_path}")
+        with open(fixture_path, 'r') as f:
+            wardrobe_data = json.load(f)
+        wardrobe = wardrobe_data.get('items', [])
+        if wardrobe:
+            print(f"  ✅ Loaded {len(wardrobe)} items from fixture")
+            return wardrobe
+
+    # Fall back to production storage (S3 or local)
     storage_type = os.getenv("STORAGE_TYPE", "local")
     print(f"  🔧 STORAGE_TYPE env var: '{storage_type}'")
 

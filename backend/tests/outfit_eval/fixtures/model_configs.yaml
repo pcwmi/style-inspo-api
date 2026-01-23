@@ -95,3 +95,24 @@ models:
     max_tokens: 3000  # Increased for reasoning steps
     prompt_version: chain_of_thought_v1
     description: "Claude Sonnet 4.5 with explicit reasoning steps"
+
+  # ===== WEATHER CONSTRAINTS TEST (Jan 2026) =====
+  # Testing explicit weather constraints to fix temperature-inappropriate outfits
+
+  # OpenAI GPT-4o - Chain of Thought with Weather Constraints
+  - id: gpt4o_chain_of_thought_weather
+    name: "GPT-4o (CoT + Weather)"
+    model: gpt-4o
+    temperature: 0.7
+    max_tokens: 3500  # Increased for weather reasoning
+    prompt_version: chain_of_thought_weather_v1
+    description: "GPT-4o with explicit weather constraints - testing if hard rules improve temperature-appropriate outfits"
+
+  # Claude Sonnet 4.5 - Chain of Thought with Weather Constraints
+  - id: claude_sonnet_45_chain_of_thought_weather
+    name: "Claude Sonnet 4.5 (CoT + Weather)"
+    model: claude-sonnet-4-5-20250929
+    temperature: 0.7
+    max_tokens: 3500  # Increased for weather reasoning
+    prompt_version: chain_of_thought_weather_v1
+    description: "Claude Sonnet 4.5 with explicit weather constraints"

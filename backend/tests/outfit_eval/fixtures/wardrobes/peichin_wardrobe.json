@@ -1,0 +1,346 @@
+{
+  "items": [
+    {
+      "id": "item_001",
+      "styling_details": {
+        "name": "Classic white cotton t-shirt",
+        "category": "tops",
+        "sub_category": "t-shirts",
+        "colors": ["white"],
+        "fabric_type": "lightweight cotton",
+        "fabric_weight": "light",
+        "fit": "relaxed",
+        "style": "casual"
+      },
+      "image_path": "https://example.com/white-tshirt.jpg"
+    },
+    {
+      "id": "item_002",
+      "styling_details": {
+        "name": "Navy blue cashmere sweater",
+        "category": "tops",
+        "sub_category": "sweaters",
+        "colors": ["navy"],
+        "fabric_type": "cashmere",
+        "fabric_weight": "medium",
+        "fit": "relaxed",
+        "style": "classic"
+      },
+      "image_path": "https://example.com/navy-sweater.jpg"
+    },
+    {
+      "id": "item_003",
+      "styling_details": {
+        "name": "Tan leather long coat",
+        "category": "outerwear",
+        "sub_category": "coats",
+        "colors": ["tan", "camel"],
+        "fabric_type": "leather",
+        "fabric_weight": "heavy",
+        "fit": "structured",
+        "style": "classic"
+      },
+      "image_path": "https://example.com/tan-coat.jpg"
+    },
+    {
+      "id": "item_004",
+      "styling_details": {
+        "name": "Black wool blazer",
+        "category": "outerwear",
+        "sub_category": "blazers",
+        "colors": ["black"],
+        "fabric_type": "wool blend",
+        "fabric_weight": "medium",
+        "fit": "structured",
+        "style": "professional"
+      },
+      "image_path": "https://example.com/black-blazer.jpg"
+    },
+    {
+      "id": "item_005",
+      "styling_details": {
+        "name": "Dark wash straight-leg jeans",
+        "category": "bottoms",
+        "sub_category": "jeans",
+        "colors": ["dark blue", "indigo"],
+        "fabric_type": "denim",
+        "fabric_weight": "medium",
+        "fit": "straight",
+        "style": "casual"
+      },
+      "image_path": "https://example.com/dark-jeans.jpg"
+    },
+    {
+      "id": "item_006",
+      "styling_details": {
+        "name": "Cream knee-high block heel boots",
+        "category": "shoes",
+        "sub_category": "boots",
+        "colors": ["cream", "off-white"],
+        "fabric_type": "leather",
+        "style": "statement",
+        "heel_height": "block heel"
+      },
+      "image_path": "https://example.com/cream-boots.jpg"
+    },
+    {
+      "id": "item_007",
+      "styling_details": {
+        "name": "Black and white paisley ruffle blouse",
+        "category": "tops",
+        "sub_category": "blouses",
+        "colors": ["black", "white"],
+        "fabric_type": "silk blend",
+        "fabric_weight": "light",
+        "design_details": "paisley print, ruffle details",
+        "fit": "relaxed",
+        "style": "romantic"
+      },
+      "image_path": "https://example.com/paisley-blouse.jpg"
+    },
+    {
+      "id": "item_008",
+      "styling_details": {
+        "name": "Sage green leather A-line skirt",
+        "category": "bottoms",
+        "sub_category": "skirts",
+        "colors": ["sage green"],
+        "fabric_type": "leather",
+        "fabric_weight": "medium",
+        "fit": "A-line",
+        "style": "statement"
+      },
+      "image_path": "https://example.com/sage-skirt.jpg"
+    },
+    {
+      "id": "item_009",
+      "styling_details": {
+        "name": "Black patent leather loafers",
+        "category": "shoes",
+        "sub_category": "loafers",
+        "colors": ["black"],
+        "fabric_type": "patent leather",
+        "style": "classic"
+      },
+      "image_path": "https://example.com/black-loafers.jpg"
+    },
+    {
+      "id": "item_010",
+      "styling_details": {
+        "name": "Olive green textured long-sleeve dress",
+        "category": "dresses",
+        "sub_category": "midi dress",
+        "colors": ["olive green"],
+        "fabric_type": "textured knit",
+        "fabric_weight": "medium",
+        "fit": "relaxed",
+        "style": "casual elegant"
+      },
+      "image_path": "https://example.com/olive-dress.jpg"
+    },
+    {
+      "id": "item_011",
+      "styling_details": {
+        "name": "Black and white houndstooth trousers",
+        "category": "bottoms",
+        "sub_category": "trousers",
+        "colors": ["black", "white"],
+        "fabric_type": "wool blend",
+        "fabric_weight": "medium",
+        "design_details": "houndstooth pattern",
+        "fit": "straight",
+        "style": "professional"
+      },
+      "image_path": "https://example.com/houndstooth-pants.jpg"
+    },
+    {
+      "id": "item_012",
+      "styling_details": {
+        "name": "Cream chunky knit cardigan",
+        "category": "tops",
+        "sub_category": "cardigans",
+        "colors": ["cream", "ivory"],
+        "fabric_type": "wool blend knit",
+        "fabric_weight": "heavy",
+        "fit": "oversized",
+        "style": "cozy"
+      },
+      "image_path": "https://example.com/cream-cardigan.jpg"
+    },
+    {
+      "id": "item_013",
+      "styling_details": {
+        "name": "White linen button-down shirt",
+        "category": "tops",
+        "sub_category": "shirts",
+        "colors": ["white"],
+        "fabric_type": "linen",
+        "fabric_weight": "light",
+        "fit": "relaxed",
+        "style": "casual"
+      },
+      "image_path": "https://example.com/white-linen-shirt.jpg"
+    },
+    {
+      "id": "item_014",
+      "styling_details": {
+        "name": "Camel wool coat",
+        "category": "outerwear",
+        "sub_category": "coats",
+        "colors": ["camel", "tan"],
+        "fabric_type": "wool",
+        "fabric_weight": "heavy",
+        "fit": "structured",
+        "style": "classic"
+      },
+      "image_path": "https://example.com/camel-coat.jpg"
+    },
+    {
+      "id": "item_015",
+      "styling_details": {
+        "name": "Black turtleneck sweater",
+        "category": "tops",
+        "sub_category": "sweaters",
+        "colors": ["black"],
+        "fabric_type": "merino wool",
+        "fabric_weight": "medium",
+        "fit": "fitted",
+        "style": "classic"
+      },
+      "image_path": "https://example.com/black-turtleneck.jpg"
+    },
+    {
+      "id": "item_016",
+      "styling_details": {
+        "name": "Light wash wide-leg jeans",
+        "category": "bottoms",
+        "sub_category": "jeans",
+        "colors": ["light blue"],
+        "fabric_type": "denim",
+        "fabric_weight": "medium",
+        "fit": "wide-leg",
+        "style": "casual"
+      },
+      "image_path": "https://example.com/wide-leg-jeans.jpg"
+    },
+    {
+      "id": "item_017",
+      "styling_details": {
+        "name": "White sneakers",
+        "category": "shoes",
+        "sub_category": "sneakers",
+        "colors": ["white"],
+        "fabric_type": "leather",
+        "style": "casual"
+      },
+      "image_path": "https://example.com/white-sneakers.jpg"
+    },
+    {
+      "id": "item_018",
+      "styling_details": {
+        "name": "Burgundy silk scarf",
+        "category": "accessories",
+        "sub_category": "scarves",
+        "colors": ["burgundy", "wine"],
+        "fabric_type": "silk",
+        "fabric_weight": "light",
+        "style": "elegant"
+      },
+      "image_path": "https://example.com/burgundy-scarf.jpg"
+    },
+    {
+      "id": "item_019",
+      "styling_details": {
+        "name": "Gold hoop earrings",
+        "category": "accessories",
+        "sub_category": "jewelry",
+        "colors": ["gold"],
+        "style": "classic"
+      },
+      "image_path": "https://example.com/gold-hoops.jpg"
+    },
+    {
+      "id": "item_020",
+      "styling_details": {
+        "name": "Brown leather belt",
+        "category": "accessories",
+        "sub_category": "belts",
+        "colors": ["brown", "cognac"],
+        "fabric_type": "leather",
+        "style": "classic"
+      },
+      "image_path": "https://example.com/brown-belt.jpg"
+    },
+    {
+      "id": "item_021",
+      "styling_details": {
+        "name": "Striped navy and white breton top",
+        "category": "tops",
+        "sub_category": "long-sleeve tops",
+        "colors": ["navy", "white"],
+        "fabric_type": "cotton",
+        "fabric_weight": "medium",
+        "design_details": "horizontal stripes",
+        "fit": "fitted",
+        "style": "classic French"
+      },
+      "image_path": "https://example.com/breton-top.jpg"
+    },
+    {
+      "id": "item_022",
+      "styling_details": {
+        "name": "Black ankle boots",
+        "category": "shoes",
+        "sub_category": "boots",
+        "colors": ["black"],
+        "fabric_type": "leather",
+        "heel_height": "low heel",
+        "style": "classic"
+      },
+      "image_path": "https://example.com/black-ankle-boots.jpg"
+    },
+    {
+      "id": "item_023",
+      "styling_details": {
+        "name": "Tan leather crossbody bag",
+        "category": "accessories",
+        "sub_category": "bags",
+        "colors": ["tan", "camel"],
+        "fabric_type": "leather",
+        "style": "casual"
+      },
+      "image_path": "https://example.com/tan-bag.jpg"
+    },
+    {
+      "id": "item_024",
+      "styling_details": {
+        "name": "Floral midi dress",
+        "category": "dresses",
+        "sub_category": "midi dress",
+        "colors": ["multi", "floral"],
+        "fabric_type": "viscose",
+        "fabric_weight": "light",
+        "design_details": "floral print",
+        "fit": "flowing",
+        "style": "romantic"
+      },
+      "image_path": "https://example.com/floral-dress.jpg"
+    },
+    {
+      "id": "item_025",
+      "styling_details": {
+        "name": "Denim jacket",
+        "category": "outerwear",
+        "sub_category": "jackets",
+        "colors": ["medium blue"],
+        "fabric_type": "denim",
+        "fabric_weight": "medium",
+        "fit": "classic",
+        "style": "casual"
+      },
+      "image_path": "https://example.com/denim-jacket.jpg"
+    }
+  ],
+  "schema_version": "2.0",
+  "last_updated": "2026-01-23T00:00:00Z"
+}
