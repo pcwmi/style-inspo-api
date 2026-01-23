@@ -1,10 +1,15 @@
 import json
+import logging
 import os
+import random
 import sys
 import html
 from typing import Dict, List, Optional, Tuple, Union
 from dataclasses import dataclass
 from dotenv import load_dotenv
+
+# Configure logger for prompt/response visibility in Railway
+logger = logging.getLogger(__name__)
 
 # AI Provider abstraction
 from services.ai.factory import AIProviderFactory
@@ -433,6 +438,9 @@ class StyleGenerationEngine:
             self._safe_stderr_write("⚠️ No AI provider initialized. Cannot generate outfits.\n\n")
             return []
 
+        # Shuffle items to eliminate position bias (items listed first get selected more often)
+        available_items = random.sample(available_items, len(available_items))
+
         prompt = self.create_style_prompt(
             user_profile=user_profile,
             available_items=available_items,
@@ -442,6 +450,11 @@ class StyleGenerationEngine:
             temperature_range=temperature_range,
             user_id=user_id
         )
+
+        # Log prompt for Railway visibility
+        user_id = user_profile.get("user_id", "unknown")
+        logger.info(f"[OUTFIT_PROMPT] user_id={user_id} prompt_version={self.prompt_version}")
+        logger.info(f"[OUTFIT_PROMPT_CONTENT]\n{prompt}")
 
         # Get the prompt template's system message
         from services.prompts.library import PromptLibrary
@@ -472,6 +485,10 @@ class StyleGenerationEngine:
             
             # Store raw response BEFORE parsing (for debug mode)
             raw_response = ai_response
+
+            # Log response for Railway visibility
+            logger.info(f"[OUTFIT_RESPONSE] model={ai_result.model} latency={ai_result.latency_seconds:.2f}s tokens={ai_result.usage.get('total_tokens', 0)}")
+            logger.info(f"[OUTFIT_RESPONSE_CONTENT]\n{ai_response}")
 
             # DEBUG: Log provider metadata
             self._safe_stderr_write(f"\n📊 Provider: {self.ai_provider.provider_name} | Model: {ai_result.model}\n")
