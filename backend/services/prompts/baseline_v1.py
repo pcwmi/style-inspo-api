@@ -1,7 +1,7 @@
 """Baseline Style Constitution prompt (current production version)"""
 
 from typing import List, Optional
-from .base import PromptTemplate, PromptContext
+from .base import PromptTemplate, PromptContext, generate_shuffle_seed, shuffle_items_seeded
 
 
 class BaselinePromptV1(PromptTemplate):
@@ -46,7 +46,7 @@ You are an expert fashion stylist inspired by Allison Bornstein's "Wear it Well"
 {self._format_todays_context(context.occasion, context.weather_condition, context.temperature_range)}
 
 ## AVAILABLE WARDROBE
-{self._format_combined_wardrobe(context.available_items, context.styling_challenges)}
+{self._format_combined_wardrobe(context.available_items, context.styling_challenges, context.user_id, context.occasion)}
 
 ## STYLE CONSTITUTION: Core Principles for Great Outfits
 
@@ -276,8 +276,13 @@ IMPORTANT: Return ONLY valid JSON. Start with [ and end with ]. Use exact item n
             return f"CRITICAL: Each outfit MUST include {challenge_items_text} (marked \"(ANCHOR PIECE - REQUIRED)\") in the items array. These are the pieces the user wants to wear - use them in every outfit combination and complete the look with complementary items."
         return ""
 
-    def _format_combined_wardrobe(self, available_items: List, styling_challenges: List) -> str:
-        """Format combined wardrobe including both regular items and challenge items in a single list"""
+    def _format_combined_wardrobe(self, available_items: List, styling_challenges: List,
+                                   user_id: Optional[str] = None, occasion: Optional[str] = None) -> str:
+        """Format combined wardrobe including both regular items and challenge items in a single list.
+
+        Items are shuffled using a seeded random to prevent LLM position bias while maintaining
+        reproducibility for debugging. The seed is based on user_id + occasion + today's date.
+        """
 
         def _summarize_item(item: dict) -> str:
             """Create a compact, information-rich summary for a wardrobe item."""
@@ -364,13 +369,22 @@ IMPORTANT: Return ONLY valid JSON. Start with [ and end with ]. Use exact item n
 
         formatted: List[str] = []
 
-        # First add regular wardrobe items
-        for item in available_items:
+        # Shuffle items to prevent LLM position bias (primacy/recency effects)
+        # Use seeded random for reproducibility: same user + occasion + day = same order
+        if user_id:
+            seed = generate_shuffle_seed(user_id, occasion)
+            shuffled_items = shuffle_items_seeded(available_items, seed)
+        else:
+            # Fallback: no shuffle if user_id not provided (backward compatibility)
+            shuffled_items = available_items
+
+        # First add regular wardrobe items (shuffled to prevent position bias)
+        for item in shuffled_items:
             details = item.get("styling_details") or {}
             name = details.get("name") or item.get("name") or "Unnamed Piece"
             formatted.append(f"- {name}: {_summarize_item(item)}")
 
-        # Then add anchor items with clear marking
+        # Then add anchor items with clear marking (not shuffled - these are user-selected)
         for item in styling_challenges:
             details = item.get("styling_details") or {}
             name = details.get("name") or item.get("name") or "Unnamed Piece"

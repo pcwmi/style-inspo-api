@@ -78,7 +78,8 @@ class StyleGenerationEngine:
                           styling_challenges: List[Dict],
                           occasion: Optional[str] = None,
                           weather_condition: Optional[str] = None,
-                          temperature_range: Optional[str] = None) -> str:
+                          temperature_range: Optional[str] = None,
+                          user_id: Optional[str] = None) -> str:
         """Create the main styling prompt for AI using prompt template system"""
 
         # Get the appropriate prompt template based on version
@@ -91,7 +92,8 @@ class StyleGenerationEngine:
             styling_challenges=styling_challenges,
             occasion=occasion,
             weather_condition=weather_condition,
-            temperature_range=temperature_range
+            temperature_range=temperature_range,
+            user_id=user_id  # For seeded shuffling to prevent position bias
         )
 
         # Generate prompt using the template
@@ -403,7 +405,8 @@ class StyleGenerationEngine:
                                    occasion: Optional[str] = None,
                                    weather_condition: Optional[str] = None,
                                    temperature_range: Optional[str] = None,
-                                   include_raw_response: bool = False) -> Union[List[OutfitCombination], Tuple[List[OutfitCombination], str]]:
+                                   include_raw_response: bool = False,
+                                   user_id: Optional[str] = None) -> Union[List[OutfitCombination], Tuple[List[OutfitCombination], str]]:
         """
         Generate outfit combinations using AI.
 
@@ -416,6 +419,7 @@ class StyleGenerationEngine:
             weather_condition: Optional weather condition
             temperature_range: Optional temperature range
             include_raw_response: If True, return (outfits, raw_ai_response) tuple
+            user_id: Optional user ID for seeded shuffling to prevent position bias
 
         Returns:
             If include_raw_response=False: List[OutfitCombination] of outfit objects
@@ -435,7 +439,8 @@ class StyleGenerationEngine:
             styling_challenges=styling_challenges,
             occasion=occasion,
             weather_condition=weather_condition,
-            temperature_range=temperature_range
+            temperature_range=temperature_range,
+            user_id=user_id
         )
 
         # Get the prompt template's system message
@@ -738,7 +743,8 @@ class StyleGenerationEngine:
         occasion: Optional[str] = None,
         weather_condition: Optional[str] = None,
         temperature_range: Optional[str] = None,
-        include_reasoning: bool = False
+        include_reasoning: bool = False,
+        user_id: Optional[str] = None
     ):
         """
         Generate outfit combinations using AI with streaming output.
@@ -755,6 +761,7 @@ class StyleGenerationEngine:
             occasion: Optional occasion context
             weather_condition: Optional weather condition
             temperature_range: Optional temperature range
+            user_id: Optional user ID for seeded shuffling to prevent position bias
 
         Yields:
             Dict with outfit data: {"items": [...], "styling_notes": "...", "why_it_works": "..."}
@@ -778,7 +785,8 @@ class StyleGenerationEngine:
             styling_challenges=styling_challenges,
             occasion=occasion,
             weather_condition=weather_condition,
-            temperature_range=temperature_range
+            temperature_range=temperature_range,
+            user_id=user_id
         )
 
         # Get the prompt template's system message

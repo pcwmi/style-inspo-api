@@ -66,7 +66,7 @@ The anchor, supporting pieces, and unexpected element should work together to ex
 
 ## AVAILABLE WARDROBE
 
-{self._format_combined_wardrobe(context.available_items, context.styling_challenges)}
+{self._format_combined_wardrobe(context.available_items, context.styling_challenges, context.user_id, context.occasion)}
 
 ---
 

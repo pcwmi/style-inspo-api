@@ -237,7 +237,8 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
                     occasion=", ".join(occasions) if occasions else None,
                     weather_condition=weather_condition,
                     temperature_range=temperature_range,
-                    include_raw_response=True
+                    include_raw_response=True,
+                    user_id=user_id  # For seeded shuffling to prevent position bias
                 )
             else:
                 combinations = engine.generate_outfit_combinations(
@@ -247,7 +248,8 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
                     occasion=", ".join(occasions) if occasions else None,
                     weather_condition=weather_condition,
                     temperature_range=temperature_range,
-                    include_raw_response=False
+                    include_raw_response=False,
+                    user_id=user_id  # For seeded shuffling to prevent position bias
                 )
         else:  # mode == "complete"
             # Complete my look - use anchor items
@@ -292,7 +294,8 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
                     styling_challenges=anchor_item_objects,
                     weather_condition=weather_condition,
                     temperature_range=temperature_range,
-                    include_raw_response=True
+                    include_raw_response=True,
+                    user_id=user_id  # For seeded shuffling to prevent position bias
                 )
             else:
                 combinations = engine.generate_outfit_combinations(
@@ -301,7 +304,8 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
                     styling_challenges=anchor_item_objects,
                     weather_condition=weather_condition,
                     temperature_range=temperature_range,
-                    include_raw_response=False
+                    include_raw_response=False,
+                    user_id=user_id  # For seeded shuffling to prevent position bias
                 )
         
         if job:
