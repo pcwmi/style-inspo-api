@@ -796,6 +796,9 @@ class StyleGenerationEngine:
                 "For optimal streaming, use 'chain_of_thought_streaming_v1'\n"
             )
 
+        # Shuffle items to eliminate position bias (items listed first get selected more often)
+        available_items = random.sample(available_items, len(available_items))
+
         prompt = self.create_style_prompt(
             user_profile=user_profile,
             available_items=available_items,
@@ -805,6 +808,11 @@ class StyleGenerationEngine:
             temperature_range=temperature_range,
             user_id=user_id
         )
+
+        # Log prompt for Railway visibility
+        log_user_id = user_id or user_profile.get("user_id", "unknown")
+        logger.info(f"[OUTFIT_PROMPT] user_id={log_user_id} prompt_version={self.prompt_version}")
+        logger.info(f"[OUTFIT_PROMPT_CONTENT]\n{prompt}")
 
         # Get the prompt template's system message
         from services.prompts.library import PromptLibrary
@@ -875,6 +883,10 @@ class StyleGenerationEngine:
                                     yield (outfit, "\n\n".join(all_reasoning) if all_reasoning else "")
                                 else:
                                     yield outfit
+
+            # Log full response after streaming completes
+            logger.info(f"[OUTFIT_RESPONSE_STREAM] user_id={log_user_id} outfits_yielded={len(yielded_outfits)}")
+            logger.info(f"[OUTFIT_RESPONSE_CONTENT]\n{cumulative_text}")
 
         except Exception as e:
             self._safe_stderr_write(f"Streaming error: {e}\n")
