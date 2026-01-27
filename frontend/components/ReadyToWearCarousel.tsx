@@ -63,7 +63,7 @@ export function ReadyToWearCarousel({ outfits, userId }: ReadyToWearCarouselProp
           return (
             <Link
               key={outfit.id}
-              href={`/saved?user=${userId}`}
+              href={`/saved?user=${userId}&outfit=${outfit.id}`}
               className="flex-shrink-0 w-40 md:w-56 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
             >
               {/* Image area - portrait ratio */}

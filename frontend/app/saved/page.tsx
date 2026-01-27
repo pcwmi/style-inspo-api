@@ -14,6 +14,7 @@ type Tab = 'not_worn' | 'worn'
 function SavedPageContent() {
   const searchParams = useSearchParams()
   const user = searchParams.get('user') || 'default'
+  const targetOutfitId = searchParams.get('outfit')
 
   const [outfits, setOutfits] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -26,6 +27,7 @@ function SavedPageContent() {
   const [pendingWornOutfitId, setPendingWornOutfitId] = useState<string | null>(null)
   const [showPhotoModal, setShowPhotoModal] = useState(false)
   const [pendingPhotoOutfitId, setPendingPhotoOutfitId] = useState<string | null>(null)
+  const [hasScrolledToOutfit, setHasScrolledToOutfit] = useState(false)
 
   useEffect(() => {
     async function fetchData() {
@@ -46,6 +48,35 @@ function SavedPageContent() {
     }
     fetchData()
   }, [user])
+
+  // Scroll to target outfit when data loads
+  useEffect(() => {
+    if (!loading && targetOutfitId && outfits.length > 0 && !hasScrolledToOutfit) {
+      // Find the target outfit to determine which tab it's on
+      const targetOutfit = outfits.find(o =>
+        (o.id === targetOutfitId || o.outfit_id === targetOutfitId)
+      )
+
+      if (targetOutfit) {
+        // Switch to correct tab if needed
+        const isWorn = !!targetOutfit.worn_at
+        if (isWorn && activeTab !== 'worn') {
+          setActiveTab('worn')
+        } else if (!isWorn && activeTab !== 'not_worn') {
+          setActiveTab('not_worn')
+        }
+
+        // Scroll to the outfit after a brief delay for tab switch and render
+        setTimeout(() => {
+          const element = document.getElementById(`outfit-${targetOutfitId}`)
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }
+          setHasScrolledToOutfit(true)
+        }, 100)
+      }
+    }
+  }, [loading, targetOutfitId, outfits, hasScrolledToOutfit, activeTab])
 
   // Split outfits into not worn and worn
   const { notWornOutfits, wornOutfits } = useMemo(() => {
@@ -200,8 +231,8 @@ function SavedPageContent() {
                   const outfit = saved.outfit_data || saved
                   const outfitId = saved.id || saved.outfit_id
                   return (
+                    <div key={outfitId} id={`outfit-${outfitId}`}>
                     <VisualizedOutfitCard
-                      key={outfitId}
                       outfit={outfit}
                       outfitId={outfitId}
                       outfitName={outfit.vibe_keywords?.[0] || 'Saved Outfit'}
@@ -217,6 +248,7 @@ function SavedPageContent() {
                       onMarkAsWorn={() => handleMarkAsWorn(outfitId)}
                       onUploadPhoto={() => handleUploadPhoto(outfitId)}
                     />
+                    </div>
                   )
                 })}
               </div>
