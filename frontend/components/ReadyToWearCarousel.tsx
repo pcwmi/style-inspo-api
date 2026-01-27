@@ -41,8 +41,8 @@ export function ReadyToWearCarousel({ outfits, userId }: ReadyToWearCarouselProp
   }
 
   return (
-    <div className="mb-5 md:mb-8">
-      <div className="flex justify-between items-center mb-3">
+    <div className="bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-4 md:p-6 mb-5 md:mb-8 shadow-sm">
+      <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg md:text-xl font-semibold">Ready to Wear</h2>
         <Link
           href={`/saved?user=${userId}`}
@@ -54,10 +54,9 @@ export function ReadyToWearCarousel({ outfits, userId }: ReadyToWearCarouselProp
           </svg>
         </Link>
       </div>
-      <p className="text-muted text-sm mb-3">Outfits waiting for you to try</p>
 
       {/* Horizontal Scroll Carousel */}
-      <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+      <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:-mx-6 md:px-6 scrollbar-hide">
         {outfits.slice(0, 5).map((outfit) => {
           const visualizationUrl = getVisualizationUrl(outfit)
 
@@ -65,10 +64,10 @@ export function ReadyToWearCarousel({ outfits, userId }: ReadyToWearCarouselProp
             <Link
               key={outfit.id}
               href={`/saved?user=${userId}`}
-              className="flex-shrink-0 w-36 md:w-44 bg-white border border-[rgba(26,22,20,0.12)] rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+              className="flex-shrink-0 w-28 md:w-36 bg-white border border-[rgba(26,22,20,0.08)] rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
             >
-              {/* Image area */}
-              <div className="aspect-square bg-gray-100 relative">
+              {/* Image area - portrait ratio */}
+              <div className="aspect-[3/4] bg-gray-100 relative">
                 {visualizationUrl ? (
                   <img
                     src={visualizationUrl}
