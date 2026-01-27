@@ -17,6 +17,8 @@ export const queryKeys = {
   wardrobeItem: (userId: string, itemId: string) => ['wardrobe', userId, 'item', itemId] as const,
   profile: (userId: string) => ['profile', userId] as const,
   savedOutfits: (userId: string) => ['savedOutfits', userId] as const,
+  notWornOutfits: (userId: string) => ['notWornOutfits', userId] as const,
+  wornOutfits: (userId: string) => ['wornOutfits', userId] as const,
   dislikedOutfits: (userId: string) => ['dislikedOutfits', userId] as const,
   jobStatus: (jobId: string) => ['jobStatus', jobId] as const,
   considerBuying: (userId: string, status?: string) =>
@@ -93,6 +95,39 @@ export function useDislikedOutfits(userId: string, options?: Omit<UseQueryOption
   return useQuery({
     queryKey: queryKeys.dislikedOutfits(userId),
     queryFn: () => api.getDislikedOutfits(userId),
+    enabled: !!userId,
+    ...options,
+  })
+}
+
+/**
+ * Fetch user's not-worn outfits (saved but haven't worn yet)
+ * @param userId - User ID
+ * @param limit - Optional limit on number of outfits to fetch
+ * @param options - Additional React Query options
+ */
+export function useNotWornOutfits(
+  userId: string,
+  limit?: number,
+  options?: Omit<UseQueryOptions<any>, 'queryKey' | 'queryFn'>
+) {
+  return useQuery({
+    queryKey: queryKeys.notWornOutfits(userId),
+    queryFn: () => api.getNotWornOutfits(userId, limit),
+    enabled: !!userId,
+    ...options,
+  })
+}
+
+/**
+ * Fetch user's worn outfits
+ * @param userId - User ID
+ * @param options - Additional React Query options
+ */
+export function useWornOutfits(userId: string, options?: Omit<UseQueryOptions<any>, 'queryKey' | 'queryFn'>) {
+  return useQuery({
+    queryKey: queryKeys.wornOutfits(userId),
+    queryFn: () => api.getWornOutfits(userId),
     enabled: !!userId,
     ...options,
   })

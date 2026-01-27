@@ -247,5 +247,42 @@ export const api = {
       throw new Error(errorData.detail || 'Failed to save descriptor')
     }
     return res.json()
+  },
+
+  // Worn Tracking
+  async markOutfitWorn(userId: string, outfitId: string) {
+    const res = await fetch(`${API_URL}/api/outfits/${outfitId}/mark-worn`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId })
+    })
+    if (!res.ok) throw new Error('Failed to mark outfit as worn')
+    return res.json()
+  },
+
+  async uploadWornPhoto(userId: string, outfitId: string, file: File) {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const res = await fetch(`${API_URL}/api/outfits/${outfitId}/worn-photo?user_id=${userId}`, {
+      method: 'POST',
+      body: formData
+    })
+    if (!res.ok) throw new Error('Failed to upload worn photo')
+    return res.json()
+  },
+
+  async getNotWornOutfits(userId: string, limit?: number) {
+    const url = new URL(`${API_URL}/api/outfits/${userId}/not-worn`)
+    if (limit) url.searchParams.append('limit', limit.toString())
+    const res = await fetch(url.toString())
+    if (!res.ok) throw new Error('Failed to fetch not-worn outfits')
+    return res.json()
+  },
+
+  async getWornOutfits(userId: string) {
+    const res = await fetch(`${API_URL}/api/outfits/${userId}/worn`)
+    if (!res.ok) throw new Error('Failed to fetch worn outfits')
+    return res.json()
   }
 }

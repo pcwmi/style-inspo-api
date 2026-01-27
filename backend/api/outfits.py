@@ -2,15 +2,18 @@
 Outfit generation API endpoints
 """
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, UploadFile, File
 from fastapi.responses import StreamingResponse
 import asyncio
 import json
 import logging
 import os
+import uuid
 from datetime import datetime, timezone
+from PIL import Image, ImageOps
+from io import BytesIO
 
-from models.schemas import OutfitRequest, OutfitGenerationResponse, SaveOutfitRequest, DislikeOutfitRequest, OutfitContext
+from models.schemas import OutfitRequest, OutfitGenerationResponse, SaveOutfitRequest, DislikeOutfitRequest, OutfitContext, MarkWornRequest, MarkWornResponse
 from workers.outfit_worker import generate_outfits_job
 from services.saved_outfits_manager import SavedOutfitsManager
 from services.disliked_outfits_manager import DislikedOutfitsManager
@@ -475,6 +478,110 @@ async def get_disliked_outfits(user_id: str):
         return {"outfits": disliked_outfits, "count": len(disliked_outfits)}
     except Exception as e:
         logger.error(f"Error fetching disliked outfits for {user_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/outfits/{outfit_id}/mark-worn", response_model=MarkWornResponse)
+async def mark_outfit_worn(outfit_id: str, request: MarkWornRequest):
+    """Mark an outfit as worn"""
+    try:
+        manager = SavedOutfitsManager(user_id=request.user_id)
+        updated = manager.mark_outfit_worn(outfit_id)
+
+        if not updated:
+            raise HTTPException(status_code=404, detail="Outfit not found")
+
+        # Log activity
+        log_activity(request.user_id, "outfit_marked_worn", {
+            "outfit_id": outfit_id
+        })
+
+        return MarkWornResponse(
+            success=True,
+            outfit_id=outfit_id,
+            worn_at=updated.get("worn_at", ""),
+            worn_photo_url=updated.get("worn_photo_url")
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error marking outfit worn for {request.user_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/outfits/{user_id}/not-worn")
+async def get_not_worn_outfits(user_id: str, limit: int = None):
+    """Get saved outfits that haven't been worn yet"""
+    try:
+        manager = SavedOutfitsManager(user_id=user_id)
+        not_worn = manager.get_not_worn_outfits(limit=limit)
+        return {"outfits": not_worn, "count": len(not_worn)}
+    except Exception as e:
+        logger.error(f"Error fetching not-worn outfits for {user_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/outfits/{user_id}/worn")
+async def get_worn_outfits(user_id: str):
+    """Get saved outfits that have been worn"""
+    try:
+        manager = SavedOutfitsManager(user_id=user_id)
+        worn = manager.get_worn_outfits()
+        return {"outfits": worn, "count": len(worn)}
+    except Exception as e:
+        logger.error(f"Error fetching worn outfits for {user_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/outfits/{outfit_id}/worn-photo")
+async def upload_worn_photo(
+    outfit_id: str,
+    user_id: str = Query(..., description="User ID"),
+    file: UploadFile = File(..., description="Photo of user wearing the outfit")
+):
+    """Upload a photo of the user wearing an outfit and mark it as worn"""
+    try:
+        # Read and process image
+        contents = await file.read()
+        image = Image.open(BytesIO(contents))
+
+        # Apply EXIF orientation to ensure correct display
+        image = ImageOps.exif_transpose(image)
+
+        # Convert RGBA to RGB if needed (for JPEG compatibility)
+        if image.mode in ('RGBA', 'P'):
+            image = image.convert('RGB')
+
+        # Save to storage with unique filename
+        storage_type = os.getenv("STORAGE_TYPE", "local")
+        storage = StorageManager(storage_type=storage_type, user_id=user_id)
+
+        filename = f"worn_{outfit_id}_{uuid.uuid4().hex[:8]}.jpg"
+        photo_url = storage.save_image(image, filename, subfolder="worn_photos")
+
+        # Mark outfit as worn with the photo URL
+        manager = SavedOutfitsManager(user_id=user_id)
+        updated = manager.mark_outfit_worn(outfit_id, worn_photo_url=photo_url)
+
+        if not updated:
+            raise HTTPException(status_code=404, detail="Outfit not found")
+
+        # Log activity
+        log_activity(user_id, "worn_photo_uploaded", {
+            "outfit_id": outfit_id,
+            "photo_url": photo_url
+        })
+
+        return {
+            "success": True,
+            "outfit_id": outfit_id,
+            "worn_at": updated.get("worn_at", ""),
+            "worn_photo_url": photo_url
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error uploading worn photo for {user_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

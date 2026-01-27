@@ -139,3 +139,17 @@ class DescriptorResponse(BaseModel):
     descriptor: str
 
 
+# Mark as Worn Models
+class MarkWornRequest(BaseModel):
+    """Request to mark an outfit as worn"""
+    user_id: str
+
+
+class MarkWornResponse(BaseModel):
+    """Response after marking an outfit as worn"""
+    success: bool
+    outfit_id: str
+    worn_at: str
+    worn_photo_url: Optional[str] = None
+
+

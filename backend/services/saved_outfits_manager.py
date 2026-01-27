@@ -189,6 +189,67 @@ class SavedOutfitsManager:
 
         return False
 
+    def mark_outfit_worn(self, outfit_id: str, worn_photo_url: Optional[str] = None) -> Optional[Dict]:
+        """Mark an outfit as worn, optionally with a photo.
+
+        Args:
+            outfit_id: The outfit ID to mark as worn
+            worn_photo_url: Optional URL to user's photo wearing the outfit
+
+        Returns:
+            Updated outfit dict if found, None otherwise
+        """
+        data = self._read_json()
+        saved_outfits = data.get("saved", [])
+
+        updated_outfit = None
+        for outfit in saved_outfits:
+            if outfit.get("id") == outfit_id:
+                outfit["worn_at"] = _now_iso()
+                if worn_photo_url:
+                    outfit["worn_photo_url"] = worn_photo_url
+                updated_outfit = outfit
+                break
+
+        if updated_outfit:
+            data["last_updated"] = _now_iso()
+            self._atomic_write(data)
+            return updated_outfit
+
+        return None
+
+    def get_not_worn_outfits(self, limit: Optional[int] = None, enrich_with_current_images: bool = True) -> List[Dict]:
+        """Get saved outfits that haven't been worn yet (newest first).
+
+        Args:
+            limit: Maximum number of outfits to return
+            enrich_with_current_images: If True, enrich items with current image_paths from wardrobe
+
+        Returns:
+            List of saved outfit dicts that have no worn_at
+        """
+        all_outfits = self.get_saved_outfits(enrich_with_current_images=enrich_with_current_images)
+        not_worn = [o for o in all_outfits if not o.get("worn_at")]
+
+        if limit:
+            return not_worn[:limit]
+        return not_worn
+
+    def get_worn_outfits(self, enrich_with_current_images: bool = True) -> List[Dict]:
+        """Get saved outfits that have been worn (most recently worn first).
+
+        Args:
+            enrich_with_current_images: If True, enrich items with current image_paths from wardrobe
+
+        Returns:
+            List of saved outfit dicts that have worn_at, sorted by worn_at descending
+        """
+        all_outfits = self.get_saved_outfits(enrich_with_current_images=enrich_with_current_images)
+        worn = [o for o in all_outfits if o.get("worn_at")]
+        # Sort by worn_at descending (most recently worn first)
+        worn.sort(key=lambda x: x.get("worn_at", ""), reverse=True)
+        return worn
+
     def _enrich_with_current_images(self, saved_outfits: List[Dict]) -> List[Dict]:
         """Enrich saved outfit items with current image_paths from wardrobe.
         

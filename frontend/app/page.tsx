@@ -5,7 +5,8 @@ import { Suspense } from 'react'
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { isOnboardingComplete, getOnboardingStep } from '@/lib/onboarding'
-import { useWardrobe, useProfile, useSavedOutfits, useDislikedOutfits } from '@/lib/queries'
+import { useWardrobe, useProfile, useSavedOutfits, useDislikedOutfits, useNotWornOutfits } from '@/lib/queries'
+import { ReadyToWearCarousel } from '@/components/ReadyToWearCarousel'
 
 function DashboardContent() {
   const searchParams = useSearchParams()
@@ -24,9 +25,11 @@ function DashboardContent() {
   const { data: profile, isLoading: profileLoading, error: profileError } = useProfile(user)
   const { data: savedData, isLoading: savedLoading } = useSavedOutfits(user)
   const { data: dislikedData, isLoading: dislikedLoading } = useDislikedOutfits(user)
+  const { data: notWornData, isLoading: notWornLoading } = useNotWornOutfits(user, 5)
 
   const savedCount = savedData?.count || 0
   const dislikedCount = dislikedData?.count || 0
+  const notWornOutfits = notWornData?.outfits || []
   const loading = wardrobeLoading || profileLoading || savedLoading || dislikedLoading
 
   // Log errors for debugging
@@ -91,6 +94,11 @@ function DashboardContent() {
             Complete my look
           </Link>
         </div>
+
+        {/* Ready to Wear Carousel */}
+        {notWornOutfits.length > 0 && (
+          <ReadyToWearCarousel outfits={notWornOutfits} userId={user} />
+        )}
 
         {/* Buy Smarter Card */}
         {/* Buy Smarter Card */}

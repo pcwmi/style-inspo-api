@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { api } from '@/lib/api'
 import { posthog } from '@/lib/posthog'
+import { ShareImageGenerator } from './ShareImageGenerator'
 
 interface OutfitItem {
   id?: string
@@ -27,11 +28,17 @@ interface VisualizedOutfitCardProps {
   outfitId?: string
   outfitName?: string
   visualizationUrl?: string
+  wornAt?: string | null  // When the outfit was worn
+  wornPhotoUrl?: string | null  // User's photo wearing the outfit
   user: string
   showVisualizeButton?: boolean
+  showMarkAsWornButton?: boolean  // Show the mark as worn button
   hasDescriptor?: boolean  // If false, onVisualize() is called but API call is skipped (parent shows modal)
   onVisualize?: () => void
   onVisualizationComplete?: (url: string) => void
+  onMarkAsWorn?: () => void  // Called when user clicks mark as worn
+  onUploadPhoto?: () => void  // Called when user wants to upload a photo for worn outfit
+  onWornComplete?: (wornAt: string, photoUrl?: string) => void  // Called after marking worn
 }
 
 type VisualizationState = 'not_visualized' | 'generating' | 'visualized'
@@ -41,13 +48,21 @@ export function VisualizedOutfitCard({
   outfitId,
   outfitName,
   visualizationUrl: initialVisualizationUrl,
+  wornAt: initialWornAt,
+  wornPhotoUrl: initialWornPhotoUrl,
   user,
   showVisualizeButton = true,
+  showMarkAsWornButton = false,
   hasDescriptor = true,  // Default true so standalone usage works
   onVisualize,
-  onVisualizationComplete
+  onVisualizationComplete,
+  onMarkAsWorn,
+  onUploadPhoto,
+  onWornComplete
 }: VisualizedOutfitCardProps) {
   const [visualizationUrl, setVisualizationUrl] = useState(initialVisualizationUrl)
+  const [wornAt, setWornAt] = useState(initialWornAt)
+  const [wornPhotoUrl, setWornPhotoUrl] = useState(initialWornPhotoUrl)
   const [vizState, setVizState] = useState<VisualizationState>(
     initialVisualizationUrl ? 'visualized' : 'not_visualized'
   )
@@ -55,6 +70,24 @@ export function VisualizedOutfitCard({
   const [statusMessage, setStatusMessage] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [imageExpanded, setImageExpanded] = useState(false)
+
+  // Handle mark as worn
+  const handleMarkAsWorn = () => {
+    if (onMarkAsWorn) onMarkAsWorn()
+  }
+
+  // Called from parent when worn tracking is complete
+  const handleWornComplete = (newWornAt: string, photoUrl?: string) => {
+    setWornAt(newWornAt)
+    if (photoUrl) setWornPhotoUrl(photoUrl)
+    if (onWornComplete) onWornComplete(newWornAt, photoUrl)
+  }
+
+  // Format worn date
+  const formatWornDate = (dateStr: string) => {
+    const date = new Date(dateStr)
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  }
 
   // Handle visualization generation
   const handleVisualize = async () => {
@@ -139,30 +172,143 @@ export function VisualizedOutfitCard({
       {/* Header */}
       <div className="flex items-center justify-between mb-3 md:mb-4">
         <h2 className="text-lg md:text-xl font-semibold">{outfitName || 'Outfit'}</h2>
-        {visualizationUrl && (
-          <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">
-            Visualized
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {wornAt && (
+            <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full flex items-center gap-1">
+              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+              Worn
+            </span>
+          )}
+          {visualizationUrl && !wornAt && (
+            <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full">
+              Visualized
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Main Content Area */}
       {vizState === 'visualized' && visualizationUrl ? (
-        // Visualized state: Show visualization hero
+        // Visualized state: Show visualization (or side-by-side if worn photo exists)
         <div className="mb-4">
-          <div
-            className="aspect-[4/5] rounded-lg overflow-hidden cursor-pointer relative bg-gradient-to-b from-purple-50 to-pink-50"
-            onClick={() => setImageExpanded(true)}
-          >
-            <img
-              src={visualizationUrl}
-              alt="Outfit visualization"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute bottom-2 right-2 bg-white/80 px-2 py-1 rounded-full text-xs">
-              Tap to expand
+          {wornPhotoUrl ? (
+            // Side-by-side view: AI viz + worn photo
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <p className="text-xs text-muted text-center">The Plan</p>
+                <div
+                  className="aspect-[4/5] rounded-lg overflow-hidden cursor-pointer relative bg-gradient-to-b from-purple-50 to-pink-50"
+                  onClick={() => setImageExpanded(true)}
+                >
+                  <img
+                    src={visualizationUrl}
+                    alt="AI visualization"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted text-center">The Reality</p>
+                <div className="aspect-[4/5] rounded-lg overflow-hidden relative bg-gray-100">
+                  <img
+                    src={wornPhotoUrl}
+                    alt="How it looked"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            </div>
+          ) : (
+            // Just the visualization
+            <div
+              className="aspect-[4/5] rounded-lg overflow-hidden cursor-pointer relative bg-gradient-to-b from-purple-50 to-pink-50"
+              onClick={() => setImageExpanded(true)}
+            >
+              <img
+                src={visualizationUrl}
+                alt="Outfit visualization"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute bottom-2 right-2 bg-white/80 px-2 py-1 rounded-full text-xs">
+                Tap to expand
+              </div>
+            </div>
+          )}
+          {wornAt && (
+            <p className="text-xs text-muted mt-2 text-center">
+              Worn on {formatWornDate(wornAt)}
+            </p>
+          )}
+          {/* Upload Photo button for worn outfits without a photo */}
+          {wornAt && !wornPhotoUrl && onUploadPhoto && (
+            <button
+              onClick={onUploadPhoto}
+              className="w-full mt-3 bg-white border-2 border-ink text-ink py-2 px-4 rounded-lg hover:bg-sand transition active:bg-sand/80 min-h-[44px] flex items-center justify-center gap-2 text-sm"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Add a photo
+            </button>
+          )}
+        </div>
+      ) : wornAt && wornPhotoUrl && !visualizationUrl ? (
+        // Worn with photo but no visualization: Show ensemble + worn photo side-by-side
+        <div className="mb-4">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <p className="text-xs text-muted text-center">The Outfit</p>
+              <div className="aspect-[4/5] rounded-lg overflow-hidden bg-gray-50 p-1">
+                <div className="w-full h-full grid grid-cols-2 gap-1">
+                  {outfit.items.slice(0, 4).map((item, idx) => {
+                    const itemImage = getImagePath(item)
+                    return (
+                      <div key={idx} className="bg-sand rounded overflow-hidden flex items-center justify-center">
+                        {itemImage ? (
+                          itemImage.startsWith('http') ? (
+                            <img
+                              src={itemImage}
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="relative w-full h-full">
+                              <Image
+                                src={itemImage.startsWith('/') ? itemImage : `/${itemImage}`}
+                                alt={item.name}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                          )
+                        ) : (
+                          <span className="text-[8px] text-muted text-center p-1">
+                            {item.name}
+                          </span>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-muted text-center">The Reality</p>
+              <div className="aspect-[4/5] rounded-lg overflow-hidden relative bg-gray-100">
+                <img
+                  src={wornPhotoUrl}
+                  alt="How it looked"
+                  className="w-full h-full object-cover"
+                />
+              </div>
             </div>
           </div>
+          <p className="text-xs text-muted mt-2 text-center">
+            Worn on {formatWornDate(wornAt)}
+          </p>
         </div>
       ) : vizState === 'generating' ? (
         // Generating state: Show progress
@@ -270,15 +416,52 @@ export function VisualizedOutfitCard({
             })}
           </div>
 
-          {/* Visualize button */}
-          {showVisualizeButton && outfitId && (
-            <button
-              onClick={handleVisualize}
-              className="w-full bg-terracotta text-white py-3 px-6 rounded-lg hover:opacity-90 active:opacity-80 min-h-[48px] flex items-center justify-center mb-4"
-            >
-              See it on a model
-            </button>
+          {/* Worn date display */}
+          {wornAt && (
+            <p className="text-xs text-muted mb-3 text-center">
+              Worn on {formatWornDate(wornAt)}
+            </p>
           )}
+
+          {/* Action buttons */}
+          <div className="space-y-2 mb-4">
+            {/* Visualize button */}
+            {showVisualizeButton && outfitId && (
+              <button
+                onClick={handleVisualize}
+                className="w-full bg-terracotta text-white py-3 px-6 rounded-lg hover:opacity-90 active:opacity-80 min-h-[48px] flex items-center justify-center"
+              >
+                See it on a model
+              </button>
+            )}
+
+            {/* Mark as Worn button */}
+            {showMarkAsWornButton && outfitId && !wornAt && (
+              <button
+                onClick={handleMarkAsWorn}
+                className="w-full bg-white border-2 border-ink text-ink py-3 px-6 rounded-lg hover:bg-sand transition active:bg-sand/80 min-h-[48px] flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                Mark as Worn
+              </button>
+            )}
+
+            {/* Upload Photo button for worn outfits without a photo */}
+            {wornAt && !wornPhotoUrl && onUploadPhoto && (
+              <button
+                onClick={onUploadPhoto}
+                className="w-full bg-white border-2 border-ink text-ink py-2 px-4 rounded-lg hover:bg-sand transition active:bg-sand/80 min-h-[44px] flex items-center justify-center gap-2 text-sm"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                Add a photo
+              </button>
+            )}
+          </div>
 
           {/* Error message */}
           {error && (
@@ -348,6 +531,19 @@ export function VisualizedOutfitCard({
         </div>
       )}
 
+      {/* Mark as Worn button - shown when visualized but not worn */}
+      {vizState === 'visualized' && showMarkAsWornButton && outfitId && !wornAt && (
+        <button
+          onClick={handleMarkAsWorn}
+          className="w-full bg-white border-2 border-ink text-ink py-3 px-6 rounded-lg hover:bg-sand transition active:bg-sand/80 min-h-[48px] flex items-center justify-center gap-2 mb-4"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          Mark as Worn
+        </button>
+      )}
+
       {/* Styling Notes - matches original OutfitCard */}
       <div className="mb-3 md:mb-4">
         <h3 className="font-semibold mb-2 text-base">How to Style</h3>
@@ -357,6 +553,17 @@ export function VisualizedOutfitCard({
         <h3 className="font-semibold mb-2 text-base">Why This Works</h3>
         <p className="text-ink text-sm md:text-base leading-relaxed">{outfit.why_it_works}</p>
       </div>
+
+      {/* Share button - only shown when both visualization and worn photo exist */}
+      {visualizationUrl && wornPhotoUrl && (
+        <div className="mb-3 md:mb-4">
+          <ShareImageGenerator
+            visualizationUrl={visualizationUrl}
+            wornPhotoUrl={wornPhotoUrl}
+            outfitName={outfitName}
+          />
+        </div>
+      )}
 
       {/* Fullscreen Modal */}
       {imageExpanded && visualizationUrl && (
