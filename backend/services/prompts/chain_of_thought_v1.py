@@ -298,7 +298,7 @@ Note which style word(s) this piece carries."""
         return """[
   {
     "items": ["item name 1", "item name 2", ...],
-    "styling_notes": "Specific instructions: tucking, cuffing, layering, sleeve rolling, etc. For boots, specify if pants are tucked inside or worn outside. Be concrete and actionable.",
-    "why_it_works": "MUST be concise (2-4 sentences): Explain how this is appropriate for the occasion, works with their wardrobe, and honors their style DNA. MUST explain the role of EACH item."
+    "styling_notes": "MAX 200 CHARS. Only non-obvious instructions: tucking, cuffing, sleeve rolling, boot styling. Skip obvious things like 'wear the shoes'.",
+    "why_it_works": "MAX 250 CHARS. One sentence on why these pieces work together. Focus on the unexpected element."
   }
 ]"""

@@ -323,10 +323,11 @@ class RunwayProvider(ImageGenerationProvider):
 
         outfit_description = ", ".join(outfit_with_mentions)
 
-        # Build styling section
+        # Build styling section (truncate to 200 chars max for Runway prompt budget)
         styling_section = ""
         if request.styling_notes:
-            styling_section = f"Styling: {request.styling_notes}\n\n"
+            notes = request.styling_notes[:200] if len(request.styling_notes) > 200 else request.styling_notes
+            styling_section = f"Styling: {notes}\n\n"
 
         # Duplication guard (prevent Runway from adding extra accessories)
         duplication_guard = (
@@ -361,7 +362,14 @@ class RunwayProvider(ImageGenerationProvider):
                 "Fashion photography, editorial style, clean background, professional lighting."
             )
 
-        return prompt.strip()
+        prompt = prompt.strip()
+
+        # Safety truncation if still over 1000 chars (Runway API limit)
+        if len(prompt) > 1000:
+            logger.warning(f"Runway prompt exceeds 1000 chars ({len(prompt)}), truncating")
+            prompt = prompt[:997] + "..."
+
+        return prompt
 
     def _prepare_reference_images(self, request: ImageGenerationRequest) -> List[Dict]:
         """
