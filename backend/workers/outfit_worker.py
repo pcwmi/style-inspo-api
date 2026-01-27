@@ -121,7 +121,7 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
                 "count": 2,
                 "metadata": {
                     "prompt_version": prompt_version,
-                    "model": "gpt-4o",
+                    "model": os.getenv("OUTFIT_GENERATION_MODEL", "gpt-5.1"),
                     "temperature": 0.7,
                     "latency_ms": int((time.time() - start_time) * 1000)
                 }
@@ -144,9 +144,11 @@ def generate_outfits_job(user_id, occasions, weather_condition, temperature_rang
             raise
         
         # Initialize StyleGenerationEngine
+        # gpt-5.1 for better reasoning (~$0.024/outfit), gpt-4o for vision only
+        outfit_model = os.getenv("OUTFIT_GENERATION_MODEL", "gpt-5.1")
         try:
             engine = StyleGenerationEngine(
-                model="gpt-4o",
+                model=outfit_model,
                 temperature=0.7,
                 max_tokens=max_tokens,
                 prompt_version=prompt_version

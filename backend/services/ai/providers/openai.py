@@ -22,8 +22,14 @@ class OpenAIProvider(AIProvider):
 
         # Validate model name
         valid_models = [
-            "gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-4",
-            "gpt-3.5-turbo", "o1", "o1-mini", "o1-preview"
+            # GPT-5 series
+            "gpt-5.1", "gpt-5", "gpt-5-mini", "gpt-5-nano",
+            # GPT-4 series
+            "gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-4", "gpt-4.1", "gpt-4.1-mini",
+            # Legacy
+            "gpt-3.5-turbo",
+            # Reasoning models
+            "o1", "o1-mini", "o1-preview", "o3", "o4-mini"
         ]
         if self.config.model not in valid_models:
             raise ValueError(f"Invalid OpenAI model: {self.config.model}. Valid models: {valid_models}")

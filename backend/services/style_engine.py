@@ -49,7 +49,7 @@ class StyleGenerationEngine:
     def __init__(
         self,
         api_key: Optional[str] = None,
-        model: str = "gpt-4o",
+        model: str = "gpt-5.1",
         temperature: float = 0.7,
         max_tokens: int = 2000,
         prompt_version: str = "baseline_v1"
@@ -59,7 +59,7 @@ class StyleGenerationEngine:
 
         Args:
             api_key: Optional API key (if not provided, uses environment variables)
-            model: Model to use (default: gpt-4o). Supports OpenAI, Gemini, Claude models.
+            model: Model to use (default: gpt-5.1). Supports OpenAI, Gemini, Claude models.
             temperature: Temperature for generation (default: 0.7)
             max_tokens: Max tokens to generate (default: 2000)
             prompt_version: Prompt template version (default: baseline_v1). Options: baseline_v1, fit_constraints_v2, chain_of_thought_v1
