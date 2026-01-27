@@ -41,9 +41,9 @@ export function ReadyToWearCarousel({ outfits, userId }: ReadyToWearCarouselProp
   }
 
   return (
-    <div className="bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-4 md:p-6 mb-5 md:mb-8 shadow-sm">
+    <div className="mb-8 md:mb-12">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg md:text-xl font-semibold">Ready to Wear</h2>
+        <h2 className="text-xl md:text-2xl font-serif font-normal tracking-tight">Ready to Wear</h2>
         <Link
           href={`/saved?user=${userId}`}
           className="text-terracotta text-sm md:text-base flex items-center font-medium hover:opacity-80 transition-opacity"
@@ -64,7 +64,7 @@ export function ReadyToWearCarousel({ outfits, userId }: ReadyToWearCarouselProp
             <Link
               key={outfit.id}
               href={`/saved?user=${userId}`}
-              className="flex-shrink-0 w-28 md:w-36 bg-white border border-[rgba(26,22,20,0.08)] rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+              className="flex-shrink-0 w-40 md:w-56 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
             >
               {/* Image area - portrait ratio */}
               <div className="aspect-[3/4] bg-gray-100 relative">

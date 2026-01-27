@@ -23,14 +23,14 @@ export function WardrobePreviewCarousel({ items, totalCount, userId }: WardrobeP
   }
 
   return (
-    <div className="bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-4 md:p-6 mb-5 md:mb-8 shadow-sm">
+    <div className="mb-8 md:mb-12">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg md:text-xl font-semibold">Your Wardrobe ({totalCount})</h2>
+        <h2 className="text-xl md:text-2xl font-serif font-normal tracking-tight">Your Wardrobe</h2>
         <Link
           href={`/closet?user=${userId}`}
           className="text-terracotta text-sm md:text-base flex items-center font-medium hover:opacity-80 transition-opacity"
         >
-          See all
+          See {totalCount} items
           <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
@@ -46,7 +46,7 @@ export function WardrobePreviewCarousel({ items, totalCount, userId }: WardrobeP
             <Link
               key={item.id}
               href={`/closet?user=${userId}`}
-              className="flex-shrink-0 w-20 md:w-24 bg-white border border-[rgba(26,22,20,0.08)] rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+              className="flex-shrink-0 w-20 md:w-24 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
             >
               {/* Image area - square for items */}
               <div className="aspect-square bg-sand relative">
