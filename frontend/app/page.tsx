@@ -66,18 +66,8 @@ function DashboardContent() {
     checkOnboarding()
   }, [user, userParam, wardrobeLoading, router])
 
-  // Only show loading spinner on first load (no cached data yet)
-  // This prevents the brief flash when navigating back with cached data
-  if (loading && !wardrobe) {
-    return (
-      <div className="min-h-screen bg-bone flex items-center justify-center page-container">
-        <div className="text-center px-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-sand border-t-terracotta mx-auto mb-4"></div>
-          <p className="text-ink text-base font-medium">Loading your wardrobe...</p>
-        </div>
-      </div>
-    )
-  }
+  // Non-blocking: Show dashboard immediately, let counts load in background
+  // Skeleton placeholders are used inline for counts instead of blocking the whole page
 
   return (
     <div className="min-h-screen bg-bone page-container">
@@ -138,7 +128,9 @@ function DashboardContent() {
             </span>
           </div>
           <p className="text-muted text-base">
-            {wardrobe?.count || 0} pieces uploaded
+            {wardrobeLoading && !wardrobe
+              ? <span className="inline-block w-6 h-4 bg-sand/50 rounded animate-pulse align-middle" />
+              : wardrobe?.count || 0} pieces uploaded
           </p>
         </Link>
 
@@ -150,7 +142,9 @@ function DashboardContent() {
           >
             <h2 className="text-lg md:text-xl font-semibold mb-1.5">Saved Outfits</h2>
             <p className="text-muted text-base">
-              {savedCount} saved outfit{savedCount !== 1 ? 's' : ''}
+              {savedLoading && !savedData
+                ? <><span className="inline-block w-4 h-4 bg-sand/50 rounded animate-pulse align-middle" /> saved outfits</>
+                : <>{savedCount} saved outfit{savedCount !== 1 ? 's' : ''}</>}
             </p>
           </Link>
         </div>
@@ -163,7 +157,9 @@ function DashboardContent() {
           >
             <h2 className="text-lg md:text-xl font-semibold mb-1.5">Disliked Outfits</h2>
             <p className="text-muted text-base">
-              {dislikedCount} disliked outfit{dislikedCount !== 1 ? 's' : ''}
+              {dislikedLoading && !dislikedData
+                ? <><span className="inline-block w-4 h-4 bg-sand/50 rounded animate-pulse align-middle" /> disliked outfits</>
+                : <>{dislikedCount} disliked outfit{dislikedCount !== 1 ? 's' : ''}</>}
             </p>
           </Link>
         </div>

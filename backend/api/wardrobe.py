@@ -2,10 +2,11 @@
 Wardrobe API endpoints
 """
 
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Response
 from typing import List, Optional
 from pydantic import BaseModel
 import logging
+import hashlib
 
 from services.wardrobe_manager import WardrobeManager
 from services.image_analyzer import create_image_analyzer
@@ -26,12 +27,23 @@ def get_analysis_queue():
 
 
 @router.get("/wardrobe/{user_id}", response_model=WardrobeResponse)
-async def get_wardrobe(user_id: str):
+async def get_wardrobe(user_id: str, response: Response):
     """Get user's wardrobe items"""
     try:
         manager = WardrobeManager(user_id=user_id)
         items = manager.get_wardrobe_items("all")
-        
+
+        # Generate ETag from last_updated timestamp for cache validation
+        last_updated = manager.wardrobe_data.get("last_updated", "")
+        etag = hashlib.md5(f"{user_id}:{last_updated}:{len(items)}".encode()).hexdigest()
+
+        # Cache headers: 60s fresh, 5min stale-while-revalidate
+        # - max-age=60: Browser serves cached for 1 min without network request
+        # - stale-while-revalidate=300: For 5 min, serve stale while fetching fresh in background
+        # - private: No CDN caching of user-specific data
+        response.headers["Cache-Control"] = "private, max-age=60, stale-while-revalidate=300"
+        response.headers["ETag"] = f'"{etag}"'
+
         return {
             "items": items,
             "count": len(items)
