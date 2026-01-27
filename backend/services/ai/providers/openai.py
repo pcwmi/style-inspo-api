@@ -34,6 +34,18 @@ class OpenAIProvider(AIProvider):
         if self.config.model not in valid_models:
             raise ValueError(f"Invalid OpenAI model: {self.config.model}. Valid models: {valid_models}")
 
+    def _get_token_param(self, max_tokens: Optional[int]) -> dict:
+        """Get the correct token limit parameter for the model.
+
+        GPT-5 series and reasoning models use 'max_completion_tokens'.
+        Older models use 'max_tokens'.
+        """
+        tokens = max_tokens or self.config.max_tokens
+        # GPT-5, GPT-4.1, and reasoning models (o1, o3, o4) use max_completion_tokens
+        if any(prefix in self.config.model for prefix in ["gpt-5", "gpt-4.1", "o1", "o3", "o4"]):
+            return {"max_completion_tokens": tokens}
+        return {"max_tokens": tokens}
+
     def generate_text(
         self,
         prompt: str,
@@ -53,7 +65,7 @@ class OpenAIProvider(AIProvider):
             model=self.config.model,
             messages=messages,
             temperature=temperature or self.config.temperature,
-            max_tokens=max_tokens or self.config.max_tokens
+            **self._get_token_param(max_tokens)
         )
 
         latency = time.time() - start_time
@@ -92,7 +104,7 @@ class OpenAIProvider(AIProvider):
             model=self.config.model,
             messages=messages,
             temperature=temperature or self.config.temperature,
-            max_tokens=max_tokens or self.config.max_tokens,
+            **self._get_token_param(max_tokens),
             stream=True  # Enable streaming
         )
 
@@ -113,6 +125,7 @@ class OpenAIProvider(AIProvider):
         # Use vision-capable model
         vision_model = "gpt-4o" if "gpt-4" in self.config.model else self.config.model
 
+        # Vision always uses gpt-4o which uses max_tokens
         response = self.client.chat.completions.create(
             model=vision_model,
             messages=[
@@ -125,7 +138,7 @@ class OpenAIProvider(AIProvider):
                 }
             ],
             temperature=temperature or self.config.temperature,
-            max_tokens=self.config.max_tokens
+            max_tokens=self.config.max_tokens  # gpt-4o uses max_tokens
         )
 
         latency = time.time() - start_time
