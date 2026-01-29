@@ -219,6 +219,10 @@ class StylingAgent:
             elif tool_name == "save_outfit":
                 manager = SavedOutfitsManager(user_id=self.user_id)
 
+                # Debug: log what we received
+                items = tool_input.get("items", [])
+                logger.info(f"save_outfit received {len(items)} items: {items}")
+
                 # Create outfit combo object (expected by manager)
                 class OutfitCombo:
                     def __init__(self, items, styling_notes, vibe_keywords):
@@ -229,7 +233,7 @@ class StylingAgent:
                         self.vibe_keywords = vibe_keywords
 
                 outfit_combo = OutfitCombo(
-                    items=tool_input.get("items", []),
+                    items=items,
                     styling_notes=tool_input.get("styling_notes", ""),
                     vibe_keywords=tool_input.get("vibe_keywords", [])
                 )
@@ -239,6 +243,7 @@ class StylingAgent:
                     reason=tool_input.get("styling_notes", ""),
                     occasion=tool_input.get("occasion", "")
                 )
+                logger.info(f"save_outfit saved with ID: {outfit_id}")
                 return {"outfit_id": outfit_id, "status": "saved"}
 
             # Tools that still need HTTP (external services)
