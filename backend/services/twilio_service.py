@@ -16,6 +16,9 @@ logger = logging.getLogger(__name__)
 class TwilioService:
     """Twilio SMS/MMS service."""
 
+    # WhatsApp sandbox number (shared by all Twilio sandbox users)
+    WHATSAPP_SANDBOX_NUMBER = "+14155238886"
+
     def __init__(self):
         self.account_sid = os.getenv("TWILIO_ACCOUNT_SID")
         self.auth_token = os.getenv("TWILIO_AUTH_TOKEN")
@@ -29,10 +32,10 @@ class TwilioService:
 
     def send_sms(self, to: str, body: str) -> Optional[str]:
         """
-        Send an SMS message.
+        Send an SMS or WhatsApp message.
 
         Args:
-            to: Recipient phone number (E.164 format: +1xxxxxxxxxx)
+            to: Recipient phone number (E.164 format: +1xxxxxxxxxx or whatsapp:+1xxxxxxxxxx)
             body: Message text (will be split if > 1600 chars)
 
         Returns:
@@ -43,15 +46,22 @@ class TwilioService:
             return None
 
         try:
+            # Determine if WhatsApp - use sandbox number for WhatsApp
+            is_whatsapp = to.startswith("whatsapp:")
+            if is_whatsapp:
+                from_number = f"whatsapp:{self.WHATSAPP_SANDBOX_NUMBER}"
+            else:
+                from_number = self.from_number
+
             message = self.client.messages.create(
                 body=body,
-                from_=self.from_number,
+                from_=from_number,
                 to=to
             )
-            logger.info(f"SMS sent to {to}: {message.sid}")
+            logger.info(f"{'WhatsApp' if is_whatsapp else 'SMS'} sent to {to}: {message.sid}")
             return message.sid
         except Exception as e:
-            logger.error(f"Failed to send SMS to {to}: {e}")
+            logger.error(f"Failed to send message to {to}: {e}")
             return None
 
     def send_mms(
@@ -61,10 +71,10 @@ class TwilioService:
         media_urls: List[str]
     ) -> Optional[str]:
         """
-        Send an MMS message with images.
+        Send an MMS or WhatsApp message with images.
 
         Args:
-            to: Recipient phone number (E.164 format)
+            to: Recipient phone number (E.164 format or whatsapp:+1xxxxxxxxxx)
             body: Message text
             media_urls: List of publicly accessible image URLs
 
@@ -76,13 +86,20 @@ class TwilioService:
             return None
 
         try:
+            # Determine if WhatsApp - use sandbox number for WhatsApp
+            is_whatsapp = to.startswith("whatsapp:")
+            if is_whatsapp:
+                from_number = f"whatsapp:{self.WHATSAPP_SANDBOX_NUMBER}"
+            else:
+                from_number = self.from_number
+
             message = self.client.messages.create(
                 body=body,
-                from_=self.from_number,
+                from_=from_number,
                 to=to,
                 media_url=media_urls
             )
-            logger.info(f"MMS sent to {to}: {message.sid}")
+            logger.info(f"{'WhatsApp' if is_whatsapp else 'MMS'} with media sent to {to}: {message.sid}")
             return message.sid
         except Exception as e:
             logger.error(f"Failed to send MMS to {to}: {e}")

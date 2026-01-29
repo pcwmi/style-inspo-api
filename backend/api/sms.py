@@ -27,8 +27,10 @@ PHONE_TO_USER = {
 
 def phone_to_user(phone: str) -> Optional[str]:
     """Map phone number to user_id."""
-    # Normalize phone number (remove spaces, dashes)
-    normalized = re.sub(r'[\s\-\(\)]', '', phone)
+    # Strip whatsapp: prefix if present
+    normalized = phone.replace("whatsapp:", "")
+    # Remove spaces, dashes, parentheses
+    normalized = re.sub(r'[\s\-\(\)]', '', normalized)
 
     for registered_phone, user_id in PHONE_TO_USER.items():
         if registered_phone and normalized.endswith(registered_phone[-10:]):
@@ -36,6 +38,11 @@ def phone_to_user(phone: str) -> Optional[str]:
 
     logger.warning(f"Unknown phone number: {phone}")
     return None
+
+
+def is_whatsapp(phone: str) -> bool:
+    """Check if this is a WhatsApp number."""
+    return phone.startswith("whatsapp:")
 
 
 async def process_outfit_request(user_id: str, phone: str, message: str):
