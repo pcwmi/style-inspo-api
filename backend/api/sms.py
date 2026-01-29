@@ -99,8 +99,9 @@ Your response should be a brief styling tip - I'll attach the item images separa
             for item_id in item_ids:
                 if item_id in item_lookup:
                     item = item_lookup[item_id]
-                    image_url = item.get("system_metadata", {}).get("image_url")
-                    if image_url:
+                    # Key is image_path (contains S3 URL), not image_url
+                    image_url = item.get("system_metadata", {}).get("image_path")
+                    if image_url and image_url.startswith("http"):
                         image_urls.append(image_url)
 
         if image_urls:
