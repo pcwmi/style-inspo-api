@@ -65,31 +65,54 @@ async def process_outfit_request(user_id: str, phone: str, message: str):
         # Add SMS context to the message
         sms_prompt = f"""User request (via SMS): {message}
 
-IMPORTANT: This user is texting from their phone and wants to SEE the outfit.
-After suggesting an outfit:
-1. Call save_outfit with the specific items from their wardrobe (use item IDs)
-2. Call visualize_outfit with the returned outfit_id
-3. Include the visualization URL in your response
+Create ONE outfit for this occasion. Keep response SHORT (under 250 chars).
 
-Keep your text response SHORT (under 300 chars) since this is SMS."""
+Steps:
+1. Call get_items to see the wardrobe
+2. Pick items that work for this occasion
+3. Call save_outfit with item IDs and a brief styling note
+
+Your response should be a brief styling tip - I'll attach the item images separately."""
 
         # Run agent
         response = agent.run(sms_prompt)
 
-        # Try to extract visualization URL from response or agent state
-        # The agent should have called visualize_outfit which returns the URL
-        viz_url = extract_visualization_url(response)
+        # Get the most recent saved outfit to extract item images
+        from services.saved_outfits_manager import SavedOutfitsManager
+        from services.wardrobe_manager import WardrobeManager
 
-        if viz_url:
-            # Send MMS with image
-            # Truncate response for SMS
+        outfit_manager = SavedOutfitsManager(user_id=user_id)
+        wardrobe_manager = WardrobeManager(user_id=user_id)
+
+        outfits = outfit_manager.get_saved_outfits()
+        image_urls = []
+
+        if outfits:
+            # Get the most recent outfit
+            latest_outfit = outfits[-1]
+            item_ids = [item.get("id") for item in latest_outfit.get("items", [])]
+
+            # Look up image URLs from wardrobe
+            all_items = wardrobe_manager.get_wardrobe_items()
+            item_lookup = {item["id"]: item for item in all_items}
+
+            for item_id in item_ids:
+                if item_id in item_lookup:
+                    item = item_lookup[item_id]
+                    image_url = item.get("system_metadata", {}).get("image_url")
+                    if image_url:
+                        image_urls.append(image_url)
+
+        if image_urls:
+            # Send MMS with item images
             short_response = response[:280] if len(response) > 280 else response
-            send_mms(phone, short_response, [viz_url])
-            logger.info(f"Sent MMS to {phone} with visualization")
+            # WhatsApp allows up to 10 media items
+            send_mms(phone, short_response, image_urls[:5])
+            logger.info(f"Sent MMS to {phone} with {len(image_urls)} images")
         else:
-            # No visualization, just send text
-            send_sms(phone, response[:1500])  # SMS limit
-            logger.info(f"Sent SMS to {phone} (no visualization)")
+            # No images, just send text
+            send_sms(phone, response[:1500])
+            logger.info(f"Sent SMS to {phone} (no images)")
 
     except Exception as e:
         logger.error(f"Error processing outfit request: {e}")

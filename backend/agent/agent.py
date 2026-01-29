@@ -145,120 +145,98 @@ class StylingAgent:
 
     def _execute_tool(self, tool_name: str, tool_input: dict) -> dict:
         """
-        Execute a tool by calling the corresponding primitive.
+        Execute a tool by calling managers directly (no HTTP to avoid deadlock).
 
-        Tools map directly to primitives - no logic here.
+        When the agent runs in a background task, HTTP calls to localhost would
+        deadlock because the server is blocked waiting for the background task.
         """
-        import httpx
-
-        # On Railway, use internal localhost:8080 to avoid external network roundtrip
-        # RAILWAY_ENVIRONMENT is set by Railway automatically
-        if os.getenv("RAILWAY_ENVIRONMENT"):
-            base_url = "http://localhost:8080"
-        else:
-            base_url = os.getenv("PRIMITIVES_BASE_URL", "http://localhost:8000")
-
         try:
-            # Map tool names to primitive endpoints
+            # Import managers locally to avoid circular imports
+            from services.wardrobe_manager import WardrobeManager
+            from services.user_profile_manager import UserProfileManager
+            from services.feedback_manager import FeedbackManager
+            from services.saved_outfits_manager import SavedOutfitsManager
+
             if tool_name == "get_items":
                 filter_type = tool_input.get("filter_type", "all")
-                url = f"{base_url}/primitives/items/{self.user_id}?filter_type={filter_type}"
-                resp = httpx.get(url, timeout=30)
+                manager = WardrobeManager(user_id=self.user_id)
+                items = manager.get_wardrobe_items(filter_type=filter_type)
+                # Return compact format for agent (less tokens)
+                compact_items = [
+                    {
+                        "id": item["id"],
+                        "name": item.get("styling_details", {}).get("name", ""),
+                        "category": item.get("styling_details", {}).get("category", ""),
+                        "colors": item.get("styling_details", {}).get("colors", []),
+                        "style": item.get("styling_details", {}).get("style", ""),
+                        "image_url": item.get("system_metadata", {}).get("image_url", ""),
+                    }
+                    for item in items
+                ]
+                return {"items": compact_items, "count": len(compact_items)}
 
             elif tool_name == "get_item":
                 item_id = tool_input["item_id"]
-                url = f"{base_url}/primitives/items/{self.user_id}/{item_id}"
-                resp = httpx.get(url, timeout=30)
+                manager = WardrobeManager(user_id=self.user_id)
+                items = manager.get_wardrobe_items(filter_type="all")
+                for item in items:
+                    if item.get("id") == item_id:
+                        return {"item": item}
+                return {"error": f"Item {item_id} not found"}
 
             elif tool_name == "get_profile":
-                url = f"{base_url}/primitives/profile/{self.user_id}"
-                resp = httpx.get(url, timeout=30)
+                manager = UserProfileManager(user_id=self.user_id)
+                return manager.get_profile()
 
             elif tool_name == "get_feedback":
-                url = f"{base_url}/primitives/feedback/{self.user_id}"
-                resp = httpx.get(url, timeout=30)
+                manager = FeedbackManager(user_id=self.user_id)
+                return {"feedback": manager.get_all_feedback()}
 
             elif tool_name == "get_feedback_patterns":
-                url = f"{base_url}/primitives/feedback/{self.user_id}/patterns"
-                resp = httpx.get(url, timeout=30)
+                manager = FeedbackManager(user_id=self.user_id)
+                return manager.get_feedback_patterns()
 
             elif tool_name == "get_saved_outfits":
-                url = f"{base_url}/primitives/outfits/{self.user_id}"
-                resp = httpx.get(url, timeout=30)
+                manager = SavedOutfitsManager(user_id=self.user_id)
+                outfits = manager.get_saved_outfits()
+                return {"outfits": outfits, "count": len(outfits)}
 
             elif tool_name == "get_not_worn_outfits":
-                limit = tool_input.get("limit", "")
-                url = f"{base_url}/primitives/outfits/{self.user_id}/not-worn"
-                if limit:
-                    url += f"?limit={limit}"
-                resp = httpx.get(url, timeout=30)
+                manager = SavedOutfitsManager(user_id=self.user_id)
+                limit = tool_input.get("limit")
+                outfits = manager.get_not_worn_outfits(limit=limit)
+                return {"outfits": outfits, "count": len(outfits)}
 
             elif tool_name == "get_worn_outfits":
-                url = f"{base_url}/primitives/outfits/{self.user_id}/worn"
-                resp = httpx.get(url, timeout=30)
-
-            elif tool_name == "get_considering_items":
-                status = tool_input.get("status", "")
-                url = f"{base_url}/primitives/considering/{self.user_id}"
-                if status:
-                    url += f"?status={status}"
-                resp = httpx.get(url, timeout=30)
-
-            elif tool_name == "get_considering_stats":
-                url = f"{base_url}/primitives/considering/{self.user_id}/stats"
-                resp = httpx.get(url, timeout=30)
+                manager = SavedOutfitsManager(user_id=self.user_id)
+                outfits = manager.get_worn_outfits()
+                return {"outfits": outfits, "count": len(outfits)}
 
             elif tool_name == "save_outfit":
-                url = f"{base_url}/primitives/outfits/{self.user_id}"
-                payload = {
-                    "outfit_data": {
-                        "items": tool_input.get("items", []),
-                        "styling_notes": tool_input.get("styling_notes", ""),
-                        "vibe_keywords": tool_input.get("vibe_keywords", [])
-                    },
-                    "reason": tool_input.get("styling_notes", ""),
-                    "occasion": tool_input.get("occasion", "")
+                manager = SavedOutfitsManager(user_id=self.user_id)
+                outfit_data = {
+                    "items": tool_input.get("items", []),
+                    "styling_notes": tool_input.get("styling_notes", ""),
+                    "vibe_keywords": tool_input.get("vibe_keywords", [])
                 }
-                resp = httpx.post(url, json=payload, timeout=30)
+                outfit_id = manager.save_outfit(
+                    outfit_data=outfit_data,
+                    reason=tool_input.get("styling_notes", ""),
+                    occasion=tool_input.get("occasion", "")
+                )
+                return {"outfit_id": outfit_id, "status": "saved"}
 
+            # Tools that still need HTTP (external services)
             elif tool_name == "visualize_outfit":
-                outfit_id = tool_input["outfit_id"]
-                url = f"{base_url}/api/visualization/generate"
-                payload = {
-                    "user_id": self.user_id,
-                    "outfit_id": outfit_id
+                # Skip visualization for now - just return the outfit items
+                # Runway visualization takes 60-90s which is too slow for SMS
+                return {
+                    "status": "skipped",
+                    "message": "Visualization skipped for SMS (too slow). Send item images directly."
                 }
-                resp = httpx.post(url, json=payload, timeout=30)
-
-                # If visualization started, poll for completion
-                if resp.status_code == 200:
-                    result = resp.json()
-                    job_id = result.get("job_id")
-
-                    if job_id and job_id != "cached":
-                        # Poll for completion (max 90 seconds)
-                        for _ in range(30):
-                            import time
-                            time.sleep(3)
-                            status_resp = httpx.get(
-                                f"{base_url}/api/visualization/status/{job_id}",
-                                timeout=30
-                            )
-                            if status_resp.status_code == 200:
-                                status = status_resp.json()
-                                if status.get("status") == "complete":
-                                    return status
-                                elif status.get("status") == "failed":
-                                    return {"error": "Visualization failed", "details": status}
-                        return {"error": "Visualization timed out"}
-
-                    return result
 
             else:
                 return {"error": f"Unknown tool: {tool_name}"}
-
-            resp.raise_for_status()
-            return resp.json()
 
         except Exception as e:
             logger.error(f"Tool execution error: {e}")
