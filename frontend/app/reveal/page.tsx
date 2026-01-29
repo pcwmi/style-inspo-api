@@ -7,6 +7,7 @@ import { api } from '@/lib/api'
 import Link from 'next/link'
 import Image from 'next/image'
 import { OutfitCard } from '@/components/OutfitCard'
+import { posthog } from '@/lib/posthog'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -47,6 +48,12 @@ function RevealPageContent() {
       if (weatherCondition) params.append('weather_condition', weatherCondition)
       if (temperatureRange) params.append('temperature_range', temperatureRange)
       if (debugMode) params.append('include_reasoning', 'true')
+
+      // Pass device_id for analytics filtering (separates real users from admin testing)
+      // Use $device_id property which is the anonymous ID that persists after identify()
+      // This ensures we capture Pei-Chin's device even when visiting other users' URLs
+      const deviceId = posthog?.get_property?.('$device_id') || posthog?.get_distinct_id?.()
+      if (deviceId) params.append('device_id', deviceId)
 
       try {
         eventSource = new EventSource(`${API_URL}/api/outfits/generate/stream?${params.toString()}`)

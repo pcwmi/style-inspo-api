@@ -29,6 +29,16 @@ load_dotenv()
 from services.storage_manager import StorageManager
 
 
+# Pei-Chin's device IDs - filter these out to see real user activity only
+PEICHIN_DEVICE_IDS = {
+    '019b5d53-2130-76a8-943e-4a5552e0758b',
+    '019bc998-094e-7309-a042-2e017cc5bd45',
+    '019b6b77-3a3e-7343-942f-80c2bb67787a',
+    '019b5d2f-f5cc-7329-bc3a-26f01842e4bd',
+    'peichin'
+}
+
+
 def get_all_users_with_data() -> List[str]:
     """Get list of all users who have data in S3."""
     known_users = ['peichin', 'heather', 'dimple', 'alexi', 'mia']
@@ -44,13 +54,28 @@ def get_all_users_with_data() -> List[str]:
     return users_with_data
 
 
-def load_generations_for_date(user_id: str, date_str: str) -> List[Dict]:
-    """Load generation logs for a specific user and date."""
+def load_generations_for_date(user_id: str, date_str: str, exclude_device_ids: set = None) -> List[Dict]:
+    """Load generation logs for a specific user and date.
+
+    Args:
+        user_id: The user ID to load generations for
+        date_str: Date string in YYYY-MM-DD format
+        exclude_device_ids: Set of device IDs to filter out (e.g., admin testing)
+    """
     try:
         storage = StorageManager(storage_type="s3", user_id=user_id)
         log_filename = f"generations/{date_str}.json"
         data = storage.load_json(log_filename)
-        return data.get("generations", [])
+        generations = data.get("generations", [])
+
+        # Filter out generations from excluded device IDs
+        if exclude_device_ids:
+            generations = [
+                gen for gen in generations
+                if gen.get("device_id") not in exclude_device_ids
+            ]
+
+        return generations
     except Exception:
         return []
 
@@ -131,9 +156,17 @@ def outfit_items_match(gen_items: List[Dict], saved_items: List[Dict]) -> bool:
     return len(matches) >= min_matches
 
 
-def generate_html(date_str: str, exclude_users: List[str] = None) -> str:
-    """Generate the HTML digest."""
+def generate_html(date_str: str, exclude_users: List[str] = None, exclude_device_ids: set = None) -> str:
+    """Generate the HTML digest.
+
+    Args:
+        date_str: Date string in YYYY-MM-DD format
+        exclude_users: List of user IDs to completely exclude
+        exclude_device_ids: Set of device IDs to filter out from generations
+                           (filters admin testing on other users' accounts)
+    """
     exclude_users = exclude_users or []
+    exclude_device_ids = exclude_device_ids or set()
 
     # Collect data
     all_users = get_all_users_with_data()
@@ -143,7 +176,7 @@ def generate_html(date_str: str, exclude_users: List[str] = None) -> str:
     for user_id in all_users:
         if user_id in exclude_users:
             continue
-        generations = load_generations_for_date(user_id, date_str)
+        generations = load_generations_for_date(user_id, date_str, exclude_device_ids)
         activities = load_activities_for_date(user_id, date_str)
         # User is active if they have generations OR activities
         if generations or activities:
@@ -570,6 +603,8 @@ def main():
     parser = argparse.ArgumentParser(description="Generate HTML daily digest")
     parser.add_argument("date", nargs="?", help="Date in YYYY-MM-DD format (default: yesterday)")
     parser.add_argument("--exclude", nargs="*", default=["peichin"], help="Users to exclude")
+    parser.add_argument("--include-admin", action="store_true",
+                        help="Include generations from admin device IDs (by default, Pei-Chin's devices are filtered)")
     parser.add_argument("--no-open", action="store_true", help="Don't auto-open in browser")
     parser.add_argument("-o", "--output", help="Output file path (default: digest-DATE.html)")
 
@@ -588,8 +623,11 @@ def main():
         yesterday = datetime.now(pacific) - timedelta(days=1)
         date_str = yesterday.strftime("%Y-%m-%d")
 
+    # Filter out admin device IDs unless explicitly included
+    exclude_device_ids = set() if args.include_admin else PEICHIN_DEVICE_IDS
+
     # Generate HTML
-    html = generate_html(date_str, exclude_users=args.exclude)
+    html = generate_html(date_str, exclude_users=args.exclude, exclude_device_ids=exclude_device_ids)
 
     # Write to file
     output_path = args.output or f"digest-{date_str}.html"

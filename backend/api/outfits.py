@@ -34,7 +34,8 @@ def log_generation_to_s3(
     outfits: list,
     occasion: str = None,
     anchor_items: list = None,
-    anchor_item_names: list = None
+    anchor_item_names: list = None,
+    device_id: str = None
 ):
     """
     Log outfit generation to S3 for analytics/daily digest.
@@ -61,6 +62,10 @@ def log_generation_to_s3(
             "mode": mode,
             "outfits": outfits
         }
+
+        # Add device_id for analytics filtering (to separate real users from admin testing)
+        if device_id:
+            generation_entry["device_id"] = device_id
 
         # Add mode-specific context
         if mode == "occasion" and occasion:
@@ -104,7 +109,8 @@ async def generate_outfits_stream(
     anchor_items: str = Query(None, description="Comma-separated list of anchor item IDs (for complete mode)"),
     weather_condition: str = Query(None, description="Weather condition"),
     temperature_range: str = Query(None, description="Temperature range"),
-    include_reasoning: bool = Query(False, description="Include chain-of-thought reasoning in response")
+    include_reasoning: bool = Query(False, description="Include chain-of-thought reasoning in response"),
+    device_id: str = Query(None, description="PostHog device ID for analytics filtering")
 ):
     """
     Stream outfit generation via SSE.
@@ -318,7 +324,8 @@ async def generate_outfits_stream(
                 outfits=generated_outfits,
                 occasion=occasion_str,
                 anchor_items=anchor_item_ids_list,
-                anchor_item_names=anchor_item_names_list
+                anchor_item_names=anchor_item_names_list,
+                device_id=device_id
             )
 
             # For reasoning, we need to get it from the streaming response
