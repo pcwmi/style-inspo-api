@@ -37,7 +37,7 @@ app.add_middleware(
 )
 
 # Import routers
-from api import wardrobe, outfits, user, consider_buying, jobs, visualization
+from api import wardrobe, outfits, user, consider_buying, jobs, visualization, sms
 from primitives import primitives_router
 
 # Register routers - existing API
@@ -51,6 +51,9 @@ app.include_router(visualization.router, prefix="/api", tags=["visualization"])
 # Register primitives router - agent-first architecture
 # Coexists with /api/* via Strangler Fig pattern
 app.include_router(primitives_router, prefix="/primitives", tags=["primitives"])
+
+# Register SMS router - Twilio webhook for text-based styling
+app.include_router(sms.router, prefix="/api/sms", tags=["sms"])
 
 
 @app.get("/")

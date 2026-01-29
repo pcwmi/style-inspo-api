@@ -102,6 +102,58 @@ TOOLS = [
         }
     },
 
+    # --- OUTFIT ACTIONS ---
+    {
+        "name": "save_outfit",
+        "description": "Save an outfit to the user's saved outfits. Call this when you've created an outfit the user wants to keep. Returns the outfit_id needed for visualization.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": "string", "description": "Item ID from wardrobe"},
+                            "name": {"type": "string", "description": "Item name"},
+                            "category": {"type": "string", "description": "Item category"}
+                        },
+                        "required": ["id", "name", "category"]
+                    },
+                    "description": "List of wardrobe items in the outfit"
+                },
+                "styling_notes": {
+                    "type": "string",
+                    "description": "Styling advice for wearing this outfit"
+                },
+                "occasion": {
+                    "type": "string",
+                    "description": "What occasion this outfit is for"
+                },
+                "vibe_keywords": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Keywords describing the outfit vibe"
+                }
+            },
+            "required": ["items", "styling_notes"]
+        }
+    },
+    {
+        "name": "visualize_outfit",
+        "description": "Generate a visualization of an outfit on a model matching the user's description. Takes ~60 seconds. Call this after save_outfit to show the user how the outfit looks.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "outfit_id": {
+                    "type": "string",
+                    "description": "The outfit ID returned from save_outfit"
+                }
+            },
+            "required": ["outfit_id"]
+        }
+    },
+
     # --- CONSIDERING (SHOPPING) ---
     {
         "name": "get_considering_items",

@@ -203,6 +203,52 @@ class StylingAgent:
                 url = f"{base_url}/primitives/considering/{self.user_id}/stats"
                 resp = httpx.get(url, timeout=30)
 
+            elif tool_name == "save_outfit":
+                url = f"{base_url}/primitives/outfits/{self.user_id}"
+                payload = {
+                    "outfit_data": {
+                        "items": tool_input.get("items", []),
+                        "styling_notes": tool_input.get("styling_notes", ""),
+                        "vibe_keywords": tool_input.get("vibe_keywords", [])
+                    },
+                    "reason": tool_input.get("styling_notes", ""),
+                    "occasion": tool_input.get("occasion", "")
+                }
+                resp = httpx.post(url, json=payload, timeout=30)
+
+            elif tool_name == "visualize_outfit":
+                outfit_id = tool_input["outfit_id"]
+                url = f"{base_url}/api/visualization/generate"
+                payload = {
+                    "user_id": self.user_id,
+                    "outfit_id": outfit_id
+                }
+                resp = httpx.post(url, json=payload, timeout=30)
+
+                # If visualization started, poll for completion
+                if resp.status_code == 200:
+                    result = resp.json()
+                    job_id = result.get("job_id")
+
+                    if job_id and job_id != "cached":
+                        # Poll for completion (max 90 seconds)
+                        for _ in range(30):
+                            import time
+                            time.sleep(3)
+                            status_resp = httpx.get(
+                                f"{base_url}/api/visualization/status/{job_id}",
+                                timeout=30
+                            )
+                            if status_resp.status_code == 200:
+                                status = status_resp.json()
+                                if status.get("status") == "complete":
+                                    return status
+                                elif status.get("status") == "failed":
+                                    return {"error": "Visualization failed", "details": status}
+                        return {"error": "Visualization timed out"}
+
+                    return result
+
             else:
                 return {"error": f"Unknown tool: {tool_name}"}
 
