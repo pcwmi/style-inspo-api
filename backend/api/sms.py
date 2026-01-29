@@ -4,14 +4,16 @@ SMS API - Twilio webhook for incoming SMS/MMS.
 Flow:
 1. User texts: "What should I wear for casual Friday?"
 2. We send: "Working on your outfit..." (immediate ack)
-3. Background: Agent generates outfit, saves it, triggers visualization
-4. We send: MMS with outfit image + styling notes
+3. Background: Agent generates outfit with item NAMES (not IDs)
+4. We fuzzy match item names to wardrobe to get images
+5. We generate a grid collage of the items
+6. We send: MMS with collage + styling notes
 """
 
 import os
 import logging
 import re
-from typing import Optional
+from typing import Optional, List
 from fastapi import APIRouter, Form, BackgroundTasks, Response
 
 from services.twilio_service import send_sms, send_mms
@@ -45,103 +47,144 @@ def is_whatsapp(phone: str) -> bool:
     return phone.startswith("whatsapp:")
 
 
+def extract_item_names(response: str) -> List[str]:
+    """
+    Extract item names from agent response.
+
+    Expects format:
+    ITEMS:
+    - Item name 1
+    - Item name 2
+
+    Also handles variations like:
+    Items: item1, item2, item3
+    """
+    items = []
+
+    # Try structured ITEMS: format first
+    if "ITEMS:" in response.upper():
+        # Find the ITEMS section
+        upper_response = response.upper()
+        items_start = upper_response.find("ITEMS:")
+        items_section = response[items_start + 6:]  # Skip "ITEMS:"
+
+        lines = items_section.strip().split("\n")
+        for line in lines:
+            line = line.strip()
+            # Stop at empty line or next section header
+            if not line:
+                break
+            if line.rstrip(":").isupper() and len(line) > 2:
+                break
+
+            # Remove bullet point markers
+            if line.startswith("-"):
+                line = line[1:].strip()
+            elif line.startswith("•"):
+                line = line[1:].strip()
+            elif line.startswith("*"):
+                line = line[1:].strip()
+            elif line[0].isdigit() and "." in line[:3]:
+                line = line.split(".", 1)[1].strip()
+
+            if line:
+                items.append(line)
+
+    return items
+
+
 async def process_outfit_request(user_id: str, phone: str, message: str):
     """
     Background task to process outfit request.
 
-    1. Run agent with SMS-specific prompt
-    2. Agent saves outfit and triggers visualization
-    3. Send MMS with result
+    New architecture:
+    1. Run agent - returns text with item names (ITEMS: section)
+    2. Extract item names from response
+    3. Fuzzy match to wardrobe (reuses reveal page logic)
+    4. Generate grid collage from matched items
+    5. Send MMS with collage image + styling notes
     """
     try:
         logger.info(f"Processing outfit request for {user_id}: {message}")
 
         # Import here to avoid circular imports
         from agent.agent import StylingAgent
+        from primitives.matching import match_items_to_wardrobe
+        from services.collage import generate_outfit_collage
 
         # Create agent with SMS-specific instructions
         agent = StylingAgent(user_id=user_id, provider="openai")
 
-        # Add SMS context to the message
+        # SMS prompt - agent returns item NAMES (not IDs)
+        # This avoids the save_outfit workaround and lets fuzzy matching handle images
         sms_prompt = f"""User request (via SMS): {message}
 
-Create ONE outfit for this occasion. Keep response SHORT (under 250 chars).
+Create ONE outfit for this occasion.
 
-Steps:
-1. Call get_items to see the wardrobe
-2. Pick items that work for this occasion
-3. Call save_outfit with item IDs and a brief styling note
+Return your response in this format:
+[Brief styling tip - keep it under 200 characters]
 
-Your response should be a brief styling tip - I'll attach the item images separately."""
+ITEMS:
+- [exact item name from wardrobe]
+- [exact item name from wardrobe]
+- [exact item name from wardrobe]
+- [exact item name from wardrobe]
+
+Important:
+- Use EXACT item names as they appear in the wardrobe
+- Include 3-5 items (top, bottom, shoes, optional accessories)
+- Keep styling tip SHORT - it will be sent via text message"""
 
         # Run agent
         response = agent.run(sms_prompt)
+        logger.info(f"Agent response: {response[:200]}...")
 
-        # Get the most recent saved outfit to extract item images
-        from services.saved_outfits_manager import SavedOutfitsManager
-        from services.wardrobe_manager import WardrobeManager
+        # Extract item names from response
+        item_names = extract_item_names(response)
+        logger.info(f"Extracted {len(item_names)} item names: {item_names}")
 
-        outfit_manager = SavedOutfitsManager(user_id=user_id)
-        wardrobe_manager = WardrobeManager(user_id=user_id)
+        # Fuzzy match to wardrobe
+        if item_names:
+            matched_items = match_items_to_wardrobe(user_id, item_names)
+            logger.info(f"Matched {len(matched_items)} items")
 
-        outfits = outfit_manager.get_saved_outfits()
-        image_urls = []
+            # Get image URLs from matched items
+            image_urls = [
+                item["image_path"]
+                for item in matched_items
+                if item.get("image_path")
+            ]
+            logger.info(f"Found {len(image_urls)} images")
 
-        if outfits:
-            # Get the most recent outfit
-            latest_outfit = outfits[-1]
-            item_ids = [item.get("id") for item in latest_outfit.get("items", [])]
+            if image_urls:
+                # Generate collage
+                collage_url = generate_outfit_collage(user_id, image_urls)
 
-            # Look up image URLs from wardrobe
-            all_items = wardrobe_manager.get_wardrobe_items()
-            item_lookup = {item["id"]: item for item in all_items}
+                if collage_url:
+                    # Extract just the styling tip (before ITEMS:)
+                    styling_tip = response.split("ITEMS:")[0].strip() if "ITEMS:" in response else response
+                    styling_tip = styling_tip[:280]  # MMS text limit
 
-            for item_id in item_ids:
-                if item_id in item_lookup:
-                    item = item_lookup[item_id]
-                    # Key is image_path (contains S3 URL), not image_url
-                    image_url = item.get("system_metadata", {}).get("image_path")
-                    if image_url and image_url.startswith("http"):
-                        image_urls.append(image_url)
+                    # Send MMS with single collage image
+                    send_mms(phone, styling_tip, [collage_url])
+                    logger.info(f"Sent MMS to {phone} with collage")
+                    return
+                else:
+                    logger.warning("Collage generation failed, sending individual images")
+                    # Fallback: send individual images
+                    styling_tip = response.split("ITEMS:")[0].strip()[:280] if "ITEMS:" in response else response[:280]
+                    send_mms(phone, styling_tip, image_urls[:5])
+                    logger.info(f"Sent MMS to {phone} with {len(image_urls)} individual images")
+                    return
 
-        if image_urls:
-            # Send MMS with item images
-            short_response = response[:280] if len(response) > 280 else response
-            # WhatsApp allows up to 10 media items
-            send_mms(phone, short_response, image_urls[:5])
-            logger.info(f"Sent MMS to {phone} with {len(image_urls)} images")
-        else:
-            # No images, just send text
-            send_sms(phone, response[:1500])
-            logger.info(f"Sent SMS to {phone} (no images)")
+        # No items matched or extracted - send text only
+        logger.warning("No items matched, sending text-only response")
+        send_sms(phone, response[:1500])
+        logger.info(f"Sent SMS to {phone} (no images)")
 
     except Exception as e:
-        logger.error(f"Error processing outfit request: {e}")
+        logger.error(f"Error processing outfit request: {e}", exc_info=True)
         send_sms(phone, "Sorry, I had trouble creating your outfit. Please try again!")
-
-
-def extract_visualization_url(text: str) -> Optional[str]:
-    """
-    Extract visualization URL from agent response.
-
-    Looks for S3 URLs or visualization URLs in the text.
-    """
-    # Pattern for S3/CloudFront URLs
-    patterns = [
-        r'https://[^"\s]+\.s3\.[^"\s]+\.amazonaws\.com/[^"\s]+',
-        r'https://[^"\s]+cloudfront\.net/[^"\s]+',
-        r'https://[^"\s]+/visualizations/[^"\s]+\.(png|jpg|jpeg)',
-    ]
-
-    for pattern in patterns:
-        match = re.search(pattern, text)
-        if match:
-            url = match.group(0)
-            # Clean up trailing punctuation
-            url = url.rstrip('.,;:!?)')
-            return url
-
-    return None
 
 
 @router.post("/incoming")
@@ -175,7 +218,7 @@ async def incoming_sms(
         )
 
     # Send immediate acknowledgment
-    send_sms(From, "Working on your outfit... 👗✨ (this takes about a minute)")
+    send_sms(From, "Working on your outfit... (this takes about a minute)")
 
     # Queue background processing
     background_tasks.add_task(
