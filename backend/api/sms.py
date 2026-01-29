@@ -161,21 +161,14 @@ Important:
                 collage_url = generate_outfit_collage(user_id, image_urls)
 
                 if collage_url:
-                    # Extract just the styling tip (before ITEMS:)
-                    styling_tip = response.split("ITEMS:")[0].strip() if "ITEMS:" in response else response
-                    # Strip brackets that agent sometimes adds
-                    styling_tip = styling_tip.strip("[]")
-                    styling_tip = styling_tip[:280]  # MMS text limit
-
-                    # Send MMS with single collage image
-                    send_mms(phone, styling_tip, [collage_url])
+                    # Send MMS with collage image only (no text - it's redundant)
+                    send_mms(phone, "", [collage_url])
                     logger.info(f"Sent MMS to {phone} with collage")
                     return
                 else:
                     logger.warning("Collage generation failed, sending individual images")
-                    # Fallback: send individual images
-                    styling_tip = response.split("ITEMS:")[0].strip()[:280] if "ITEMS:" in response else response[:280]
-                    send_mms(phone, styling_tip, image_urls[:5])
+                    # Fallback: send individual images (no text)
+                    send_mms(phone, "", image_urls[:5])
                     logger.info(f"Sent MMS to {phone} with {len(image_urls)} individual images")
                     return
 

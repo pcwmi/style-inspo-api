@@ -17,10 +17,10 @@ from services.storage_manager import StorageManager
 
 logger = logging.getLogger(__name__)
 
-# Grid size per cell
-CELL_SIZE = 300
-PADDING = 10
-BACKGROUND_COLOR = (255, 255, 255)  # White
+# Grid size per cell - tight grid like homepage, no padding
+CELL_SIZE = 200
+PADDING = 2  # Minimal gap
+BACKGROUND_COLOR = (245, 243, 240)  # Warm off-white like homepage
 
 
 def generate_outfit_collage(
@@ -136,15 +136,15 @@ def _create_grid_collage(
     rows: int
 ) -> Image.Image:
     """
-    Create a grid collage from images.
+    Create a tight grid collage from images.
 
-    Images are resized to fit cells while maintaining aspect ratio.
+    Images are cropped to fill cells completely (no empty space).
     """
-    # Calculate canvas size
+    # Calculate canvas size - tight grid with minimal padding
     width = cols * CELL_SIZE + (cols + 1) * PADDING
     height = rows * CELL_SIZE + (rows + 1) * PADDING
 
-    # Create white canvas
+    # Create canvas
     canvas = Image.new('RGB', (width, height), BACKGROUND_COLOR)
 
     # Place images in grid
@@ -155,32 +155,37 @@ def _create_grid_collage(
         row = idx // cols
         col = idx % cols
 
-        # Resize image to fit cell (maintain aspect ratio)
-        resized = _resize_to_fit(img, CELL_SIZE, CELL_SIZE)
+        # Crop image to fill cell exactly
+        cropped = _crop_to_fill(img, CELL_SIZE, CELL_SIZE)
 
-        # Calculate position (center in cell)
-        x = col * CELL_SIZE + (col + 1) * PADDING + (CELL_SIZE - resized.width) // 2
-        y = row * CELL_SIZE + (row + 1) * PADDING + (CELL_SIZE - resized.height) // 2
+        # Calculate position
+        x = PADDING + col * (CELL_SIZE + PADDING)
+        y = PADDING + row * (CELL_SIZE + PADDING)
 
-        canvas.paste(resized, (x, y))
+        canvas.paste(cropped, (x, y))
 
     return canvas
 
 
-def _resize_to_fit(img: Image.Image, max_width: int, max_height: int) -> Image.Image:
+def _crop_to_fill(img: Image.Image, target_width: int, target_height: int) -> Image.Image:
     """
-    Resize image to fit within bounds while maintaining aspect ratio.
+    Crop and resize image to fill target dimensions exactly (no empty space).
+    Centers the crop on the image.
     """
-    # Calculate scale to fit within bounds
-    width_ratio = max_width / img.width
-    height_ratio = max_height / img.height
-    scale = min(width_ratio, height_ratio)
+    # Calculate scale to FILL (not fit) - use max ratio so image covers entire cell
+    width_ratio = target_width / img.width
+    height_ratio = target_height / img.height
+    scale = max(width_ratio, height_ratio)
 
-    # Don't upscale
-    if scale >= 1:
-        return img
-
+    # Resize to cover
     new_width = int(img.width * scale)
     new_height = int(img.height * scale)
+    resized = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
 
-    return img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+    # Crop to exact target size (center crop)
+    left = (new_width - target_width) // 2
+    top = (new_height - target_height) // 2
+    right = left + target_width
+    bottom = top + target_height
+
+    return resized.crop((left, top, right, bottom))
