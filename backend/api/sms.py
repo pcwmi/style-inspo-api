@@ -163,6 +163,8 @@ Important:
                 if collage_url:
                     # Extract just the styling tip (before ITEMS:)
                     styling_tip = response.split("ITEMS:")[0].strip() if "ITEMS:" in response else response
+                    # Strip brackets that agent sometimes adds
+                    styling_tip = styling_tip.strip("[]")
                     styling_tip = styling_tip[:280]  # MMS text limit
 
                     # Send MMS with single collage image
@@ -218,7 +220,7 @@ async def incoming_sms(
         )
 
     # Send immediate acknowledgment
-    send_sms(From, "Working on your outfit... (this takes about a minute)")
+    send_sms(From, "Working on your outfit... (about 30 seconds)")
 
     # Queue background processing
     background_tasks.add_task(

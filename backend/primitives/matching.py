@@ -141,8 +141,12 @@ def _fuzzy_match(name1: str, name2: str) -> bool:
     words1 = set(name1.replace("-", " ").replace("'", "").split())
     words2 = set(name2.replace("-", " ").replace("'", "").split())
 
-    # Remove common stopwords
-    stopwords = {"a", "an", "the", "with", "and", "in", "on", "for"}
+    # Remove common stopwords and generic clothing terms
+    stopwords = {
+        "a", "an", "the", "with", "and", "in", "on", "for",  # articles/prepositions
+        "button", "up", "sleeve", "fit", "style", "print",   # generic clothing terms
+        "short", "long", "high", "low", "mid", "mini", "maxi",  # size modifiers
+    }
     words1 = words1 - stopwords
     words2 = words2 - stopwords
 
@@ -153,11 +157,11 @@ def _fuzzy_match(name1: str, name2: str) -> bool:
     common = words1 & words2
     shorter_len = min(len(words1), len(words2))
 
-    # Match if at least 60% of words from shorter name appear in longer
-    # or if at least 2 key words match
+    # Match if at least 50% of meaningful words match
+    # Require distinctive words (color, fabric, garment type) to overlap
     overlap_ratio = len(common) / shorter_len if shorter_len > 0 else 0
 
-    return overlap_ratio >= 0.6 or len(common) >= 2
+    return overlap_ratio >= 0.5
 
 
 def extract_item_names_from_response(response: str) -> List[str]:
