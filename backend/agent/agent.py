@@ -154,7 +154,7 @@ class StylingAgent:
             # Import managers locally to avoid circular imports
             from services.wardrobe_manager import WardrobeManager
             from services.user_profile_manager import UserProfileManager
-            from services.feedback_manager import FeedbackManager
+            from services.disliked_outfits_manager import DislikedOutfitsManager
             from services.saved_outfits_manager import SavedOutfitsManager
 
             if tool_name == "get_items":
@@ -186,15 +186,19 @@ class StylingAgent:
 
             elif tool_name == "get_profile":
                 manager = UserProfileManager(user_id=self.user_id)
-                return manager.get_profile()
+                profile = manager.get_profile(self.user_id)
+                return {"profile": profile}
 
             elif tool_name == "get_feedback":
-                manager = FeedbackManager(user_id=self.user_id)
-                return {"feedback": manager.get_all_feedback()}
+                manager = DislikedOutfitsManager(user_id=self.user_id)
+                feedback = manager.get_disliked_outfits(enrich_with_current_images=True)
+                return {"feedback": feedback, "count": len(feedback)}
 
             elif tool_name == "get_feedback_patterns":
-                manager = FeedbackManager(user_id=self.user_id)
-                return manager.get_feedback_patterns()
+                manager = DislikedOutfitsManager(user_id=self.user_id)
+                feedback = manager.get_disliked_outfits(enrich_with_current_images=True)
+                # Return raw feedback for agent to reason about
+                return {"feedback": feedback, "count": len(feedback)}
 
             elif tool_name == "get_saved_outfits":
                 manager = SavedOutfitsManager(user_id=self.user_id)
@@ -214,13 +218,24 @@ class StylingAgent:
 
             elif tool_name == "save_outfit":
                 manager = SavedOutfitsManager(user_id=self.user_id)
-                outfit_data = {
-                    "items": tool_input.get("items", []),
-                    "styling_notes": tool_input.get("styling_notes", ""),
-                    "vibe_keywords": tool_input.get("vibe_keywords", [])
-                }
+
+                # Create outfit combo object (expected by manager)
+                class OutfitCombo:
+                    def __init__(self, items, styling_notes, vibe_keywords):
+                        self.items = items
+                        self.styling_notes = styling_notes
+                        self.why_it_works = ""
+                        self.confidence_level = ""
+                        self.vibe_keywords = vibe_keywords
+
+                outfit_combo = OutfitCombo(
+                    items=tool_input.get("items", []),
+                    styling_notes=tool_input.get("styling_notes", ""),
+                    vibe_keywords=tool_input.get("vibe_keywords", [])
+                )
+
                 outfit_id = manager.save_outfit(
-                    outfit_data=outfit_data,
+                    outfit_combo=outfit_combo,
                     reason=tool_input.get("styling_notes", ""),
                     occasion=tool_input.get("occasion", "")
                 )
