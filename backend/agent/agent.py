@@ -151,7 +151,12 @@ class StylingAgent:
         """
         import httpx
 
-        base_url = os.getenv("PRIMITIVES_BASE_URL", "http://localhost:8000")
+        # On Railway, use internal localhost:8080 to avoid external network roundtrip
+        # RAILWAY_ENVIRONMENT is set by Railway automatically
+        if os.getenv("RAILWAY_ENVIRONMENT"):
+            base_url = "http://localhost:8080"
+        else:
+            base_url = os.getenv("PRIMITIVES_BASE_URL", "http://localhost:8000")
 
         try:
             # Map tool names to primitive endpoints
