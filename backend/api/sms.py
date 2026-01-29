@@ -161,14 +161,14 @@ Important:
                 collage_url = generate_outfit_collage(user_id, image_urls)
 
                 if collage_url:
-                    # Send MMS with collage image only (no text - it's redundant)
-                    send_mms(phone, "", [collage_url])
+                    # Send MMS with collage image and minimal text (Twilio requires non-empty body)
+                    send_mms(phone, "Here's your outfit:", [collage_url])
                     logger.info(f"Sent MMS to {phone} with collage")
                     return
                 else:
                     logger.warning("Collage generation failed, sending individual images")
-                    # Fallback: send individual images (no text)
-                    send_mms(phone, "", image_urls[:5])
+                    # Fallback: send individual images
+                    send_mms(phone, "Here's your outfit:", image_urls[:5])
                     logger.info(f"Sent MMS to {phone} with {len(image_urls)} individual images")
                     return
 
