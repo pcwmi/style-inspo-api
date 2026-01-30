@@ -51,29 +51,29 @@ def extract_item_names(response: str) -> List[str]:
     """
     Extract item names from agent response.
 
-    Expects format:
-    ITEMS:
-    - Item name 1
-    - Item name 2
-
-    Also handles variations like:
-    Items: item1, item2, item3
+    Handles markdown variations:
+    - ITEMS:
+    - *ITEMS*: (WhatsApp bold)
+    - **ITEMS:** (markdown bold)
     """
     items = []
 
-    # Try structured ITEMS: format first
-    if "ITEMS:" in response.upper():
-        # Find the ITEMS section
-        upper_response = response.upper()
-        items_start = upper_response.find("ITEMS:")
-        items_section = response[items_start + 6:]  # Skip "ITEMS:"
+    # Strip markdown asterisks to normalize: *ITEMS*: -> ITEMS:
+    normalized = response.replace("*", "")
+
+    if "ITEMS:" in normalized.upper():
+        # Find the ITEMS section in normalized text
+        upper_normalized = normalized.upper()
+        items_start = upper_normalized.find("ITEMS:")
+        items_section = normalized[items_start + 6:]  # Skip "ITEMS:"
 
         lines = items_section.strip().split("\n")
         for line in lines:
             line = line.strip()
-            # Stop at empty line or next section header
+            # Skip empty lines (don't break - agent may have blank lines)
             if not line:
-                break
+                continue
+            # Stop at next section header (all caps ending with :)
             if line.rstrip(":").isupper() and len(line) > 2:
                 break
 
@@ -82,9 +82,7 @@ def extract_item_names(response: str) -> List[str]:
                 line = line[1:].strip()
             elif line.startswith("•"):
                 line = line[1:].strip()
-            elif line.startswith("*"):
-                line = line[1:].strip()
-            elif line[0].isdigit() and "." in line[:3]:
+            elif line and line[0].isdigit() and "." in line[:3]:
                 line = line.split(".", 1)[1].strip()
 
             if line:
