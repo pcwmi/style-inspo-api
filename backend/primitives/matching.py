@@ -1,13 +1,13 @@
 """
-Matching Primitive - Fuzzy match item names to wardrobe items.
+Matching Primitive - Match item names to wardrobe items via substring.
 
 Reuses the reveal page's proven three-tier matching logic:
 1. Anchor items (user-selected)
-2. Wardrobe items (fuzzy substring match)
-3. Consider-buying items (fuzzy substring match)
+2. Wardrobe items (substring match)
+3. Consider-buying items (substring match)
 
 This primitive enables the agent to return item NAMES rather than IDs,
-and we fuzzy match to get the actual images.
+and we match to get the actual images.
 """
 
 from typing import Dict, List, Optional, Any
@@ -125,43 +125,12 @@ def match_items_to_wardrobe(
 
 def _fuzzy_match(name1: str, name2: str) -> bool:
     """
-    Fuzzy matching with multiple strategies.
+    Substring match only - same logic as the reveal page (outfits.py line 265).
 
-    1. Substring match (original reveal page logic)
-    2. Word overlap - if most words from shorter name appear in longer name
-
-    Returns True if names match via any strategy.
+    This is intentionally simple. The word-overlap strategy was removed because
+    it caused bad matches like 'black loafers' -> 'black shirt' (shared "black").
     """
-    # Strategy 1: Substring match (original logic)
-    if name1 in name2 or name2 in name1:
-        return True
-
-    # Strategy 2: Word overlap
-    # Tokenize into words (strip punctuation, lowercase already applied)
-    words1 = set(name1.replace("-", " ").replace("'", "").split())
-    words2 = set(name2.replace("-", " ").replace("'", "").split())
-
-    # Remove common stopwords and generic clothing terms
-    stopwords = {
-        "a", "an", "the", "with", "and", "in", "on", "for",  # articles/prepositions
-        "button", "up", "sleeve", "fit", "style", "print",   # generic clothing terms
-        "short", "long", "high", "low", "mid", "mini", "maxi",  # size modifiers
-    }
-    words1 = words1 - stopwords
-    words2 = words2 - stopwords
-
-    if not words1 or not words2:
-        return False
-
-    # Calculate overlap
-    common = words1 & words2
-    shorter_len = min(len(words1), len(words2))
-
-    # Match if at least 50% of meaningful words match
-    # Require distinctive words (color, fabric, garment type) to overlap
-    overlap_ratio = len(common) / shorter_len if shorter_len > 0 else 0
-
-    return overlap_ratio >= 0.5
+    return name1 in name2 or name2 in name1
 
 
 def extract_item_names_from_response(response: str) -> List[str]:
