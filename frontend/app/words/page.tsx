@@ -119,7 +119,7 @@ function WordsPageContent() {
           </div>
           <input
             type="text"
-            placeholder="Think of your go-to outfit - what makes it you?"
+            placeholder="Think of your go-to outfit"
             value={word1}
             onChange={(e) => setWord1(e.target.value)}
             className="w-full px-4 py-3 text-base border border-[rgba(26,22,20,0.12)] rounded-lg focus:outline-none focus:ring-2 focus:ring-terracotta bg-white mb-3"
