@@ -17,12 +17,14 @@ if (typeof window !== 'undefined') {
   }
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+
 function UploadPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const user = searchParams.get('user') || 'default'
   const fileInputRef = useRef<HTMLInputElement>(null)
-  
+
   const [uploading, setUploading] = useState(false)
   const [uploadStatus, setUploadStatus] = useState<string>('')
   const [useRealAi, setUseRealAi] = useState(true)
@@ -31,7 +33,15 @@ function UploadPageContent() {
   const [wardrobeItems, setWardrobeItems] = useState<any[]>([])
   const [loadingProfile, setLoadingProfile] = useState(true)
   const [showGuidelines, setShowGuidelines] = useState(false)
-  const [analyzingCount, setAnalyzingCount] = useState(0)
+
+  // Unified progress state: tracks both upload and analysis phases
+  const [uploadPhase, setUploadPhase] = useState<'idle' | 'uploading' | 'analyzing' | 'done'>('idle')
+  const [uploadedCount, setUploadedCount] = useState(0)  // Files uploaded (phase 1)
+  const [analyzedCount, setAnalyzedCount] = useState(0)  // Files analyzed (phase 2)
+  const [totalFiles, setTotalFiles] = useState(0)
+
+  // Legacy state for compatibility
+  const isProcessing = uploadPhase === 'uploading' || uploadPhase === 'analyzing'
 
   // Capitalize first letter of username for greeting
   const capitalizeFirst = (str: string) => {
@@ -39,10 +49,14 @@ function UploadPageContent() {
     return str.charAt(0).toUpperCase() + str.slice(1)
   }
 
-  // Fetch wardrobe items
-  const fetchWardrobe = async () => {
+  // Fetch wardrobe items (with cache-busting for upload flow)
+  const fetchWardrobe = async (bustCache = false) => {
     try {
-      const wardrobeData = await api.getWardrobe(user).catch(() => ({ count: 0, items: [] }))
+      // During uploads, bypass browser cache to get fresh data
+      const cacheBuster = bustCache ? `?_t=${Date.now()}` : ''
+      const res = await fetch(`${API_URL}/api/wardrobe/${user}${cacheBuster}`)
+      if (!res.ok) throw new Error('Failed to fetch wardrobe')
+      const wardrobeData = await res.json()
       setWardrobe(wardrobeData)
       setWardrobeItems(wardrobeData.items || [])
     } catch (error) {
@@ -117,98 +131,112 @@ function UploadPageContent() {
     const files = e.target.files
     if (!files || files.length === 0) return
 
+    const fileArray = Array.from(files)
+    const numFiles = fileArray.length
+
+    // Initialize unified progress state
     setUploading(true)
-    setUploadStatus('Compressing image...')
-    const jobIds: string[] = []
+    setUploadPhase('uploading')
+    setTotalFiles(numFiles)
+    setUploadedCount(0)
+    setAnalyzedCount(0)
+    setUploadStatus('')  // Clear any previous status
+
+    // Track active EventSource connections for cleanup
+    const eventSources: EventSource[] = []
 
     try {
-      for (const file of Array.from(files)) {
+      let uploadedCount = 0
+
+      for (const file of fileArray) {
         let fileToUpload = file
-        
+
         // Compress image client-side (if library is available)
         if (imageCompression) {
           try {
             const options = {
               maxSizeMB: 1,
               maxWidthOrHeight: 1920,
-              useWebWorker: true
+              useWebWorker: true,
+              preserveExif: true
             }
-            
-            setUploadStatus(`Compressing ${file.name}...`)
             fileToUpload = await imageCompression(file, options)
           } catch (compressionError: any) {
             console.warn('Compression failed, uploading original:', compressionError)
-            // Continue with original file if compression fails
             fileToUpload = file
           }
-        } else {
-          setUploadStatus(`Preparing ${file.name}...`)
         }
-        
-        setUploadStatus(`Uploading ${file.name}...`)
-        
+
         try {
           const result = await api.uploadItem(user, fileToUpload, useRealAi)
-          
+          uploadedCount++
+          setUploadedCount(uploadedCount)  // Update unified progress
+
           if (result.job_id) {
-            jobIds.push(result.job_id)
-            setUploadStatus(`Uploaded! Analyzing ${file.name}... (Job: ${result.job_id})`)
+            // Use SSE to track this job's completion
+            const eventSource = new EventSource(`${API_URL}/api/jobs/${result.job_id}/stream`)
+            eventSources.push(eventSource)
+
+            eventSource.addEventListener('complete', async () => {
+              eventSource.close()
+              // Increment analyzed count and refresh wardrobe (bypass cache)
+              setAnalyzedCount(prev => {
+                const newCompleted = prev + 1
+                // Check if all done
+                if (newCompleted >= numFiles) {
+                  setUploadPhase('done')
+                  setUploadStatus('')
+                  // Reset after brief delay
+                  setTimeout(() => {
+                    setUploadPhase('idle')
+                    setTotalFiles(0)
+                    setUploadedCount(0)
+                    setAnalyzedCount(0)
+                  }, 100)
+                }
+                return newCompleted
+              })
+              await fetchWardrobe(true)  // bust cache to get fresh data
+            })
+
+            eventSource.addEventListener('error', (e) => {
+              console.error('SSE error for job:', result.job_id, e)
+              eventSource.close()
+              // Still count as completed (failed) so we don't hang
+              setAnalyzedCount(prev => {
+                const newCompleted = prev + 1
+                if (newCompleted >= numFiles) {
+                  setUploadPhase('done')
+                  setUploadStatus('')
+                  setTimeout(() => {
+                    setUploadPhase('idle')
+                    setTotalFiles(0)
+                    setUploadedCount(0)
+                    setAnalyzedCount(0)
+                  }, 100)
+                }
+                return newCompleted
+              })
+              fetchWardrobe(true)  // bust cache to get fresh data
+            })
           } else {
-            setUploadStatus(`Uploaded ${file.name} successfully`)
+            // No job ID means it completed synchronously
+            setAnalyzedCount(prev => prev + 1)
+            await fetchWardrobe()
           }
         } catch (uploadError: any) {
-          // Re-throw to be caught by outer catch
           throw uploadError
         }
       }
-      
-      // Refresh wardrobe to show new items and update progress
-      await fetchWardrobe()
-      
-      // If there are job IDs, poll for completion
-      if (jobIds.length > 0) {
-        setAnalyzingCount(jobIds.length)
-        
-        const checkJobs = async () => {
-          let allComplete = true
-          for (const jobId of jobIds) {
-            try {
-              const status = await api.getJobStatus(jobId)
-              if (status.status !== 'complete' && status.status !== 'failed') {
-                allComplete = false
-              }
-            } catch (e) {
-              console.error('Error checking job:', e)
-            }
-          }
 
-          // Refresh wardrobe to see new items
-          await fetchWardrobe()
+      // All uploads initiated - switch to analyzing phase
+      setUploadPhase('analyzing')
+      setUploading(false)
 
-          if (!allComplete) {
-            setTimeout(checkJobs, 2000)
-          } else {
-            setAnalyzingCount(0)
-          }
-        }
-
-        checkJobs()
-      }
-      
-      // Show success message and clear after 3 seconds
-      setUploadStatus('Upload complete!')
-      setTimeout(() => {
-        setUploadStatus('')
-      }, 3000)
     } catch (error: any) {
-      console.error('Upload error (full error object):', error)
-      console.error('Error type:', typeof error)
-      console.error('Error constructor:', error?.constructor?.name)
-      console.error('Error keys:', Object.keys(error || {}))
-      
-      // Extract error message properly
+      console.error('Upload error:', error)
+
       let errorMessage = 'Unknown error occurred'
-      
       if (error instanceof Error) {
         errorMessage = error.message || error.toString()
       } else if (error?.message) {
@@ -217,25 +245,25 @@ function UploadPageContent() {
         errorMessage = error
       } else if (error?.detail) {
         errorMessage = error.detail
-      } else if (error?.toString && typeof error.toString === 'function') {
-        errorMessage = error.toString()
-      } else {
-        // Last resort: try to stringify, but handle circular references
-        try {
-          errorMessage = JSON.stringify(error, null, 2)
-        } catch (e) {
-          errorMessage = String(error)
-        }
       }
-      
+
       setUploadStatus(`Error: ${errorMessage}`)
-      
-      // Clear error after 8 seconds (longer for debugging)
+
+      // Clean up all event sources on error
+      eventSources.forEach(es => es.close())
+
+      // Reset processing state
+      setUploadPhase('idle')
+      setTotalFiles(0)
+      setUploadedCount(0)
+      setAnalyzedCount(0)
+
       setTimeout(() => {
         setUploadStatus('')
       }, 8000)
-    } finally {
+
       setUploading(false)
+    } finally {
       // Reset file input so user can select the same files again if needed
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
@@ -280,8 +308,8 @@ function UploadPageContent() {
           </>
         )}
 
-        {/* Progress Bar */}
-        {wardrobeCount < 10 && (
+        {/* Wardrobe Progress - only show when not actively processing */}
+        {wardrobeCount < 10 && uploadPhase === 'idle' && (
           <div className="mb-5 md:mb-6">
             <div className="flex justify-end items-center mb-2">
               <span className="text-sm text-muted">
@@ -289,7 +317,7 @@ function UploadPageContent() {
               </span>
             </div>
             <div className="w-full bg-sand/30 rounded-full h-3 overflow-hidden">
-              <div 
+              <div
                 className="bg-terracotta h-full rounded-full transition-all duration-300 ease-out"
                 style={{ width: `${Math.min((wardrobeCount / 10) * 100, 100)}%` }}
               />
@@ -297,30 +325,37 @@ function UploadPageContent() {
           </div>
         )}
 
-        {/* Analyzing Banner */}
-        {analyzingCount > 0 && (
-          <div className="bg-blue-50 px-4 py-3 flex items-center justify-between mb-5 md:mb-6 rounded-lg border border-blue-200">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">📸</span>
-              <span className="text-sm text-blue-800 font-medium">
-                Analyzing {analyzingCount} photo{analyzingCount !== 1 ? 's' : ''}...
+        {/* Unified Progress Component - Two Phase */}
+        {(uploadPhase === 'uploading' || uploadPhase === 'analyzing') && (
+          <div className="border border-terracotta rounded-lg p-4 mb-5 md:mb-6 bg-bone">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="animate-spin h-5 w-5 border-2 border-terracotta border-t-transparent rounded-full" />
+              <span className="font-medium text-ink">
+                Adding {totalFiles} item{totalFiles !== 1 ? 's' : ''} to your wardrobe
+              </span>
+            </div>
+            <p className="text-sm text-muted mb-3">
+              {uploadPhase === 'uploading'
+                ? 'Uploading photos...'
+                : 'Getting texture, cut, color details...'}
+            </p>
+            <div className="flex items-center gap-3">
+              <div className="flex-1 bg-sand/50 rounded-full h-2 overflow-hidden">
+                <div
+                  className="bg-terracotta h-full rounded-full transition-all duration-300"
+                  style={{
+                    width: `${uploadPhase === 'uploading'
+                      ? (uploadedCount / totalFiles) * 100
+                      : (analyzedCount / totalFiles) * 100}%`
+                  }}
+                />
+              </div>
+              <span className="text-sm text-muted whitespace-nowrap">
+                {uploadPhase === 'uploading' ? uploadedCount : analyzedCount} of {totalFiles}
               </span>
             </div>
           </div>
         )}
-
-        {/* AI Analysis toggle */}
-        <div className="mb-5 md:mb-6">
-          <label className="flex items-center space-x-3 cursor-pointer min-h-[44px] py-1">
-            <input
-              type="checkbox"
-              checked={useRealAi}
-              onChange={(e) => setUseRealAi(e.target.checked)}
-              className="w-5 h-5 rounded border-[rgba(26,22,20,0.12)] flex-shrink-0 accent-terracotta"
-            />
-            <span className="text-base leading-relaxed text-muted">Use AI Fashion Analysis</span>
-          </label>
-        </div>
 
         {/* File upload */}
         <div className="mb-5 md:mb-6">
@@ -330,7 +365,7 @@ function UploadPageContent() {
             accept="image/*"
             multiple
             onChange={handleFileSelect}
-            disabled={uploading}
+            disabled={uploading || isProcessing}
             className="hidden"
             id="file-upload"
           />
@@ -341,29 +376,17 @@ function UploadPageContent() {
                 ? 'bg-white text-terracotta border-2 border-terracotta hover:bg-terracotta/5 active:bg-terracotta/10'
                 : 'bg-terracotta text-white hover:opacity-90 active:opacity-80'
             } ${
-              uploading ? 'opacity-70 cursor-not-allowed' : ''
+              (uploading || isProcessing) ? 'opacity-70 cursor-not-allowed' : ''
             }`}
           >
-            {uploading ? 'Uploading...' : 'Upload Photos'}
+            {uploading ? 'Uploading...' : isProcessing ? 'Processing...' : 'Upload Photos'}
           </label>
         </div>
 
-        {/* Upload status */}
-        {uploadStatus && (
-          <div className={`rounded-lg p-4 md:p-6 mb-5 md:mb-6 ${
-            uploadStatus.startsWith('Error:')
-              ? 'bg-red-50 border border-red-200'
-              : uploadStatus.includes('complete') || uploadStatus.includes('Uploaded')
-              ? 'bg-green-50 border border-green-200'
-              : 'bg-sand/30 border border-terracotta/30'
-          }`}>
-            <p className={`text-sm md:text-base leading-relaxed ${
-              uploadStatus.startsWith('Error:')
-                ? 'text-red-800 font-medium'
-                : uploadStatus.includes('complete') || uploadStatus.includes('Uploaded')
-                ? 'text-green-800'
-                : 'text-terracotta'
-            }`}>{uploadStatus}</p>
+        {/* Error status only */}
+        {uploadStatus && uploadStatus.startsWith('Error:') && (
+          <div className="rounded-lg p-4 md:p-6 mb-5 md:mb-6 bg-red-50 border border-red-200">
+            <p className="text-sm md:text-base leading-relaxed text-red-800 font-medium">{uploadStatus}</p>
           </div>
         )}
 

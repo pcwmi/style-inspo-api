@@ -23,18 +23,15 @@ function WelcomePageContent() {
 
         {/* How It Works Card */}
         <div className="bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-6 md:p-8 mb-6 md:mb-8 shadow-sm">
-          <h3 className="text-xl md:text-2xl font-semibold mb-4">How It Works</h3>
-          <p className="text-muted mb-6 text-base leading-relaxed">
-            Three simple steps to unlock your wardrobe:
-          </p>
-          
+          <h3 className="text-xl md:text-2xl font-semibold mb-6">How It Works</h3>
+
           <div className="space-y-4">
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-terracotta text-white flex items-center justify-center font-semibold text-sm">
                 1
               </div>
               <p className="text-base leading-relaxed pt-1">
-                Describe your style in three words
+                Describe your style
               </p>
             </div>
             
