@@ -154,6 +154,49 @@ TOOLS = [
         }
     },
 
+    # --- RESOLVER (text → images) ---
+    {
+        "name": "resolve_items",
+        "description": "Match item names to wardrobe items and get their image URLs. Use EXACT names from get_items for best results. Returns resolved items with images and any unresolved names.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "descriptions": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Item names to match (use exact names from get_items)"
+                }
+            },
+            "required": ["descriptions"]
+        }
+    },
+
+    # --- OUTPUT (send to user) ---
+    {
+        "name": "send_message",
+        "description": "Send a message to the user with optional images. Use this to SHOW items/outfits, not just describe them.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "description": "Text message to send"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Image URLs from resolve_items to include"
+                },
+                "layout": {
+                    "type": "string",
+                    "enum": ["list", "outfit"],
+                    "description": "How to display: 'list' for browsing items, 'outfit' for styled combination"
+                }
+            },
+            "required": []
+        }
+    },
+
     # --- CONSIDERING (SHOPPING) ---
     {
         "name": "get_considering_items",

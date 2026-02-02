@@ -1,22 +1,21 @@
 """
 SMS API - Twilio webhook for incoming SMS/MMS.
 
-Flow:
-1. User texts: "What should I wear for casual Friday?"
-2. We send: "Working on your outfit..." (immediate ack)
-3. Background: Agent generates outfit with item NAMES (not IDs)
-4. We fuzzy match item names to wardrobe to get images
-5. We generate a grid collage of the items
-6. We send: MMS with collage + styling notes
+Agent-native architecture:
+1. User texts a request
+2. We send immediate ack: "Working on it..."
+3. Agent runs with SMSOutput handler
+4. Agent calls resolve_items (text → images) + send_message (images → user)
+5. Orchestration is just agent.run() - all logic is in agent + primitives
 """
 
 import os
 import logging
 import re
-from typing import Optional, List
+from typing import Optional
 from fastapi import APIRouter, Form, BackgroundTasks, Response
 
-from services.twilio_service import send_sms, send_mms
+from services.twilio_service import send_sms
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -47,139 +46,35 @@ def is_whatsapp(phone: str) -> bool:
     return phone.startswith("whatsapp:")
 
 
-def extract_item_names(response: str) -> List[str]:
-    """
-    Extract item names from agent response.
-
-    Handles markdown variations:
-    - ITEMS:
-    - *ITEMS*: (WhatsApp bold)
-    - **ITEMS:** (markdown bold)
-    """
-    items = []
-
-    # Strip markdown asterisks to normalize: *ITEMS*: -> ITEMS:
-    normalized = response.replace("*", "")
-
-    if "ITEMS:" in normalized.upper():
-        # Find the ITEMS section in normalized text
-        upper_normalized = normalized.upper()
-        items_start = upper_normalized.find("ITEMS:")
-        items_section = normalized[items_start + 6:]  # Skip "ITEMS:"
-
-        lines = items_section.strip().split("\n")
-        for line in lines:
-            line = line.strip()
-            # Skip empty lines (don't break - agent may have blank lines)
-            if not line:
-                continue
-            # Stop at next section header (all caps ending with :)
-            if line.rstrip(":").isupper() and len(line) > 2:
-                break
-
-            # Remove bullet point markers
-            if line.startswith("-"):
-                line = line[1:].strip()
-            elif line.startswith("•"):
-                line = line[1:].strip()
-            elif line and line[0].isdigit() and "." in line[:3]:
-                line = line.split(".", 1)[1].strip()
-
-            if line:
-                items.append(line)
-
-    return items
-
-
 async def process_outfit_request(user_id: str, phone: str, message: str):
     """
-    Background task to process outfit request.
+    Background task to process user request.
 
-    New architecture:
-    1. Run agent - returns text with item names (ITEMS: section)
-    2. Extract item names from response
-    3. Fuzzy match to wardrobe (reuses reveal page logic)
-    4. Generate grid collage from matched items
-    5. Send MMS with collage image + styling notes
+    Agent-native architecture:
+    - Agent has resolve_items (text → images) and send_message (images → user) tools
+    - Agent decides what to show and how (list vs outfit layout)
+    - Orchestration is just: create agent with output handler, run it
     """
     try:
-        logger.info(f"Processing outfit request for {user_id}: {message}")
+        logger.info(f"Processing request for {user_id}: {message}")
 
         # Import here to avoid circular imports
         from agent.agent import StylingAgent
-        from primitives.matching import match_items_to_wardrobe
-        from services.collage import generate_outfit_collage
+        from agent.output import SMSOutput
 
-        # Create agent with SMS-specific instructions
-        agent = StylingAgent(user_id=user_id, provider="openai")
+        # Create output handler for this phone/user
+        output = SMSOutput(phone=phone, user_id=user_id)
 
-        # SMS prompt - agent returns item NAMES (not IDs)
-        # This avoids the save_outfit workaround and lets fuzzy matching handle images
-        sms_prompt = f"""User request (via SMS): {message}
+        # Create agent with output handler - agent controls what gets sent
+        agent = StylingAgent(user_id=user_id, provider="openai", output=output)
 
-Create ONE outfit for this occasion.
-
-Return your response in this format:
-[Brief styling tip - keep it under 200 characters]
-
-ITEMS:
-- [exact item name from wardrobe]
-- [exact item name from wardrobe]
-- [exact item name from wardrobe]
-- [exact item name from wardrobe]
-
-Important:
-- Use EXACT item names as they appear in the wardrobe
-- Include 3-5 items (top, bottom, shoes, optional accessories)
-- Keep styling tip SHORT - it will be sent via text message"""
-
-        # Run agent
-        response = agent.run(sms_prompt)
-        logger.info(f"Agent response: {response[:200]}...")
-
-        # Extract item names from response
-        item_names = extract_item_names(response)
-        logger.info(f"Extracted {len(item_names)} item names: {item_names}")
-
-        # Fuzzy match to wardrobe
-        if item_names:
-            matched_items = match_items_to_wardrobe(user_id, item_names)
-            logger.info(f"Matched {len(matched_items)} items")
-
-            # Get image URLs from matched items
-            image_urls = [
-                item["image_path"]
-                for item in matched_items
-                if item.get("image_path")
-            ]
-            logger.info(f"Found {len(image_urls)} images")
-
-            if image_urls:
-                # Generate collage
-                collage_url = generate_outfit_collage(user_id, image_urls)
-
-                if collage_url:
-                    # Send text first, then image (so text appears above image in chat)
-                    send_sms(phone, "Here's your outfit:")
-                    send_mms(phone, " ", [collage_url])  # Space for body (Twilio requires non-empty)
-                    logger.info(f"Sent MMS to {phone} with collage")
-                    return
-                else:
-                    logger.warning("Collage generation failed, sending individual images")
-                    # Fallback: send individual images
-                    send_sms(phone, "Here's your outfit:")
-                    send_mms(phone, " ", image_urls[:5])
-                    logger.info(f"Sent MMS to {phone} with {len(image_urls)} individual images")
-                    return
-
-        # No items matched or extracted - send text only
-        logger.warning("No items matched, sending text-only response")
-        send_sms(phone, response[:1500])
-        logger.info(f"Sent SMS to {phone} (no images)")
+        # Run agent - it will call resolve_items + send_message as needed
+        response = agent.run(message)
+        logger.info(f"Agent completed. Response: {response[:200] if response else '(none)'}...")
 
     except Exception as e:
-        logger.error(f"Error processing outfit request: {e}", exc_info=True)
-        send_sms(phone, "Sorry, I had trouble creating your outfit. Please try again!")
+        logger.error(f"Error processing request: {e}", exc_info=True)
+        send_sms(phone, "Sorry, I had trouble with that. Please try again!")
 
 
 @router.post("/incoming")

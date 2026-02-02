@@ -29,11 +29,13 @@ class StylingAgent:
         self,
         user_id: str,
         provider: Provider = "anthropic",
-        model: Optional[str] = None
+        model: Optional[str] = None,
+        output: Optional[any] = None  # OutputHandler for send_message
     ):
         self.user_id = user_id
         self.provider = provider
         self.max_turns = 10
+        self.output = output  # Injected output handler (modality-aware)
 
         # Set default model per provider
         if model:
@@ -254,6 +256,42 @@ class StylingAgent:
                     "status": "skipped",
                     "message": "Visualization skipped for SMS (too slow). Send item images directly."
                 }
+
+            # --- RESOLVER (text → images) ---
+            elif tool_name == "resolve_items":
+                from primitives.matching import match_items_to_wardrobe
+                descriptions = tool_input.get("descriptions", [])
+                matched = match_items_to_wardrobe(self.user_id, descriptions)
+
+                resolved = []
+                unresolved = []
+                for i, item in enumerate(matched):
+                    if item.get("matched"):
+                        resolved.append({
+                            "description": descriptions[i],
+                            "name": item["name"],
+                            "image_url": item.get("image_path")
+                        })
+                    else:
+                        unresolved.append(descriptions[i])
+
+                logger.info(f"resolve_items: {len(resolved)} resolved, {len(unresolved)} unresolved")
+                return {"resolved": resolved, "unresolved": unresolved}
+
+            # --- OUTPUT (send to user) ---
+            elif tool_name == "send_message":
+                text = tool_input.get("text")
+                images = tool_input.get("images", [])
+                layout = tool_input.get("layout", "list")
+
+                if self.output:
+                    self.output.send(text=text, images=images, layout=layout)
+                    logger.info(f"send_message: sent {len(images)} images with layout={layout}")
+                    return {"status": "sent", "images_count": len(images)}
+                else:
+                    # No output handler - just log what would be sent
+                    logger.info(f"send_message (no handler): text={text[:50] if text else None}..., {len(images)} images")
+                    return {"status": "no_output_handler", "would_send": {"text": text, "images": images, "layout": layout}}
 
             else:
                 return {"error": f"Unknown tool: {tool_name}"}
