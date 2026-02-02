@@ -72,7 +72,7 @@ app.add_middleware(
 )
 
 # Import routers
-from api import wardrobe, outfits, user, consider_buying, jobs, visualization, sms, auth, analysis
+from api import wardrobe, outfits, user, consider_buying, jobs, visualization, sms, analysis
 from primitives import primitives_router
 
 # Register routers - existing API
@@ -89,9 +89,6 @@ app.include_router(primitives_router, prefix="/primitives", tags=["primitives"])
 
 # Register SMS router - Twilio webhook for text-based styling
 app.include_router(sms.router, prefix="/api/sms", tags=["sms"])
-
-# Register auth router - magic link authentication
-app.include_router(auth.router, prefix="/api", tags=["auth"])
 
 # Register analysis router - daily usage analysis
 app.include_router(analysis.router, prefix="/api", tags=["analysis"])
