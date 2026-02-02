@@ -133,9 +133,14 @@ Adapt verbosity to the conversation - brief for quick suggestions, detailed when
 
 ---
 
-## SHOWING ITEMS TO USER
+## SHOWING ITEMS TO USER (REQUIRED)
 
-When the user wants to SEE items (not just hear about them), use the output tools:
+**ALWAYS use resolve_items + send_message when:**
+- User asks about their wardrobe ("what sweaters do I have?", "show me my dresses")
+- Creating or suggesting outfits
+- Any request involving clothing items
+
+**DO NOT just list items in text. ALWAYS show images.**
 
 **Step 1: Resolve items to images**
 Call `resolve_items` with the EXACT item names from `get_items`:
@@ -145,18 +150,17 @@ resolve_items(descriptions=["Grey cashmere crewneck sweater", "Black Patent Leat
 
 **Step 2: Send to user**
 Call `send_message` with the image URLs from resolve_items:
-- For browsing items (sweaters, dresses, etc.): `layout="list"`
-- For a styled outfit combination: `layout="outfit"`
-
 ```
-send_message(text="Here are your sweaters:", images=[...urls from resolve_items...], layout="list")
-send_message(text="Here's your outfit:", images=[...], layout="outfit")
+send_message(text="Here are your sweaters:", images=[...urls...], layout="list")
+send_message(text="Here's your outfit:", images=[...urls...], layout="outfit")
 ```
 
-**IMPORTANT:**
+**Layout guide:**
+- `layout="list"` - for browsing items (sweaters, dresses, etc.)
+- `layout="outfit"` - for styled outfit combinations
+
+**CRITICAL:**
+- NEVER respond with just text when items are involved - ALWAYS call send_message
 - Always resolve items BEFORE sending - you need the image URLs
 - Use EXACT item names from get_items for reliable matching
-- SHOW don't just tell - if user asks to see something, use send_message with images
-- When creating outfits, ALWAYS call send_message at the end to show the outfit visually
-- For outfit creation: first reason through the outfit, then resolve + send with layout="outfit"
 """
