@@ -4,6 +4,7 @@ Main application entry point
 """
 
 import logging
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -19,25 +20,59 @@ logging.basicConfig(
 # Load environment variables
 load_dotenv()
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan handler for startup/shutdown"""
+    # Startup: Initialize database if DATABASE_URL is configured
+    database_url = os.getenv("DATABASE_URL")
+    if database_url:
+        try:
+            from db.database import init_db, close_db
+            await init_db()
+            logging.info("Database initialized")
+        except Exception as e:
+            logging.warning(f"Database initialization skipped: {e}")
+    else:
+        logging.info("DATABASE_URL not configured, skipping database initialization")
+
+    yield
+
+    # Shutdown: Close database connection
+    if database_url:
+        try:
+            from db.database import close_db
+            await close_db()
+            logging.info("Database connection closed")
+        except Exception as e:
+            logging.warning(f"Error closing database: {e}")
+
+
 # Create FastAPI app
 app = FastAPI(
     title="Style Inspo API",
     description="AI-powered personal styling assistant API",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # CORS configuration
-# Allow all origins for development (restrict in production)
+# When allow_credentials=True, must specify exact origins (not "*")
+CORS_ORIGINS = [
+    "http://localhost:3003",  # Local frontend
+    "http://localhost:3000",  # Alternate local port
+    "https://styleinspo.vercel.app",  # Production
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: Set to specific origins in production
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # Import routers
-from api import wardrobe, outfits, user, consider_buying, jobs, visualization, sms
+from api import wardrobe, outfits, user, consider_buying, jobs, visualization, sms, auth, analysis
 from primitives import primitives_router
 
 # Register routers - existing API
@@ -54,6 +89,12 @@ app.include_router(primitives_router, prefix="/primitives", tags=["primitives"])
 
 # Register SMS router - Twilio webhook for text-based styling
 app.include_router(sms.router, prefix="/api/sms", tags=["sms"])
+
+# Register auth router - magic link authentication
+app.include_router(auth.router, prefix="/api", tags=["auth"])
+
+# Register analysis router - daily usage analysis
+app.include_router(analysis.router, prefix="/api", tags=["analysis"])
 
 
 @app.get("/")
