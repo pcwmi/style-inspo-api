@@ -3,7 +3,18 @@ Tool definitions for the styling agent.
 
 These map to the primitives endpoints. Tools are "dumb" - they just
 fetch/store data. All styling intelligence lives in the system prompt.
+
+Every tool includes a "reasoning" field so we can see WHY the agent
+made each decision in the logs.
 """
+
+# Common reasoning field added to all tools
+REASONING_FIELD = {
+    "reasoning": {
+        "type": "string",
+        "description": "Explain WHY you're calling this tool and what you expect to learn/accomplish"
+    }
+}
 
 TOOLS = [
     # --- WARDROBE ITEMS ---
@@ -13,13 +24,14 @@ TOOLS = [
         "input_schema": {
             "type": "object",
             "properties": {
+                **REASONING_FIELD,
                 "filter_type": {
                     "type": "string",
                     "enum": ["all", "styling_challenges", "regular_wear"],
                     "description": "Filter items by type. Default: all"
                 }
             },
-            "required": []
+            "required": ["reasoning"]
         }
     },
     {
@@ -28,12 +40,13 @@ TOOLS = [
         "input_schema": {
             "type": "object",
             "properties": {
+                **REASONING_FIELD,
                 "item_id": {
                     "type": "string",
                     "description": "The item ID"
                 }
             },
-            "required": ["item_id"]
+            "required": ["reasoning", "item_id"]
         }
     },
 
@@ -43,8 +56,10 @@ TOOLS = [
         "description": "Get the user's style profile including their three style words (current, aspirational, feeling) and model descriptor.",
         "input_schema": {
             "type": "object",
-            "properties": {},
-            "required": []
+            "properties": {
+                **REASONING_FIELD
+            },
+            "required": ["reasoning"]
         }
     },
 
@@ -54,8 +69,10 @@ TOOLS = [
         "description": "Get all feedback (disliked outfits) from the user.",
         "input_schema": {
             "type": "object",
-            "properties": {},
-            "required": []
+            "properties": {
+                **REASONING_FIELD
+            },
+            "required": ["reasoning"]
         }
     },
     {
@@ -63,8 +80,10 @@ TOOLS = [
         "description": "Analyze feedback to find patterns in what the user dislikes. Returns common reasons, avoided items, and raw feedback. USE THIS to avoid repeating past mistakes.",
         "input_schema": {
             "type": "object",
-            "properties": {},
-            "required": []
+            "properties": {
+                **REASONING_FIELD
+            },
+            "required": ["reasoning"]
         }
     },
 
@@ -74,8 +93,10 @@ TOOLS = [
         "description": "Get all outfits the user has saved (liked).",
         "input_schema": {
             "type": "object",
-            "properties": {},
-            "required": []
+            "properties": {
+                **REASONING_FIELD
+            },
+            "required": ["reasoning"]
         }
     },
     {
@@ -84,12 +105,13 @@ TOOLS = [
         "input_schema": {
             "type": "object",
             "properties": {
+                **REASONING_FIELD,
                 "limit": {
                     "type": "integer",
                     "description": "Max number to return"
                 }
             },
-            "required": []
+            "required": ["reasoning"]
         }
     },
     {
@@ -97,8 +119,10 @@ TOOLS = [
         "description": "Get outfits that have been marked as worn.",
         "input_schema": {
             "type": "object",
-            "properties": {},
-            "required": []
+            "properties": {
+                **REASONING_FIELD
+            },
+            "required": ["reasoning"]
         }
     },
 
@@ -109,6 +133,7 @@ TOOLS = [
         "input_schema": {
             "type": "object",
             "properties": {
+                **REASONING_FIELD,
                 "items": {
                     "type": "array",
                     "items": {
@@ -136,7 +161,7 @@ TOOLS = [
                     "description": "Keywords describing the outfit vibe"
                 }
             },
-            "required": ["items", "styling_notes"]
+            "required": ["reasoning", "items", "styling_notes"]
         }
     },
     {
@@ -145,12 +170,13 @@ TOOLS = [
         "input_schema": {
             "type": "object",
             "properties": {
+                **REASONING_FIELD,
                 "outfit_id": {
                     "type": "string",
                     "description": "The outfit ID returned from save_outfit"
                 }
             },
-            "required": ["outfit_id"]
+            "required": ["reasoning", "outfit_id"]
         }
     },
 
@@ -161,13 +187,14 @@ TOOLS = [
         "input_schema": {
             "type": "object",
             "properties": {
+                **REASONING_FIELD,
                 "descriptions": {
                     "type": "array",
                     "items": {"type": "string"},
                     "description": "Item names to match (use exact names from get_items)"
                 }
             },
-            "required": ["descriptions"]
+            "required": ["reasoning", "descriptions"]
         }
     },
 
@@ -178,6 +205,7 @@ TOOLS = [
         "input_schema": {
             "type": "object",
             "properties": {
+                **REASONING_FIELD,
                 "text": {
                     "type": "string",
                     "description": "Text message to send"
@@ -193,7 +221,7 @@ TOOLS = [
                     "description": "How to display: 'list' for browsing items, 'outfit' for styled combination"
                 }
             },
-            "required": []
+            "required": ["reasoning"]
         }
     },
 
@@ -204,13 +232,14 @@ TOOLS = [
         "input_schema": {
             "type": "object",
             "properties": {
+                **REASONING_FIELD,
                 "status": {
                     "type": "string",
                     "enum": ["considering", "bought", "passed"],
                     "description": "Filter by decision status"
                 }
             },
-            "required": []
+            "required": ["reasoning"]
         }
     },
     {
@@ -218,8 +247,10 @@ TOOLS = [
         "description": "Get shopping decision statistics (how many bought, passed, money saved).",
         "input_schema": {
             "type": "object",
-            "properties": {},
-            "required": []
+            "properties": {
+                **REASONING_FIELD
+            },
+            "required": ["reasoning"]
         }
     },
 ]

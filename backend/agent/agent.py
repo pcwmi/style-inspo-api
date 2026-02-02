@@ -77,12 +77,16 @@ class StylingAgent:
 
             logger.info(f"Stop reason: {response.stop_reason}")
 
-            # Log agent's text and tool calls
+            # Log agent's text and tool calls with reasoning
             for block in response.content:
                 if hasattr(block, "text") and block.text:
                     logger.info(f"Agent text: {block.text[:300]}...")
                 if block.type == "tool_use":
-                    logger.info(f"Tool call: {block.name}({json.dumps(block.input, default=str)[:200]})")
+                    args = dict(block.input)
+                    reasoning = args.pop("reasoning", None)
+                    if reasoning:
+                        logger.info(f"Reasoning: {reasoning}")
+                    logger.info(f"Tool call: {block.name}({json.dumps(args, default=str)[:200]})")
 
             if response.stop_reason == "end_turn":
                 return self._extract_text_anthropic(response)
@@ -129,10 +133,13 @@ class StylingAgent:
             if choice.message.content:
                 logger.info(f"Agent text: {choice.message.content[:300]}...")
 
-            # Log each tool call with arguments
+            # Log each tool call with reasoning
             if choice.message.tool_calls:
                 for tc in choice.message.tool_calls:
                     args = json.loads(tc.function.arguments)
+                    reasoning = args.pop("reasoning", None)
+                    if reasoning:
+                        logger.info(f"Reasoning: {reasoning}")
                     logger.info(f"Tool call: {tc.function.name}({json.dumps(args, default=str)[:200]})")
 
             if choice.finish_reason == "stop":
