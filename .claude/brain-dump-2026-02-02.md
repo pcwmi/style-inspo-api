@@ -237,3 +237,77 @@ Not shipping as default. The trade-off is wardrobe-dependent:
 **Test artifacts:**
 - Results: `backend/tests/outfit_eval/results/multi_user_ab_test_20260202_174127.html`
 - Script: `backend/tests/outfit_eval/scripts/frontier_model_test.py`
+
+---
+
+## 18:30 - Three Dimensions of AI Quality Tuning (Interdependent)
+
+**The framework:**
+
+| Level | What it is | Your control | Example |
+|-------|------------|--------------|---------|
+| **1. Model capability** | Raw reasoning ability | ❌ Wait for releases | GPT-5.1 >> 4o for garment physics |
+| **2. Data/enrichment** | What you feed the model | ✅ Architecture choice | Text vs images, metadata richness |
+| **3. Prompt** | How you instruct | ✅ Continuous tuning | Chain-of-thought, physics rules |
+
+**Critical insight: The dimensions are INTERDEPENDENT, not orthogonal.**
+
+Evidence from today's testing:
+- **GPT-4o + images:** No improvement over text metadata
+- **GPT-5.1 + images:** Helps reduce physics violations
+
+Same Level 2 intervention (adding images), different results based on Level 1.
+
+**Why this happens:**
+Level 1 sets the **ceiling**. Levels 2 & 3 determine how close you get to it.
+- If the model CAN'T reason about garment physics, better data doesn't help
+- If the model CAN reason about it, better data gives it more to work with
+
+**Implication for testing strategy:**
+When one dimension changes significantly → re-test the others.
+
+```
+New model released (L1 changes)
+    → Re-test data strategies (L2)
+    → Re-test prompt approaches (L3)
+    → Previous findings may be invalidated
+```
+
+It's not "test once, done forever." It's continuous recalibration as the landscape shifts. Your Level 2/3 investments aren't wasted - they compound with Level 1 improvements, but their impact varies depending on where the ceiling is.
+
+**Practical workflow:**
+1. When new model drops → quick smoke test on core use case
+2. If quality jumps → re-run key A/B tests (data, prompts)
+3. Findings are timestamped to model version, not permanent truths
+
+---
+
+## 18:45 - The Magic Extractor Framing
+
+**You're not building AI. You're extracting maximum magic from it.**
+
+```
+┌─────────────────────────────────────┐
+│           MODEL CEILING             │  ← Outside your control
+├─────────────────────────────────────┤
+│                                     │
+│    ↑ Your job: climb as high as    │
+│      possible with data + prompts   │
+│                                     │
+│    ┌───────────────────┐           │
+│    │  Current magic    │           │
+│    │  extraction       │           │
+│    └───────────────────┘           │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**What this framing clarifies:**
+
+1. **When to stop optimizing:** If you're at 90% of the ceiling → diminishing returns on data/prompts. Wait for ceiling to rise (new model), then climb again.
+
+2. **Why domain experts beat ML researchers at AI products:** The best AI product builders aren't necessarily ML researchers - they're **magic extractors** who deeply understand the domain and translate that into data + prompts the model can use.
+
+3. **What your work actually is:** Styling constitution, feedback patterns, physics rules in prompts - that's domain knowledge being converted into "extraction efficiency."
+
+**The job:** Maximum magic extraction from whatever model exists today.
