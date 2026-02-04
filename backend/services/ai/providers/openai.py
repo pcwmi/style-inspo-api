@@ -23,7 +23,7 @@ class OpenAIProvider(AIProvider):
         # Validate model name
         valid_models = [
             # GPT-5 series
-            "gpt-5.1", "gpt-5", "gpt-5-mini", "gpt-5-nano",
+            "gpt-5.2", "gpt-5.2-pro", "gpt-5.1", "gpt-5", "gpt-5-mini", "gpt-5-nano", "gpt-5-pro",
             # GPT-4 series
             "gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-4", "gpt-4.1", "gpt-4.1-mini",
             # Legacy
@@ -150,6 +150,76 @@ class OpenAIProvider(AIProvider):
                 "prompt_tokens": response.usage.prompt_tokens,
                 "completion_tokens": response.usage.completion_tokens,
                 "total_tokens": response.usage.total_tokens
+            },
+            latency_seconds=latency,
+            raw_response=response
+        )
+
+    def generate_with_images(
+        self,
+        prompt: str,
+        image_urls: list,
+        system_message: Optional[str] = None,
+        temperature: Optional[float] = None,
+        max_tokens: Optional[int] = None,
+        detail: str = "low"
+    ) -> AIResponse:
+        """Generate text with multiple images using GPT-4 Vision.
+
+        Args:
+            prompt: Text prompt
+            image_urls: List of image URLs to include
+            system_message: Optional system message
+            temperature: Generation temperature
+            max_tokens: Max tokens in response
+            detail: Image detail level ("low" = 85 tokens, "high" = up to 1105 tokens)
+
+        Returns:
+            AIResponse with generated content
+        """
+        start_time = time.time()
+
+        # Use vision-capable model
+        vision_model = "gpt-4o" if "gpt-4" in self.config.model else self.config.model
+
+        # Build content array: text + images
+        content = [{"type": "text", "text": prompt}]
+        for url in image_urls:
+            if url and url.startswith("http"):
+                content.append({
+                    "type": "image_url",
+                    "image_url": {"url": url, "detail": detail}
+                })
+
+        messages = []
+        if system_message:
+            messages.append({"role": "system", "content": system_message})
+        messages.append({"role": "user", "content": content})
+
+        # Get correct token parameter for model
+        tokens = max_tokens or self.config.max_tokens
+        if any(prefix in vision_model for prefix in ["gpt-5", "gpt-4.1", "o1", "o3", "o4"]):
+            token_param = {"max_completion_tokens": tokens}
+        else:
+            token_param = {"max_tokens": tokens}
+
+        response = self.client.chat.completions.create(
+            model=vision_model,
+            messages=messages,
+            temperature=temperature or self.config.temperature,
+            **token_param
+        )
+
+        latency = time.time() - start_time
+
+        return AIResponse(
+            content=response.choices[0].message.content,
+            model=vision_model,
+            usage={
+                "prompt_tokens": response.usage.prompt_tokens,
+                "completion_tokens": response.usage.completion_tokens,
+                "total_tokens": response.usage.total_tokens,
+                "image_count": len([u for u in image_urls if u and u.startswith("http")])
             },
             latency_seconds=latency,
             raw_response=response
