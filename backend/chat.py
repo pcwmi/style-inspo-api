@@ -50,9 +50,8 @@ class TracingAgent:
         elif provider == "anthropic":
             self.model = "claude-sonnet-4-20250514"
         else:
-            # gpt-5.1: Best reasoning for garment physics (~$0.024/outfit)
-            # For production, consider gpt-5-mini (~$0.005/outfit)
-            self.model = "gpt-5.1"
+            # gpt-5.2: Best reasoning for garment physics (~$0.024/outfit) - 9% faster than 5.1
+            self.model = "gpt-5.2"
 
         # Initialize client
         if provider == "anthropic":

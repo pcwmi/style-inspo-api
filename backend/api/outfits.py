@@ -194,8 +194,8 @@ async def generate_outfits_stream(
             )
 
             # Create engine with streaming prompt
-            # gpt-5.1 for better reasoning (~$0.024/outfit), gpt-4o for vision only
-            outfit_model = os.getenv("OUTFIT_GENERATION_MODEL", "gpt-5.1")
+            # gpt-5.2 for better reasoning (~$0.024/outfit) - 9% faster than 5.1, same quality
+            outfit_model = os.getenv("OUTFIT_GENERATION_MODEL", "gpt-5.2")
             engine = StyleGenerationEngine(
                 model=outfit_model,
                 temperature=0.7,

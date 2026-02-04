@@ -54,11 +54,10 @@ DEFAULT_STYLE = {
     "three_words": {"current": "casual", "aspirational": "polished", "feeling": "chic"}
 }
 
-# Models to test - GPT-5.1 vs 5.2 comparison
+# Models to test - GPT-4o vs 5.2 comparison (text metadata + chain of thought)
 MODELS = [
-    {"id": "gpt-5.1", "provider": "openai", "name": "GPT-5.1 (Text)", "prompt": "chain_of_thought_v1"},
+    {"id": "gpt-4o", "provider": "openai", "name": "GPT-4o (Text)", "prompt": "chain_of_thought_v1"},
     {"id": "gpt-5.2", "provider": "openai", "name": "GPT-5.2 (Text)", "prompt": "chain_of_thought_v1"},
-    {"id": "gpt-5.2", "provider": "openai", "name": "GPT-5.2 (Vision)", "prompt": "vision_cot_v1"},
 ]
 
 
@@ -325,6 +324,10 @@ def run_scenario_test(user_id: str, scenario: Dict, model_config: Dict, items: L
         # Randomize item order to avoid "silent middle problem" (matches production)
         shuffled_items = random.sample(items, len(items))
 
+        # Debug: show first 3 items to verify randomization
+        first_3 = [item.get('styling_details', {}).get('name', 'Unknown')[:25] for item in shuffled_items[:3]]
+        print(f"\n         🎲 Shuffled (first 3): {first_3}")
+
         result = engine.generate_outfit_combinations(
             user_profile={"three_words": DEFAULT_STYLE["three_words"]},
             available_items=shuffled_items,
@@ -379,7 +382,7 @@ def main_multi_user(users: List[str] = None, num_items: int = 22):
         users = ['dana', 'peichin', 'kate', 'alexi']
 
     print("=" * 70)
-    print(f"🏆 GPT Model Comparison: 5.1 vs 5.2")
+    print(f"🏆 GPT Model Comparison: 4o vs 5.2 (Text + Chain of Thought)")
     print(f"   {len(users)} users × {len(SCENARIOS)} scenarios × {len(MODELS)} models")
     print("=" * 70)
 
@@ -462,11 +465,10 @@ def generate_multi_user_html(results: List[Dict], summary_data: List[Dict], outp
         grouped[key]["models"][r["model"]] = r
 
     # Model display order and colors
-    MODEL_ORDER = ["GPT-5.1 (Text)", "GPT-5.2 (Text)", "GPT-5.2 (Vision)"]
+    MODEL_ORDER = ["GPT-4o (Text)", "GPT-5.2 (Text)"]
     MODEL_COLORS = {
-        "GPT-5.1 (Text)": "#fff3e0",
+        "GPT-4o (Text)": "#fff3e0",
         "GPT-5.2 (Text)": "#e3f2fd",
-        "GPT-5.2 (Vision)": "#e8f5e9",
     }
 
     html = """<!DOCTYPE html>
@@ -484,7 +486,7 @@ def generate_multi_user_html(results: List[Dict], summary_data: List[Dict], outp
 
         .comparison { background: white; border-radius: 12px; padding: 20px; margin: 20px 0; }
         .comparison-header { font-size: 18px; font-weight: bold; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid #eee; }
-        .side-by-side { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .side-by-side { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
         .variant { border: 1px solid #ddd; border-radius: 8px; padding: 12px; }
         .variant-header { font-weight: bold; margin-bottom: 10px; padding: 8px; border-radius: 4px; font-size: 14px; }
 
@@ -522,8 +524,8 @@ def generate_multi_user_html(results: List[Dict], summary_data: List[Dict], outp
     </style>
 </head>
 <body>
-    <h1>🔬 GPT Model Comparison: 5.1 vs 5.2</h1>
-    <p style="text-align: center; color: #666;">Comparing latency and outfit quality across models</p>
+    <h1>🔬 GPT Model Comparison: 4o vs 5.2</h1>
+    <p style="text-align: center; color: #666;">Comparing latency and outfit quality (text metadata + chain of thought)</p>
 
     <div class="summary">
         <h3>📊 Latency Summary</h3>
@@ -531,31 +533,27 @@ def generate_multi_user_html(results: List[Dict], summary_data: List[Dict], outp
             <tr>
                 <th>User</th>
                 <th>Scenario</th>
-                <th>5.1 Text</th>
-                <th>5.2 Text</th>
-                <th>5.2 Vision</th>
-                <th>5.2 vs 5.1 Δ</th>
+                <th>GPT-4o</th>
+                <th>GPT-5.2</th>
+                <th>5.2 vs 4o Δ</th>
             </tr>
 """
 
     # Build summary rows
     for key, group in sorted(grouped.items()):
-        m51_text = group["models"].get("GPT-5.1 (Text)", {})
-        m52_text = group["models"].get("GPT-5.2 (Text)", {})
-        m52_vision = group["models"].get("GPT-5.2 (Vision)", {})
+        m4o = group["models"].get("GPT-4o (Text)", {})
+        m52 = group["models"].get("GPT-5.2 (Text)", {})
 
-        lat_51 = m51_text.get("latency", 0)
-        lat_52_text = m52_text.get("latency", 0)
-        lat_52_vision = m52_vision.get("latency", 0)
-        delta = lat_52_text - lat_51 if lat_51 > 0 else 0
-        delta_pct = (delta / lat_51 * 100) if lat_51 > 0 else 0
+        lat_4o = m4o.get("latency", 0)
+        lat_52 = m52.get("latency", 0)
+        delta = lat_52 - lat_4o if lat_4o > 0 else 0
+        delta_pct = (delta / lat_4o * 100) if lat_4o > 0 else 0
 
         html += f"""            <tr>
                 <td><strong>{group['user']}</strong></td>
                 <td>{group['scenario']}</td>
-                <td>{lat_51:.1f}s</td>
-                <td>{lat_52_text:.1f}s</td>
-                <td>{lat_52_vision:.1f}s</td>
+                <td>{lat_4o:.1f}s</td>
+                <td>{lat_52:.1f}s</td>
                 <td style="color: {'green' if delta < 0 else 'red'}">{delta:+.1f}s ({delta_pct:+.0f}%)</td>
             </tr>
 """
