@@ -35,15 +35,37 @@ from services.posthog_client import PostHogClient
 
 
 def get_all_users_with_data() -> List[str]:
-    """Get list of all users who have data in S3."""
-    # Known users - could also scan S3 for user directories
-    known_users = ['peichin', 'heather', 'dimple', 'alexi', 'mia']
+    """Get list of all users who have data in S3 by scanning bucket."""
+    import boto3
+
+    # Get S3 client
+    s3 = boto3.client('s3',
+        aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+        aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+        region_name=os.environ.get('AWS_REGION', 'us-west-2')
+    )
+    bucket = os.environ.get('S3_BUCKET_NAME', 'style-inspo')
+
+    # List all top-level prefixes (users)
+    response = s3.list_objects_v2(Bucket=bucket, Delimiter='/')
+    all_users = []
+    if 'CommonPrefixes' in response:
+        for prefix in response['CommonPrefixes']:
+            user_id = prefix['Prefix'].rstrip('/')
+            all_users.append(user_id)
+
+    # Filter out test users
+    test_patterns = ['test', 'default', 'yourname', 'pa-test']
     users_with_data = []
 
-    for user in known_users:
+    for user in all_users:
+        # Skip test users
+        if any(p in user.lower() for p in test_patterns):
+            continue
+
+        # Check if user has wardrobe data
         try:
             storage = StorageManager(storage_type="s3", user_id=user)
-            # Check if user has wardrobe data
             wardrobe = storage.load_json("wardrobe_metadata.json")
             if wardrobe.get("items"):
                 users_with_data.append(user)
