@@ -43,10 +43,13 @@ def get_all_users_with_data() -> List[str]:
     """Get list of all users who have data in S3 by listing top-level prefixes."""
     import boto3
 
+    # Filter out test users
+    test_patterns = ['test', 'default', 'yourname', 'pa-test']
+
     bucket_name = os.getenv('S3_BUCKET_NAME') or os.getenv('AWS_S3_BUCKET')
     if not bucket_name:
         print("Warning: S3 bucket not configured, falling back to known users")
-        return ['peichin', 'heather', 'dimple', 'alexi', 'mia']
+        return ['peichin', 'heather', 'dimple', 'alexi', 'mia', 'anneka', 'andy', 'dana', 'kate', 'muppoad']
 
     try:
         s3_client = boto3.client('s3')
@@ -60,14 +63,15 @@ def get_all_users_with_data() -> List[str]:
         for prefix in response.get('CommonPrefixes', []):
             # prefix['Prefix'] is like 'username/'
             user_id = prefix['Prefix'].rstrip('/')
-            # Skip system folders
+            # Skip system folders and test users
             if user_id and not user_id.startswith('.') and not user_id.startswith('_'):
-                users.append(user_id)
+                if not any(p in user_id.lower() for p in test_patterns):
+                    users.append(user_id)
 
         return sorted(users)
     except Exception as e:
         print(f"Warning: Could not list S3 users: {e}, falling back to known users")
-        return ['peichin', 'heather', 'dimple', 'alexi', 'mia']
+        return ['peichin', 'heather', 'dimple', 'alexi', 'mia', 'anneka', 'andy', 'dana', 'kate', 'muppoad']
 
 
 def load_generations_for_date(user_id: str, date_str: str, exclude_device_ids: set = None) -> List[Dict]:
