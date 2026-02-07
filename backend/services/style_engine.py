@@ -461,6 +461,9 @@ class StyleGenerationEngine:
         prompt_template = PromptLibrary.get_prompt(self.prompt_version)
         system_message = prompt_template.system_message
 
+        # Check if this prompt requires images (vision-informed generation)
+        requires_images = getattr(prompt_template, 'requires_images', False)
+
         try:
             # DEBUG: Print prompt sent to AI
             self._safe_stderr_write("\n" + "=" * 80 + "\n")
@@ -469,13 +472,35 @@ class StyleGenerationEngine:
             self._safe_stderr_write(prompt + "\n")
             self._safe_stderr_write("=" * 80 + "\n\n")
 
-            # Call AI provider (supports OpenAI, Gemini, Claude)
-            ai_result: AIResponse = self.ai_provider.generate_text(
-                prompt=prompt,
-                system_message=system_message,
-                temperature=self.temperature,
-                max_tokens=self.max_tokens
-            )
+            # Call AI provider - use vision if prompt requires images
+            if requires_images and hasattr(self.ai_provider, 'generate_with_images'):
+                # Extract image URLs from items
+                all_items = available_items + styling_challenges
+                image_urls = [
+                    item.get("system_metadata", {}).get("image_path", "") or item.get("image_path", "")
+                    for item in all_items
+                ]
+                image_urls = [url for url in image_urls if url and url.startswith("http")]
+
+                self._safe_stderr_write(f"🖼️  VISION MODE: Sending {len(image_urls)} images\n")
+                logger.info(f"[VISION_MODE] Sending {len(image_urls)} images with prompt")
+
+                ai_result: AIResponse = self.ai_provider.generate_with_images(
+                    prompt=prompt,
+                    image_urls=image_urls,
+                    system_message=system_message,
+                    temperature=self.temperature,
+                    max_tokens=self.max_tokens,
+                    detail="low"  # 85 tokens per image
+                )
+            else:
+                # Standard text-only generation
+                ai_result: AIResponse = self.ai_provider.generate_text(
+                    prompt=prompt,
+                    system_message=system_message,
+                    temperature=self.temperature,
+                    max_tokens=self.max_tokens
+                )
 
             # Store last AI response for cost tracking
             self._last_ai_response = ai_result
@@ -848,8 +873,22 @@ class StyleGenerationEngine:
                             json_section = parts[1]
                             outfit = self._extract_single_outfit_json(json_section)
                             if outfit:
+                                # Validate outfit structure before yielding (no two shoes, etc.)
+                                ai_item_names = outfit.get("items", [])
+                                temp_items = []
+                                for item_name in ai_item_names:
+                                    matched_item = self._find_item_by_name(item_name, available_items + styling_challenges)
+                                    if matched_item:
+                                        temp_items.append(matched_item)
+
+                                is_valid, error_msg = self._validate_outfit_structure(temp_items)
+                                if not is_valid:
+                                    self._safe_stderr_write(f"⚠️  REJECTED streamed outfit {outfit_num}: {error_msg}\n")
+                                    self._safe_stderr_write(f"   Items were: {ai_item_names}\n")
+                                    continue  # Skip this outfit, don't yield
+
                                 yielded_outfits.add(outfit_num)
-                                
+
                                 # Extract reasoning for this outfit if requested
                                 if include_reasoning:
                                     # Find reasoning text before this marker
