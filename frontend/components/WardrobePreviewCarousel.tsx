@@ -39,7 +39,7 @@ export function WardrobePreviewCarousel({ items, totalCount, userId }: WardrobeP
 
       {/* Horizontal Scroll Carousel */}
       <div className="flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 md:-mx-6 md:px-6 scrollbar-hide">
-        {items.slice(0, 8).map((item) => {
+        {items.slice(0, 20).map((item) => {
           const imagePath = getImagePath(item)
 
           return (
