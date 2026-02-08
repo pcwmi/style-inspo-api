@@ -3,18 +3,12 @@
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { useAuth } from '@/lib/useAuth'
-import { buildUserUrl } from '@/lib/auth'
 
 function WelcomePageContent() {
   const searchParams = useSearchParams()
-  const { authUser, effectiveUserId } = useAuth()
-
-  // Legacy URL param support
   const userParam = searchParams.get('user')
 
-  // Build URL for words page - include user param only in legacy mode
-  const wordsUrl = authUser ? '/words' : (userParam ? `/words?user=${userParam}` : '/words')
+  const wordsUrl = userParam ? `/words?user=${userParam}` : '/words'
 
   return (
     <div className="min-h-screen bg-bone page-container">
