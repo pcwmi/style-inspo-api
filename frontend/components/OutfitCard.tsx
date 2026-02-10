@@ -27,9 +27,7 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
 
     const [saving, setSaving] = useState(false)
     const [disliking, setDisliking] = useState(false)
-    const [selectedFeedback, setSelectedFeedback] = useState<string[]>([])
-    const [dislikeReason, setDislikeReason] = useState('')
-    const [otherReasonText, setOtherReasonText] = useState('')
+    const [feedbackText, setFeedbackText] = useState('')
     const [savedOutfitId, setSavedOutfitId] = useState<string | null>(null)
 
     // Visualization states
@@ -42,14 +40,15 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
 
     const handleSave = async () => {
         try {
+            const feedback = feedbackText.trim() ? [feedbackText.trim()] : []
             const response = await api.saveOutfit({
                 user_id: user,
                 outfit,
-                feedback: selectedFeedback
+                feedback
             })
             posthog.capture('outfit_saved', {
                 outfit_id: response.outfit_id,
-                feedback: selectedFeedback
+                feedback
             })
             // Store the saved outfit ID to show visualization CTA
             setSavedOutfitId(response.outfit_id)
@@ -62,23 +61,23 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
     }
 
     const handleDislike = async () => {
-        setDisliking(true)
         try {
+            const reason = feedbackText.trim() || 'No reason provided'
             await api.dislikeOutfit({
                 user_id: user,
                 outfit,
-                reason: dislikeReason === 'Other' ? `Other: ${otherReasonText}` : dislikeReason
+                reason
             })
             posthog.capture('outfit_disliked', {
                 outfit_id: outfit.id,
-                reason: dislikeReason === 'Other' ? `Other: ${otherReasonText}` : dislikeReason
+                reason
             })
             alert('Feedback recorded')
             setDisliking(false)
+            setFeedbackText('')
         } catch (error) {
             console.error('Error disliking outfit:', error)
             alert('Failed to record feedback')
-            setDisliking(false)
         }
     }
 
@@ -406,27 +405,15 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
                         </div>
                     ) : saving ? (
                         <div className="mt-4 border-t border-[rgba(26,22,20,0.12)] pt-4">
-                            <h3 className="text-lg font-semibold mb-4">What do you love about it?</h3>
-                            <div className="space-y-2.5 mb-4">
-                                {['Perfect for my occasions', 'Feels authentic to my style', 'Never thought to combine these pieces', 'Love the vibe'].map(option => (
-                                    <label key={option} className="flex items-center space-x-3 cursor-pointer min-h-[44px] py-1">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedFeedback.includes(option)}
-                                            onChange={(e) => {
-                                                if (e.target.checked) {
-                                                    setSelectedFeedback([...selectedFeedback, option])
-                                                } else {
-                                                    setSelectedFeedback(selectedFeedback.filter(f => f !== option))
-                                                }
-                                            }}
-                                            className="w-5 h-5 rounded border-[rgba(26,22,20,0.12)] flex-shrink-0"
-                                        />
-                                        <span className="text-base leading-relaxed flex-1">{option}</span>
-                                    </label>
-                                ))}
-                            </div>
-                            <div className="flex flex-col sm:flex-row gap-3">
+                            <input
+                                type="text"
+                                placeholder="What made this work? (AI learns from this)"
+                                value={feedbackText}
+                                onChange={(e) => setFeedbackText(e.target.value)}
+                                className="w-full px-4 py-3 border border-[rgba(26,22,20,0.12)] rounded-lg mb-4 text-base bg-white"
+                                autoFocus
+                            />
+                            <div className="flex gap-3">
                                 <button
                                     onClick={handleSave}
                                     className="flex-1 bg-terracotta text-white py-3 px-6 rounded-lg hover:opacity-90 active:opacity-80 min-h-[48px] flex items-center justify-center"
@@ -434,8 +421,8 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
                                     Save
                                 </button>
                                 <button
-                                    onClick={() => setSaving(false)}
-                                    className="flex-1 bg-sand text-ink py-3 px-6 rounded-lg hover:bg-sand/80 active:bg-sand/70 min-h-[48px] flex items-center justify-center"
+                                    onClick={() => { setSaving(false); setFeedbackText(''); }}
+                                    className="px-6 py-3 border border-[rgba(26,22,20,0.12)] rounded-lg hover:bg-sand/30 active:bg-sand/50 min-h-[48px] flex items-center justify-center"
                                 >
                                     Cancel
                                 </button>
@@ -443,32 +430,15 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
                         </div>
                     ) : (
                         <div className="mt-4 border-t border-[rgba(26,22,20,0.12)] pt-4">
-                            <h3 className="text-lg font-semibold mb-4">What's the main issue?</h3>
-                            <div className="space-y-2.5 mb-4">
-                                {["Won't look good on me", "Doesn't match my occasions", "Not my style", "The outfit doesn't make sense", "Other"].map(option => (
-                                    <label key={option} className="flex items-center space-x-3 cursor-pointer min-h-[44px] py-1">
-                                        <input
-                                            type="radio"
-                                            name="dislike-reason"
-                                            value={option}
-                                            checked={dislikeReason === option}
-                                            onChange={(e) => setDislikeReason(e.target.value)}
-                                            className="w-5 h-5 flex-shrink-0"
-                                        />
-                                        <span className="text-base leading-relaxed flex-1">{option}</span>
-                                    </label>
-                                ))}
-                            </div>
-                            {dislikeReason === 'Other' && (
-                                <input
-                                    type="text"
-                                    placeholder="Please specify..."
-                                    value={otherReasonText}
-                                    onChange={(e) => setOtherReasonText(e.target.value)}
-                                    className="w-full px-4 py-3 border border-[rgba(26,22,20,0.12)] rounded-lg mb-4 text-base bg-white"
-                                />
-                            )}
-                            <div className="flex flex-col sm:flex-row gap-3">
+                            <input
+                                type="text"
+                                placeholder="What didn't work? (AI learns from this)"
+                                value={feedbackText}
+                                onChange={(e) => setFeedbackText(e.target.value)}
+                                className="w-full px-4 py-3 border border-[rgba(26,22,20,0.12)] rounded-lg mb-4 text-base bg-white"
+                                autoFocus
+                            />
+                            <div className="flex gap-3">
                                 <button
                                     onClick={handleDislike}
                                     className="flex-1 bg-terracotta text-white py-3 px-6 rounded-lg hover:opacity-90 active:opacity-80 min-h-[48px] flex items-center justify-center"
@@ -476,8 +446,8 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
                                     Submit
                                 </button>
                                 <button
-                                    onClick={() => setDisliking(false)}
-                                    className="flex-1 bg-sand text-ink py-3 px-6 rounded-lg hover:bg-sand/80 active:bg-sand/70 min-h-[48px] flex items-center justify-center"
+                                    onClick={() => { setDisliking(false); setFeedbackText(''); }}
+                                    className="px-6 py-3 border border-[rgba(26,22,20,0.12)] rounded-lg hover:bg-sand/30 active:bg-sand/50 min-h-[48px] flex items-center justify-center"
                                 >
                                     Cancel
                                 </button>
