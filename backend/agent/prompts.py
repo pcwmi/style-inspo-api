@@ -161,6 +161,19 @@ Complete: "This outfit says: I'm someone who ___"
 **STEP 8: PHYSICAL CHECK**
 Can these pieces actually work together? Does this accomplish the function?
 
+**STEP 9: FEEDBACK CHECK (CRITICAL)**
+Review the feedback from `get_feedback_patterns` and verify:
+- Does this outfit repeat any item combination they disliked?
+- Does it violate any style lessons from past feedback?
+
+If feedback says "proportions felt off with oversized top + wide pants":
+→ Don't pair oversized tops with wide-leg bottoms
+
+If feedback says "too much pattern mixing":
+→ Limit to one bold pattern, keep rest solid
+
+**Actually apply the lessons, don't just acknowledge them.**
+
 ---
 
 ## GARMENT PHYSICS RULES (CRITICAL)
