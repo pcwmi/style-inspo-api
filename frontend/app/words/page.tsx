@@ -6,11 +6,17 @@ import { api } from '@/lib/api'
 import Link from 'next/link'
 import { STYLE_WORD_CHIPS, STYLE_FEELING_CHIPS, getRandomChips } from '@/lib/styleWords'
 import { posthog } from '@/lib/posthog'
+import { useAuth } from '@/lib/useAuth'
 
 function WordsPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const user = searchParams.get('user') || 'default'
+  const { authUser, loading: authLoading, effectiveUserId } = useAuth()
+
+  // Legacy URL param support
+  const userParam = searchParams.get('user')
+  // Use effective user ID (prefers session, falls back to URL)
+  const user = effectiveUserId
 
   const [word1, setWord1] = useState('')
   const [word2, setWord2] = useState('')
@@ -59,19 +65,37 @@ function WordsPageContent() {
     setError(null)
 
     try {
-      await api.updateProfile(user, {
-        three_words: {
-          current: word1.trim(),
-          aspirational: word2.trim(),
-          feeling: word3.trim()
-        }
-      })
-      posthog.capture('words_completed', {
-        word1: word1.trim(),
-        word2: word2.trim(),
-        word3: word3.trim()
-      })
-      router.push(`/upload?user=${user}`)
+      // If user is authenticated or has legacy URL, save to their profile and go to upload
+      if (authUser || userParam) {
+        await api.updateProfile(user, {
+          three_words: {
+            current: word1.trim(),
+            aspirational: word2.trim(),
+            feeling: word3.trim()
+          }
+        })
+        posthog.capture('words_completed', {
+          word1: word1.trim(),
+          word2: word2.trim(),
+          word3: word3.trim()
+        })
+        // Go to upload with appropriate URL format
+        const uploadUrl = authUser ? '/upload' : `/upload?user=${user}`
+        router.push(uploadUrl)
+      } else {
+        // New user without account: redirect to signup with words in URL
+        posthog.capture('words_completed_new_user', {
+          word1: word1.trim(),
+          word2: word2.trim(),
+          word3: word3.trim()
+        })
+        const params = new URLSearchParams({
+          word1: word1.trim(),
+          word2: word2.trim(),
+          word3: word3.trim()
+        })
+        router.push(`/signup?${params.toString()}`)
+      }
     } catch (error: any) {
       console.error('Error saving profile:', error)
       setError(error?.message || 'Failed to save your style words. Please try again.')

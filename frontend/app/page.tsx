@@ -8,12 +8,18 @@ import { isOnboardingComplete, getOnboardingStep } from '@/lib/onboarding'
 import { useWardrobe, useProfile, useSavedOutfits, useDislikedOutfits, useNotWornOutfits } from '@/lib/queries'
 import { ReadyToWearCarousel } from '@/components/ReadyToWearCarousel'
 import { WardrobePreviewCarousel } from '@/components/WardrobePreviewCarousel'
+import { useAuth } from '@/lib/useAuth'
+import { buildUserUrl } from '@/lib/auth'
 
 function DashboardContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const { authUser, loading: authLoading, effectiveUserId, isUsingLegacyUrl, logout } = useAuth()
+
+  // Legacy URL param support (for transition)
   const userParam = searchParams.get('user')
-  const user = userParam || 'default'
+  // Use effective user ID (prefers session, falls back to URL)
+  const user = effectiveUserId
 
   // Capitalize first letter of username for greeting
   const capitalizeFirst = (str: string) => {
@@ -40,8 +46,11 @@ function DashboardContent() {
   // Check onboarding and redirect if needed
   useEffect(() => {
     async function checkOnboarding() {
-      // If no user parameter in URL, redirect to welcome page
-      if (!userParam) {
+      // Wait for auth check to complete
+      if (authLoading) return
+
+      // If no user (neither authenticated nor URL param), redirect to welcome page
+      if (!authUser && !userParam) {
         router.push('/welcome')
         return
       }
@@ -60,7 +69,9 @@ function DashboardContent() {
             complete: '/' // Already complete, shouldn't happen
           }
           const redirectPath = stepMap[step] || '/welcome'
-          router.push(`${redirectPath}?user=${user}`)
+          // Include user param for legacy mode, or just redirect for auth mode
+          const redirectUrl = authUser ? redirectPath : `${redirectPath}?user=${user}`
+          router.push(redirectUrl)
         }
       } catch (error) {
         console.error('Error checking onboarding:', error)
@@ -68,20 +79,66 @@ function DashboardContent() {
       }
     }
     checkOnboarding()
-  }, [user, userParam, wardrobeLoading, router])
+  }, [user, userParam, authUser, authLoading, wardrobeLoading, router])
 
   // Non-blocking: Show dashboard immediately, let counts load in background
   // Skeleton placeholders are used inline for counts instead of blocking the whole page
+
+  // If no user (neither authenticated nor URL param), show loading while redirect kicks in
+  if (!authLoading && !authUser && !userParam) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-600">Redirecting...</p>
+      </div>
+    )
+  }
 
   // Get wardrobe items for carousel
   const wardrobeItems = wardrobe?.items || []
   const wardrobeCount = wardrobe?.count || 0
 
+  // Display name: prefer email for authenticated, capitalize legacy username
+  const displayName = authUser?.email || capitalizeFirst(user)
+
+  // Helper to build URLs that work in both auth modes
+  const userUrl = (path: string) => buildUserUrl(path, authUser, user)
+
   return (
     <div className="min-h-screen bg-bone page-container">
       <div className="max-w-2xl mx-auto px-4 py-4 md:py-8">
-        <h1 className="text-2xl md:text-3xl font-bold mb-2">Style Inspo</h1>
-        <p className="text-muted mb-5 md:mb-8 text-base leading-relaxed">Welcome back, {capitalizeFirst(user)}</p>
+        {/* Header with auth state */}
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">Style Inspo</h1>
+            <p className="text-muted text-base leading-relaxed">Welcome back, {displayName}</p>
+          </div>
+          {authUser && (
+            <button
+              onClick={logout}
+              className="text-sm text-muted hover:text-terracotta transition min-h-[44px] px-2"
+            >
+              Sign out
+            </button>
+          )}
+        </div>
+
+        {/* Claim account banner for legacy URL users */}
+        {isUsingLegacyUrl && (
+          <div className="bg-sand/50 border border-terracotta/20 rounded-lg p-4 mb-5 md:mb-6">
+            <p className="text-sm text-ink mb-2">
+              <strong>Secure your account</strong>
+            </p>
+            <p className="text-sm text-muted mb-3">
+              Create an account to access your wardrobe from any device.
+            </p>
+            <Link
+              href="/signup"
+              className="inline-block bg-terracotta text-white text-sm py-2 px-4 rounded-lg font-medium hover:opacity-90 transition"
+            >
+              Create account
+            </Link>
+          </div>
+        )}
 
         {/* HERO: Ready to Wear Carousel - show skeleton while loading or fetching */}
         {(notWornLoading || notWornFetching || notWornData === undefined) ? (
@@ -112,19 +169,19 @@ function DashboardContent() {
         {/* ACTION BUTTONS: Stacked with primary hierarchy */}
         <div className="space-y-3 mb-6 md:mb-8">
           <Link
-            href={`/occasion?user=${user}`}
+            href={userUrl('/occasion')}
             className="block w-full bg-terracotta text-white text-center py-3.5 md:py-4 px-6 rounded-lg font-medium hover:opacity-90 transition active:opacity-80 min-h-[48px] flex items-center justify-center"
           >
             Plan my outfit
           </Link>
           <Link
-            href={`/complete?user=${user}`}
+            href={userUrl('/complete')}
             className="block w-full bg-white border-2 border-ink text-ink text-center py-3.5 md:py-4 px-6 rounded-lg font-medium hover:bg-sand transition active:bg-sand/80 min-h-[48px] flex items-center justify-center"
           >
             Complete my look
           </Link>
           <Link
-            href={`/consider-buying?user=${user}`}
+            href={userUrl('/consider-buying')}
             className="block w-full bg-white border border-[rgba(26,22,20,0.12)] text-ink text-center py-3 px-6 rounded-lg font-medium hover:bg-sand/30 transition active:bg-sand/50 min-h-[44px] flex items-center justify-center"
           >
             Buy Smarter
@@ -134,7 +191,7 @@ function DashboardContent() {
         {/* Footer links */}
         <div className="pt-4 border-t border-[rgba(26,22,20,0.08)] flex items-center justify-between">
           <Link
-            href={`/profile?user=${user}`}
+            href={userUrl('/profile')}
             className="text-muted hover:text-terracotta transition text-sm flex items-center gap-2"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -143,7 +200,7 @@ function DashboardContent() {
             Edit Profile
           </Link>
           <Link
-            href={`/disliked?user=${user}`}
+            href={userUrl('/disliked')}
             className="text-muted hover:text-terracotta transition text-sm"
           >
             Disliked ({dislikedLoading ? '...' : dislikedCount})
