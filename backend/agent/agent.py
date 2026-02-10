@@ -252,6 +252,43 @@ class StylingAgent:
                 # Return raw feedback for agent to reason about
                 return {"feedback": feedback, "count": len(feedback)}
 
+            elif tool_name == "save_feedback":
+                manager = DislikedOutfitsManager(user_id=self.user_id)
+                items = tool_input.get("items", [])
+                feedback_type = tool_input.get("feedback_type", "negative")
+                reason = tool_input.get("reason", "")
+                style_lesson = tool_input.get("style_lesson", "")
+
+                # Create outfit combo object
+                class OutfitCombo:
+                    def __init__(self, items):
+                        self.items = items
+                        self.styling_notes = ""
+                        self.why_it_works = ""
+                        self.confidence_level = ""
+                        self.vibe_keywords = []
+
+                outfit_combo = OutfitCombo(items=items)
+
+                # Include style_lesson in the reason for richer context
+                full_reason = f"{reason}"
+                if style_lesson:
+                    full_reason += f" [Style lesson: {style_lesson}]"
+
+                # Save feedback (currently only negative/dislike is supported by manager)
+                if feedback_type == "negative":
+                    success = manager.dislike_outfit(
+                        outfit_combo=outfit_combo,
+                        reason=full_reason,
+                        context={"feedback_type": feedback_type, "style_lesson": style_lesson}
+                    )
+                    logger.info(f"save_feedback: saved negative feedback for {len(items)} items")
+                    return {"saved": success, "feedback_type": "negative", "items_count": len(items)}
+                else:
+                    # For positive feedback, we don't have a manager yet - log it
+                    logger.info(f"save_feedback: positive feedback noted (not persisted yet): {reason}")
+                    return {"saved": False, "feedback_type": "positive", "note": "Positive feedback logging not yet implemented"}
+
             elif tool_name == "get_saved_outfits":
                 manager = SavedOutfitsManager(user_id=self.user_id)
                 outfits = manager.get_saved_outfits()

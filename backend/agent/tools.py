@@ -86,6 +86,42 @@ TOOLS = [
             "required": ["reasoning"]
         }
     },
+    {
+        "name": "save_feedback",
+        "description": "Save feedback about an outfit - either positive (what they loved) or negative (what didn't work). Use this when user says 'I don't like this because...' or 'I love this because...'",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                **REASONING_FIELD,
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {"type": "string", "description": "Item name"},
+                            "category": {"type": "string", "description": "Item category"}
+                        },
+                        "required": ["name"]
+                    },
+                    "description": "Items in the outfit being reviewed"
+                },
+                "feedback_type": {
+                    "type": "string",
+                    "enum": ["positive", "negative"],
+                    "description": "Whether this is positive (loved it) or negative (didn't work) feedback"
+                },
+                "reason": {
+                    "type": "string",
+                    "description": "The user's reason - capture the SPIRIT, not just surface words. E.g., 'proportions felt off' not just 'didn't like it'"
+                },
+                "style_lesson": {
+                    "type": "string",
+                    "description": "What styling principle does this teach? E.g., 'User prefers fitted tops with wide pants, not oversized on oversized'"
+                }
+            },
+            "required": ["reasoning", "items", "feedback_type", "reason", "style_lesson"]
+        }
+    },
 
     # --- SAVED OUTFITS ---
     {
