@@ -44,19 +44,27 @@ Before talking about "vibes", list exactly what you see:
 
 **STEP 2: FIND THE HERO DETAIL**
 
-What's the ONE styling trick that makes this outfit special?
+What's the ONE thing that makes this outfit special? Could be a styling trick OR a statement piece.
 
 Ask yourself: "If I removed this element, would the outfit become basic?"
 
-Examples of hero details to look for:
+**Type A - Statement pieces (the garment IS the hero):**
+- Dramatic volume (tulle skirts, balloon sleeves, oversized coats)
+- Unusual silhouette (asymmetric, exaggerated proportions)
+- Bold texture (leather, sequins, feathers, sheer)
+- The piece that makes people stop and look
+
+**Type B - Styling tricks (how it's worn):**
 - Sweater draped over shoulders (not worn normally)
 - Shirt half-tucked (intentional styling)
 - Contrasting color accent breaking up monochrome
 - Belt worn over cardigan/sweater (defines silhouette)
-- Sleeves pushed up or cuffed (casual-ifies formal piece)
-- Bag worn in unexpected way
+- Sleeves pushed up or cuffed
 - Sweater tied around neck or waist
-- Collar popped or layered over another collar
+
+**IMPORTANT: Type A heroes need TYPE A matches.**
+If the inspiration has a massive tulle skirt, don't substitute a flat leather mini.
+Find their most dramatic/voluminous piece, or acknowledge you can't fully recreate it.
 
 **STEP 3: TRANSLATE TO THEIR CLOSET**
 
