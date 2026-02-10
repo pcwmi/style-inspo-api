@@ -97,9 +97,29 @@ async def process_outfit_request(user_id: str, phone: str, message: str, image_u
     - Agent has resolve_items (text → images) and send_message (images → user) tools
     - Agent decides what to show and how (list vs outfit layout)
     - Orchestration is just: create agent with output handler, run it
+
+    Stateful conversation:
+    - Load conversation state from Redis
+    - Pass context to agent for multi-turn flows
+    - Save state (including last outfit) after agent response
     """
     try:
         logger.info(f"Processing request for {user_id}: {message}")
+
+        # Load or create conversation state
+        from services.conversation_state import ConversationStateManager
+        state_manager = ConversationStateManager(phone)
+        state = state_manager.get_or_create_state(user_id)
+        logger.info(f"Loaded conversation state for {phone}: {len(state.messages)} prior messages")
+
+        # Record user message
+        state_manager.append_message("user", message)
+
+        # Build conversation context for agent
+        conversation_context = {
+            "last_outfit": state.last_outfit,
+            "messages": state.messages
+        }
 
         # Download Twilio media and convert to base64 (Twilio URLs require auth)
         image_data_uris = None
@@ -110,17 +130,26 @@ async def process_outfit_request(user_id: str, phone: str, message: str, image_u
 
         # Import here to avoid circular imports
         from agent.agent import StylingAgent
-        from agent.output import SMSOutput
+        from agent.output import StatefulSMSOutput
 
-        # Create output handler for this phone/user
-        output = SMSOutput(phone=phone, user_id=user_id)
+        # Create stateful output handler that captures outfits
+        output = StatefulSMSOutput(phone=phone, user_id=user_id, state_manager=state_manager)
 
-        # Create agent with output handler - agent controls what gets sent
-        agent = StylingAgent(user_id=user_id, provider="openai", output=output)
+        # Create agent with output handler and conversation context
+        agent = StylingAgent(
+            user_id=user_id,
+            provider="openai",
+            output=output,
+            conversation_context=conversation_context
+        )
 
         # Run agent - it will call resolve_items + send_message as needed
         response = agent.run(message, image_urls=image_data_uris)
         logger.info(f"Agent completed. Response: {response[:200] if response else '(none)'}...")
+
+        # Record assistant response
+        if response:
+            state_manager.append_message("assistant", response)
 
     except Exception as e:
         logger.error(f"Error processing request: {e}", exc_info=True)

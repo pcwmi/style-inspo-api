@@ -168,3 +168,90 @@ class VisualizationManager:
             'provider': result.provider,
             'metadata': result.metadata
         }
+
+    def visualize_from_images(self, garment_images: list, provider_name: str = "runway") -> Dict:
+        """
+        Generate visualization directly from image URLs (for SMS flow).
+
+        Unlike visualize_outfit(), this doesn't require a saved outfit.
+        Used when we have image URLs but no outfit_id (e.g., SMS collage).
+
+        Args:
+            garment_images: List of garment image URLs (max 3 used)
+            provider_name: Visualization provider (default: "runway")
+
+        Returns:
+            Dict with:
+                - visualization_url: str (permanent storage URL)
+                - success: bool
+                - generation_time: float
+        """
+        import uuid
+
+        logger.info(f"Starting visualization from {len(garment_images)} images for user {self.user_id}")
+
+        if not garment_images:
+            logger.warning("No garment images provided")
+            return {"success": False, "error": "No garment images"}
+
+        # Limit to 3 images (Runway API limit)
+        garment_images = garment_images[:3]
+
+        # Fetch user's model descriptor
+        profile = self.profile_manager.get_profile(self.user_id)
+        model_descriptor = profile.get('model_descriptor', '') if profile else ''
+
+        if not model_descriptor:
+            logger.warning(f"User {self.user_id} has no model descriptor, using default")
+            model_descriptor = "A person wearing the outfit"
+
+        logger.info(f"Model descriptor: {model_descriptor[:50]}...")
+
+        # Build request
+        request = ImageGenerationRequest(
+            garment_images=garment_images,
+            prompt_text="",  # No specific items, just visualize what's in images
+            style_profile=profile or {},
+            styling_notes="",
+            mode="model"
+        )
+
+        # Generate with provider
+        provider = self.provider_factory.create_provider(provider_name)
+
+        if not provider or not provider.is_configured():
+            logger.warning(f"Provider {provider_name} not available")
+            return {"success": False, "error": f"Provider {provider_name} not available"}
+
+        logger.info(f"Calling {provider.get_provider_name()} provider...")
+        result = provider.generate_image(request, model_descriptor=model_descriptor)
+
+        if not result.success:
+            logger.error(f"Visualization failed: {result.error_message}")
+            return {"success": False, "error": result.error_message}
+
+        logger.info(f"Provider returned temporary URL")
+
+        # Download from temporary URL
+        response = requests.get(result.image_url, timeout=30)
+        response.raise_for_status()
+        image_data = response.content
+
+        # Upload to permanent storage with unique ID
+        viz_id = str(uuid.uuid4())[:8]
+        viz_filename = f"visualizations/sms_{viz_id}.jpg"
+
+        image_file = BytesIO(image_data)
+        permanent_url = self.storage.save_file(
+            file_obj=image_file,
+            filename=viz_filename
+        )
+
+        logger.info(f"Visualization saved: {permanent_url}")
+
+        return {
+            'success': True,
+            'visualization_url': permanent_url,
+            'generation_time': result.generation_time,
+            'provider': result.provider
+        }

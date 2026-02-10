@@ -30,12 +30,14 @@ class StylingAgent:
         user_id: str,
         provider: Provider = "anthropic",
         model: Optional[str] = None,
-        output: Optional[any] = None  # OutputHandler for send_message
+        output: Optional[any] = None,  # OutputHandler for send_message
+        conversation_context: Optional[dict] = None  # Stateful conversation context
     ):
         self.user_id = user_id
         self.provider = provider
         self.max_turns = 10
         self.output = output  # Injected output handler (modality-aware)
+        self.conversation_context = conversation_context  # For stateful SMS
 
         # Set default model per provider
         if model:
@@ -53,8 +55,44 @@ class StylingAgent:
             import openai
             self.client = openai.OpenAI()
 
+    def _build_context_prefix(self) -> str:
+        """Build context prefix from conversation state for multi-turn SMS."""
+        if not self.conversation_context:
+            return ""
+
+        lines = []
+
+        # Last outfit context
+        last_outfit = self.conversation_context.get("last_outfit", {})
+        if last_outfit and last_outfit.get("items"):
+            items = last_outfit["items"]
+            item_names = [item.get("name", "Unknown") for item in items]
+            lines.append(f"[CONTEXT] Last outfit I showed you: {', '.join(item_names)}")
+            if last_outfit.get("styling_notes"):
+                notes = last_outfit["styling_notes"][:200]
+                lines.append(f"[CONTEXT] Styling notes: {notes}")
+
+        # Recent conversation history
+        messages = self.conversation_context.get("messages", [])
+        if messages:
+            lines.append("[CONTEXT] Recent conversation:")
+            for msg in messages[-4:]:  # Last 4 turns
+                role = "User" if msg.get("role") == "user" else "You"
+                content = msg.get("content", "")[:100]
+                lines.append(f"  {role}: {content}...")
+
+        if lines:
+            return "\n".join(lines) + "\n\n---\n\n"
+        return ""
+
     def run(self, user_message: str, image_urls: list[str] = None) -> str:
         """Run the agent loop until completion."""
+        # Prepend conversation context for stateful SMS
+        context_prefix = self._build_context_prefix()
+        if context_prefix:
+            user_message = context_prefix + user_message
+            logger.info(f"Added conversation context ({len(context_prefix)} chars)")
+
         if self.provider == "anthropic":
             return self._run_anthropic(user_message, image_urls=image_urls)
         else:
