@@ -247,10 +247,49 @@ class StylingAgent:
                 return {"feedback": feedback, "count": len(feedback)}
 
             elif tool_name == "get_feedback_patterns":
+                # Filter out useless checkbox responses, keep only actionable feedback
+                USELESS_CHECKBOX_RESPONSES = {
+                    "the outfit doesn't make sense",
+                    "not my style",
+                    "won't look good on me",
+                    "doesn't match my occasions",
+                    "i don't like this outfit",
+                    "doesn't fit my style",
+                }
+
                 manager = DislikedOutfitsManager(user_id=self.user_id)
-                feedback = manager.get_disliked_outfits(enrich_with_current_images=True)
-                # Return raw feedback for agent to reason about
-                return {"feedback": feedback, "count": len(feedback)}
+                feedback_list = manager.get_disliked_outfits(enrich_with_current_images=False)
+
+                actionable_feedback = []
+                for f in feedback_list:
+                    reason = f.get("user_reason", "").strip()
+                    if not reason:
+                        continue
+                    if reason.lower().strip('"') in USELESS_CHECKBOX_RESPONSES:
+                        continue
+
+                    # Clean up "Other: " prefix
+                    reason_clean = reason.strip('"').strip()
+                    if reason_clean.lower().startswith('other:'):
+                        reason = reason_clean[6:].strip()
+                    else:
+                        reason = reason_clean
+
+                    outfit_data = f.get("outfit_data", {})
+                    items = outfit_data.get("items", [])
+                    item_names = [item.get("name", "Unknown") for item in items]
+
+                    actionable_feedback.append({
+                        "items": item_names,
+                        "reason": reason,
+                        "date": f.get("disliked_at", "")[:10]
+                    })
+
+                return {
+                    "total_feedback": len(feedback_list),
+                    "actionable_feedback": len(actionable_feedback),
+                    "feedback": actionable_feedback
+                }
 
             elif tool_name == "save_feedback":
                 manager = DislikedOutfitsManager(user_id=self.user_id)
