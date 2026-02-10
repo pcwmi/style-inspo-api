@@ -53,16 +53,29 @@ class StylingAgent:
             import openai
             self.client = openai.OpenAI()
 
-    def run(self, user_message: str) -> str:
+    def run(self, user_message: str, image_urls: list[str] = None) -> str:
         """Run the agent loop until completion."""
         if self.provider == "anthropic":
-            return self._run_anthropic(user_message)
+            return self._run_anthropic(user_message, image_urls=image_urls)
         else:
-            return self._run_openai(user_message)
+            return self._run_openai(user_message, image_urls=image_urls)
 
-    def _run_anthropic(self, user_message: str) -> str:
+    def _run_anthropic(self, user_message: str, image_urls: list[str] = None) -> str:
         """Anthropic/Claude agent loop."""
-        messages = [{"role": "user", "content": user_message}]
+        # Build user message content (text + optional images)
+        if image_urls:
+            # Claude vision format
+            user_content = [{"type": "text", "text": user_message}]
+            for url in image_urls:
+                user_content.append({
+                    "type": "image",
+                    "source": {"type": "url", "url": url}
+                })
+            logger.info(f"Including {len(image_urls)} image(s) in user message")
+        else:
+            user_content = user_message
+
+        messages = [{"role": "user", "content": user_content}]
 
         for turn in range(self.max_turns):
             logger.info(f"Agent turn {turn + 1} (anthropic/{self.model})")
@@ -109,11 +122,24 @@ class StylingAgent:
         logger.warning("Max turns reached")
         return "I apologize, but I wasn't able to complete this request."
 
-    def _run_openai(self, user_message: str) -> str:
+    def _run_openai(self, user_message: str, image_urls: list[str] = None) -> str:
         """OpenAI agent loop."""
+        # Build user message content (text + optional images)
+        if image_urls:
+            # Vision API format: array of content parts
+            user_content = [{"type": "text", "text": user_message}]
+            for url in image_urls:
+                user_content.append({
+                    "type": "image_url",
+                    "image_url": {"url": url}
+                })
+            logger.info(f"Including {len(image_urls)} image(s) in user message")
+        else:
+            user_content = user_message
+
         messages = [
             {"role": "system", "content": STYLING_SYSTEM_PROMPT},
-            {"role": "user", "content": user_message}
+            {"role": "user", "content": user_content}
         ]
 
         for turn in range(self.max_turns):

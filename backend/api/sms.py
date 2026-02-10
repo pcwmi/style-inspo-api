@@ -46,7 +46,7 @@ def is_whatsapp(phone: str) -> bool:
     return phone.startswith("whatsapp:")
 
 
-async def process_outfit_request(user_id: str, phone: str, message: str):
+async def process_outfit_request(user_id: str, phone: str, message: str, image_urls: list[str] = None):
     """
     Background task to process user request.
 
@@ -57,6 +57,8 @@ async def process_outfit_request(user_id: str, phone: str, message: str):
     """
     try:
         logger.info(f"Processing request for {user_id}: {message}")
+        if image_urls:
+            logger.info(f"Received {len(image_urls)} images: {image_urls}")
 
         # Import here to avoid circular imports
         from agent.agent import StylingAgent
@@ -69,7 +71,7 @@ async def process_outfit_request(user_id: str, phone: str, message: str):
         agent = StylingAgent(user_id=user_id, provider="openai", output=output)
 
         # Run agent - it will call resolve_items + send_message as needed
-        response = agent.run(message)
+        response = agent.run(message, image_urls=image_urls)
         logger.info(f"Agent completed. Response: {response[:200] if response else '(none)'}...")
 
     except Exception as e:
@@ -83,16 +85,25 @@ async def incoming_sms(
     From: str = Form(...),
     Body: str = Form(...),
     NumMedia: str = Form(default="0"),
+    MediaUrl0: str = Form(default=None),
+    MediaUrl1: str = Form(default=None),
+    MediaUrl2: str = Form(default=None),
 ):
     """
-    Twilio webhook for incoming SMS.
+    Twilio webhook for incoming SMS/MMS.
 
     Twilio sends:
     - From: Sender phone number
     - Body: Message text
     - NumMedia: Number of attached images
+    - MediaUrl0, MediaUrl1, ...: URLs to attached images
     """
     logger.info(f"Incoming SMS from {From}: {Body[:100]}...")
+
+    # Collect image URLs (Twilio sends MediaUrl0, MediaUrl1, etc.)
+    image_urls = [url for url in [MediaUrl0, MediaUrl1, MediaUrl2] if url]
+    if image_urls:
+        logger.info(f"Received {len(image_urls)} image(s): {image_urls}")
 
     # Map phone to user
     user_id = phone_to_user(From)
@@ -115,7 +126,8 @@ async def incoming_sms(
         process_outfit_request,
         user_id=user_id,
         phone=From,
-        message=Body
+        message=Body,
+        image_urls=image_urls if image_urls else None
     )
 
     # Return empty TwiML (ack already sent)
