@@ -43,7 +43,7 @@ class StylingAgent:
         elif provider == "anthropic":
             self.model = "claude-sonnet-4-20250514"
         else:
-            self.model = "gpt-4o"  # gpt-5-2 doesn't exist yet
+            self.model = "gpt-5.2"  # Best reasoning for styling
 
         # Initialize client
         if provider == "anthropic":
