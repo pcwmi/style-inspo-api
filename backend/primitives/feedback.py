@@ -77,9 +77,8 @@ async def get_feedback_patterns(user_id: str) -> Dict[str, Any]:
     """
     Get feedback with full context for agent to reason about.
 
-    No pre-processing or categorization - just the raw data.
-    Agent is smart enough to understand "plaid on plaid" means
-    don't pair the two plaid items.
+    Filters out generic checkbox responses that don't teach anything.
+    Only returns freeform feedback with actionable insights.
 
     Args:
         user_id: User identifier
@@ -87,26 +86,53 @@ async def get_feedback_patterns(user_id: str) -> Dict[str, Any]:
     Returns:
         {
             "total_feedback": int,
+            "actionable_feedback": int,
             "feedback": [{"items": [...], "reason": str, "date": str}]
         }
     """
+    # Generic checkbox responses that don't teach the agent anything
+    USELESS_CHECKBOX_RESPONSES = {
+        "the outfit doesn't make sense",
+        "not my style",
+        "won't look good on me",
+        "doesn't match my occasions",
+        "i don't like this outfit",
+        "doesn't fit my style",
+    }
+
     manager = DislikedOutfitsManager(user_id=user_id)
     feedback_list = manager.get_disliked_outfits(enrich_with_current_images=False)
 
     feedback = []
     for f in feedback_list:
+        reason = f.get("user_reason", "").strip()
+
+        # Skip empty or generic checkbox feedback
+        if not reason:
+            continue
+        if reason.lower().strip('"') in USELESS_CHECKBOX_RESPONSES:
+            continue
+
+        # Clean up "Other: " prefix from freeform responses
+        reason_clean = reason.strip('"').strip()
+        if reason_clean.lower().startswith('other:'):
+            reason = reason_clean[6:].strip()
+        else:
+            reason = reason_clean
+
         outfit_data = f.get("outfit_data", {})
         items = outfit_data.get("items", [])
         item_names = [item.get("name", "Unknown") for item in items]
 
         feedback.append({
             "items": item_names,
-            "reason": f.get("user_reason", "").strip(),
+            "reason": reason.strip('"'),
             "date": f.get("disliked_at", "")[:10]
         })
 
     return {
         "total_feedback": len(feedback_list),
+        "actionable_feedback": len(feedback),
         "feedback": feedback
     }
 
