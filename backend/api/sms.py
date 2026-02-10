@@ -12,7 +12,9 @@ Agent-native architecture:
 import os
 import logging
 import re
-from typing import Optional
+import base64
+import httpx
+from typing import Optional, List
 from fastapi import APIRouter, Form, BackgroundTasks, Response
 
 from services.twilio_service import send_sms
@@ -46,6 +48,47 @@ def is_whatsapp(phone: str) -> bool:
     return phone.startswith("whatsapp:")
 
 
+async def download_twilio_media(media_urls: List[str]) -> List[str]:
+    """
+    Download Twilio media and convert to base64 data URIs.
+
+    Twilio media URLs require authentication, so OpenAI can't access them directly.
+    We download with our credentials and convert to base64.
+    """
+    account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+    auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+
+    if not account_sid or not auth_token:
+        logger.error("Twilio credentials not configured")
+        return []
+
+    data_uris = []
+    async with httpx.AsyncClient() as client:
+        for url in media_urls:
+            try:
+                # Download with Twilio auth
+                response = await client.get(
+                    url,
+                    auth=(account_sid, auth_token),
+                    follow_redirects=True,
+                    timeout=30.0
+                )
+                response.raise_for_status()
+
+                # Get content type and convert to base64
+                content_type = response.headers.get("content-type", "image/jpeg")
+                base64_data = base64.b64encode(response.content).decode("utf-8")
+                data_uri = f"data:{content_type};base64,{base64_data}"
+
+                data_uris.append(data_uri)
+                logger.info(f"Downloaded media: {len(response.content)} bytes, type={content_type}")
+
+            except Exception as e:
+                logger.error(f"Failed to download media {url}: {e}")
+
+    return data_uris
+
+
 async def process_outfit_request(user_id: str, phone: str, message: str, image_urls: list[str] = None):
     """
     Background task to process user request.
@@ -57,8 +100,13 @@ async def process_outfit_request(user_id: str, phone: str, message: str, image_u
     """
     try:
         logger.info(f"Processing request for {user_id}: {message}")
+
+        # Download Twilio media and convert to base64 (Twilio URLs require auth)
+        image_data_uris = None
         if image_urls:
-            logger.info(f"Received {len(image_urls)} images: {image_urls}")
+            logger.info(f"Downloading {len(image_urls)} images from Twilio...")
+            image_data_uris = await download_twilio_media(image_urls)
+            logger.info(f"Downloaded {len(image_data_uris)} images as base64")
 
         # Import here to avoid circular imports
         from agent.agent import StylingAgent
@@ -71,7 +119,7 @@ async def process_outfit_request(user_id: str, phone: str, message: str, image_u
         agent = StylingAgent(user_id=user_id, provider="openai", output=output)
 
         # Run agent - it will call resolve_items + send_message as needed
-        response = agent.run(message, image_urls=image_urls)
+        response = agent.run(message, image_urls=image_data_uris)
         logger.info(f"Agent completed. Response: {response[:200] if response else '(none)'}...")
 
     except Exception as e:
