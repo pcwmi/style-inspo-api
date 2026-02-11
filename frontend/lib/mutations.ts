@@ -154,37 +154,3 @@ export function useDislikeOutfit(
     ...options,
   })
 }
-
-/**
- * Generate outfits (async job)
- * Returns job ID for polling with useJobStatus
- */
-export function useGenerateOutfits(
-  options?: Omit<
-    UseMutationOptions<
-      any,
-      Error,
-      {
-        user_id: string
-        occasions?: string[]
-        temperature_range?: string
-        mode: 'occasion' | 'complete'
-        anchor_items?: string[]
-        mock?: boolean
-      }
-    >,
-    'mutationFn'
-  >
-) {
-  return useMutation({
-    mutationFn: (request: {
-      user_id: string
-      occasions?: string[]
-      temperature_range?: string
-      mode: 'occasion' | 'complete'
-      anchor_items?: string[]
-      mock?: boolean
-    }) => api.generateOutfits(request),
-    ...options,
-  })
-}

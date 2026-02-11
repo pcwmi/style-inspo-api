@@ -75,27 +75,7 @@ export const api = {
     return res.blob()
   },
 
-
-
   // Outfits
-  async generateOutfits(request: {
-    user_id: string
-    occasions?: string[]
-    temperature_range?: string
-    mode: 'occasion' | 'complete'
-    anchor_items?: string[]
-    mock?: boolean
-    include_reasoning?: boolean
-  }) {
-    const res = await fetch(`${API_URL}/api/outfits/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(request)
-    })
-    if (!res.ok) throw new Error('Failed to generate outfits')
-    return res.json()
-  },
-
   async getJobStatus(jobId: string) {
     const res = await fetch(`${API_URL}/api/jobs/${jobId}`)
     if (!res.ok) {

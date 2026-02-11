@@ -13,16 +13,11 @@ from datetime import datetime, timezone
 from PIL import Image, ImageOps
 from io import BytesIO
 
-from models.schemas import OutfitRequest, OutfitGenerationResponse, SaveOutfitRequest, DislikeOutfitRequest, OutfitContext, MarkWornRequest, MarkWornResponse
-from workers.outfit_worker import generate_outfits_job
+from models.schemas import SaveOutfitRequest, DislikeOutfitRequest, OutfitContext, MarkWornRequest, MarkWornResponse
 from services.saved_outfits_manager import SavedOutfitsManager
 from services.disliked_outfits_manager import DislikedOutfitsManager
 from services.activity_logger import log_activity
-from services.prompts.library import PromptLibrary
 from services.storage_manager import StorageManager
-from core.redis import get_redis_connection
-from core.config import get_settings
-from rq import Queue
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -93,12 +88,6 @@ def log_generation_to_s3(
     except Exception as e:
         # Don't fail the request if logging fails
         logger.error(f"Failed to log generation for {user_id}: {e}")
-
-# Lazy initialization of RQ queue (only when needed)
-def get_outfit_queue():
-    """Get or create outfit queue"""
-    redis_conn = get_redis_connection()
-    return Queue('outfits', connection=redis_conn)
 
 
 @router.get("/outfits/generate/stream")
@@ -352,48 +341,6 @@ async def generate_outfits_stream(
             "X-Accel-Buffering": "no"
         }
     )
-
-
-@router.post("/outfits/generate", response_model=OutfitGenerationResponse)
-async def generate_outfits(request: OutfitRequest):
-    """Generate outfits (background job)"""
-    try:
-        # Get prompt version (request override or env default)
-        prompt_version = request.prompt_version or get_settings().PROMPT_VERSION
-        
-        # Validate prompt version exists
-        try:
-            PromptLibrary.get_prompt(prompt_version)
-        except ValueError as e:
-            raise HTTPException(status_code=400, detail=str(e))
-        
-        # Enqueue outfit generation job
-        outfit_queue = get_outfit_queue()
-        job = outfit_queue.enqueue(
-            generate_outfits_job,
-            user_id=request.user_id,
-            occasions=request.occasions,
-            weather_condition=request.weather_condition,
-            temperature_range=request.temperature_range,
-            mode=request.mode,
-            anchor_items=request.anchor_items,
-            mock=request.mock,
-            prompt_version=prompt_version,
-            include_reasoning=request.include_reasoning,
-            job_timeout=120  # 2 minutes max
-        )
-        
-        return {
-            "job_id": job.id,
-            "status": "queued",
-            "estimated_time": 30,  # seconds
-            "prompt_version": prompt_version
-        }
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error enqueueing outfit generation for {request.user_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 class OutfitDictWrapper:
