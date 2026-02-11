@@ -126,16 +126,16 @@ function DashboardContent() {
         {isUsingLegacyUrl && (
           <div className="bg-sand/50 border border-terracotta/20 rounded-lg p-4 mb-5 md:mb-6">
             <p className="text-sm text-ink mb-2">
-              <strong>Secure your account</strong>
+              <strong>Your wardrobe, secured</strong>
             </p>
             <p className="text-sm text-muted mb-3">
-              Create an account to access your wardrobe from any device.
+              We now have proper login so your style profile and wardrobe are safely tied to you. Takes 30 seconds.
             </p>
             <Link
               href="/signup"
               className="inline-block bg-terracotta text-white text-sm py-2 px-4 rounded-lg font-medium hover:opacity-90 transition"
             >
-              Create account
+              Set up login
             </Link>
           </div>
         )}
