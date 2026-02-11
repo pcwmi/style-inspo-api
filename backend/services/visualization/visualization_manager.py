@@ -237,6 +237,21 @@ class VisualizationManager:
         response.raise_for_status()
         image_data = response.content
 
+        # Compress image to reduce file size (prevents Twilio timeout on large files)
+        from PIL import Image
+        img = Image.open(BytesIO(image_data))
+        # Resize to max 1080px on longest side (good for mobile, much smaller file)
+        max_size = 1080
+        if max(img.size) > max_size:
+            ratio = max_size / max(img.size)
+            new_size = (int(img.size[0] * ratio), int(img.size[1] * ratio))
+            img = img.resize(new_size, Image.Resampling.LANCZOS)
+        # Compress with quality=75 (good balance of size vs quality)
+        compressed = BytesIO()
+        img.save(compressed, format='JPEG', quality=75, optimize=True)
+        compressed.seek(0)
+        image_data = compressed.read()
+
         # Upload to permanent storage with unique ID
         viz_id = str(uuid.uuid4())[:8]
         viz_filename = f"visualizations/sms_{viz_id}.jpg"
