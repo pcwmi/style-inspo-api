@@ -77,8 +77,8 @@ class VisualizationManager:
         """
         logger.info(f"Starting visualization for outfit {outfit_id}, user {self.user_id}")
 
-        # 1. Fetch outfit
-        outfit = self.outfit_manager.get_outfit_by_id(outfit_id)
+        # 1. Fetch outfit with enriched images from wardrobe
+        outfit = self.outfit_manager.get_outfit_by_id(outfit_id, enrich_with_current_images=True)
         if not outfit:
             raise ValueError(f"Outfit {outfit_id} not found for user {self.user_id}")
 

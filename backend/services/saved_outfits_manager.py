@@ -143,11 +143,12 @@ class SavedOutfitsManager:
 
         return saved_outfits
 
-    def get_outfit_by_id(self, outfit_id: str) -> Optional[Dict]:
+    def get_outfit_by_id(self, outfit_id: str, enrich_with_current_images: bool = False) -> Optional[Dict]:
         """Get a specific saved outfit by ID.
 
         Args:
             outfit_id: The outfit ID to retrieve
+            enrich_with_current_images: If True, enrich items with current image_paths from wardrobe
 
         Returns:
             Outfit dict if found, None otherwise
@@ -157,6 +158,10 @@ class SavedOutfitsManager:
 
         for outfit in saved_outfits:
             if outfit.get("id") == outfit_id:
+                if enrich_with_current_images:
+                    # Enrich single outfit with current images from wardrobe
+                    enriched = self._enrich_with_current_images([outfit])
+                    return enriched[0] if enriched else outfit
                 return outfit
 
         return None
@@ -324,6 +329,28 @@ class SavedOutfitsManager:
             # If enrichment fails, return original outfits
             print(f"Warning: Failed to enrich saved outfits with current images: {e}")
             return saved_outfits
+
+    def delete_outfit(self, outfit_id: str) -> bool:
+        """Delete a saved outfit by ID.
+
+        Args:
+            outfit_id: The outfit ID to delete
+
+        Returns:
+            True if deleted, False if not found
+        """
+        data = self._read_json()
+        saved_list = data.get("saved", [])
+        original_count = len(saved_list)
+
+        data["saved"] = [o for o in saved_list if o.get("id") != outfit_id]
+
+        if len(data["saved"]) == original_count:
+            return False  # Not found
+
+        data["last_updated"] = _now_iso()
+        self._atomic_write(data)
+        return True
 
     def _read_json(self) -> Dict:
         """Read saved outfits data from storage"""
