@@ -191,7 +191,8 @@ class StorageManager:
         self.s3_client.upload_fileobj(
             file_obj,
             self.bucket_name,
-            s3_key
+            s3_key,
+            ExtraArgs={'ContentType': 'image/jpeg'}
         )
         
         # Return public URL
