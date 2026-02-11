@@ -146,7 +146,7 @@ async def verify_magic_link(token: str, response: Response):
             value=session_token,
             httponly=True,
             secure=IS_PRODUCTION,  # Only require HTTPS in production
-            samesite="lax",
+            samesite="none" if IS_PRODUCTION else "lax",  # Cross-origin requires "none"
             max_age=JWT_EXPIRY_DAYS * 24 * 60 * 60,  # 30 days in seconds
             path="/"
         )
@@ -198,7 +198,7 @@ async def logout(response: Response):
         path="/",
         httponly=True,
         secure=IS_PRODUCTION,
-        samesite="lax"
+        samesite="none" if IS_PRODUCTION else "lax"
     )
 
     return {"success": True, "message": "Logged out"}
