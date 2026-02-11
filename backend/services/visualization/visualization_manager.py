@@ -97,6 +97,10 @@ class VisualizationManager:
         # Extract garment image paths (Runway API accepts max 3 reference images)
         garment_images = [item.get('image_path') for item in outfit_items if item.get('image_path')][:3]
 
+        # Fallback for SMS-saved outfits (legacy format with image_urls)
+        if not garment_images:
+            garment_images = outfit_data.get('image_urls', [])[:3]
+
         if not garment_images:
             raise ValueError(f"Outfit {outfit_id} has no garment images")
 

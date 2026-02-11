@@ -123,8 +123,14 @@ class StatefulSMSOutput(SMSOutput):
         is_outfit = images and (layout == "outfit" or len(images) >= 2)
 
         if is_outfit:
+            # Normalize to web format (items[].image_path) for consistency
+            # This ensures SMS-saved outfits work with visualization_manager
             outfit_data = {
-                "image_urls": images,
+                "items": [
+                    {"image_path": url, "name": f"Item {i+1}"}
+                    for i, url in enumerate(images)
+                ],
+                "image_urls": images,  # Keep for backward compat
                 "styling_notes": text,
             }
             self.state_manager.set_last_outfit(outfit_data)
