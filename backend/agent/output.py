@@ -77,14 +77,18 @@ class SMSOutput(OutputHandler):
         collage_url = generate_outfit_collage(self.user_id, images)
 
         if collage_url:
+            import time
             # Split text into before/after image sections
             before_image, after_image = self._split_message_sections(text)
 
             # Send in 3 parts: magic → image → how to wear it
+            # Add delays to help WhatsApp deliver in order
             if before_image:
                 send_sms(self.phone, before_image)
+                time.sleep(0.5)  # 500ms delay
             send_mms(self.phone, " ", [collage_url])
             if after_image:
+                time.sleep(0.5)  # 500ms delay
                 send_sms(self.phone, after_image)
 
             logger.info(f"SMSOutput: sent {len(images)} images as {layout} collage to {self.phone}")
