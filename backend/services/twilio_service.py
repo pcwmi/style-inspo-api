@@ -16,13 +16,12 @@ logger = logging.getLogger(__name__)
 class TwilioService:
     """Twilio SMS/MMS service."""
 
-    # WhatsApp sandbox number (shared by all Twilio sandbox users)
-    WHATSAPP_SANDBOX_NUMBER = "+14155238886"
-
     def __init__(self):
         self.account_sid = os.getenv("TWILIO_ACCOUNT_SID")
         self.auth_token = os.getenv("TWILIO_AUTH_TOKEN")
         self.from_number = os.getenv("TWILIO_PHONE_NUMBER")
+        # WhatsApp Business number (production) - falls back to sandbox if not set
+        self.whatsapp_number = os.getenv("TWILIO_WHATSAPP_NUMBER", "+14155238886")
 
         if not all([self.account_sid, self.auth_token, self.from_number]):
             logger.warning("Twilio credentials not configured")
@@ -46,10 +45,10 @@ class TwilioService:
             return None
 
         try:
-            # Determine if WhatsApp - use sandbox number for WhatsApp
+            # Determine if WhatsApp - use WhatsApp Business number
             is_whatsapp = to.startswith("whatsapp:")
             if is_whatsapp:
-                from_number = f"whatsapp:{self.WHATSAPP_SANDBOX_NUMBER}"
+                from_number = f"whatsapp:{self.whatsapp_number}"
             else:
                 from_number = self.from_number
 
@@ -86,10 +85,10 @@ class TwilioService:
             return None
 
         try:
-            # Determine if WhatsApp - use sandbox number for WhatsApp
+            # Determine if WhatsApp - use WhatsApp Business number
             is_whatsapp = to.startswith("whatsapp:")
             if is_whatsapp:
-                from_number = f"whatsapp:{self.WHATSAPP_SANDBOX_NUMBER}"
+                from_number = f"whatsapp:{self.whatsapp_number}"
             else:
                 from_number = self.from_number
 
