@@ -52,7 +52,7 @@ class RunwayProvider(ImageGenerationProvider):
     def __init__(self):
         self.api_key = os.getenv('RUNWAY_API_KEY')
         self.base_url = "https://api.dev.runwayml.com/v1"
-        self.model = "gen4_image"
+        self.model = "gen4_image_turbo"
         self.headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
@@ -75,7 +75,7 @@ class RunwayProvider(ImageGenerationProvider):
         """Return provider name for logging."""
         return "Runway ML"
 
-    def generate_image(self, request: ImageGenerationRequest, model_descriptor: str = None) -> ImageGenerationResult:
+    def generate_image(self, request: ImageGenerationRequest, model_descriptor: str = None, model: str = None) -> ImageGenerationResult:
         """
         Generate outfit visualization using Runway Gen-4 Image API.
 
@@ -89,6 +89,7 @@ class RunwayProvider(ImageGenerationProvider):
         Args:
             request: ImageGenerationRequest with garment images and parameters
             model_descriptor: Optional user-level model descriptor (overrides env var)
+            model: Optional model name ('gen4_image', 'gemini_2.5_flash', etc.)
 
         Returns:
             ImageGenerationResult with success status and image URL or error
@@ -109,12 +110,23 @@ class RunwayProvider(ImageGenerationProvider):
 
             logger.info(f"Runway prompt (length: {len(prompt)}):\n{prompt}")
 
+            # Use provided model or default to gen4_image
+            selected_model = model or self.model
+
+            # Choose appropriate ratio based on model
+            # gen4_image supports 1080:1920, but gemini models need different ratios
+            if selected_model.startswith("gemini"):
+                ratio = "832:1248"  # Portrait ratio valid for Gemini
+            else:
+                ratio = "1080:1920"  # Portrait for gen4_image
+
             # Build payload
             payload = {
-                "model": self.model,
+                "model": selected_model,
                 "promptText": prompt,
-                "ratio": "1080:1920",  # Portrait (better for single-model full-body shots)
+                "ratio": ratio,
             }
+            logger.info(f"Using model: {selected_model}, ratio: {ratio}")
 
             # Add reference images
             reference_images = self._prepare_reference_images(request)
