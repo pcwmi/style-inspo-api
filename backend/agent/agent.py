@@ -64,10 +64,16 @@ class StylingAgent:
 
         # Last outfit context
         last_outfit = self.conversation_context.get("last_outfit", {})
-        if last_outfit and last_outfit.get("items"):
-            items = last_outfit["items"]
-            item_names = [item.get("name", "Unknown") for item in items]
-            lines.append(f"[CONTEXT] Last outfit I showed you: {', '.join(item_names)}")
+        if last_outfit:
+            # Handle both formats: "items" (list of dicts) or "image_urls" (list of URLs)
+            if last_outfit.get("items"):
+                items = last_outfit["items"]
+                item_names = [item.get("name", "Unknown") for item in items]
+                lines.append(f"[CONTEXT] Last outfit I showed you: {', '.join(item_names)}")
+            elif last_outfit.get("image_urls"):
+                count = len(last_outfit["image_urls"])
+                lines.append(f"[CONTEXT] Last outfit I showed you had {count} items")
+
             if last_outfit.get("styling_notes"):
                 notes = last_outfit["styling_notes"][:200]
                 lines.append(f"[CONTEXT] Styling notes: {notes}")

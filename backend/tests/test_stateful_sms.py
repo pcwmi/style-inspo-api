@@ -234,6 +234,30 @@ class TestAgentWithContext:
 
         assert prefix == ""
 
+    def test_context_prefix_with_image_urls_format(self):
+        """Context with image_urls format (from SMS) should build prefix."""
+        from agent.agent import StylingAgent
+
+        # This is the format saved by StatefulSMSOutput
+        context = {
+            "last_outfit": {
+                "image_urls": ["https://img1.jpg", "https://img2.jpg", "https://img3.jpg"],
+                "styling_notes": "Tuck the sweater in, push sleeves up"
+            },
+            "messages": []
+        }
+
+        agent = StylingAgent(
+            user_id="testuser",
+            conversation_context=context
+        )
+
+        prefix = agent._build_context_prefix()
+
+        assert "[CONTEXT]" in prefix
+        assert "3 items" in prefix
+        assert "Tuck the sweater" in prefix
+
 
 # ============================================================================
 # Phase 3: SMS Endpoint Tests (placeholder)
