@@ -35,6 +35,33 @@ class SMSOutput(OutputHandler):
         self.phone = phone
         self.user_id = user_id
 
+    def _split_message_sections(self, text: str) -> tuple[Optional[str], Optional[str]]:
+        """
+        Split message into magic/how-to-wear sections for 3-part SMS flow.
+
+        Returns (before_image, after_image) where:
+        - before_image = "The magic:" section
+        - after_image = "How to wear it:" section
+
+        If text doesn't match the expected format, returns (text, None).
+        """
+        if not text:
+            return None, None
+
+        # Look for the "How to wear it:" marker (case insensitive, with or without bold)
+        import re
+        # Match **How to wear it:** or How to wear it: (with optional whitespace)
+        pattern = r'(\*{0,2}How to wear it:?\*{0,2})'
+        match = re.search(pattern, text, re.IGNORECASE)
+
+        if match:
+            before_image = text[:match.start()].strip()
+            after_image = text[match.start():].strip()
+            return before_image if before_image else None, after_image if after_image else None
+
+        # No marker found - send all text before image
+        return text, None
+
     def send(self, text: Optional[str], images: List[str], layout: str = "list"):
         from services.twilio_service import send_sms, send_mms
         from services.collage import generate_outfit_collage
@@ -50,9 +77,16 @@ class SMSOutput(OutputHandler):
         collage_url = generate_outfit_collage(self.user_id, images)
 
         if collage_url:
-            if text:
-                send_sms(self.phone, text)
+            # Split text into before/after image sections
+            before_image, after_image = self._split_message_sections(text)
+
+            # Send in 3 parts: magic → image → how to wear it
+            if before_image:
+                send_sms(self.phone, before_image)
             send_mms(self.phone, " ", [collage_url])
+            if after_image:
+                send_sms(self.phone, after_image)
+
             logger.info(f"SMSOutput: sent {len(images)} images as {layout} collage to {self.phone}")
         else:
             # Fallback: send text only if collage fails
