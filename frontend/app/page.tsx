@@ -10,6 +10,7 @@ import { ReadyToWearCarousel } from '@/components/ReadyToWearCarousel'
 import { WardrobePreviewCarousel } from '@/components/WardrobePreviewCarousel'
 import { useAuth } from '@/lib/useAuth'
 import { buildUserUrl } from '@/lib/auth'
+import { ShowcaseLanding } from '@/components/ShowcaseLanding'
 
 function DashboardContent() {
   const searchParams = useSearchParams()
@@ -49,9 +50,8 @@ function DashboardContent() {
       // Wait for auth check to complete
       if (authLoading) return
 
-      // If no user (neither authenticated nor URL param), redirect to welcome page
+      // If no user (neither authenticated nor URL param), showcase is rendered inline
       if (!authUser && !userParam) {
-        router.push('/welcome')
         return
       }
 
@@ -84,13 +84,9 @@ function DashboardContent() {
   // Non-blocking: Show dashboard immediately, let counts load in background
   // Skeleton placeholders are used inline for counts instead of blocking the whole page
 
-  // If no user (neither authenticated nor URL param), show loading while redirect kicks in
+  // If no user (neither authenticated nor URL param), show the showcase landing page
   if (!authLoading && !authUser && !userParam) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">Redirecting...</p>
-      </div>
-    )
+    return <ShowcaseLanding />
   }
 
   // Get wardrobe items for carousel
@@ -121,24 +117,6 @@ function DashboardContent() {
             </button>
           )}
         </div>
-
-        {/* Claim account banner for legacy URL users */}
-        {isUsingLegacyUrl && (
-          <div className="bg-sand/50 border border-terracotta/20 rounded-lg p-4 mb-5 md:mb-6">
-            <p className="text-sm text-ink mb-2">
-              <strong>Your wardrobe, secured</strong>
-            </p>
-            <p className="text-sm text-muted mb-3">
-              We now have proper login so your style profile and wardrobe are safely tied to you. Takes 30 seconds.
-            </p>
-            <Link
-              href="/signup"
-              className="inline-block bg-terracotta text-white text-sm py-2 px-4 rounded-lg font-medium hover:opacity-90 transition"
-            >
-              Set up login
-            </Link>
-          </div>
-        )}
 
         {/* HERO: Ready to Wear Carousel - show skeleton while loading or fetching */}
         {(notWornLoading || notWornFetching || notWornData === undefined) ? (
