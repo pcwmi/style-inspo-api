@@ -94,8 +94,8 @@ export function DashboardClient() {
   const wardrobeItems = wardrobe?.items || []
   const wardrobeCount = wardrobe?.count || 0
 
-  // Display name: prefer email for authenticated, capitalize legacy username
-  const displayName = authUser?.email || capitalizeFirst(user)
+  // Display name: prefer profile display_name, then email, then capitalized username
+  const displayName = profile?.display_name || authUser?.email || capitalizeFirst(user)
 
   // Helper to build URLs that work in both auth modes
   const userUrl = (path: string) => buildUserUrl(path, authUser, user)

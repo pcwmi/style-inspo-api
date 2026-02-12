@@ -97,6 +97,7 @@ class ProfileUpdate(BaseModel):
     """User profile update request"""
     three_words: Optional[Dict[str, str]] = None
     daily_emotion: Optional[Dict[str, str]] = None
+    display_name: Optional[str] = None  # User's preferred display name (e.g., "Dana")
 
 
 class ProfileResponse(BaseModel):
@@ -104,6 +105,7 @@ class ProfileResponse(BaseModel):
     user_id: str
     three_words: Optional[Dict[str, str]] = None
     daily_emotion: Optional[Dict[str, str]] = None
+    display_name: Optional[str] = None  # User's preferred display name
     model_descriptor: Optional[str] = None
     created_at: Optional[str] = None
     updated_at: Optional[str] = None

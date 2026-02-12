@@ -97,6 +97,7 @@ async def get_profile(user_id: str):
             "user_id": user_id,
             "three_words": three_words,
             "daily_emotion": profile.get("daily_emotion"),
+            "display_name": profile.get("display_name"),
             "model_descriptor": profile.get("model_descriptor"),
             "created_at": profile.get("created_at"),
             "updated_at": profile.get("updated_at")
@@ -118,6 +119,8 @@ async def update_profile(user_id: str, profile: ProfileUpdate):
             profile_data["three_words"] = profile.three_words
         if profile.daily_emotion:
             profile_data["daily_emotion"] = profile.daily_emotion
+        if profile.display_name:
+            profile_data["display_name"] = profile.display_name
 
         success = profile_manager.save_profile(profile_data)
 

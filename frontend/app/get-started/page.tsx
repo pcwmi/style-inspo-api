@@ -112,13 +112,14 @@ function GetStartedContent() {
     const trimmedUsername = username.toLowerCase().trim()
 
     try {
-      // Save profile with the username
+      // Save profile with the username and display name
       await api.updateProfile(trimmedUsername, {
         three_words: {
           current: word1.trim(),
           aspirational: word2.trim(),
           feeling: word3.trim()
-        }
+        },
+        display_name: username.trim()  // Preserve their preferred capitalization
       })
 
       posthog.capture('signup_completed', {
@@ -186,7 +187,7 @@ function GetStartedContent() {
               )}
             </div>
           </div>
-          <p className="text-xs text-muted mt-2">Letters, numbers, and underscores only (saved as lowercase)</p>
+          <p className="text-xs text-muted mt-2">Letters, numbers, and underscores only</p>
 
           {/* Error/suggestion message */}
           {usernameError && (

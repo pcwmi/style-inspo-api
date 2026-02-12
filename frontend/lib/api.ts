@@ -126,6 +126,7 @@ export const api = {
   async updateProfile(userId: string, profile: {
     three_words?: Record<string, string>
     daily_emotion?: Record<string, string>
+    display_name?: string
   }) {
     const res = await fetch(`${API_URL}/api/users/${userId}/profile`, {
       method: 'POST',
