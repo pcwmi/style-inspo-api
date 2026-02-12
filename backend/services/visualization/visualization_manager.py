@@ -173,7 +173,7 @@ class VisualizationManager:
             'metadata': result.metadata
         }
 
-    def visualize_from_images(self, garment_images: list, provider_name: str = "runway") -> Dict:
+    def visualize_from_images(self, garment_images: list, provider_name: str = "runway", styling_notes: str = "") -> Dict:
         """
         Generate visualization directly from image URLs (for SMS flow).
 
@@ -183,6 +183,7 @@ class VisualizationManager:
         Args:
             garment_images: List of garment image URLs (max 3 used)
             provider_name: Visualization provider (default: "runway")
+            styling_notes: Optional styling hint for Runway (e.g., "sweater draped over shoulders")
 
         Returns:
             Dict with:
@@ -216,13 +217,15 @@ class VisualizationManager:
             model_descriptor = "A person wearing the outfit"
 
         logger.info(f"Model descriptor: {model_descriptor[:50]}...")
+        if styling_notes:
+            logger.info(f"Styling notes for Runway: {styling_notes[:80]}...")
 
         # Build request
         request = ImageGenerationRequest(
             garment_images=garment_images,
             prompt_text="",  # No specific items, just visualize what's in images
             style_profile=profile or {},
-            styling_notes="",
+            styling_notes=styling_notes,  # Pass styling hint to Runway prompt
             mode="model"
         )
 

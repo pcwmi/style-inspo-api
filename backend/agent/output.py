@@ -146,9 +146,27 @@ class StatefulSMSOutput(SMSOutput):
             logger.info(f"StatefulSMSOutput: sent visualization expectation message to {self.phone}")
 
             # Trigger background visualization (sends follow-up MMS)
-            self._trigger_background_visualization(images)
+            # Extract "The magic" section for Runway styling instructions
+            styling_hint = self._extract_magic_section(text)
+            self._trigger_background_visualization(images, styling_hint)
 
-    def _trigger_background_visualization(self, images: List[str]):
+    def _extract_magic_section(self, text: str) -> str:
+        """Extract 'The magic:' section from outfit text for Runway styling hints."""
+        if not text:
+            return ""
+
+        import re
+        # Find "The magic:" or "**The magic:**" section
+        match = re.search(r'\*{0,2}The magic:?\*{0,2}\s*(.+?)(?:\n\n|\*{0,2}This outfit says|\Z)', text, re.IGNORECASE | re.DOTALL)
+        if match:
+            magic = match.group(1).strip()
+            # Clean up markdown formatting
+            magic = re.sub(r'\*+', '', magic)
+            # Limit to 150 chars for Runway prompt budget
+            return magic[:150] if len(magic) > 150 else magic
+        return ""
+
+    def _trigger_background_visualization(self, images: List[str], styling_notes: str = ""):
         """Spawn background thread to generate and send visualization."""
         import threading
 
@@ -158,9 +176,11 @@ class StatefulSMSOutput(SMSOutput):
                 from services.twilio_service import send_sms, send_mms
 
                 logger.info(f"Starting background visualization for {self.user_id}")
+                if styling_notes:
+                    logger.info(f"Styling hint for Runway: {styling_notes[:80]}...")
 
                 viz_manager = VisualizationManager(self.user_id)
-                result = viz_manager.visualize_from_images(images)
+                result = viz_manager.visualize_from_images(images, styling_notes=styling_notes)
 
                 if result and result.get("visualization_url"):
                     viz_url = result["visualization_url"]
