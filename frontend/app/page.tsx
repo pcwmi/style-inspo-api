@@ -84,9 +84,14 @@ function DashboardContent() {
   // Non-blocking: Show dashboard immediately, let counts load in background
   // Skeleton placeholders are used inline for counts instead of blocking the whole page
 
-  // If no user (neither authenticated nor URL param), show the showcase landing page
-  if (!authLoading && !authUser && !userParam) {
-    return <ShowcaseLanding />
+  // If no user param, wait for auth to resolve before deciding what to show
+  if (!userParam) {
+    if (authLoading) {
+      return <div className="min-h-screen bg-bone" />
+    }
+    if (!authUser) {
+      return <ShowcaseLanding />
+    }
   }
 
   // Get wardrobe items for carousel
