@@ -294,7 +294,7 @@ function UploadPageContent() {
         
         {isPartialUser ? (
           <>
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">Welcome back {capitalizeFirst(user)}!</h1>
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">Welcome back {profile?.display_name || capitalizeFirst(user)}!</h1>
             <p className="text-muted mb-5 md:mb-8 text-base leading-relaxed">
               Upload at least 10 photos with a mix of top/bottom/shoes/accessories. More pieces lead to more inspiration.
             </p>
