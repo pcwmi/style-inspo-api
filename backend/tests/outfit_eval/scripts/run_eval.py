@@ -124,17 +124,25 @@ def fetch_user_wardrobe(user_id: str) -> List[Dict]:
     return wardrobe
 
 
-def find_anchor_item(wardrobe: List[Dict], anchor_name: str) -> Dict:
-    """Find anchor item in wardrobe by name (fuzzy match)."""
-    anchor_name_lower = anchor_name.lower()
+def find_anchor_item(wardrobe: List[Dict], anchor_identifier: str) -> Dict:
+    """Find anchor item in wardrobe by ID or name (fuzzy match).
 
+    First tries to match by item ID, then falls back to name matching.
+    """
+    # First try exact ID match
+    for item in wardrobe:
+        if item.get('id') == anchor_identifier:
+            return item
+
+    # Fall back to name matching (fuzzy)
+    anchor_name_lower = anchor_identifier.lower()
     for item in wardrobe:
         item_name = item.get('styling_details', {}).get('name', '').lower()
         if anchor_name_lower in item_name or item_name in anchor_name_lower:
             return item
 
     # If not found, return first item as fallback
-    print(f"  ⚠️  Anchor item '{anchor_name}' not found, using first item as fallback")
+    print(f"  ⚠️  Anchor item '{anchor_identifier}' not found, using first item as fallback")
     return wardrobe[0] if wardrobe else None
 
 

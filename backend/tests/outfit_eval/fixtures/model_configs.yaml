@@ -95,3 +95,45 @@ models:
     max_tokens: 3000  # Increased for reasoning steps
     prompt_version: chain_of_thought_v1
     description: "Claude Sonnet 4.5 with explicit reasoning steps"
+
+  # ===== A/B TEST: REASONING HYPOTHESIS (Jan 2026) =====
+  # Testing whether "ask yourself" prompt reduces physically nonsensical outfits
+
+  # Control: Current chain-of-thought (no reasoning question)
+  - id: gpt4o_cot_control
+    name: "Control (Current COT)"
+    model: gpt-4o
+    temperature: 0.7
+    max_tokens: 3000
+    prompt_version: chain_of_thought_v1
+    description: "Control: GPT-4o with current chain-of-thought prompt"
+
+  # Treatment A: Chain-of-thought with reasoning question
+  - id: gpt4o_cot_reasoning
+    name: "Treatment A (Reasoning Prompt)"
+    model: gpt-4o
+    temperature: 0.7
+    max_tokens: 3000
+    prompt_version: chain_of_thought_reasoning_v1
+    description: "Treatment A: GPT-4o with reasoning question about bulk/comfort"
+
+  # ===== VISION A/B TEST (Feb 2026) =====
+  # Hypothesis: Vision-informed generation reduces physically nonsensical outfits
+
+  # Control: Text-only baseline (no images)
+  - id: gpt4o_text_only
+    name: "Control (Text-Only)"
+    model: gpt-4o
+    temperature: 0.7
+    max_tokens: 2000
+    prompt_version: baseline_v1
+    description: "Control: GPT-4o with text metadata only (no images)"
+
+  # Treatment: Vision-informed (with wardrobe images)
+  - id: gpt4o_vision
+    name: "Treatment (Vision-Informed)"
+    model: gpt-4o
+    temperature: 0.7
+    max_tokens: 2000
+    prompt_version: vision_v1
+    description: "Treatment: GPT-4o with wardrobe images (low detail, 85 tokens each)"

@@ -64,7 +64,7 @@ def detect_eval_type(results):
     return 'ab_test' if is_ab_test else 'single_model'
 
 def group_results(results, eval_type):
-    """Group results by scenario and model"""
+    """Group results by scenario and model, accumulating all iterations"""
     if eval_type == 'ab_test':
         scenarios = {}
         for r in results:
@@ -74,19 +74,29 @@ def group_results(results, eval_type):
             if scenario_name not in scenarios:
                 scenarios[scenario_name] = {}
 
+            # Parse outfits from this iteration
             parsed_outfits = []
             for outfit_str in r['outfits']:
                 parsed = parse_outfit_string(outfit_str)
                 if parsed:
                     parsed_outfits.append(parsed)
 
-            scenarios[scenario_name][model_name] = {
-                'outfits': parsed_outfits,
-                'model_id': r['model_id'],
-                'latency': r.get('latency_seconds', 0),
-                'cost': r.get('cost_usd', 0),
-                'reasoning': r.get('reasoning')
-            }
+            # Accumulate outfits across iterations instead of overwriting
+            if model_name not in scenarios[scenario_name]:
+                scenarios[scenario_name][model_name] = {
+                    'outfits': parsed_outfits,
+                    'model_id': r['model_id'],
+                    'latency': r.get('latency_seconds', 0),
+                    'cost': r.get('cost_usd', 0),
+                    'reasoning': r.get('reasoning'),
+                    'iteration_count': 1
+                }
+            else:
+                # Accumulate outfits and aggregate stats
+                scenarios[scenario_name][model_name]['outfits'].extend(parsed_outfits)
+                scenarios[scenario_name][model_name]['latency'] += r.get('latency_seconds', 0)
+                scenarios[scenario_name][model_name]['cost'] += r.get('cost_usd', 0)
+                scenarios[scenario_name][model_name]['iteration_count'] += 1
         return scenarios
     else:
         # Single model: group by scenario only

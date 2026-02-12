@@ -12,7 +12,7 @@ from services.wardrobe_manager import WardrobeManager
 from services.image_analyzer import create_image_analyzer
 from services.activity_logger import log_activity
 from models.schemas import WardrobeResponse, WardrobeItemResponse
-from workers.outfit_worker import analyze_item_job
+from workers.outfit_worker import analyze_item_job, extract_outfit_items_job
 from core.redis import get_redis_connection
 from rq import Queue
 
@@ -95,6 +95,56 @@ async def upload_item(
         }
     except Exception as e:
         logger.error(f"Error uploading item for {user_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/wardrobe/{user_id}/upload-outfit")
+async def upload_outfit(
+    user_id: str,
+    file: UploadFile = File(...)
+):
+    """Upload an outfit photo to extract individual items.
+
+    Uses GPT-4o vision to identify items, crops each one, removes background,
+    analyzes individually, and adds all to wardrobe.
+    Returns a job_id to track progress via /api/jobs/{job_id}.
+    """
+    try:
+        from services.storage_manager import StorageManager
+        import os
+        import uuid
+        from io import BytesIO
+
+        storage_type = os.getenv("STORAGE_TYPE", "local")
+        storage = StorageManager(storage_type=storage_type, user_id=user_id)
+
+        content = await file.read()
+        file_obj = BytesIO(content)
+
+        unique_staging_name = f"staging/{uuid.uuid4().hex}_{file.filename}"
+        file_path = storage.save_file(file_obj, unique_staging_name)
+
+        analysis_queue = get_analysis_queue()
+        job = analysis_queue.enqueue(
+            extract_outfit_items_job,
+            user_id=user_id,
+            file_path=file_path,
+            filename=file.filename,
+            job_timeout=300  # 5 minutes (handles up to ~8 items)
+        )
+
+        log_activity(user_id, "outfit_extraction_started", {
+            "filename": file.filename,
+            "job_id": job.id
+        })
+
+        return {
+            "job_id": job.id,
+            "status": "processing",
+            "message": "Outfit photo uploaded, extracting items..."
+        }
+    except Exception as e:
+        logger.error(f"Error uploading outfit for {user_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

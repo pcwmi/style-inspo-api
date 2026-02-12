@@ -1,0 +1,18 @@
+PROMPT COMPARISON TEST
+Date: 2026-01-16T15:39:33.994934
+
+CURRENT: Landscape 1920:1080, 'A confident woman wearing...'
+REVISED: Portrait 1080:1920, 'A single confident woman, full-body shot... ONE person only.'
+
+Test 1:
+  Outfit: Plaid blazer, grey tee, jeans, sneakers, earrings
+  Descriptor: 5'4", Asian, chest length wavy black hair
+
+Test 2:
+  Outfit: Black dress, heels, gold necklace
+  Descriptor: 5'8", white, brunette, athletic
+
+Test 3:
+  Outfit: Casual hoodie, joggers, chunky sneakers
+  Descriptor: 5'5", black, medium build, natural curls
+

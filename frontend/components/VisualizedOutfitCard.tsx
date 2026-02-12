@@ -28,6 +28,7 @@ interface VisualizedOutfitCardProps {
   outfitId?: string
   outfitName?: string
   visualizationUrl?: string
+  visualizationPending?: boolean  // If true, auto-poll for visualization completion
   wornAt?: string | null  // When the outfit was worn
   wornPhotoUrl?: string | null  // User's photo wearing the outfit
   user: string
@@ -48,6 +49,7 @@ export function VisualizedOutfitCard({
   outfitId,
   outfitName,
   visualizationUrl: initialVisualizationUrl,
+  visualizationPending = false,
   wornAt: initialWornAt,
   wornPhotoUrl: initialWornPhotoUrl,
   user,
@@ -64,12 +66,49 @@ export function VisualizedOutfitCard({
   const [wornAt, setWornAt] = useState(initialWornAt)
   const [wornPhotoUrl, setWornPhotoUrl] = useState(initialWornPhotoUrl)
   const [vizState, setVizState] = useState<VisualizationState>(
-    initialVisualizationUrl ? 'visualized' : 'not_visualized'
+    initialVisualizationUrl ? 'visualized' : visualizationPending ? 'generating' : 'not_visualized'
   )
-  const [progress, setProgress] = useState(0)
-  const [statusMessage, setStatusMessage] = useState('')
+  const [progress, setProgress] = useState(visualizationPending ? 30 : 0)
+  const [statusMessage, setStatusMessage] = useState(visualizationPending ? 'Creating visualization...' : '')
   const [error, setError] = useState<string | null>(null)
   const [imageExpanded, setImageExpanded] = useState(false)
+
+  // Auto-poll for visualization completion when pending
+  useEffect(() => {
+    if (!visualizationPending || !outfitId || initialVisualizationUrl) return
+
+    let pollCount = 0
+    const maxPolls = 20  // 60 seconds max (3s * 20)
+
+    const pollInterval = setInterval(async () => {
+      pollCount++
+      if (pollCount > maxPolls) {
+        clearInterval(pollInterval)
+        setVizState('not_visualized')
+        setProgress(0)
+        return
+      }
+
+      try {
+        const res = await fetch(`/api/outfits/${outfitId}/viz-status?user=${user}`)
+        const data = await res.json()
+
+        if (data.url) {
+          clearInterval(pollInterval)
+          setVisualizationUrl(data.url)
+          setVizState('visualized')
+          if (onVisualizationComplete) onVisualizationComplete(data.url)
+        } else {
+          // Update progress (simulate progress based on poll count)
+          setProgress(Math.min(30 + pollCount * 3, 90))
+        }
+      } catch (e) {
+        console.error('Error polling viz status:', e)
+      }
+    }, 3000)
+
+    return () => clearInterval(pollInterval)
+  }, [visualizationPending, outfitId, user, initialVisualizationUrl, onVisualizationComplete])
 
   // Handle mark as worn
   const handleMarkAsWorn = () => {

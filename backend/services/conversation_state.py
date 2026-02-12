@@ -20,7 +20,7 @@ from core.config import settings
 logger = logging.getLogger(__name__)
 
 TTL_SECONDS = 86400  # 24 hours
-MAX_MESSAGES = 10    # Cap message history
+MAX_MESSAGES = 50    # Full conversation history for better reasoning
 MAX_OUTFIT_HISTORY = 3  # Keep last 3 outfits for "go back" functionality
 
 
@@ -32,6 +32,7 @@ class ConversationState:
     last_outfit: Dict[str, Any] = field(default_factory=dict)
     outfit_history: List[Dict[str, Any]] = field(default_factory=list)  # Previous outfits (max 3)
     messages: List[Dict[str, str]] = field(default_factory=list)
+    image_descriptions: List[Dict[str, Any]] = field(default_factory=list)  # Analyzed images (reuse across turns)
     created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
     updated_at: str = field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
 
@@ -46,6 +47,7 @@ class ConversationState:
             last_outfit=data.get("last_outfit", {}),
             outfit_history=data.get("outfit_history", []),
             messages=data.get("messages", []),
+            image_descriptions=data.get("image_descriptions", []),
             created_at=data.get("created_at", ""),
             updated_at=data.get("updated_at", "")
         )
@@ -175,17 +177,52 @@ class ConversationStateManager:
 
         Args:
             role: 'user' or 'assistant'
-            content: Message text (will be truncated to 500 chars)
+            content: Message text (full content preserved for better reasoning)
         """
         state = self.get_state()
         if state:
             state.messages.append({
                 "role": role,
-                "content": content[:500],  # Truncate long messages
+                "content": content,  # Full content - model reasons better with complete history
                 "timestamp": datetime.utcnow().isoformat() + "Z"
             })
             return self.save_state(state)
         return False
+
+    def add_image_description(self, image_url: str, description: Dict[str, Any]) -> bool:
+        """Store an analyzed image description for reuse across turns.
+
+        Args:
+            image_url: The URL of the image that was analyzed
+            description: Structured description from image analysis
+                {item_type, colors, fit, material, style_tags, etc.}
+
+        Storing descriptions saves ~1,050 tokens per image on subsequent turns
+        (raw image = ~1,200 tokens vs description = ~150 tokens).
+        """
+        state = self.get_state()
+        if state:
+            state.image_descriptions.append({
+                "url": image_url,
+                "description": description,
+                "timestamp": datetime.utcnow().isoformat() + "Z"
+            })
+            # Keep last 10 image descriptions
+            state.image_descriptions = state.image_descriptions[-10:]
+            return self.save_state(state)
+        return False
+
+    def get_image_description(self, image_url: str) -> Optional[Dict[str, Any]]:
+        """Get a previously analyzed image description.
+
+        Returns None if the image hasn't been analyzed before.
+        """
+        state = self.get_state()
+        if state:
+            for img in state.image_descriptions:
+                if img.get("url") == image_url:
+                    return img.get("description")
+        return None
 
     def clear(self) -> bool:
         """Clear conversation state."""

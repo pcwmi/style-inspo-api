@@ -58,6 +58,38 @@ python3 -c "import streamlit; print(streamlit.__version__)"  # Check Streamlit v
 python3 -c "from style_engine import StyleGenerationEngine; print('Engine loaded')"
 ```
 
+## E2E Testing with Playwright
+
+Use the Playwright MCP for E2E testing when making UI changes or fixing bugs. **Test locally first**, using real user profiles.
+
+**Local URLs:**
+- Dashboard: `http://localhost:3003/?user=peichin`
+- Profile: `http://localhost:3003/profile?user=peichin`
+- Wardrobe: `http://localhost:3003/wardrobe?user=peichin`
+
+**Production URLs:**
+- Dashboard: `https://styleinspo.vercel.app/?user=peichin`
+- Profile: `https://styleinspo.vercel.app/profile?user=peichin`
+
+**E2E Testing Workflow:**
+1. **Navigate** to the page being tested
+2. **Interact** like a real user would - click buttons, fill forms, trigger actions
+3. **Verify** the expected behavior with snapshots or screenshots
+4. **If broken**: revise the fix, then test again
+5. **Iterate** until the E2E flow works completely
+
+**Example E2E test flow:**
+```
+1. browser_navigate → http://localhost:3003/profile?user=peichin
+2. browser_snapshot → verify page loaded correctly
+3. browser_click → "Edit" button on Style Identity
+4. browser_fill_form → update the three words
+5. browser_click → "Save" button
+6. browser_snapshot → verify changes persisted
+```
+
+**Key principle:** Don't just verify the page loads - walk through the actual user flow. If users click a button and fill a form, the E2E test should do the same.
+
 ## Key Implementation Details
 
 **Style Generation Flow:**
@@ -85,6 +117,112 @@ python3 -c "from style_engine import StyleGenerationEngine; print('Engine loaded
 - **python-dotenv** - Environment variable management
 
 Virtual environment handles all dependencies via `requirements.txt`.
+
+## PostHog Analytics
+
+PostHog MCP is configured for autonomous analytics queries.
+
+**MANDATORY: Always filter out Pei-Chin's devices in ALL user analytics queries.** Without this filter, data is corrupted by Pei-Chin viewing other users' wardrobes.
+
+**Pei-Chin's Device IDs (exclude from queries):**
+```
+019b5d53-2130-76a8-943e-4a5552e0758b
+019bc998-094e-7309-a042-2e017cc5bd45
+019b6b77-3a3e-7343-942f-80c2bb67787a
+019b5d2f-f5cc-7329-bc3a-26f01842e4bd
+peichin
+```
+
+**Standard filter clause for HogQL queries:**
+```sql
+AND properties.$device_id NOT IN (
+  '019b5d53-2130-76a8-943e-4a5552e0758b',
+  '019bc998-094e-7309-a042-2e017cc5bd45',
+  '019b6b77-3a3e-7343-942f-80c2bb67787a',
+  '019b5d2f-f5cc-7329-bc3a-26f01842e4bd',
+  'peichin'
+)
+```
+
+**Key events tracked:**
+- `$pageview` - Page views (automatic)
+- `words_completed` - Onboarding step 1 complete
+- `upload_completed` - Onboarding step 2 complete
+- `outfit_generated` - User generated an outfit
+- `outfit_saved` / `outfit_disliked` - User actions on outfits
+- `visualization_complete` / `visualization_failed` - Runway visualization events
+- `descriptor_saved` - Model descriptor updates
+- `$rageclick` - Frustration signal (rapid clicks)
+
+**Why filter devices:** Pei-Chin often visits other user URLs (e.g., `?user=dimple`) to view their wardrobes, which inflates those users' event counts. The device filter ensures we see true user behavior.
+
+## Agent-Native Architecture (Jan 2026)
+
+Style Inspo is transitioning to "agent as first-class citizen" - the app's value is the **capability** ("help me look good"), not the website. Website, SMS, email are just access points.
+
+### Core Principles
+
+1. **Primitives are CRUD** - Tools are dumb data operations. Intelligence lives in prompts.
+2. **Eigenquestion**: "To change behavior, edit prompt or refactor code?" If refactor → primitive is too coarse.
+3. **No `generate_outfit` primitive** - Outfit generation is agent REASONING, not a tool. Tools provide DATA (items, feedback), agent provides JUDGMENT (what works together).
+
+### Current Primitives (32 total)
+
+| Entity | Primitives |
+|--------|------------|
+| Wardrobe | `get_items`, `get_item`, `add_item`, `update_item`, `rotate_item_image`, `delete_item` |
+| Profile | `get_profile`, `update_profile`, `update_descriptor` |
+| Outfits | `save_outfit`, `get_saved_outfits`, `get_outfit`, `delete_outfit`, `mark_worn`, `upload_worn_photo`, `get_not_worn_outfits`, `get_worn_outfits` |
+| Feedback | `save_feedback`, `get_feedback`, `get_feedback_patterns` |
+| Consider-Buy | `add_considering_item`, `get_considering_items`, `get_considering_stats`, `update_considering_item`, `rotate_considering_image`, `decide_considering_item`, `delete_considering_item` |
+
+### SMS/WhatsApp Flow (Jan 2026)
+
+```
+User texts → Agent generates item NAMES → Fuzzy match to wardrobe → Grid collage → MMS
+```
+
+**Key files:**
+- `backend/api/sms.py` - Twilio webhook, background processing
+- `backend/primitives/matching.py` - Fuzzy item name matching
+- `backend/services/collage.py` - 2x2/3x2 grid generation
+
+**Timing:** ~21 seconds E2E (ack → outfit delivered)
+
+### No Framework Needed
+
+The agent loop is ~20 lines. Frameworks (LangGraph, CrewAI) are overkill for "single skilled worker with tools."
+
+**Where differentiation lives:**
+- Agent loop: Commoditized (minimal investment)
+- Primitives: Medium (design thoughtfully)
+- System prompt: **High** (this is where taste lives)
+- Domain knowledge: **Highest** (garment physics, feedback patterns)
+
+## User Research Insights (Jan 2026)
+
+### What Users Actually Do
+
+| User | Expected Use | Actual Use |
+|------|--------------|------------|
+| Dimple | Plan work outfits | Validate purchases ("buy smart") |
+| Alexi | Generate complete outfits | Remember forgotten items, single-item inspiration |
+
+**Key insight:** Neither user uses it for complete outfit generation. Dimple can't (timing/access), Alexi won't (doesn't trust physics).
+
+### The Garment Physics Problem
+
+Users reject outfits that violate physical reality:
+- Ruffled shirt tucked into jeans (bulky)
+- Oversized sweatshirt + tight jacket (proportions wrong)
+- Two bottoms that can't layer
+
+**This is in the system prompt** (`backend/agent/prompts.py`) but needs continued tuning.
+
+### The Reframe
+
+**From:** "AI generates your outfit"
+**To:** "AI reminds you what's possible in your closet"
 
 ## Future Architecture Considerations
 
@@ -305,3 +443,19 @@ This means: set message once, wait 20 seconds, done. That's not streaming.
 ```
 
 **Key insight**: The fix was 1 line (`preserveExif: true`) but took a month because we debugged the wrong component. Advanced models can't compensate for testing the wrong thing.
+
+### Lesson 10: Verify Data Structure Before Bulk Operations (Jan 2026)
+
+**Problem**: Deleted all 35 saved outfits thinking empty `items` arrays meant broken data.
+
+**What happened**:
+- Manager code looked for `outfits[].items`
+- Actual S3 structure was `saved[].outfit_data.items`
+- All outfits appeared "empty" due to wrong key path
+- Bulk deleted everything, S3 versioning saved us
+
+**Prevention checklist**:
+- [ ] Before bulk delete: read ONE full record and print its structure
+- [ ] Never assume empty = broken - verify the key path exists
+- [ ] Show user exactly what will be deleted and get explicit confirmation
+- [ ] Have S3 versioning enabled on all user data buckets

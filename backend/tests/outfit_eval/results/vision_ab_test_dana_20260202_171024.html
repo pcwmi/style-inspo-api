@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vision A/B Test - Fair Comparison</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5; padding: 20px; line-height: 1.5;
+        }
+        .header {
+            text-align: center; padding: 30px; background: white;
+            border-radius: 12px; margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 { color: #1a1a2e; margin-bottom: 10px; }
+        .subtitle { color: #666; font-size: 14px; }
+
+        .summary-stats {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;
+        }
+        .stat-value { font-size: 24px; font-weight: bold; color: #2196F3; }
+        .stat-label { font-size: 11px; color: #666; text-transform: uppercase; }
+
+        .scenario {
+            background: white; border-radius: 12px; margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden;
+        }
+        .scenario-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 20px;
+        }
+        .scenario-title { font-size: 18px; font-weight: 600; }
+        .scenario-details { font-size: 13px; opacity: 0.9; margin-top: 5px; }
+
+        .metrics-row {
+            display: grid; grid-template-columns: 1fr 1fr;
+            border-bottom: 1px solid #eee;
+        }
+        .metrics {
+            padding: 15px 20px; display: flex; gap: 30px; align-items: center;
+        }
+        .metrics.control { background: #f8f9ff; border-right: 1px solid #eee; }
+        .metrics.treatment { background: #f8fff8; }
+        .metric { text-align: center; }
+        .metric-value { font-size: 18px; font-weight: bold; }
+        .metric-label { font-size: 10px; color: #666; text-transform: uppercase; }
+        .variant-badge {
+            padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;
+        }
+        .control .variant-badge { background: #e3f2fd; color: #1565c0; }
+        .treatment .variant-badge { background: #e8f5e9; color: #2e7d32; }
+
+        .outfits-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+        }
+        .outfit-column { padding: 20px; }
+        .outfit-column.control { border-right: 1px solid #eee; }
+
+        .outfit-card {
+            border: 1px solid #e0e0e0; border-radius: 10px;
+            margin-bottom: 20px; overflow: hidden;
+        }
+        .outfit-header {
+            background: #fafafa; padding: 10px 15px;
+            font-weight: 600; font-size: 13px; color: #333;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .outfit-body { padding: 15px; }
+
+        .item-images {
+            display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;
+        }
+        .item-img {
+            width: 70px; height: 70px; object-fit: cover; border-radius: 8px;
+            border: 1px solid #ddd; transition: transform 0.2s;
+        }
+        .item-img:hover { transform: scale(2.5); z-index: 100; position: relative; }
+
+        .item-names {
+            display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px;
+        }
+        .item-name {
+            background: #f0f0f0; padding: 3px 8px; border-radius: 4px;
+            font-size: 11px; color: #333;
+        }
+
+        .section { margin-top: 12px; }
+        .section-label {
+            font-size: 10px; color: #999; text-transform: uppercase;
+            margin-bottom: 4px; font-weight: 600;
+        }
+        .section-content {
+            font-size: 12px; color: #444; line-height: 1.6;
+            background: #fafafa; padding: 10px; border-radius: 6px;
+        }
+        .physical-sensibility {
+            background: #fff3e0; border-left: 3px solid #ff9800;
+        }
+        .physical-sensibility strong { color: #e65100; }
+        .no-physical {
+            font-style: italic; color: #999; font-size: 11px;
+            padding: 10px; background: #fafafa; border-radius: 6px;
+        }
+
+        .legend {
+            display: flex; justify-content: center; gap: 30px;
+            padding: 15px; background: #fafafa; margin-top: 10px;
+            border-radius: 8px; font-size: 12px;
+        }
+        .legend-item { display: flex; align-items: center; gap: 8px; }
+        .legend-color {
+            width: 12px; height: 12px; border-radius: 3px;
+        }
+        .legend-color.control { background: #e3f2fd; }
+        .legend-color.treatment { background: #e8f5e9; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧪 GPT-5.1: CoT Text vs CoT + Vision</h1>
+        <p class="subtitle">Both variants receive identical metadata. Vision also receives wardrobe images.</p>
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color control"></div>
+                <span><strong>Control:</strong> Text metadata only</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color treatment"></div>
+                <span><strong>Treatment:</strong> Text metadata + Images</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="summary-stats">
+        <div class="stat-card">
+            <div class="stat-value">3</div>
+            <div class="stat-label">Scenarios</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">18</div>
+            <div class="stat-label">Total Outfits</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">$0.000</div>
+            <div class="stat-label">Total Cost</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">90.1s</div>
+            <div class="stat-label">Total Time</div>
+        </div>
+    </div>
+
+    <div class="scenario">
+        <div class="scenario-header">
+            <div class="scenario-title">📍 Casual Coffee with Friends</div>
+            <div class="scenario-details">
+                casual coffee with friends followed by some errands | mild, 60-70°F |
+                Style: casual → polished, feeling chic
+            </div>
+        </div>
+
+        <div class="metrics-row">
+            <div class="metrics control">
+                <span class="variant-badge">📝 CoT TEXT-ONLY</span>
+                <div class="metric">
+                    <div class="metric-value">24.7s</div>
+                    <div class="metric-label">Latency</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">$0.0000</div>
+                    <div class="metric-label">Cost</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">4609</div>
+                    <div class="metric-label">Tokens</div>
+                </div>
+            </div>
+            <div class="metrics treatment">
+                <span class="variant-badge">🖼️ CoT + VISION</span>
+                <div class="metric">
+                    <div class="metric-value">0.9s</div>
+                    <div class="metric-label">Latency</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">$0.0000</div>
+                    <div class="metric-label">Cost</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">0</div>
+                    <div class="metric-label">Tokens</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">0</div>
+                    <div class="metric-label">Images</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="outfits-grid">
+            <div class="outfit-column control">
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 1</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/af2eaa4ea72e47a7be330f4e2b6d1b0f.jpg" alt="Blue denim midi skirt with front slit" title="Blue denim midi skirt with front slit">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/0deb82af0ca24e819aff4d9de8b5725a.jpg" alt="Camel ribbed V-neck sweater" title="Camel ribbed V-neck sweater">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/3e609cab6fbd4b0695a084d913c05d81.jpg" alt="Black knee-high leather boots" title="Black knee-high leather boots">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/00607576ff2e4dd583c0c7b237e9f51d.jpg" alt="Black structured blazer" title="Black structured blazer">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Blue denim midi skirt with front slit</span>
+                            <span class="item-name">Camel ribbed V-neck sweater</span>
+                            <span class="item-name">Black knee-high leather boots</span>
+                            <span class="item-name">Black structured blazer</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Front-tuck sweater into skirt; wear blazer open; push sweater sleeves to wristbone to show some arm between knit and boot.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">The knee-high boots are unexpected for a casual coffee run, but they echo the skirt slit and, with the soft camel knit, turn the look into effortless street-style chic.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="no-physical">Not included in text-only prompt</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 2</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/f9bf2d58d91e41a7859a04963b8ae6a0.jpg" alt="Dark wash wide-leg jeans" title="Dark wash wide-leg jeans">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/4eb766a5ce0d479f8dedf19a1ae9bc93.jpg" alt="Beige short-sleeve button-up blouse" title="Beige short-sleeve button-up blouse">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/95b3142a44714164b7fbdf92940a1982.jpg" alt="Beige sleeveless knit vest" title="Beige sleeveless knit vest">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/e311df970cb64bcaa5077770a4340f9c.jpg" alt="Beige woven leather flats" title="Beige woven leather flats">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Dark wash wide-leg jeans</span>
+                            <span class="item-name">Beige short-sleeve button-up blouse</span>
+                            <span class="item-name">Beige sleeveless knit vest</span>
+                            <span class="item-name">Beige woven leather flats</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Half-tuck blouse into jeans; layer vest over with blouse hem showing; keep jeans at natural waist for balance.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">The short-sleeve blouse under a knit vest is the twist—tonal beiges and dark denim make the layering feel intentional and chic, not fussy, while staying errand-friendly.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="no-physical">Not included in text-only prompt</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 3</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/f288ab5a603847a2b5496650ec996b9a.jpg" alt="Cropped denim button-up shirt" title="Cropped denim button-up shirt">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/8e5d1419c09f4235b6e626d10ac99310.jpg" alt="Ivory cropped button-up cardigan" title="Ivory cropped button-up cardigan">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/ca01209fd3cc410a9737fa1186c9b2b6.jpg" alt="Blue wide-leg jeans" title="Blue wide-leg jeans">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/e311df970cb64bcaa5077770a4340f9c.jpg" alt="Beige woven leather flats" title="Beige woven leather flats">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Cropped denim button-up shirt</span>
+                            <span class="item-name">Ivory cropped button-up cardigan</span>
+                            <span class="item-name">Blue wide-leg jeans</span>
+                            <span class="item-name">Beige woven leather flats</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Button denim shirt; wear cardigan open over it; push cardigan sleeves to mid-forearm; sit jeans high on the waist.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">Layering a cropped cardigan over a cropped denim shirt breaks the usual formula, but matching lengths and soft ivory against blue denim create a polished, modern double-denim look.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="no-physical">Not included in text-only prompt</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="outfit-column treatment">
+
+            </div>
+        </div>
+    </div>
+
+    <div class="scenario">
+        <div class="scenario-header">
+            <div class="scenario-title">📍 Work Meeting + Drinks</div>
+            <div class="scenario-details">
+                important client presentation followed by drinks with girlfriends | cool, 55-65°F |
+                Style: casual → polished, feeling confident
+            </div>
+        </div>
+
+        <div class="metrics-row">
+            <div class="metrics control">
+                <span class="variant-badge">📝 CoT TEXT-ONLY</span>
+                <div class="metric">
+                    <div class="metric-value">27.9s</div>
+                    <div class="metric-label">Latency</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">$0.0000</div>
+                    <div class="metric-label">Cost</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">4712</div>
+                    <div class="metric-label">Tokens</div>
+                </div>
+            </div>
+            <div class="metrics treatment">
+                <span class="variant-badge">🖼️ CoT + VISION</span>
+                <div class="metric">
+                    <div class="metric-value">0.9s</div>
+                    <div class="metric-label">Latency</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">$0.0000</div>
+                    <div class="metric-label">Cost</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">0</div>
+                    <div class="metric-label">Tokens</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">0</div>
+                    <div class="metric-label">Images</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="outfits-grid">
+            <div class="outfit-column control">
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 1</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/00607576ff2e4dd583c0c7b237e9f51d.jpg" alt="Black structured blazer" title="Black structured blazer">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/4eb766a5ce0d479f8dedf19a1ae9bc93.jpg" alt="Beige short-sleeve button-up blouse" title="Beige short-sleeve button-up blouse">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/f9bf2d58d91e41a7859a04963b8ae6a0.jpg" alt="Dark wash wide-leg jeans" title="Dark wash wide-leg jeans">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/e311df970cb64bcaa5077770a4340f9c.jpg" alt="Beige woven leather flats" title="Beige woven leather flats">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Black structured blazer</span>
+                            <span class="item-name">Beige short-sleeve button-up blouse</span>
+                            <span class="item-name">Dark wash wide-leg jeans</span>
+                            <span class="item-name">Beige woven leather flats</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Half-tuck blouse, blazer sleeves pushed up one turn, belt centered and visible, jeans hem just skimming top of flats.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">Dark wash wide-leg jeans under a sharp blazer replace classic trousers; the denim feels intentional and modern when polished with the blouse and refined flats.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="no-physical">Not included in text-only prompt</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 2</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/0deb82af0ca24e819aff4d9de8b5725a.jpg" alt="Camel ribbed V-neck sweater" title="Camel ribbed V-neck sweater">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/8e5d1419c09f4235b6e626d10ac99310.jpg" alt="Ivory cropped button-up cardigan" title="Ivory cropped button-up cardigan">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/af2eaa4ea72e47a7be330f4e2b6d1b0f.jpg" alt="Blue denim midi skirt with front slit" title="Blue denim midi skirt with front slit">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/3e609cab6fbd4b0695a084d913c05d81.jpg" alt="Black knee-high leather boots" title="Black knee-high leather boots">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Camel ribbed V-neck sweater</span>
+                            <span class="item-name">Ivory cropped button-up cardigan</span>
+                            <span class="item-name">Blue denim midi skirt with front slit</span>
+                            <span class="item-name">Black knee-high leather boots</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Light front-tuck the V-neck into skirt, wear cardigan open with sleeves pushed to mid-forearm, boots fully pulled up, pendant centered in V.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">Layering a cropped cardigan over a V-neck knit feels unexpected yet luxe, balancing soft texture with the structured denim skirt and strong boots.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="no-physical">Not included in text-only prompt</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 3</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/f288ab5a603847a2b5496650ec996b9a.jpg" alt="Cropped denim button-up shirt" title="Cropped denim button-up shirt">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/00607576ff2e4dd583c0c7b237e9f51d.jpg" alt="Black structured blazer" title="Black structured blazer">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/f9bf2d58d91e41a7859a04963b8ae6a0.jpg" alt="Dark wash wide-leg jeans" title="Dark wash wide-leg jeans">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/e311df970cb64bcaa5077770a4340f9c.jpg" alt="Beige woven leather flats" title="Beige woven leather flats">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Cropped denim button-up shirt</span>
+                            <span class="item-name">Black structured blazer</span>
+                            <span class="item-name">Dark wash wide-leg jeans</span>
+                            <span class="item-name">Beige woven leather flats</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Button shirt fully, let hem just meet waistband, blazer closed for presentation then open, belt visible when open, jeans hem grazing flats.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">A cropped denim shirt under a tailored blazer subverts classic suiting, but high-rise wide-leg jeans and clean accessories keep it sharp and presentation-ready.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="no-physical">Not included in text-only prompt</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="outfit-column treatment">
+
+            </div>
+        </div>
+    </div>
+
+    <div class="scenario">
+        <div class="scenario-header">
+            <div class="scenario-title">📍 Date Night Dinner</div>
+            <div class="scenario-details">
+                dinner date at upscale restaurant | evening, indoor, 68-72°F |
+                Style: classic → relaxed, feeling playful
+            </div>
+        </div>
+
+        <div class="metrics-row">
+            <div class="metrics control">
+                <span class="variant-badge">📝 CoT TEXT-ONLY</span>
+                <div class="metric">
+                    <div class="metric-value">34.7s</div>
+                    <div class="metric-label">Latency</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">$0.0000</div>
+                    <div class="metric-label">Cost</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">5114</div>
+                    <div class="metric-label">Tokens</div>
+                </div>
+            </div>
+            <div class="metrics treatment">
+                <span class="variant-badge">🖼️ CoT + VISION</span>
+                <div class="metric">
+                    <div class="metric-value">1.1s</div>
+                    <div class="metric-label">Latency</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">$0.0000</div>
+                    <div class="metric-label">Cost</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">0</div>
+                    <div class="metric-label">Tokens</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">0</div>
+                    <div class="metric-label">Images</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="outfits-grid">
+            <div class="outfit-column control">
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 1</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/af2eaa4ea72e47a7be330f4e2b6d1b0f.jpg" alt="Blue denim midi skirt with front slit" title="Blue denim midi skirt with front slit">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/4eb766a5ce0d479f8dedf19a1ae9bc93.jpg" alt="Beige short-sleeve button-up blouse" title="Beige short-sleeve button-up blouse">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/8e5d1419c09f4235b6e626d10ac99310.jpg" alt="Ivory cropped button-up cardigan" title="Ivory cropped button-up cardigan">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/3e609cab6fbd4b0695a084d913c05d81.jpg" alt="Black knee-high leather boots" title="Black knee-high leather boots">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Blue denim midi skirt with front slit</span>
+                            <span class="item-name">Beige short-sleeve button-up blouse</span>
+                            <span class="item-name">Ivory cropped button-up cardigan</span>
+                            <span class="item-name">Black knee-high leather boots</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Tuck blouse fully into skirt. Wear cardigan mostly open with only top two buttons fastened; sleeves pushed to wristbone so the outfit doesn’t feel too prim.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">The knee-high boots under the front-slit denim skirt add sleek drama that sharpens the soft blouse and cardigan, turning an easy combo into a photographed, date-ready look.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="no-physical">Not included in text-only prompt</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 2</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/00607576ff2e4dd583c0c7b237e9f51d.jpg" alt="Black structured blazer" title="Black structured blazer">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/95b3142a44714164b7fbdf92940a1982.jpg" alt="Beige sleeveless knit vest" title="Beige sleeveless knit vest">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/f9bf2d58d91e41a7859a04963b8ae6a0.jpg" alt="Dark wash wide-leg jeans" title="Dark wash wide-leg jeans">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/e311df970cb64bcaa5077770a4340f9c.jpg" alt="Beige woven leather flats" title="Beige woven leather flats">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Black structured blazer</span>
+                            <span class="item-name">Beige sleeveless knit vest</span>
+                            <span class="item-name">Dark wash wide-leg jeans</span>
+                            <span class="item-name">Beige woven leather flats</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Front-tuck the vest into jeans. Push blazer sleeves to mid-forearm to relax the tailoring and show some bare arm. Let jeans skim the top of the flats.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">Choosing woven flats instead of heels undercuts the blazer’s formality; the dark denim and tailoring keep it upscale while the knit vest and flats add playful ease.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="no-physical">Not included in text-only prompt</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 3</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/0deb82af0ca24e819aff4d9de8b5725a.jpg" alt="Camel ribbed V-neck sweater" title="Camel ribbed V-neck sweater">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/f288ab5a603847a2b5496650ec996b9a.jpg" alt="Cropped denim button-up shirt" title="Cropped denim button-up shirt">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/ca01209fd3cc410a9737fa1186c9b2b6.jpg" alt="Blue wide-leg jeans" title="Blue wide-leg jeans">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/3e609cab6fbd4b0695a084d913c05d81.jpg" alt="Black knee-high leather boots" title="Black knee-high leather boots">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Camel ribbed V-neck sweater</span>
+                            <span class="item-name">Cropped denim button-up shirt</span>
+                            <span class="item-name">Blue wide-leg jeans</span>
+                            <span class="item-name">Black knee-high leather boots</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Button denim shirt fully with collar over sweater’s V. Let a sliver of shirt hem peek below sweater. Light front-tuck sweater and tuck jeans into boots.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">The denim shirt under the camel sweater is an unexpected layer that adds playful depth, while tucking wide-leg jeans into sleek boots makes the cozy combo feel editorial.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="no-physical">Not included in text-only prompt</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="outfit-column treatment">
+
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

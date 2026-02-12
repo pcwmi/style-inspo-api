@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Visualization A/B: Single vs Multi-Collage Slot Maximization</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 { color: #333; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        .summary {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .summary-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        .stat-box {
+            padding: 15px;
+            border-radius: 6px;
+        }
+        .stat-box.baseline { background: #e3f2fd; }
+        .stat-box.treatment { background: #e8f5e9; }
+        .stat-box h4 { margin: 0 0 8px 0; font-size: 14px; }
+        .stat-box p { margin: 0; font-size: 13px; color: #555; }
+        .outfit-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .outfit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .outfit-title { font-size: 18px; font-weight: 600; color: #333; }
+        .outfit-meta { color: #666; font-size: 14px; }
+        .input-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        .input-section h4 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #555;
+        }
+        .collage-grid {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .collage-preview {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+        .collage-preview.large {
+            width: 200px;
+            height: 200px;
+        }
+        .items-list {
+            font-size: 12px;
+            line-height: 1.5;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .items-list li { margin-bottom: 3px; }
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .viz-column {
+            text-align: center;
+        }
+        .viz-column h3 {
+            margin: 0 0 15px 0;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .viz-column.baseline h3 { background: #e3f2fd; color: #1565c0; }
+        .viz-column.treatment h3 { background: #e8f5e9; color: #2e7d32; }
+        .viz-image {
+            width: 100%;
+            max-width: 450px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .viz-meta {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+        .rating-section {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fafafa;
+            border-radius: 8px;
+        }
+        .rating-section h4 { margin: 0 0 10px 0; font-size: 14px; }
+        .rating-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .rating-btn {
+            padding: 8px 16px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            background: #fff;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+        .rating-btn:hover { border-color: #999; }
+        .rating-btn.selected { border-color: #4CAF50; background: #E8F5E9; }
+        .fidelity-checks {
+            display: flex;
+            gap: 20px;
+            margin: 15px 0;
+            font-size: 13px;
+        }
+        .fidelity-checks label { display: flex; gap: 5px; align-items: center; }
+        .notes-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            resize: vertical;
+        }
+        .error { color: #d32f2f; font-style: italic; }
+        .pixel-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .pixel-badge.low { background: #ffecb3; color: #f57f17; }
+        .pixel-badge.high { background: #c8e6c9; color: #2e7d32; }
+    </style>
+</head>
+<body>
+    <h1>Visualization A/B: Single vs Multi-Collage Slot Maximization</h1>
+
+    <div class="summary">
+        <strong>Generated:</strong> 2026-02-12 10:19<br>
+        <strong>Outfits tested:</strong> 3<br><br>
+        <strong>Hypothesis:</strong> Higher per-item resolution produces higher fidelity visualizations.
+
+        <div class="summary-stats">
+            <div class="stat-box baseline">
+                <h4>BASELINE: Single Collage (Current)</h4>
+                <p>All items in one 2x3 grid collage</p>
+                <p><span class="pixel-badge low">346px per item</span> &middot; Uses 1 of 3 Runway slots</p>
+            </div>
+            <div class="stat-box treatment">
+                <h4>TREATMENT: Multi-Collage (New)</h4>
+                <p>Items split into 3 collages (2 items each)</p>
+                <p><span class="pixel-badge high">525px per item</span> &middot; Uses all 3 Runway slots</p>
+                <p><strong>+52% more pixels per item</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="outfit-card" id="outfit-1">
+        <div class="outfit-header">
+            <div>
+                <div class="outfit-title">Outfit 1: 7 items</div>
+                <div class="outfit-meta">User: peichin | ID: b1e59e63</div>
+            </div>
+        </div>
+
+        <div class="input-comparison">
+            <div class="input-section">
+                <h4>BASELINE INPUT: Single Collage <span class="pixel-badge low">346px/item</span></h4>
+                <img src="https://style-inspo.s3.us-east-2.amazonaws.com/eval/eval/eval_single_cf2b0d41.jpg" class="collage-preview large" alt="Single collage" />
+            </div>
+            <div class="input-section">
+                <h4>TREATMENT INPUT: 3 Pair Collages <span class="pixel-badge high">525px/item</span></h4>
+                <div class="collage-grid">
+                    <img src="https://style-inspo.s3.us-east-2.amazonaws.com/eval/eval/eval_multi_c10cc483_1.jpg" class="collage-preview" alt="Pair collage 1" />
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/eval/eval/eval_multi_8be92ab5_2.jpg" class="collage-preview" alt="Pair collage 2" />
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/eval/eval/eval_multi_ee336fef_3.jpg" class="collage-preview" alt="Pair collage 3" />
+                </div>
+            </div>
+        </div>
+
+        <div style="padding: 10px; background: #f9f9f9; margin-bottom: 15px; border-radius: 6px;">
+            <strong>Items:</strong>
+            <ol class="items-list" style="margin: 5px 0 0 20px; columns: 2;">
+                <li>Brown pleated trousers</li>
+<li>White ruffled button-up shirt</li>
+<li>Bright pink button-up cardigan</li>
+<li>Burgundy patent leather pointed-toe pumps</li>
+<li>Brown leather belt with gold buckle</li>
+<li>Gold engraved pendant necklace</li>
+<li>Brown suede crossbody bag with gold hardware</li>
+            </ol>
+        </div>
+
+        <div class="comparison-grid">
+            <div class="viz-column baseline">
+                <h3>BASELINE: Single Collage (1 slot)</h3>
+                <img src="https://dnznrvs05pmza.cloudfront.net/53a496b1-1398-4c8b-889b-a4f2f4ba8072.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiNGE5ZjliYjQ3MTM3NTIzNiIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc3MTAyNzIwMH0.oRW38KW4Lbnl-MQONblM15VSc0zfX99Yx-L-1R8d63w" class="viz-image" />
+                <div class="viz-meta">
+                    Latency: 13.5s
+                </div>
+            </div>
+            <div class="viz-column treatment">
+                <h3>TREATMENT: Multi-Collage (3 slots)</h3>
+                <img src="https://dnznrvs05pmza.cloudfront.net/421b5000-4f39-40ec-9523-7bc7109933ca.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiYTNiMjM5NmJlOWUzMmEwMCIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc3MTAyNzIwMH0.K3ahawgvD7VoNRhtCnu05ndrRnfazvJ-GBC4XPT9Fd4" class="viz-image" />
+                <div class="viz-meta">
+                    Latency: 14.5s
+                </div>
+            </div>
+        </div>
+
+        <div class="rating-section">
+            <h4>Which visualization shows better FIDELITY?</h4>
+            <div class="rating-buttons">
+                <button class="rating-btn" onclick="rate(1, 'baseline')">Single Collage (baseline)</button>
+                <button class="rating-btn" onclick="rate(1, 'multi')">Multi-Collage (treatment)</button>
+                <button class="rating-btn" onclick="rate(1, 'tie')">No difference</button>
+            </div>
+
+            <div class="fidelity-checks">
+                <label><input type="checkbox" id="pattern-1"> Pattern/texture more visible</label>
+                <label><input type="checkbox" id="detail-1"> Fine details (buttons, hardware) clearer</label>
+                <label><input type="checkbox" id="color-1"> Colors more accurate</label>
+            </div>
+
+            <textarea class="notes-input" placeholder="Notes: What differences do you see in fidelity?" rows="2" id="notes-1"></textarea>
+        </div>
+    </div>
+
+    <div class="outfit-card" id="outfit-2">
+        <div class="outfit-header">
+            <div>
+                <div class="outfit-title">Outfit 2: 6 items</div>
+                <div class="outfit-meta">User: peichin | ID: 438ed1cf</div>
+            </div>
+        </div>
+
+        <div class="input-comparison">
+            <div class="input-section">
+                <h4>BASELINE INPUT: Single Collage <span class="pixel-badge low">346px/item</span></h4>
+                <img src="https://style-inspo.s3.us-east-2.amazonaws.com/eval/eval/eval_single_aefaee48.jpg" class="collage-preview large" alt="Single collage" />
+            </div>
+            <div class="input-section">
+                <h4>TREATMENT INPUT: 3 Pair Collages <span class="pixel-badge high">525px/item</span></h4>
+                <div class="collage-grid">
+                    <img src="https://style-inspo.s3.us-east-2.amazonaws.com/eval/eval/eval_multi_fed8bb2c_1.jpg" class="collage-preview" alt="Pair collage 1" />
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/eval/eval/eval_multi_35d5a999_2.jpg" class="collage-preview" alt="Pair collage 2" />
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/eval/eval/eval_multi_855bc304_3.jpg" class="collage-preview" alt="Pair collage 3" />
+                </div>
+            </div>
+        </div>
+
+        <div style="padding: 10px; background: #f9f9f9; margin-bottom: 15px; border-radius: 6px;">
+            <strong>Items:</strong>
+            <ol class="items-list" style="margin: 5px 0 0 20px; columns: 2;">
+                <li>Black and white paisley ruffle blouse</li>
+<li>White wide-leg high-waisted pants</li>
+<li>Light grey leather biker jacket</li>
+<li>White and Red Classic Leather Sneakers</li>
+<li>Gold chain necklace with blue beads</li>
+<li>Brown slouchy leather shoulder bag</li>
+            </ol>
+        </div>
+
+        <div class="comparison-grid">
+            <div class="viz-column baseline">
+                <h3>BASELINE: Single Collage (1 slot)</h3>
+                <img src="https://dnznrvs05pmza.cloudfront.net/bdf74479-5234-4eba-bd1c-faa1c898fe89.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiMDhkOGMzYTZkMzIyZjNlNiIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc3MTAyNzIwMH0.iMvIyRw5Xb9fapsVUucwhnsXAPoZcvz1V3pe6g8od9E" class="viz-image" />
+                <div class="viz-meta">
+                    Latency: 13.5s
+                </div>
+            </div>
+            <div class="viz-column treatment">
+                <h3>TREATMENT: Multi-Collage (3 slots)</h3>
+                <img src="https://dnznrvs05pmza.cloudfront.net/cb2f9be8-d552-4c92-ae2b-acdffb207c25.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiYjI0N2NhZjNhYTA5NjEwNCIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc3MTAyNzIwMH0.tQyAmGSiDZ509cKlEd9Q7l97TJDhHPYZQAr-iiJ0ZuA" class="viz-image" />
+                <div class="viz-meta">
+                    Latency: 14.3s
+                </div>
+            </div>
+        </div>
+
+        <div class="rating-section">
+            <h4>Which visualization shows better FIDELITY?</h4>
+            <div class="rating-buttons">
+                <button class="rating-btn" onclick="rate(2, 'baseline')">Single Collage (baseline)</button>
+                <button class="rating-btn" onclick="rate(2, 'multi')">Multi-Collage (treatment)</button>
+                <button class="rating-btn" onclick="rate(2, 'tie')">No difference</button>
+            </div>
+
+            <div class="fidelity-checks">
+                <label><input type="checkbox" id="pattern-2"> Pattern/texture more visible</label>
+                <label><input type="checkbox" id="detail-2"> Fine details (buttons, hardware) clearer</label>
+                <label><input type="checkbox" id="color-2"> Colors more accurate</label>
+            </div>
+
+            <textarea class="notes-input" placeholder="Notes: What differences do you see in fidelity?" rows="2" id="notes-2"></textarea>
+        </div>
+    </div>
+
+    <div class="outfit-card" id="outfit-3">
+        <div class="outfit-header">
+            <div>
+                <div class="outfit-title">Outfit 3: 5 items</div>
+                <div class="outfit-meta">User: dana | ID: 6a154748</div>
+            </div>
+        </div>
+
+        <div class="input-comparison">
+            <div class="input-section">
+                <h4>BASELINE INPUT: Single Collage <span class="pixel-badge low">346px/item</span></h4>
+                <img src="https://style-inspo.s3.us-east-2.amazonaws.com/eval/eval/eval_single_f3dda280.jpg" class="collage-preview large" alt="Single collage" />
+            </div>
+            <div class="input-section">
+                <h4>TREATMENT INPUT: 3 Pair Collages <span class="pixel-badge high">525px/item</span></h4>
+                <div class="collage-grid">
+                    <img src="https://style-inspo.s3.us-east-2.amazonaws.com/eval/eval/eval_multi_6bc69897_1.jpg" class="collage-preview" alt="Pair collage 1" />
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/eval/eval/eval_multi_5210eea9_2.jpg" class="collage-preview" alt="Pair collage 2" />
+<img src="https://style-inspo.s3.us-east-2.amazonaws.com/eval/eval/eval_multi_f5211117_3.jpg" class="collage-preview" alt="Pair collage 3" />
+                </div>
+            </div>
+        </div>
+
+        <div style="padding: 10px; background: #f9f9f9; margin-bottom: 15px; border-radius: 6px;">
+            <strong>Items:</strong>
+            <ol class="items-list" style="margin: 5px 0 0 20px; columns: 2;">
+                <li>Cropped denim button-up shirt</li>
+<li>Blue wide-leg jeans</li>
+<li>Black structured blazer</li>
+<li>Ivory cropped button-up cardigan</li>
+<li>Beige woven leather flats</li>
+            </ol>
+        </div>
+
+        <div class="comparison-grid">
+            <div class="viz-column baseline">
+                <h3>BASELINE: Single Collage (1 slot)</h3>
+                <img src="https://dnznrvs05pmza.cloudfront.net/f21c3570-1a3b-4f76-8bb1-042084b76786.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiNTU2MTk2YzYzOTEzMTkzZCIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc3MTAyNzIwMH0.SrJwSaPrW7iyoa4ltuQQ8SFBD4_k-g9CvnP7GttVNRg" class="viz-image" />
+                <div class="viz-meta">
+                    Latency: 11.0s
+                </div>
+            </div>
+            <div class="viz-column treatment">
+                <h3>TREATMENT: Multi-Collage (3 slots)</h3>
+                <img src="https://dnznrvs05pmza.cloudfront.net/664a7443-0380-4314-9bc3-06b3b97f0046.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiZTJkMDMzNmZiNzBkMWQ4MSIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc3MTAyNzIwMH0.irmdD9Uia-zBG4kxOjjvzZ8xEBISQlHbErLtqjFZK7M" class="viz-image" />
+                <div class="viz-meta">
+                    Latency: 11.8s
+                </div>
+            </div>
+        </div>
+
+        <div class="rating-section">
+            <h4>Which visualization shows better FIDELITY?</h4>
+            <div class="rating-buttons">
+                <button class="rating-btn" onclick="rate(3, 'baseline')">Single Collage (baseline)</button>
+                <button class="rating-btn" onclick="rate(3, 'multi')">Multi-Collage (treatment)</button>
+                <button class="rating-btn" onclick="rate(3, 'tie')">No difference</button>
+            </div>
+
+            <div class="fidelity-checks">
+                <label><input type="checkbox" id="pattern-3"> Pattern/texture more visible</label>
+                <label><input type="checkbox" id="detail-3"> Fine details (buttons, hardware) clearer</label>
+                <label><input type="checkbox" id="color-3"> Colors more accurate</label>
+            </div>
+
+            <textarea class="notes-input" placeholder="Notes: What differences do you see in fidelity?" rows="2" id="notes-3"></textarea>
+        </div>
+    </div>
+
+    <script>
+        const ratings = {};
+
+        function rate(outfitIdx, choice) {
+            ratings[outfitIdx] = {
+                choice: choice,
+                pattern: document.getElementById('pattern-' + outfitIdx).checked,
+                detail: document.getElementById('detail-' + outfitIdx).checked,
+                color: document.getElementById('color-' + outfitIdx).checked,
+                notes: document.getElementById('notes-' + outfitIdx).value
+            };
+
+            // Update button styles
+            const buttons = document.querySelectorAll(`#outfit-${outfitIdx} .rating-btn`);
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            event.target.classList.add('selected');
+
+            // Log for easy copy
+            console.log('Ratings:', JSON.stringify(ratings, null, 2));
+        }
+    </script>
+</body>
+</html>

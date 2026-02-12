@@ -162,5 +162,23 @@
       }
     },
     "description": "Test complete-my-look with multiple anchor pieces (coat + blouse)"
+  },
+  {
+    "id": "bulk_physics_test",
+    "name": "Bulk Physics Test (Ruffled Shirt + Leather Skirt)",
+    "user_id": "peichin",
+    "scenario_type": "complete_my_look",
+    "anchor_items": ["9dddf46f54f8", "a827a53c707d"],
+    "occasion": "brunch with friends",
+    "weather": "cool and crisp",
+    "temperature_range": "55-65°F",
+    "style_profile": {
+      "three_words": {
+        "current": "classic",
+        "aspirational": "relaxed",
+        "feeling": "playful"
+      }
+    },
+    "description": "A/B test for reasoning hypothesis: Tests whether AI avoids tucking ruffled shirt into stiff leather waistband"
   }
 ]

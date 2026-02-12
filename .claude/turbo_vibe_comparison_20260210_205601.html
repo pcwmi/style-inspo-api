@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gen-4 Standard vs Turbo Vibe Comparison</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        h1 { text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 20px; }
+        .descriptor { text-align: center; background: #e3f2fd; padding: 10px; border-radius: 8px; margin-bottom: 20px; font-family: monospace; }
+        .question { text-align: center; background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 25px; font-size: 18px; font-weight: 600; }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 10px; }
+        .header { font-weight: 600; text-align: center; padding: 10px; border-radius: 8px 8px 0 0; }
+        .header.standard { background: #2e7d32; color: white; }
+        .header.turbo { background: #1565c0; color: white; }
+        .cell { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .cell img { width: 100%; height: auto; max-height: 600px; object-fit: contain; cursor: pointer; }
+        .cell img:hover { opacity: 0.9; }
+        .latency { text-align: center; padding: 8px; font-size: 14px; color: #666; background: #f9f9f9; }
+        .outfit-row { margin-bottom: 30px; }
+        .outfit-label { text-align: center; font-weight: 600; margin: 5px 0 20px; padding: 10px; background: #fff3e0; border-radius: 8px; font-size: 13px; }
+        .summary { background: white; padding: 20px; border-radius: 8px; margin-top: 20px; }
+        .summary h3 { margin-top: 0; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px 12px; border: 1px solid #ddd; text-align: left; }
+        th { background: #f5f5f5; }
+        .faster { color: #2e7d32; font-weight: 600; }
+        .fullscreen-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; cursor: pointer; }
+        .fullscreen-overlay img { max-width: 95%; max-height: 95%; object-fit: contain; }
+        .fullscreen-overlay.active { display: flex; }
+    </style>
+</head>
+<body>
+    <h1>Gen-4 Standard vs Turbo</h1>
+    <p class="subtitle">Vibe Comparison &mdash; Feb 10, 2026 08:56 PM</p>
+    <div class="descriptor">Descriptor: "5 feet 4 eastern asian with black wavy hair at chest length"</div>
+    <div class="question">Does Turbo feel as inspiring as Standard?</div>
+
+    <div class="grid">
+        <div class="header standard">Gen-4 Standard (baseline)</div>
+        <div class="header turbo">Gen-4 Turbo (faster/cheaper)</div>
+    </div>
+
+    <div class="outfit-row">
+        <div class="grid">
+            <div class="cell">
+                <img src="https://dnznrvs05pmza.cloudfront.net/581ec6fb-3912-4b4d-9ac5-7c4a31083849.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiYjAyZDJlNWFhNWM3ODRjMiIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc3MDk0MDgwMH0.81d_Nx2CS0lgXaI3pMzqprpmSKU1CUMbiP-TOHHlzbE" alt="Gen-4 Standard" onclick="openFullscreen(this.src)">
+                <div class="latency">30.9s &mdash; 5 credits</div>
+            </div>
+            <div class="cell">
+                <img src="https://dnznrvs05pmza.cloudfront.net/58223ddf-a540-47ab-8da4-7bab9495dd51.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiZWEyOWIyYzIzYmQ4OGI5YSIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc3MDk0MDgwMH0.EuYyLxNnCEIks8cnXQcOeP6UJ7y2F4vVn6iLW3hqHOY" alt="Gen-4 Turbo" onclick="openFullscreen(this.src)">
+                <div class="latency">14.3s &mdash; 2 credits</div>
+            </div>
+        </div>
+        <div class="outfit-label">Outfit 1: Burgundy floral midi dress, Black cropped leather jacket, White and Red Classic Leather Sneakers, Bl</div>
+    </div>
+
+    <div class="outfit-row">
+        <div class="grid">
+            <div class="cell">
+                <img src="https://dnznrvs05pmza.cloudfront.net/0f2915c7-f7f7-4822-9403-7542c2c8800e.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiYWVlZmNjNWI0NWJlMzA1YyIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc3MDk0MDgwMH0.sMdGPoZ_7X4vlj60smRAthT6VJvOlEczHkHpY80W1WI" alt="Gen-4 Standard" onclick="openFullscreen(this.src)">
+                <div class="latency">28.4s &mdash; 5 credits</div>
+            </div>
+            <div class="cell">
+                <img src="https://dnznrvs05pmza.cloudfront.net/e821b290-3c26-48e0-a6f2-86102021c237.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiMjAzNWUzMmU5MTE2NzM1ZiIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc3MDk0MDgwMH0.QR4BIctRBmJBh0D7S91l0yZRmWgRExrWPW7po096xTk" alt="Gen-4 Turbo" onclick="openFullscreen(this.src)">
+                <div class="latency">12.0s &mdash; 2 credits</div>
+            </div>
+        </div>
+        <div class="outfit-label">Outfit 2: Burgundy floral midi dress, Navy relaxed sweater with pockets, Black haircalf belt with silver buckl</div>
+    </div>
+
+    <div class="outfit-row">
+        <div class="grid">
+            <div class="cell">
+                <img src="https://dnznrvs05pmza.cloudfront.net/a56dab3b-53e4-466d-a181-727a33079988.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiOGIxMDE2YjExMDk1YTBlNiIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc3MDk0MDgwMH0.tsMsKDblTC_dqjIRvjv3axsx0UriTPa5mgNsbjvIMOw" alt="Gen-4 Standard" onclick="openFullscreen(this.src)">
+                <div class="latency">28.4s &mdash; 5 credits</div>
+            </div>
+            <div class="cell">
+                <img src="https://dnznrvs05pmza.cloudfront.net/506d22cb-7a4e-475a-a39d-b82de49a76b8.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiYzUyZTg2NmQwYTExNzZjYyIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc3MDk0MDgwMH0.tMojX91z3KxN7TjA9SC55mN_gf-4s3NJ1A3xzNFGcto" alt="Gen-4 Turbo" onclick="openFullscreen(this.src)">
+                <div class="latency">14.2s &mdash; 2 credits</div>
+            </div>
+        </div>
+        <div class="outfit-label">Outfit 3: Ivory crochet button-up cardigan, Sage Green Leather A-line Skirt, Burgundy patent leather pointed-t</div>
+    </div>
+
+    <div class="outfit-row">
+        <div class="grid">
+            <div class="cell">
+                <img src="https://dnznrvs05pmza.cloudfront.net/8c15d974-51fa-4b2e-97e2-eec5d02d3312.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiOWFjNjIzNTI0MjZmODE1NiIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc3MDk0MDgwMH0.KnnWRQyFO_4Le1C_Nrk0AOhOa9Prrgg1An_vSjWb0To" alt="Gen-4 Standard" onclick="openFullscreen(this.src)">
+                <div class="latency">42.0s &mdash; 5 credits</div>
+            </div>
+            <div class="cell">
+                <img src="https://dnznrvs05pmza.cloudfront.net/f55e094e-c384-472f-8cb0-031cfea5f171.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiYWU4OGYwYjIxOWViZjdlMiIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc3MDk0MDgwMH0.3GwKUnAf-xTvLxFq2hYTZL-OutUG4tmoTuwWfb1B1fs" alt="Gen-4 Turbo" onclick="openFullscreen(this.src)">
+                <div class="latency">14.1s &mdash; 2 credits</div>
+            </div>
+        </div>
+        <div class="outfit-label">Outfit 4: Grey striped blazer, Medium wash straight-leg jeans, White tee with black bow detail, Black Patent L</div>
+    </div>
+
+    <div class="outfit-row">
+        <div class="grid">
+            <div class="cell">
+                <img src="about:blank" alt="Gen-4 Standard" onclick="openFullscreen(this.src)">
+                <div class="latency">57.1s &mdash; 5 credits</div>
+            </div>
+            <div class="cell">
+                <img src="https://dnznrvs05pmza.cloudfront.net/a18c08b4-405f-44a8-b6c2-b6846e9aaeb7.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiYWQwZDdhODdmM2M4MzgzYSIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc3MDk0MDgwMH0.g_TwUfS5UY2rPVgVEs0zW4gA_iovoTQ7H-M6aOnshkY" alt="Gen-4 Turbo" onclick="openFullscreen(this.src)">
+                <div class="latency">19.1s &mdash; 2 credits</div>
+            </div>
+        </div>
+        <div class="outfit-label">Outfit 5: Anna Rugby Shirt, White corduroy wide-leg pants, Light grey leather biker jacket, Taupe suede ankle </div>
+    </div>
+
+    <div class="summary">
+        <h3>Results Summary</h3>
+        <table>
+            <tr>
+                <th>Outfit</th>
+                <th>Standard (s)</th>
+                <th>Turbo (s)</th>
+                <th>Speedup</th>
+            </tr>
+            <tr>
+                <td>Outfit 1</td>
+                <td>30.9s (OK)</td>
+                <td>14.3s (OK)</td>
+                <td class="faster">2.2x</td>
+            </tr>
+            <tr>
+                <td>Outfit 2</td>
+                <td>28.4s (OK)</td>
+                <td>12.0s (OK)</td>
+                <td class="faster">2.4x</td>
+            </tr>
+            <tr>
+                <td>Outfit 3</td>
+                <td>28.4s (OK)</td>
+                <td>14.2s (OK)</td>
+                <td class="faster">2.0x</td>
+            </tr>
+            <tr>
+                <td>Outfit 4</td>
+                <td>42.0s (OK)</td>
+                <td>14.1s (OK)</td>
+                <td class="faster">3.0x</td>
+            </tr>
+            <tr>
+                <td>Outfit 5</td>
+                <td>57.1s (FAIL)</td>
+                <td>19.1s (OK)</td>
+                <td class="faster">3.0x</td>
+            </tr>
+            <tr style="font-weight: bold; background: #f5f5f5;">
+                <td>Average</td>
+                <td>32.4s</td>
+                <td>14.7s</td>
+                <td class="faster">2.2x faster</td>
+            </tr>
+            <tr style="background: #e8f5e9;">
+                <td>Cost per image</td>
+                <td>5 credits</td>
+                <td>2 credits</td>
+                <td class="faster">2.5x cheaper</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="fullscreen-overlay" id="overlay" onclick="closeFullscreen()">
+        <img id="fullscreen-img" src="">
+    </div>
+    <script>
+        function openFullscreen(src) {
+            document.getElementById('fullscreen-img').src = src;
+            document.getElementById('overlay').classList.add('active');
+        }
+        function closeFullscreen() {
+            document.getElementById('overlay').classList.remove('active');
+        }
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeFullscreen();
+        });
+    </script>
+</body>
+</html>

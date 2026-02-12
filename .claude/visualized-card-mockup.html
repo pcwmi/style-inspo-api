@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualized Outfit Card - Scalable Design</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
+        body { font-family: 'Libre Baskerville', serif; background: #F5F0EB; }
+        .bone { background: #F5F0EB; }
+        .terracotta { background: #C4704B; }
+        .ink { color: #1A1614; }
+        .muted { color: #666; }
+    </style>
+</head>
+<body class="p-4 max-w-lg mx-auto">
+    <h1 class="text-xl font-bold mb-2 text-center ink">Visualized Outfit Card</h1>
+    <p class="text-sm text-center muted mb-6">Reusable component for Reveal, Saved, and Homepage</p>
+
+    <!-- DESIGN OPTION A: Side-by-Side (50/50 split) -->
+    <div class="mb-8">
+        <h2 class="text-sm font-bold mb-2 muted uppercase tracking-wide">Option A: 50/50 Split</h2>
+        <p class="text-xs muted mb-3">Works well for 3 items, cramped for 5</p>
+
+        <!-- 3 Items Example -->
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-4">
+            <div class="p-3 border-b border-gray-100">
+                <span class="font-bold ink text-sm">Date Night Elegance</span>
+                <span class="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full ml-2">Visualized</span>
+            </div>
+            <div class="flex">
+                <!-- Left: Item Grid (3 items) -->
+                <div class="w-1/2 p-3 border-r border-gray-100">
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <div class="aspect-square bg-gray-200 rounded-lg flex items-center justify-center text-[10px] text-gray-500 col-span-2">
+                            Top
+                        </div>
+                        <div class="aspect-square bg-gray-200 rounded-lg flex items-center justify-center text-[10px] text-gray-500">
+                            Pants
+                        </div>
+                        <div class="aspect-square bg-gray-200 rounded-lg flex items-center justify-center text-[10px] text-gray-500">
+                            Shoes
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-center muted mt-1">3 items</p>
+                </div>
+                <!-- Right: Visualization -->
+                <div class="w-1/2 p-3">
+                    <div class="aspect-[3/4] bg-gradient-to-b from-purple-100 to-pink-100 rounded-lg flex items-center justify-center">
+                        <span class="text-2xl">👗</span>
+                    </div>
+                    <p class="text-[10px] text-center muted mt-1">On Model</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5 Items Example (cramped) -->
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden opacity-60">
+            <div class="p-3 border-b border-gray-100">
+                <span class="font-bold ink text-sm">5 Items (cramped)</span>
+            </div>
+            <div class="flex">
+                <div class="w-1/2 p-3 border-r border-gray-100">
+                    <div class="grid grid-cols-3 gap-1">
+                        <div class="aspect-square bg-gray-200 rounded flex items-center justify-center text-[8px] text-gray-500">1</div>
+                        <div class="aspect-square bg-gray-200 rounded flex items-center justify-center text-[8px] text-gray-500">2</div>
+                        <div class="aspect-square bg-gray-200 rounded flex items-center justify-center text-[8px] text-gray-500">3</div>
+                        <div class="aspect-square bg-gray-200 rounded flex items-center justify-center text-[8px] text-gray-500">4</div>
+                        <div class="aspect-square bg-gray-200 rounded flex items-center justify-center text-[8px] text-gray-500">5</div>
+                    </div>
+                    <p class="text-[10px] text-center muted mt-1">❌ Too small</p>
+                </div>
+                <div class="w-1/2 p-3">
+                    <div class="aspect-[3/4] bg-gray-100 rounded-lg"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DESIGN OPTION B: Stacked (Recommended) -->
+    <div class="mb-8">
+        <h2 class="text-sm font-bold mb-2 muted uppercase tracking-wide">Option B: Stacked Layout ✅ Recommended</h2>
+        <p class="text-xs muted mb-3">Visualization on top, items in scrollable row below</p>
+
+        <!-- 3 Items Example -->
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-4">
+            <div class="p-3 border-b border-gray-100 flex justify-between items-center">
+                <div>
+                    <span class="font-bold ink text-sm">Date Night Elegance</span>
+                    <span class="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full ml-2">✨</span>
+                </div>
+                <span class="text-red-500">♥</span>
+            </div>
+
+            <!-- Visualization (hero) -->
+            <div class="p-4 pb-2">
+                <div class="aspect-[4/5] bg-gradient-to-b from-purple-100 to-pink-100 rounded-xl flex items-center justify-center relative">
+                    <div class="text-center">
+                        <p class="text-4xl mb-2">👗</p>
+                        <p class="text-xs muted">AI Visualization</p>
+                    </div>
+                    <div class="absolute bottom-2 right-2 bg-white/80 px-2 py-1 rounded-full text-[10px]">
+                        Tap to expand
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Row (scrollable) -->
+            <div class="px-4 pb-2">
+                <p class="text-[10px] muted mb-1">Items in this outfit:</p>
+                <div class="flex gap-2 overflow-x-auto pb-2">
+                    <div class="w-16 h-16 flex-shrink-0 bg-gray-200 rounded-lg flex items-center justify-center text-[10px] text-gray-500">
+                        Top
+                    </div>
+                    <div class="w-16 h-16 flex-shrink-0 bg-gray-200 rounded-lg flex items-center justify-center text-[10px] text-gray-500">
+                        Pants
+                    </div>
+                    <div class="w-16 h-16 flex-shrink-0 bg-gray-200 rounded-lg flex items-center justify-center text-[10px] text-gray-500">
+                        Shoes
+                    </div>
+                </div>
+            </div>
+
+            <!-- Styling Notes (collapsed) -->
+            <details class="border-t border-gray-100">
+                <summary class="p-3 text-sm font-semibold ink cursor-pointer flex justify-between items-center">
+                    <span>Styling Notes</span>
+                    <span class="text-gray-400">▼</span>
+                </summary>
+                <div class="px-3 pb-3 text-sm muted">
+                    Tuck in the blouse and add delicate gold jewelry for understated elegance...
+                </div>
+            </details>
+        </div>
+
+        <!-- 5 Items Example (scales well) -->
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div class="p-3 border-b border-gray-100 flex justify-between items-center">
+                <div>
+                    <span class="font-bold ink text-sm">Complete Look (5 items)</span>
+                    <span class="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full ml-2">✨</span>
+                </div>
+                <span class="text-red-500">♥</span>
+            </div>
+
+            <div class="p-4 pb-2">
+                <div class="aspect-[4/5] bg-gradient-to-b from-blue-100 to-indigo-100 rounded-xl flex items-center justify-center">
+                    <div class="text-center">
+                        <p class="text-4xl mb-2">👗</p>
+                        <p class="text-xs muted">AI Visualization</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5 Items Row (scrollable - scales!) -->
+            <div class="px-4 pb-2">
+                <p class="text-[10px] muted mb-1">Items in this outfit:</p>
+                <div class="flex gap-2 overflow-x-auto pb-2">
+                    <div class="w-16 h-16 flex-shrink-0 bg-gray-200 rounded-lg flex items-center justify-center text-[10px] text-gray-500">
+                        Top
+                    </div>
+                    <div class="w-16 h-16 flex-shrink-0 bg-gray-200 rounded-lg flex items-center justify-center text-[10px] text-gray-500">
+                        Jacket
+                    </div>
+                    <div class="w-16 h-16 flex-shrink-0 bg-gray-200 rounded-lg flex items-center justify-center text-[10px] text-gray-500">
+                        Pants
+                    </div>
+                    <div class="w-16 h-16 flex-shrink-0 bg-gray-200 rounded-lg flex items-center justify-center text-[10px] text-gray-500">
+                        Shoes
+                    </div>
+                    <div class="w-16 h-16 flex-shrink-0 bg-gray-200 rounded-lg flex items-center justify-center text-[10px] text-gray-500">
+                        Bag
+                    </div>
+                </div>
+            </div>
+
+            <details class="border-t border-gray-100">
+                <summary class="p-3 text-sm font-semibold ink cursor-pointer">Styling Notes</summary>
+                <div class="px-3 pb-3 text-sm muted">...</div>
+            </details>
+        </div>
+    </div>
+
+    <!-- DESIGN OPTION C: Toggle/Carousel -->
+    <div class="mb-8">
+        <h2 class="text-sm font-bold mb-2 muted uppercase tracking-wide">Option C: Toggle View</h2>
+        <p class="text-xs muted mb-3">User switches between collage and visualization</p>
+
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div class="p-3 border-b border-gray-100">
+                <span class="font-bold ink text-sm">Weekend Casual</span>
+            </div>
+
+            <!-- Toggle Tabs -->
+            <div class="flex border-b border-gray-100">
+                <button class="flex-1 py-2 text-sm text-center border-b-2 border-[#C4704B] text-[#C4704B] font-medium">
+                    On Model
+                </button>
+                <button class="flex-1 py-2 text-sm text-center text-gray-400">
+                    Items
+                </button>
+            </div>
+
+            <!-- Active View: Visualization -->
+            <div class="p-4">
+                <div class="aspect-[4/5] bg-gradient-to-b from-green-100 to-teal-100 rounded-xl flex items-center justify-center">
+                    <div class="text-center">
+                        <p class="text-4xl mb-2">👗</p>
+                        <p class="text-xs muted">Swipe or tap tabs to see items</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- COMPONENT REUSABILITY -->
+    <div class="mb-8">
+        <h2 class="text-sm font-bold mb-2 muted uppercase tracking-wide">Component Reusability</h2>
+
+        <div class="bg-white rounded-2xl shadow-lg p-4 space-y-3 text-sm">
+            <div>
+                <p class="font-semibold ink">VisualizedOutfitCard Props</p>
+                <pre class="text-xs bg-gray-100 p-2 rounded mt-1 overflow-x-auto">
+{
+  outfit: OutfitData
+  visualizationUrl?: string
+  showVisualizeButton?: boolean
+  allowSave?: boolean
+  compact?: boolean  // for homepage grid
+}</pre>
+            </div>
+
+            <div>
+                <p class="font-semibold ink">Usage Locations</p>
+                <ul class="text-xs muted mt-1 space-y-1">
+                    <li>• <strong>Reveal page:</strong> showVisualizeButton=true, allowSave=true</li>
+                    <li>• <strong>Saved page:</strong> showVisualizeButton=true (if not visualized), allowSave=false</li>
+                    <li>• <strong>Homepage:</strong> compact=true, showVisualizeButton=false</li>
+                </ul>
+            </div>
+
+            <div>
+                <p class="font-semibold ink">States</p>
+                <ul class="text-xs muted mt-1 space-y-1">
+                    <li>• <strong>Not visualized:</strong> Show item collage + "Visualize" button</li>
+                    <li>• <strong>Generating:</strong> Show loading state with progress</li>
+                    <li>• <strong>Visualized:</strong> Show visualization hero + item row</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- DESCRIPTOR MODAL (No Skip) -->
+    <div class="mb-8">
+        <h2 class="text-sm font-bold mb-2 muted uppercase tracking-wide">Descriptor Modal (Required)</h2>
+        <p class="text-xs muted mb-3">No skip button - descriptor required to visualize</p>
+
+        <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div class="p-6">
+                <p class="font-bold ink text-center mb-2">See Your Outfits Come to Life</p>
+                <p class="text-sm text-center muted mb-6">
+                    We'll show your outfit on someone who shares your look.
+                </p>
+
+                <div class="mb-4">
+                    <label class="text-xs font-semibold ink block mb-2">Describe yourself however feels right:</label>
+                    <textarea
+                        class="w-full border border-gray-200 rounded-lg p-3 text-sm resize-none"
+                        rows="2"
+                        placeholder="e.g., 5'4&quot;, Asian, shoulder-length hair, not skinny but not fat either"
+                    ></textarea>
+                </div>
+
+                <!-- Tappable Examples -->
+                <div class="mb-6">
+                    <p class="text-xs muted mb-2">Examples (tap to use):</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="text-xs px-3 py-1.5 bg-gray-100 rounded-full hover:bg-gray-200">
+                            5'4", Asian, shoulder-length hair
+                        </button>
+                        <button class="text-xs px-3 py-1.5 bg-gray-100 rounded-full hover:bg-gray-200">
+                            5'8", Black, natural curls, curvy
+                        </button>
+                        <button class="text-xs px-3 py-1.5 bg-gray-100 rounded-full hover:bg-gray-200">
+                            5'6", medium skin, athletic build
+                        </button>
+                    </div>
+                </div>
+
+                <p class="text-[10px] text-center muted mb-4">
+                    Your description is used only to generate visualizations<br>
+                    and is sent to our AI partner.
+                </p>
+
+                <!-- No Skip Button - Just Continue -->
+                <button class="w-full py-3 terracotta text-white rounded-xl text-sm font-semibold">
+                    Continue →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RECOMMENDATION -->
+    <div class="mb-8">
+        <h2 class="text-sm font-bold mb-2 muted uppercase tracking-wide">Recommendation</h2>
+
+        <div class="bg-green-50 border border-green-200 rounded-2xl p-4">
+            <p class="font-semibold ink mb-2">✅ Option B: Stacked Layout</p>
+            <ul class="text-sm muted space-y-1">
+                <li>• Visualization as hero image (maximum impact)</li>
+                <li>• Items in horizontal scrollable row (scales to 5+)</li>
+                <li>• Collapsible styling notes (reduces clutter)</li>
+                <li>• Works on all pages (reveal, saved, homepage)</li>
+                <li>• Mobile-first (vertical scroll natural)</li>
+            </ul>
+        </div>
+    </div>
+
+    <p class="text-xs text-center muted">
+        View this file: .claude/visualized-card-mockup.html
+    </p>
+</body>
+</html>

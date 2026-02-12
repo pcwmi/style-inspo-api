@@ -98,3 +98,26 @@ cot-complete-my-outfit:
   scenarios: fixtures/test_scenarios.json
   scenario_filter: "complete"
   iterations: 1
+
+# ===== A/B TEST: REASONING HYPOTHESIS (Jan 2026) =====
+# Does "ask yourself about bulk/comfort" reduce physically nonsensical outfits?
+reasoning-ab-test:
+  description: "A/B test: Does reasoning prompt reduce physically nonsensical outfits?"
+  models: fixtures/model_configs.yaml
+  model_ids:
+    - gpt4o_cot_control
+    - gpt4o_cot_reasoning
+  scenarios: fixtures/test_scenarios.json
+  scenario_filter: "bulk_physics"
+  iterations: 7
+
+# ===== VISION A/B TEST (Feb 2026) =====
+# Hypothesis: Vision reduces physically nonsensical outfits by letting AI SEE garments
+text-vs-vision:
+  description: "A/B test: Does vision-informed generation reduce bad physics in outfits?"
+  models: fixtures/model_configs.yaml
+  model_ids:
+    - gpt4o_text_only
+    - gpt4o_vision
+  scenarios: fixtures/test_scenarios.json
+  iterations: 3

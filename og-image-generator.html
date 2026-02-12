@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+    font-family: 'Georgia', 'Times New Roman', serif;
+  }
+  .og-container {
+    width: 1200px;
+    height: 630px;
+    background: #FAF7F2;
+    display: flex;
+    position: relative;
+  }
+  .og-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px 50px 60px 70px;
+    z-index: 1;
+  }
+  .og-title {
+    font-size: 52px;
+    font-weight: 400;
+    color: #1a1614;
+    letter-spacing: -0.5px;
+    margin-bottom: 20px;
+    line-height: 1.1;
+  }
+  .og-subtitle {
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+    font-size: 20px;
+    color: #6B625A;
+    line-height: 1.5;
+    max-width: 420px;
+  }
+  .og-badge {
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+    font-size: 14px;
+    color: #C85A3E;
+    margin-top: 30px;
+    letter-spacing: 0.5px;
+  }
+  .og-right {
+    width: 480px;
+    position: relative;
+    overflow: hidden;
+  }
+  .og-right img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+  }
+  .og-gradient {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 120px;
+    height: 100%;
+    background: linear-gradient(to right, #FAF7F2, transparent);
+    z-index: 1;
+  }
+</style>
+</head>
+<body>
+<div class="og-container">
+  <div class="og-left">
+    <div class="og-title">Style Inspo</div>
+    <div class="og-subtitle">
+      AI that knows your wardrobe, learns your taste, and helps you get dressed with confidence
+    </div>
+    <div class="og-badge">AI Styling Assistant</div>
+  </div>
+  <div class="og-right">
+    <div class="og-gradient"></div>
+    <img src="http://localhost:8888/showcase-candidate-visualization.png" alt="">
+  </div>
+</div>
+</body>
+</html>

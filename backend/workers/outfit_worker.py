@@ -536,3 +536,144 @@ def analyze_item_job(user_id, file_path, filename, use_real_ai=True):
         raise
 
 
+def extract_outfit_items_job(user_id, file_path, filename):
+    """Background job to extract individual items from an outfit photo.
+
+    Uses GPT-4o vision to identify items + bounding boxes, then crops each
+    item, removes background with rembg, analyzes with GPT-4o, and adds to wardrobe.
+    """
+    from io import BytesIO
+    from PIL import Image
+    from services.storage_manager import StorageManager
+    from services.image_extractor import OutfitItemExtractor
+    from services.activity_logger import log_activity
+
+    job = get_current_job()
+    storage_type = os.getenv("STORAGE_TYPE", "local")
+    storage = StorageManager(storage_type=storage_type, user_id=user_id)
+
+    try:
+        # 10% - Load image
+        if job:
+            job.meta['progress'] = 10
+            job.meta['status_message'] = 'Loading image...'
+            job.save_meta()
+
+        image_data = storage.load_file(file_path)
+        if not image_data:
+            raise FileNotFoundError(f"Could not load file from {file_path}")
+
+        # 20% - Identify items with GPT-4o vision
+        if job:
+            job.meta['progress'] = 20
+            job.meta['status_message'] = 'Identifying items in outfit photo...'
+            job.save_meta()
+
+        extractor = OutfitItemExtractor()
+        items = extractor.identify_items(image_data)
+
+        if not items:
+            if job:
+                job.meta['progress'] = 100
+                job.meta['status_message'] = 'No items detected in photo'
+                job.save_meta()
+            return {"items": [], "item_count": 0, "source_photo": file_path}
+
+        source_image = Image.open(BytesIO(image_data))
+        total_items = len(items)
+        extracted_items = []
+        analyzer = create_image_analyzer(use_real_ai=True)
+        wardrobe_manager = WardrobeManager(user_id=user_id)
+
+        # 30-90% - Extract each item (distributed evenly)
+        for i, item_info in enumerate(items):
+            item_progress = 30 + int((i / total_items) * 60)
+            if job:
+                job.meta['progress'] = item_progress
+                job.meta['status_message'] = f'Extracting {item_info["name"]}... ({i+1} of {total_items})'
+                job.meta['current_item'] = i + 1
+                job.meta['total_items'] = total_items
+                job.save_meta()
+
+            try:
+                # Crop + background removal
+                item_bytes = extractor.extract_item(
+                    source_image,
+                    item_info['bbox_pct'],
+                    item_info['name'],
+                    remove_bg=True
+                )
+
+                # AI analysis of extracted item
+                item_buffer = BytesIO(item_bytes)
+                item_buffer.name = f"{item_info['name'].replace(' ', '_')}.png"
+                analysis = analyzer.analyze_clothing_item(item_buffer)
+
+                # Reconstruct complete garment from partial crop
+                if job:
+                    job.meta['status_message'] = f'Reconstructing {item_info["name"]}... ({i+1} of {total_items})'
+                    job.save_meta()
+
+                reconstructed_bytes = extractor.reconstruct_garment(
+                    item_bytes=item_bytes,
+                    analysis=analysis,
+                    item_info=item_info,
+                    all_items=items,
+                )
+
+                save_bytes = reconstructed_bytes if reconstructed_bytes else item_bytes
+                item_buffer = BytesIO(save_bytes)
+                item_buffer.name = f"{item_info['name'].replace(' ', '_')}.png"
+
+                # Add to wardrobe
+                item_buffer.seek(0)
+                item_data = wardrobe_manager.add_wardrobe_item(
+                    uploaded_file=item_buffer,
+                    analysis_data=analysis,
+                    is_styling_challenge=False
+                )
+
+                extracted_items.append({
+                    "item_id": item_data["id"] if item_data else None,
+                    "name": analysis.get("name", item_info["name"]),
+                    "category": analysis.get("category", item_info["category"]),
+                    "image_path": item_data.get("system_metadata", {}).get("image_path") if item_data else None,
+                    "colors": analysis.get("colors", ""),
+                })
+
+                log_activity(user_id, "item_extracted", {
+                    "item_id": item_data["id"] if item_data else None,
+                    "name": analysis.get("name", item_info["name"]),
+                    "category": analysis.get("category", "unknown"),
+                    "source": "outfit_extraction"
+                })
+
+            except Exception as e:
+                logger.warning(f"Failed to extract item '{item_info['name']}': {e}")
+                continue
+
+        # 100% - Complete
+        if job:
+            job.meta['progress'] = 100
+            job.meta['status_message'] = f'Extracted {len(extracted_items)} items'
+            job.meta['extracted_items'] = extracted_items
+            job.save_meta()
+
+        # Clean up staged file
+        try:
+            storage.delete_file(file_path)
+        except Exception as e:
+            logger.warning(f"Failed to cleanup staged file {file_path}: {e}")
+
+        return {
+            "items": extracted_items,
+            "item_count": len(extracted_items),
+            "source_photo": file_path
+        }
+
+    except Exception as e:
+        logger.error(f"Error in extract_outfit_items_job for {user_id}: {e}", exc_info=True)
+        if job:
+            job.meta['error'] = str(e)
+            job.save_meta()
+        raise

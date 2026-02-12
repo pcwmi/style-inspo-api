@@ -112,6 +112,8 @@ class SavedOutfitsManager:
                 "challenge_item_id": challenge_item_id,
                 "occasion": occasion.strip() if occasion and occasion.strip() else None,
                 "context": context,
+                "visualization_pending": True,  # For web polling
+                "visualization_url": None,
                 "saved_at": _now_iso()
             }
 
@@ -183,6 +185,7 @@ class SavedOutfitsManager:
         for outfit in saved_outfits:
             if outfit.get("id") == outfit_id:
                 outfit["visualization_url"] = visualization_url
+                outfit["visualization_pending"] = False  # Visualization complete
                 outfit["visualization_updated_at"] = _now_iso()
                 updated = True
                 break

@@ -1,0 +1,63 @@
+{
+  "timestamp": "2026-02-11T19:26:29.197300",
+  "url": "https://styleinspo.vercel.app/?user=peichin",
+  "tests": {
+    "find_generate_button": {
+      "passed": true
+    },
+    "outfits_appear": {
+      "passed": true
+    },
+    "visualization_spinner": {
+      "passed": false,
+      "error": "Spinner not found - viz may not have started automatically"
+    },
+    "viz_polling": {
+      "passed": false,
+      "error": "No viz status polling requests captured"
+    },
+    "visualization_complete": {
+      "passed": false,
+      "note": "No visualization images or spinners found"
+    }
+  },
+  "network_logs": [],
+  "console_logs": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 ()",
+      "timestamp": "2026-02-11T19:26:31.147115"
+    },
+    {
+      "type": "log",
+      "text": "Outfit 1 received",
+      "timestamp": "2026-02-11T19:26:55.623891"
+    },
+    {
+      "type": "log",
+      "text": "Outfit 2 received",
+      "timestamp": "2026-02-11T19:27:03.837000"
+    },
+    {
+      "type": "log",
+      "text": "Outfit 3 received",
+      "timestamp": "2026-02-11T19:27:12.462054"
+    },
+    {
+      "type": "log",
+      "text": "Streaming complete, total outfits: 3",
+      "timestamp": "2026-02-11T19:27:13.543662"
+    }
+  ],
+  "screenshots": [
+    "viz_e2e_01_homepage.png",
+    "viz_e2e_02_after_click.png",
+    "viz_e2e_03_occasion.png",
+    "viz_e2e_03a_occasion_selected.png",
+    "viz_e2e_04_generating.png",
+    "viz_e2e_04a_outfit_appeared.png",
+    "viz_e2e_06_after_wait.png",
+    "viz_e2e_07_final.png",
+    "viz_e2e_07a_scrolled.png"
+  ]
+}

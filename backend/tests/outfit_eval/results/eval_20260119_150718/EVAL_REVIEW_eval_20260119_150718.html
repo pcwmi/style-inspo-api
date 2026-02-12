@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Eval Review: eval_20260119_150718</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #f5f5f5; padding: 20px; max-width: 1800px; margin: 0 auto; }
+        .scenario { background: white; padding: 30px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { color: #1a1a1a; }
+        h2 { color: #333; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; }
+        .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .column { border: 2px solid #ddd; padding: 20px; border-radius: 8px; }
+        .model-header { background: #f8f9fa; padding: 15px; margin: -20px -20px 20px -20px; border-radius: 6px 6px 0 0; }
+        .model-header h3 { margin: 0 0 5px 0; }
+        .model-stats { font-size: 12px; color: #666; }
+        .outfit { margin: 20px 0; padding: 20px; background: #fafafa; border-radius: 6px; border-left: 4px solid #007bff; }
+        .outfit-header { margin-bottom: 15px; }
+        .items { display: flex; flex-wrap: wrap; gap: 15px; margin: 15px 0; }
+        .item-container { position: relative; }
+        img {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            transition: transform 0.2s, z-index 0s;
+            cursor: pointer;
+        }
+        img:hover {
+            transform: scale(2.2);
+            z-index: 1000;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.4);
+            border-color: #007bff;
+        }
+        .item-placeholder {
+            width: 200px;
+            height: 200px;
+            background: #e9ecef;
+            border-radius: 8px;
+            font-size: 12px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border: 2px solid #ddd;
+            color: #666;
+        }
+        .notes { font-size: 14px; margin: 10px 0; line-height: 1.6; }
+        .notes strong { color: #495057; }
+        .rating-section {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+        .rating-stars {
+            display: flex;
+            gap: 5px;
+            margin: 8px 0;
+        }
+        .star {
+            font-size: 28px;
+            cursor: pointer;
+            color: #ddd;
+            transition: color 0.2s;
+            user-select: none;
+        }
+        .star:hover, .star.active {
+            color: #ffc107;
+        }
+        .notes-input {
+            width: 100%;
+            min-height: 70px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+            margin-top: 5px;
+            resize: vertical;
+        }
+        .notes-input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+        .rating-label {
+            font-weight: 600;
+            font-size: 13px;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+        .reasoning {
+            background: #e8f4f8;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 6px;
+            border-left: 4px solid #0d6efd;
+            white-space: pre-wrap;
+            font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .reasoning-title {
+            font-weight: bold;
+            color: #0d6efd;
+            margin-bottom: 12px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            font-size: 14px;
+        }
+    </style>
+    <script>
+        function setRating(outfitId, rating) {
+            const stars = document.querySelectorAll('#outfit-' + outfitId + ' .star');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.add('active');
+                } else {
+                    star.classList.remove('active');
+                }
+            });
+            localStorage.setItem('rating-' + outfitId, rating);
+        }
+
+        function saveNotes(outfitId) {
+            const notes = document.getElementById('notes-' + outfitId).value;
+            localStorage.setItem('notes-' + outfitId, notes);
+        }
+
+        function loadSavedData() {
+            document.querySelectorAll('.outfit').forEach(outfit => {
+                const outfitId = outfit.id.replace('outfit-', '');
+                const savedRating = localStorage.getItem('rating-' + outfitId);
+                const savedNotes = localStorage.getItem('notes-' + outfitId);
+
+                if (savedRating) {
+                    setRating(outfitId, parseInt(savedRating));
+                }
+                if (savedNotes) {
+                    const notesInput = document.getElementById('notes-' + outfitId);
+                    if (notesInput) {
+                        notesInput.value = savedNotes;
+                    }
+                }
+            });
+        }
+
+        window.addEventListener('load', loadSavedData);
+    </script>
+</head>
+<body>
+    <h1>📊 Outfit Evaluation Review</h1>
+    <p><strong>Evaluation:</strong> eval_20260119_150718</p>
+
+    <div class="scenario">
+        <h2>📝 Bulk Physics Test (Ruffled Shirt + Leather Skirt)</h2>
+        <div class="comparison">
+
+            <div class="column">
+                <div class="model-header">
+                    <h3>Control (Current COT)</h3>
+                    <div class="model-stats">
+                        Latency: 193.0s | Cost: $0.2527
+                    </div>
+                </div>
+
+                <div class="reasoning">
+                    <div class="reasoning-title">🧠 Chain-of-Thought Reasoning</div>
+                    ## Outfit 1
+
+**FUNCTION**: Create a brunch-ready look that balances classic and playful elements.
+
+**ANCHOR**: 
+- **White ruffled button-up shirt**
+  - Why it's the hero: Its romantic classic style sets the tone for elegance.
+  - Style words: classic, romantic
+- **Black faux leather pleated skirt**
+  - Why it's the hero: Adds an edgy contrast to the shirt, creating interest.
+  - Style words: edgy
+
+**SUPPORTING PIECES**:
+- **White and Red Classic Leather Sneakers**: Adds a relaxed, casual vibe suitable for brunch - carries relaxed
+- **Red and gray plaid button-up shirt**: Layered over the shirt, tied at the waist, introduces a playful, classic pattern - carries playful
+- **Black leather tote bag**: Completes the outfit by adding a minimalist touch without competing - carries classic
+- Contrast created: The soft romantic shirt contrasts with the edgy skirt and relaxed sneakers.
+
+**UNEXPECTED ELEMENT**: 
+- **Red and gray plaid button-up shirt**
+  - Breaks: Conventional expectation of wearing a button-up under another shirt.
+  - Works because: Tying it at the waist introduces a playful, laid-back element, adding depth without bulk.
+
+**STYLE DNA**: classic ✓ White ruffled button-up shirt | relaxed ✓ White and Red Classic Leather Sneakers | playful ✓ Red and gray plaid button-up shirt
+
+**COMPLETING THE LOOK**:
+- Core pieces complete the look - no additions needed
+
+**STORY**: "I'm someone who effortlessly combines elegance with a touch of playful spontaneity."
+
+**PHYSICAL CHECK**: All pieces can be worn comfortably together without restriction.
+
+**FINAL OUTFIT**:
+- White ruffled button-up shirt
+- Black faux leather pleated skirt
+- White and Red Classic Leather Sneakers
+- Red and gray plaid button-up shirt
+- Black leather tote bag
+
+**STYLING**: Shirt tucked into skirt, plaid shirt tied at waist, sneakers worn casually.
+
+---
+
+## Outfit 2
+
+**FUNCTION**: Offer a chic yet relaxed brunch ensemble with a nod to modern trends.
+
+**ANCHOR**: 
+- **White ruffled button-up shirt**
+  - Why it's the hero: Its romantic ruffles provide a classic base.
+  - Style words: classic, romantic
+- **Black faux leather pleated skirt**
+  - Why it's the hero: Provides a structured, fashionable anchor.
+  - Style words: edgy
+
+**SUPPORTING PIECES**:
+- **Cream knee-high block heel boots**: Elevates the outfit with a modern chic touch - carries classic
+- **Gold Bar Pendant Necklace**: Adds minimalist elegance, complementing the shirt's neckline - carries classic
+- **Turquoise graphic tee with orange animal print**: Layered under the shirt, peeking through for a playful pop of color - carries playful
+- Contrast created: The soft, romantic shirt contrasts with the bold turquoise tee and structured skirt.
+
+**UNEXPECTED ELEMENT**: 
+- **Turquoise graphic tee with orange animal print**
+  - Breaks: Wearing a graphic tee under a ruffled shirt.
+  - Works because: The playful print subtly peeks through, adding unexpected color and personality.
+
+**STYLE DNA**: classic ✓ Cream knee-high block heel boots | relaxed ✓ Gold Bar Pendant Necklace | playful ✓ Turquoise graphic tee with orange animal print
+
+**COMPLETING THE LOOK**:
+- Core pieces complete the look - no additions needed
+
+**STORY**: "I'm someone who blends timeless elegance with vibrant, youthful energy."
+
+**PHYSICAL CHECK**: All layers fit comfortably and cohesively.
+
+**FINAL OUTFIT**:
+- White ruffled button-up shirt
+- Black faux leather pleated skirt
+- Cream knee-high block heel boots
+- Gold Bar Pendant Necklace
+- Turquoise graphic tee with orange animal print
+
+**STYLING**: Shirt tucked, graphic tee visible at neckline, boots worn over bare legs.
+
+---
+
+## Outfit 3
+
+**FUNCTION**: Present a fashion-forward, confident look for brunch that feels effortlessly chic.
+
+**ANCHOR**: 
+- **White ruffled button-up shirt**
+  - Why it's the hero: Provides the classic, romantic element of the look.
+  - Style words: classic, romantic
+- **Black faux leather pleated skirt**
+  - Why it's the hero: Its edgy style offers a striking contrast to the shirt.
+  - Style words: edgy
+
+**SUPPORTING PIECES**:
+- **Black knee-high leather boots**: Introduces an edgy, street style element - carries edgy
+- **Gold leaf motif necklace**: Adds elegance and ties the outfit together with a touch of shine - carries classic
+- **Bright pink button-up cardigan**: Draped over shoulders, adds a playful, unexpected pop of color - carries playful
+- Contrast created: The structured skirt and boots contrast with the soft cardigan and ruffled shirt.
+
+**UNEXPECTED ELEMENT**: 
+- **Bright pink button-up cardigan**
+  - Breaks: The vibrant color contrasts with the otherwise monochrome palette.
+  - Works because: It injects a playful energy that complements the edgy and classic elements.
+
+**STYLE DNA**: classic ✓ Gold leaf motif necklace | relaxed ✓ Bright pink button-up cardigan | playful ✓ Bright pink button-up cardigan
+
+**COMPLETING THE LOOK**:
+- Core pieces complete the look - no additions needed
+
+**STORY**: "I'm someone who confidently mixes classic elegance with bold, playful elements."
+
+**PHYSICAL CHECK**: Each piece integrates seamlessly for a cohesive look.
+
+**FINAL OUTFIT**:
+- White ruffled button-up shirt
+- Black faux leather pleated skirt
+- Black knee-high leather boots
+- Gold leaf motif necklace
+- Bright pink button-up cardigan
+
+**STYLING**: Shirt tucked, cardigan draped over shoulders, necklace layered over shirt.
+
+---
+                </div>
+
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_1">
+                    <div class="outfit-header">
+                        <strong>Outfit 1</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" title="White and Red Classic Leather Sneakers" alt="White and Red Classic Leather Sneakers"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/a8edefdf96e949168d666a93f8995f52.jpg" title="Red and gray plaid button-up shirt" alt="Red and gray plaid button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/32fcec6583934f9aaa71044d5cae8fad_1765844146.jpg" title="Black leather tote bag" alt="Black leather tote bag"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into skirt, plaid shirt tied at waist, sneakers worn casually.</div>
+                    <div class="notes"><strong>Why it works:</strong> This outfit balances classic and playful elements with a relaxed sneaker choice. The red plaid shirt tied at the waist adds a playful twist, while the leather skirt and tote bag keep it chic and brunch-ready.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_1', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_1', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_1', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_1', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_1', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_1" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_1')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_2">
+                    <div class="outfit-header">
+                        <strong>Outfit 2</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c3d14deb47d148c79dec12ec85f9bc27.jpg" title="Cream knee-high block heel boots" alt="Cream knee-high block heel boots"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg" title="Gold Bar Pendant Necklace" alt="Gold Bar Pendant Necklace"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/8e074000e7944a879fe07a6d129b9069.jpg" title="Turquoise graphic tee with orange animal print" alt="Turquoise graphic tee with orange animal print"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked, graphic tee visible at neckline, boots worn over bare legs.</div>
+                    <div class="notes"><strong>Why it works:</strong> This ensemble combines romantic and edgy elements with a playful twist. The turquoise tee adds unexpected color under the classic shirt, while the cream boots elevate the look for a chic brunch.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_2', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_2', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_2', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_2', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_2', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_2" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_2')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_3">
+                    <div class="outfit-header">
+                        <strong>Outfit 3</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/a1eafa83d2db414eaaae274585cde2bc.jpg" title="Black knee-high leather boots" alt="Black knee-high leather boots"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" title="Gold leaf motif necklace" alt="Gold leaf motif necklace"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/dab7733fbd3a400d88abe6c89bbb2a36_1766518349.jpg" title="Bright pink button-up cardigan" alt="Bright pink button-up cardigan"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked, cardigan draped over shoulders, necklace layered over shirt.</div>
+                    <div class="notes"><strong>Why it works:</strong> By combining classic, edgy, and playful elements, this outfit stands out. The bright pink cardigan adds a pop of color to a monochrome ensemble, while the leather boots ground it with a touch of edge.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_3', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_3', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_3', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_3', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_3', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_3" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_3')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_4">
+                    <div class="outfit-header">
+                        <strong>Outfit 4</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c3d14deb47d148c79dec12ec85f9bc27.jpg" title="Cream knee-high block heel boots" alt="Cream knee-high block heel boots"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/34b028c8f0594018acd03de09cd0a63b.jpg" title="Beige fringe denim jacket" alt="Beige fringe denim jacket"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" title="Gold swirl earrings with pearl center" alt="Gold swirl earrings with pearl center"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into the skirt, jacket worn open, boots worn outside the skirt.</div>
+                    <div class="notes"><strong>Why it works:</strong> The white shirt and black skirt create a chic base, while the fringe denim jacket adds a relaxed boho feel. Cream boots modernize the ensemble, with gold earrings providing elegance. This mix of styles is perfect for a brunch date, showcasing versatility.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_4', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_4', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_4', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_4', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_4', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_4" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_4')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_5">
+                    <div class="outfit-header">
+                        <strong>Outfit 5</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" title="White and Red Classic Leather Sneakers" alt="White and Red Classic Leather Sneakers"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/00fe05abd100400eac9be4e4b9c09d8c.jpg" title="Red and black plaid wool scarf" alt="Red and black plaid wool scarf"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/32fcec6583934f9aaa71044d5cae8fad_1765844146.jpg" title="Black leather tote bag" alt="Black leather tote bag"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked, scarf draped loosely, sneakers worn with no-show socks.</div>
+                    <div class="notes"><strong>Why it works:</strong> The white shirt and black skirt offer a timeless look, while the sneakers and scarf add a sporty, playful vibe. The tote bag is a chic, functional addition. This outfit is ideal for a casual brunch, blending comfort with style.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_5', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_5', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_5', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_5', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_5', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_5" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_5')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_6">
+                    <div class="outfit-header">
+                        <strong>Outfit 6</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/a1eafa83d2db414eaaae274585cde2bc.jpg" title="Black knee-high leather boots" alt="Black knee-high leather boots"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/dab7733fbd3a400d88abe6c89bbb2a36_1766518349.jpg" title="Bright pink button-up cardigan" alt="Bright pink button-up cardigan"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" title="Gold leaf motif necklace" alt="Gold leaf motif necklace"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked, cardigan buttoned up halfway, boots worn over the skirt.</div>
+                    <div class="notes"><strong>Why it works:</strong> The classic shirt and edgy skirt form a sophisticated base, complemented by vibrant pink cardigan. Black boots add edge, while gold necklace elevates the look. This ensemble stands out at brunch, mixing bold color with timeless styles.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_6', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_6', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_6', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_6', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_6', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_6" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_6')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_7">
+                    <div class="outfit-header">
+                        <strong>Outfit 7</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/66af2a43a68343a88921acec7a85c0f0.jpg" title="Taupe suede ankle boots" alt="Taupe suede ankle boots"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/00fe05abd100400eac9be4e4b9c09d8c.jpg" title="Red and black plaid wool scarf" alt="Red and black plaid wool scarf"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2549b284e7f840018e6236876333cfe5_1767317289.jpg" title="Brown slouchy leather shoulder bag" alt="Brown slouchy leather shoulder bag"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into the skirt, scarf draped loosely around the neck, boots worn outside the skirt.</div>
+                    <div class="notes"><strong>Why it works:</strong> This outfit blends classic and playful elements with the unexpected plaid scarf. The white shirt and black skirt provide a chic base, while the taupe boots and brown bag add a relaxed feel, making it suitable for brunch.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_7', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_7', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_7', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_7', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_7', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_7" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_7')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_8">
+                    <div class="outfit-header">
+                        <strong>Outfit 8</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/bde5eead2fba4061b9d72a70f4c84106.jpg" title="Brown leather bomber jacket" alt="Brown leather bomber jacket"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d3e79387d01e4fe88030ff21d383dae0.jpg" title="Burgundy patent leather pointed-toe pumps" alt="Burgundy patent leather pointed-toe pumps"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" title="Gold leaf motif necklace" alt="Gold leaf motif necklace"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into the skirt, jacket worn open, necklace worn outside the shirt.</div>
+                    <div class="notes"><strong>Why it works:</strong> The bomber jacket adds a relaxed layer to the classic and edgy shirt and skirt combination. Burgundy pumps provide sophistication, complemented by the gold necklace, making it polished yet approachable for brunch.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_8', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_8', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_8', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_8', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_8', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_8" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_8')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_9">
+                    <div class="outfit-header">
+                        <strong>Outfit 9</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" title="Gold swirl earrings with pearl center" alt="Gold swirl earrings with pearl center"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1e1f015ce81489997c2f77d046b6497.jpg" title="White and Black Distressed Leather Ankle Boots" alt="White and Black Distressed Leather Ankle Boots"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/32fcec6583934f9aaa71044d5cae8fad_1765844146.jpg" title="Black leather tote bag" alt="Black leather tote bag"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt loosely tucked, earrings visible with hair pulled back, boots worn outside the skirt.</div>
+                    <div class="notes"><strong>Why it works:</strong> This outfit pairs classic and edgy elements with playful details. The distressed boots add a modern edge to the romantic shirt and skirt, while the gold earrings provide a vintage touch, perfect for a stylish brunch.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_9', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_9', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_9', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_9', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_9', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_9" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_9')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_10">
+                    <div class="outfit-header">
+                        <strong>Outfit 10</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" title="White and Red Classic Leather Sneakers" alt="White and Red Classic Leather Sneakers"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" title="Black and White Floral Print Scarf" alt="Black and White Floral Print Scarf"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into the skirt, scarf draped loosely, sneakers worn comfortably.</div>
+                    <div class="notes"><strong>Why it works:</strong> This outfit balances romantic, edgy, and playful elements, perfect for a brunch setting. The shirt and skirt create a classic base, while the sneakers add a relaxed vibe. The floral scarf introduces unexpected elegance.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_10', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_10', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_10', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_10', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_10', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_10" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_10')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_11">
+                    <div class="outfit-header">
+                        <strong>Outfit 11</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d3e79387d01e4fe88030ff21d383dae0.jpg" title="Burgundy patent leather pointed-toe pumps" alt="Burgundy patent leather pointed-toe pumps"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" title="Gold swirl earrings with pearl center" alt="Gold swirl earrings with pearl center"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into the skirt, earrings prominently displayed, pumps worn confidently.</div>
+                    <div class="notes"><strong>Why it works:</strong> Combining classic, playful, and edgy elements, this outfit is chic for brunch. The pumps add elegance, while the earrings introduce a playful touch. The shirt and skirt maintain a romantic yet modern appeal.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_11', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_11', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_11', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_11', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_11', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_11" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_11')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_12">
+                    <div class="outfit-header">
+                        <strong>Outfit 12</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/66af2a43a68343a88921acec7a85c0f0.jpg" title="Taupe suede ankle boots" alt="Taupe suede ankle boots"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/bde5eead2fba4061b9d72a70f4c84106.jpg" title="Brown leather bomber jacket" alt="Brown leather bomber jacket"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into the skirt, jacket worn open, boots visible under the skirt.</div>
+                    <div class="notes"><strong>Why it works:</strong> This outfit balances classic, relaxed, and playful styles, ideal for brunch. The bomber jacket adds a casual, vintage touch, while the boots provide a relaxed feel. The shirt and skirt offer a structured, romantic base.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_12', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_12', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_12', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_12', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_12', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_12" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_12')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_13">
+                    <div class="outfit-header">
+                        <strong>Outfit 13</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/66af2a43a68343a88921acec7a85c0f0.jpg" title="Taupe suede ankle boots" alt="Taupe suede ankle boots"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/00fe05abd100400eac9be4e4b9c09d8c.jpg" title="Red and black plaid wool scarf" alt="Red and black plaid wool scarf"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/32fcec6583934f9aaa71044d5cae8fad_1765844146.jpg" title="Black leather tote bag" alt="Black leather tote bag"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into the skirt, scarf loosely draped, boots worn outside the skirt.</div>
+                    <div class="notes"><strong>Why it works:</strong> The classic shirt paired with the edgy skirt creates a balanced base. The taupe boots add a relaxed feel, while the plaid scarf introduces a playful element. The leather tote completes the classic vibe, making it perfect for brunch.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_13', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_13', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_13', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_13', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_13', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_13" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_13')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_14">
+                    <div class="outfit-header">
+                        <strong>Outfit 14</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c3d14deb47d148c79dec12ec85f9bc27.jpg" title="Cream knee-high block heel boots" alt="Cream knee-high block heel boots"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" title="Gold swirl earrings with pearl center" alt="Gold swirl earrings with pearl center"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2aa36a23bd26480c96a023e648dde746_1767317322.jpg" title="Brown suede crossbody bag with gold hardware" alt="Brown suede crossbody bag with gold hardware"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into the skirt, boots worn outside, earrings as the focal point.</div>
+                    <div class="notes"><strong>Why it works:</strong> The structured shirt and skirt provide a polished base, enhanced by the elegant boots. The pearl earrings add a playful touch, and the crossbody bag balances the look with a relaxed edge. Ideal for a sophisticated brunch setting.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_14', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_14', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_14', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_14', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_14', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_14" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_14')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_15">
+                    <div class="outfit-header">
+                        <strong>Outfit 15</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" title="White and Red Classic Leather Sneakers" alt="White and Red Classic Leather Sneakers"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e3bcf7bca70d49ec8c2736d15892319a.jpg" title="Pink and yellow striped scarf with fringe" alt="Pink and yellow striped scarf with fringe"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/8bec8c942dd94b8e8f698430e563f3c0.jpg" title="Black woven belt with gold buckle" alt="Black woven belt with gold buckle"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into the skirt, sneakers visible under the skirt, scarf casually draped.</div>
+                    <div class="notes"><strong>Why it works:</strong> </div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_15', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_15', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_15', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_15', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_15', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_15" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_15')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_16">
+                    <div class="outfit-header">
+                        <strong>Outfit 16</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" title="White and Red Classic Leather Sneakers" alt="White and Red Classic Leather Sneakers"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" title="Gold swirl earrings with pearl center" alt="Gold swirl earrings with pearl center"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into the skirt, sleeves rolled for a relaxed look, sneakers worn untucked, earrings on display.</div>
+                    <div class="notes"><strong>Why it works:</strong> </div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_16', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_16', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_16', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_16', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_16', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_16" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_16')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_17">
+                    <div class="outfit-header">
+                        <strong>Outfit 17</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/66af2a43a68343a88921acec7a85c0f0.jpg" title="Taupe suede ankle boots" alt="Taupe suede ankle boots"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e92eaf06694548d1a2953ad7818af6e0_1767297190.jpg" title="Teal wool cropped cardigan" alt="Teal wool cropped cardigan"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into the skirt, cardigan worn open over the shirt, boots worn outside the skirt.</div>
+                    <div class="notes"><strong>Why it works:</strong> </div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_17', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_17', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_17', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_17', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_17', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_17" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_17')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_18">
+                    <div class="outfit-header">
+                        <strong>Outfit 18</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/fea051736ba246b991b53dbf7d7b80ed.jpg" title="Black leather mid-calf boots" alt="Black leather mid-calf boots"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/cd9aba82c36248b8bb25d8acfe9b9490.jpg" title="Leopard Print Square Scarf" alt="Leopard Print Square Scarf"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into the skirt, scarf tied loosely around the neck, boots worn outside the skirt.</div>
+                    <div class="notes"><strong>Why it works:</strong> </div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_18', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_18', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_18', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_18', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_18', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_18" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_18')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_19">
+                    <div class="outfit-header">
+                        <strong>Outfit 19</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" title="White and Red Classic Leather Sneakers" alt="White and Red Classic Leather Sneakers"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/dab7733fbd3a400d88abe6c89bbb2a36_1766518349.jpg" title="Bright pink button-up cardigan" alt="Bright pink button-up cardigan"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into the skirt, cardigan worn open for a relaxed feel, sneakers with no-show socks.</div>
+                    <div class="notes"><strong>Why it works:</strong> Perfect for brunch, this outfit combines a classic white shirt with playful ruffles and a vibrant pink cardigan, adding a pop of color. The skirt adds structure while the sneakers keep it relaxed.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_19', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_19', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_19', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_19', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_19', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_19" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_19')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_20">
+                    <div class="outfit-header">
+                        <strong>Outfit 20</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" title="Gold swirl earrings with pearl center" alt="Gold swirl earrings with pearl center"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into the skirt, earrings as the statement piece, boots worn with ankle-length socks.</div>
+                    <div class="notes"><strong>Why it works:</strong> This look blends elegance and ease, with the classic white shirt and pleated skirt being elevated by the gold earrings. The suede boots add a relaxed element, making it perfect for a chic brunch.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_20', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_20', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_20', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_20', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_20', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_20" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_20')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_21">
+                    <div class="outfit-header">
+                        <strong>Outfit 21</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/331fc97e712f40fb94a7d005479d1cdb.jpg" title="White embroidered cowboy boots" alt="White embroidered cowboy boots"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/cd9aba82c36248b8bb25d8acfe9b9490.jpg" title="Leopard Print Square Scarf" alt="Leopard Print Square Scarf"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into the skirt, scarf worn loosely around the neck, boots worn over bare legs.</div>
+                    <div class="notes"><strong>Why it works:</strong> This outfit embraces the unexpected with cowboy boots adding whimsy to the classic shirt and skirt combination. The scarf adds texture and relaxed flair, making it both playful and polished.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_21', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_21', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_21', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_21', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_21', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_21" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_control_21')"></textarea>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="column">
+                <div class="model-header">
+                    <h3>Treatment A (Reasoning Prompt)</h3>
+                    <div class="model-stats">
+                        Latency: 197.2s | Cost: $0.2516
+                    </div>
+                </div>
+
+                <div class="reasoning">
+                    <div class="reasoning-title">🧠 Chain-of-Thought Reasoning</div>
+                    ## OUTFIT 1
+
+FUNCTION: [Create a fresh, playful brunch outfit that feels put-together]
+
+ANCHOR: White ruffled button-up shirt
+- Why it's the hero: Its romantic ruffles set a classic and polished tone.
+- Style words: classic, romantic
+
+ANCHOR: Black faux leather pleated skirt
+- Why it's the hero: Adds an edgy, structured element to the outfit.
+- Style words: edgy, structured
+
+SUPPORTING PIECES:
+- White and Red Classic Leather Sneakers: Adds a relaxed, sporty touch - carries relaxed
+- Red and gray plaid button-up shirt: Tied around the waist, adds a playful layer of color - carries playful
+- Contrast created: The structured skirt contrasts with the relaxed and sporty sneakers and the playful plaid.
+
+UNEXPECTED ELEMENT: Red and gray plaid button-up shirt
+- Breaks: Convention of not layering two button-ups
+- Works because: Tying it around the waist softens the look, adds color, and makes it playful without overwhelming the outfit.
+
+STYLE DNA: classic ✓ [white ruffled button-up shirt] | relaxed ✓ [sneakers] | playful ✓ [plaid shirt]
+
+COMPLETING THE LOOK:
+- Core pieces complete the look - no additions needed
+
+STORY: "I'm someone who effortlessly mixes classic and playful elements for a brunch with friends."
+
+PHYSICAL CHECK: Pieces work together—shirt layers functionally, sneakers are comfortable.
+
+FINAL OUTFIT:
+- White ruffled button-up shirt
+- Black faux leather pleated skirt
+- White and Red Classic Leather Sneakers
+- Red and gray plaid button-up shirt
+
+STYLING: Shirt tucked into skirt, plaid shirt tied at the waist, sleeves rolled for a casual vibe.
+
+---
+
+## OUTFIT 2
+
+FUNCTION: [Create an outfit that feels polished yet relaxed for a casual brunch]
+
+ANCHOR: White ruffled button-up shirt
+- Why it's the hero: Provides a polished base with classic ruffles.
+- Style words: classic, romantic
+
+ANCHOR: Black faux leather pleated skirt
+- Why it's the hero: Offers a structured silhouette with an edgy twist.
+- Style words: edgy, structured
+
+SUPPORTING PIECES:
+- Black Patent Leather Loafers: Adds a timeless and relaxed element - carries relaxed
+- Gold swirl earrings with pearl center: Elevates the look with elegance and playfulness - carries playful
+- Contrast created: The smooth leather of the loafers contrasts with the structured faux leather skirt and the soft ruffles of the shirt.
+
+UNEXPECTED ELEMENT: Gold swirl earrings with pearl center
+- Breaks: The expectation of keeping accessories minimal for a casual look
+- Works because: The earrings add a playful and elegant touch, enhancing the outfit’s personality without overpowering it.
+
+STYLE DNA: classic ✓ [white ruffled button-up shirt] | relaxed ✓ [loafers] | playful ✓ [earrings]
+
+COMPLETING THE LOOK:
+- Core pieces complete the look - no additions needed
+
+STORY: "I'm someone who can be polished yet relaxed, effortlessly mixing elegance with casual style."
+
+PHYSICAL CHECK: Pieces work seamlessly together, comfortable for brunch.
+
+FINAL OUTFIT:
+- White ruffled button-up shirt
+- Black faux leather pleated skirt
+- Black Patent Leather Loafers
+- Gold swirl earrings with pearl center
+
+STYLING: Shirt tucked into skirt, earrings as a statement piece, loafers for a relaxed finish.
+
+---
+
+## OUTFIT 3
+
+FUNCTION: [Create a playful yet sophisticated look suitable for brunch]
+
+ANCHOR: White ruffled button-up shirt
+- Why it's the hero: Its classic style anchors the outfit with a touch of romance.
+- Style words: classic, romantic
+
+ANCHOR: Black faux leather pleated skirt
+- Why it's the hero: Offers a modern and edgy contrast to the classic blouse.
+- Style words: edgy, structured
+
+SUPPORTING PIECES:
+- Cream knee-high block heel boots: Adds a modern chic element with a relaxed height - carries relaxed
+- Leopard Print Square Scarf: Adds a bold, playful print - carries playful
+- Contrast created: The bold pattern of the scarf contrasts with the simple, structured skirt and the smooth leather of the boots.
+
+UNEXPECTED ELEMENT: Leopard Print Square Scarf
+- Breaks: The expectation of keeping prints minimal
+- Works because: The scarf adds a bold statement that ties the look together, making it feel both playful and sophisticated.
+
+STYLE DNA: classic ✓ [white ruffled button-up shirt] | relaxed ✓ [boots] | playful ✓ [scarf]
+
+COMPLETING THE LOOK:
+- Core pieces complete the look - no additions needed
+
+STORY: "I'm someone who embraces bold prints and modern styles, creating a unique brunch ensemble."
+
+PHYSICAL CHECK: Functional and comfortable for brunch, pieces layer well.
+
+FINAL OUTFIT:
+- White ruffled button-up shirt
+- Black faux leather pleated skirt
+- Cream knee-high block heel boots
+- Leopard Print Square Scarf
+
+STYLING: Shirt tucked into skirt, scarf tied loosely at the neck, boots worn outside skirt.
+
+---
+                </div>
+
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_1">
+                    <div class="outfit-header">
+                        <strong>Outfit 1</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" title="White and Red Classic Leather Sneakers" alt="White and Red Classic Leather Sneakers"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/a8edefdf96e949168d666a93f8995f52.jpg" title="Red and gray plaid button-up shirt" alt="Red and gray plaid button-up shirt"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into skirt, plaid shirt tied at the waist, sleeves rolled for a casual vibe.</div>
+                    <div class="notes"><strong>Why it works:</strong> This outfit is perfect for brunch, combining classic and playful elements. The white shirt and black skirt provide a polished base, while the sneakers and plaid shirt add a relaxed, playful touch.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_1', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_1', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_1', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_1', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_1', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_1" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_1')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_2">
+                    <div class="outfit-header">
+                        <strong>Outfit 2</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg" title="Black Patent Leather Loafers" alt="Black Patent Leather Loafers"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" title="Gold swirl earrings with pearl center" alt="Gold swirl earrings with pearl center"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into skirt, earrings as a statement piece, loafers for a relaxed finish.</div>
+                    <div class="notes"><strong>Why it works:</strong> This outfit is polished yet relaxed, ideal for brunch. The shirt and skirt offer a classic, structured look, while the loafers and earrings add relaxed and playful elements.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_2', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_2', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_2', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_2', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_2', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_2" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_2')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_3">
+                    <div class="outfit-header">
+                        <strong>Outfit 3</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c3d14deb47d148c79dec12ec85f9bc27.jpg" title="Cream knee-high block heel boots" alt="Cream knee-high block heel boots"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/cd9aba82c36248b8bb25d8acfe9b9490.jpg" title="Leopard Print Square Scarf" alt="Leopard Print Square Scarf"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into skirt, scarf tied loosely at the neck, boots worn outside skirt.</div>
+                    <div class="notes"><strong>Why it works:</strong> This playful yet sophisticated outfit is perfect for brunch. The shirt and skirt provide a classic base, while the boots add relaxed chic and the scarf introduces a bold print.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_3', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_3', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_3', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_3', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_3', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_3" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_3')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_4">
+                    <div class="outfit-header">
+                        <strong>Outfit 4</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" title="White and Red Classic Leather Sneakers" alt="White and Red Classic Leather Sneakers"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/a8edefdf96e949168d666a93f8995f52.jpg" title="Red and gray plaid button-up shirt" alt="Red and gray plaid button-up shirt"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked in, plaid shirt tied at the waist, sneakers worn untied for a relaxed look.</div>
+                    <div class="notes"><strong>Why it works:</strong> This outfit blends classic and relaxed styles with a playful twist, perfect for brunch. The shirt and skirt provide structure, while the sneakers and plaid shirt add casual fun. Each piece honors their style DNA.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_4', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_4', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_4', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_4', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_4', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_4" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_4')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_5">
+                    <div class="outfit-header">
+                        <strong>Outfit 5</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/66af2a43a68343a88921acec7a85c0f0.jpg" title="Taupe suede ankle boots" alt="Taupe suede ankle boots"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" title="Gold swirl earrings with pearl center" alt="Gold swirl earrings with pearl center"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into skirt, earrings as statement pieces, boots worn outside skirt.</div>
+                    <div class="notes"><strong>Why it works:</strong> This look is polished, yet relaxed, suitable for brunch. The shirt and skirt create a classic and edgy foundation, while the boots and earrings add casual chic and vintage elegance, respectively. Each piece reflects their style DNA.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_5', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_5', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_5', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_5', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_5', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_5" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_5')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_6">
+                    <div class="outfit-header">
+                        <strong>Outfit 6</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/fea051736ba246b991b53dbf7d7b80ed.jpg" title="Black leather mid-calf boots" alt="Black leather mid-calf boots"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/cd9aba82c36248b8bb25d8acfe9b9490.jpg" title="Leopard Print Square Scarf" alt="Leopard Print Square Scarf"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into skirt, scarf tied loosely around the neck, boots worn outside skirt.</div>
+                    <div class="notes"><strong>Why it works:</strong> The outfit combines sophistication with a playful twist, ideal for brunch. The classic shirt and edgy skirt are complemented by structured boots and a bold scarf, fulfilling their style DNA of classic, relaxed, and playful.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_6', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_6', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_6', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_6', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_6', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_6" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_6')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_7">
+                    <div class="outfit-header">
+                        <strong>Outfit 7</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" title="White and Red Classic Leather Sneakers" alt="White and Red Classic Leather Sneakers"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/dab7733fbd3a400d88abe6c89bbb2a36_1766518349.jpg" title="Bright pink button-up cardigan" alt="Bright pink button-up cardigan"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into the skirt, cardigan worn open, sneakers worn casually.</div>
+                    <div class="notes"><strong>Why it works:</strong> This outfit provides a playful twist on classic elements with the bright cardigan adding color. The sneakers ensure a relaxed vibe, making this perfect for brunch.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_7', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_7', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_7', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_7', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_7', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_7" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_7')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_8">
+                    <div class="outfit-header">
+                        <strong>Outfit 8</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg" title="Black Patent Leather Loafers" alt="Black Patent Leather Loafers"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/eea2be3ba5d240f39cb7f89a345ede35.jpg" title="Gold leaf motif necklace" alt="Gold leaf motif necklace"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into the skirt, necklace layered over the shirt, loafers polished.</div>
+                    <div class="notes"><strong>Why it works:</strong> Combining classic and edgy elements, this outfit is elevated by the gold necklace, adding elegance. Loafers offer a relaxed yet sophisticated finish.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_8', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_8', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_8', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_8', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_8', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_8" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_8')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_9">
+                    <div class="outfit-header">
+                        <strong>Outfit 9</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/66af2a43a68343a88921acec7a85c0f0.jpg" title="Taupe suede ankle boots" alt="Taupe suede ankle boots"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e3bcf7bca70d49ec8c2736d15892319a.jpg" title="Pink and yellow striped scarf with fringe" alt="Pink and yellow striped scarf with fringe"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked in, scarf draped loosely, boots worn casually.</div>
+                    <div class="notes"><strong>Why it works:</strong> </div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_9', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_9', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_9', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_9', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_9', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_9" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_9')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_10">
+                    <div class="outfit-header">
+                        <strong>Outfit 10</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/cd9aba82c36248b8bb25d8acfe9b9490.jpg" title="Leopard Print Square Scarf" alt="Leopard Print Square Scarf"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg" title="Black Patent Leather Loafers" alt="Black Patent Leather Loafers"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" title="Gold swirl earrings with pearl center" alt="Gold swirl earrings with pearl center"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked, scarf tied loosely around neck, loafers polished, earrings visible with hair pulled back.</div>
+                    <div class="notes"><strong>Why it works:</strong> This outfit combines classic and playful elements for brunch. The shirt and skirt provide sophistication, the scarf adds a bold playful touch, and the loafers keep it polished and classic.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_10', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_10', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_10', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_10', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_10', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_10" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_10')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_11">
+                    <div class="outfit-header">
+                        <strong>Outfit 11</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e92eaf06694548d1a2953ad7818af6e0_1767297190.jpg" title="Teal wool cropped cardigan" alt="Teal wool cropped cardigan"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/66af2a43a68343a88921acec7a85c0f0.jpg" title="Taupe suede ankle boots" alt="Taupe suede ankle boots"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/3b20df5b52984edcb08e2caac171a96a.jpg" title="Black haircalf belt with silver buckle" alt="Black haircalf belt with silver buckle"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into skirt, cardigan worn open, skirt belted at the waist, boots worn outside skirt.</div>
+                    <div class="notes"><strong>Why it works:</strong> This brunch outfit blends classic and relaxed styles with a playful pop of color. The shirt and skirt anchor the look, the cardigan adds color and relaxation, and the boots provide a chic finish.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_11', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_11', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_11', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_11', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_11', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_11" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_11')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_12">
+                    <div class="outfit-header">
+                        <strong>Outfit 12</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" title="White and Red Classic Leather Sneakers" alt="White and Red Classic Leather Sneakers"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" title="Gold swirl earrings with pearl center" alt="Gold swirl earrings with pearl center"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into skirt, sleeves gently rolled, sneakers untied for a relaxed vibe.</div>
+                    <div class="notes"><strong>Why it works:</strong> The outfit is perfect for brunch, combining elegant and playful elements. The shirt and skirt provide a romantic and edgy base, while the sneakers add a playful touch with their pop of red, tying the classic and relaxed aspects together.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_12', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_12', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_12', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_12', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_12', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_12" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_12')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_13">
+                    <div class="outfit-header">
+                        <strong>Outfit 13</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/66af2a43a68343a88921acec7a85c0f0.jpg" title="Taupe suede ankle boots" alt="Taupe suede ankle boots"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/dab7733fbd3a400d88abe6c89bbb2a36_1766518349.jpg" title="Bright pink button-up cardigan" alt="Bright pink button-up cardigan"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into skirt, cardigan buttoned only at the top for a relaxed drape, boots worn outside the skirt.</div>
+                    <div class="notes"><strong>Why it works:</strong> This outfit blends chic and comfort, with the romantic shirt and edgy skirt setting a versatile foundation. The bright cardigan adds a playful pop, while the taupe boots maintain a relaxed vibe, achieving a perfect brunch look.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_13', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_13', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_13', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_13', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_13', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_13" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_13')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_14">
+                    <div class="outfit-header">
+                        <strong>Outfit 14</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d3e79387d01e4fe88030ff21d383dae0.jpg" title="Burgundy patent leather pointed-toe pumps" alt="Burgundy patent leather pointed-toe pumps"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" title="Black and White Floral Print Scarf" alt="Black and White Floral Print Scarf"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt neatly tucked, scarf loosely draped around neck, pumps polished for a chic finish.</div>
+                    <div class="notes"><strong>Why it works:</strong> </div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_14', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_14', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_14', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_14', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_14', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_14" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_14')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_15">
+                    <div class="outfit-header">
+                        <strong>Outfit 15</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" title="White and Red Classic Leather Sneakers" alt="White and Red Classic Leather Sneakers"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e1ad4951894d491f96c5b65acc96a34b.jpg" title="Black and White Floral Print Scarf" alt="Black and White Floral Print Scarf"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into the skirt, scarf draped loosely around the neck, sneakers laced up.</div>
+                    <div class="notes"><strong>Why it works:</strong> This outfit is chic and comfortable for a brunch setting. The classic shirt and edgy skirt are grounded by relaxed sneakers, while the scarf adds a playful and elegant touch.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_15', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_15', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_15', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_15', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_15', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_15" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_15')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_16">
+                    <div class="outfit-header">
+                        <strong>Outfit 16</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/8e074000e7944a879fe07a6d129b9069.jpg" title="Turquoise graphic tee with orange animal print" alt="Turquoise graphic tee with orange animal print"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/66af2a43a68343a88921acec7a85c0f0.jpg" title="Taupe suede ankle boots" alt="Taupe suede ankle boots"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt worn open over the graphic tee, skirt worn at the waist, boots zipped.</div>
+                    <div class="notes"><strong>Why it works:</strong> This playful outfit combines vibrant colors with classic pieces, perfect for a relaxed brunch. The tee adds a pop of color, while the boots and skirt maintain a stylish silhouette.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_16', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_16', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_16', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_16', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_16', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_16" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_16')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_17">
+                    <div class="outfit-header">
+                        <strong>Outfit 17</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e92eaf06694548d1a2953ad7818af6e0_1767297190.jpg" title="Teal wool cropped cardigan" alt="Teal wool cropped cardigan"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/a1eafa83d2db414eaaae274585cde2bc.jpg" title="Black knee-high leather boots" alt="Black knee-high leather boots"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" title="Gold swirl earrings with pearl center" alt="Gold swirl earrings with pearl center"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Cardigan buttoned over the shirt, skirt worn high-waisted, earrings as a delicate finishing touch.</div>
+                    <div class="notes"><strong>Why it works:</strong> This outfit blends vintage charm with modern edge, perfect for a relaxed yet polished brunch. The cardigan adds color and texture, while the boots and earrings complete the look.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_17', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_17', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_17', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_17', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_17', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_17" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_17')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_18">
+                    <div class="outfit-header">
+                        <strong>Outfit 18</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg" title="White and Red Classic Leather Sneakers" alt="White and Red Classic Leather Sneakers"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/cd9aba82c36248b8bb25d8acfe9b9490.jpg" title="Leopard Print Square Scarf" alt="Leopard Print Square Scarf"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked into the skirt for a polished look, scarf styled around the neck, sneakers worn casually.</div>
+                    <div class="notes"><strong>Why it works:</strong> This outfit is perfect for brunch, blending classic elegance with playful elements. The sneakers add a relaxed tone, while the scarf introduces an unexpected pattern, making the look cohesive and lively.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_18', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_18', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_18', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_18', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_18', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_18" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_18')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_19">
+                    <div class="outfit-header">
+                        <strong>Outfit 19</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c3d14deb47d148c79dec12ec85f9bc27.jpg" title="Cream knee-high block heel boots" alt="Cream knee-high block heel boots"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e3bcf7bca70d49ec8c2736d15892319a.jpg" title="Pink and yellow striped scarf with fringe" alt="Pink and yellow striped scarf with fringe"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked, boots worn over the skirt, scarf draped loosely around the neck.</div>
+                    <div class="notes"><strong>Why it works:</strong> </div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_19', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_19', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_19', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_19', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_19', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_19" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_19')"></textarea>
+                    </div>
+                </div>
+
+                <div class="outfit" id="outfit-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_20">
+                    <div class="outfit-header">
+                        <strong>Outfit 20</strong>
+                    </div>
+                    <div class="items">
+<div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/730b591fd84344baa463955085ce80b2.jpg" title="White ruffled button-up shirt" alt="White ruffled button-up shirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg" title="Black faux leather pleated skirt" alt="Black faux leather pleated skirt"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg" title="Black Patent Leather Loafers" alt="Black Patent Leather Loafers"></div><div class="item-container"><img src="https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg" title="Gold swirl earrings with pearl center" alt="Gold swirl earrings with pearl center"></div>
+                    </div>
+                    <div class="notes"><strong>Styling:</strong> Shirt tucked in, loafers worn with no-show socks, earrings as a statement piece.</div>
+                    <div class="notes"><strong>Why it works:</strong> This ensemble offers a relaxed sophistication with a vintage twist. The loafers add timeless elegance, while the earrings introduce vintage flair, balancing the classic and edgy elements for a polished look.</div>
+                    <div class="rating-section">
+                        <div class="rating-label">Your Rating:</div>
+                        <div class="rating-stars">
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_20', 1)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_20', 2)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_20', 3)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_20', 4)">★</span>
+                            <span class="star" onclick="setRating('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_20', 5)">★</span>
+                        </div>
+                        <div class="rating-label">Notes:</div>
+                        <textarea class="notes-input" id="notes-Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_20" placeholder="Add your feedback here..." onblur="saveNotes('Bulk_Physics_Test_Ruffled_Shirt_+_Leather_Skirt_gpt4o_cot_reasoning_20')"></textarea>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

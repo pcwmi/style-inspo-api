@@ -265,5 +265,23 @@ export const api = {
     const res = await fetch(`${API_URL}/api/outfits/${userId}/worn`)
     if (!res.ok) throw new Error('Failed to fetch worn outfits')
     return res.json()
+  },
+
+  // Outfit Extraction
+  async uploadOutfitPhoto(userId: string, file: File) {
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const res = await fetch(`${API_URL}/api/wardrobe/${userId}/upload-outfit`, {
+      method: 'POST',
+      body: formData
+    })
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ detail: res.statusText }))
+      throw new Error(errorData.detail || `Upload failed: ${res.status} ${res.statusText}`)
+    }
+
+    return res.json()
   }
 }

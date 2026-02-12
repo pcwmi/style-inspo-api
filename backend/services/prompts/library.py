@@ -6,6 +6,9 @@ from .baseline_v1 import BaselinePromptV1
 from .fit_constraints_v2 import FitConstraintsPromptV2
 from .chain_of_thought_v1 import ChainOfThoughtPromptV1
 from .chain_of_thought_streaming_v1 import ChainOfThoughtStreamingV1
+from .chain_of_thought_reasoning_v1 import ChainOfThoughtReasoningV1
+from .vision_v1 import VisionPromptV1
+from .vision_cot_v1 import VisionChainOfThoughtV1
 
 
 class PromptLibrary:
@@ -22,6 +25,9 @@ class PromptLibrary:
         "fit_constraints_v2": FitConstraintsPromptV2,
         "chain_of_thought_v1": ChainOfThoughtPromptV1,
         "chain_of_thought_streaming_v1": ChainOfThoughtStreamingV1,
+        "chain_of_thought_reasoning_v1": ChainOfThoughtReasoningV1,
+        "vision_v1": VisionPromptV1,
+        "vision_cot_v1": VisionChainOfThoughtV1,
     }
 
     @classmethod

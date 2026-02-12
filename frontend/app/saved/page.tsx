@@ -237,6 +237,7 @@ function SavedPageContent() {
                       outfitId={outfitId}
                       outfitName={outfit.vibe_keywords?.[0] || 'Saved Outfit'}
                       visualizationUrl={saved.visualization_url}
+                      visualizationPending={saved.visualization_pending}
                       wornAt={saved.worn_at}
                       wornPhotoUrl={saved.worn_photo_url}
                       user={user}

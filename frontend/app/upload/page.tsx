@@ -5,6 +5,7 @@ import { Suspense, useState, useRef, useEffect } from 'react'
 import { api } from '@/lib/api'
 import Link from 'next/link'
 import PhotoGuidelines from '@/components/PhotoGuidelines'
+import { OutfitExtractModal } from '@/components/OutfitExtractModal'
 import { posthog } from '@/lib/posthog'
 
 // Try to import image compression (optional)
@@ -33,6 +34,7 @@ function UploadPageContent() {
   const [wardrobeItems, setWardrobeItems] = useState<any[]>([])
   const [loadingProfile, setLoadingProfile] = useState(true)
   const [showGuidelines, setShowGuidelines] = useState(false)
+  const [showOutfitExtract, setShowOutfitExtract] = useState(false)
 
   // Unified progress state: tracks both upload and analysis phases
   const [uploadPhase, setUploadPhase] = useState<'idle' | 'uploading' | 'analyzing' | 'done'>('idle')
@@ -390,6 +392,22 @@ function UploadPageContent() {
           </div>
         )}
 
+        {/* Extract from Outfit Photo */}
+        <div className="mb-5 md:mb-6">
+          <button
+            onClick={() => setShowOutfitExtract(true)}
+            disabled={uploading || isProcessing}
+            className={`w-full text-center py-3 px-6 rounded-lg font-medium border border-terracotta text-terracotta hover:bg-terracotta/5 active:bg-terracotta/10 transition min-h-[44px] ${
+              (uploading || isProcessing) ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+          >
+            Extract from Outfit Photo
+          </button>
+          <p className="text-xs text-muted mt-1.5 text-center">
+            Upload a full outfit photo and we'll extract each item
+          </p>
+        </div>
+
         {/* Tips */}
         <div className="bg-sand/30 rounded-lg p-3 border border-[rgba(26,22,20,0.12)] mb-5 md:mb-6">
           <p className="text-sm text-ink leading-tight mb-0">
@@ -443,6 +461,14 @@ function UploadPageContent() {
             </div>
           </div>
         )}
+
+        {/* OutfitExtract Modal */}
+        <OutfitExtractModal
+          isOpen={showOutfitExtract}
+          userId={user}
+          onClose={() => setShowOutfitExtract(false)}
+          onComplete={() => fetchWardrobe(true)}
+        />
 
         {/* PhotoGuidelines Modal */}
         <PhotoGuidelines

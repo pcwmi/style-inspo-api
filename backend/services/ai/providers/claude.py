@@ -137,10 +137,89 @@ class ClaudeProvider(AIProvider):
             raw_response=response
         )
 
+    def generate_with_images(
+        self,
+        prompt: str,
+        image_urls: list,
+        system_message: Optional[str] = None,
+        temperature: Optional[float] = None,
+        max_tokens: Optional[int] = None,
+        detail: str = "low"
+    ) -> AIResponse:
+        """Generate text with multiple images using Claude Vision.
+
+        Args:
+            prompt: Text prompt
+            image_urls: List of image URLs to include
+            system_message: Optional system message
+            temperature: Generation temperature
+            max_tokens: Max tokens in response
+            detail: Ignored for Claude (no detail parameter)
+
+        Returns:
+            AIResponse with generated content
+        """
+        import requests
+        import base64
+        start_time = time.time()
+
+        # Build content array: images first, then text (Claude's preferred order)
+        content = []
+
+        for url in image_urls:
+            if url and url.startswith("http"):
+                try:
+                    response_img = requests.get(url, timeout=10)
+                    image_data = base64.b64encode(response_img.content).decode('utf-8')
+                    content_type = response_img.headers.get('content-type', 'image/jpeg')
+                    media_type = content_type.split('/')[-1].split(';')[0]  # jpeg, png, etc.
+                    if media_type not in ['jpeg', 'png', 'gif', 'webp']:
+                        media_type = 'jpeg'
+                    content.append({
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": f"image/{media_type}",
+                            "data": image_data
+                        }
+                    })
+                except Exception as e:
+                    print(f"⚠️ Failed to load image {url}: {e}")
+                    continue
+
+        content.append({"type": "text", "text": prompt})
+
+        kwargs = {
+            "model": self.config.model,
+            "max_tokens": max_tokens or self.config.max_tokens,
+            "temperature": temperature or self.config.temperature,
+            "messages": [{"role": "user", "content": content}]
+        }
+
+        if system_message:
+            kwargs["system"] = system_message
+
+        response = self.client.messages.create(**kwargs)
+
+        latency = time.time() - start_time
+
+        return AIResponse(
+            content=response.content[0].text,
+            model=self.config.model,
+            usage={
+                "prompt_tokens": response.usage.input_tokens,
+                "completion_tokens": response.usage.output_tokens,
+                "total_tokens": response.usage.input_tokens + response.usage.output_tokens,
+                "image_count": len([c for c in content if c.get("type") == "image"])
+            },
+            latency_seconds=latency,
+            raw_response=response
+        )
+
     @property
     def supports_vision(self) -> bool:
         """Claude 3+ models support vision."""
-        return "claude-3" in self.config.model
+        return "claude-3" in self.config.model or "claude-4" in self.config.model or "claude-opus" in self.config.model or "claude-sonnet" in self.config.model
 
     @property
     def provider_name(self) -> str:

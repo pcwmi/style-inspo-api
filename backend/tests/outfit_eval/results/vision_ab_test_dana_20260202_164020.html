@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vision A/B Test - Fair Comparison</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5; padding: 20px; line-height: 1.5;
+        }
+        .header {
+            text-align: center; padding: 30px; background: white;
+            border-radius: 12px; margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 { color: #1a1a2e; margin-bottom: 10px; }
+        .subtitle { color: #666; font-size: 14px; }
+
+        .summary-stats {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;
+            margin: 20px 0;
+        }
+        .stat-card {
+            background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;
+        }
+        .stat-value { font-size: 24px; font-weight: bold; color: #2196F3; }
+        .stat-label { font-size: 11px; color: #666; text-transform: uppercase; }
+
+        .scenario {
+            background: white; border-radius: 12px; margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden;
+        }
+        .scenario-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 20px;
+        }
+        .scenario-title { font-size: 18px; font-weight: 600; }
+        .scenario-details { font-size: 13px; opacity: 0.9; margin-top: 5px; }
+
+        .metrics-row {
+            display: grid; grid-template-columns: 1fr 1fr;
+            border-bottom: 1px solid #eee;
+        }
+        .metrics {
+            padding: 15px 20px; display: flex; gap: 30px; align-items: center;
+        }
+        .metrics.control { background: #f8f9ff; border-right: 1px solid #eee; }
+        .metrics.treatment { background: #f8fff8; }
+        .metric { text-align: center; }
+        .metric-value { font-size: 18px; font-weight: bold; }
+        .metric-label { font-size: 10px; color: #666; text-transform: uppercase; }
+        .variant-badge {
+            padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;
+        }
+        .control .variant-badge { background: #e3f2fd; color: #1565c0; }
+        .treatment .variant-badge { background: #e8f5e9; color: #2e7d32; }
+
+        .outfits-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+        }
+        .outfit-column { padding: 20px; }
+        .outfit-column.control { border-right: 1px solid #eee; }
+
+        .outfit-card {
+            border: 1px solid #e0e0e0; border-radius: 10px;
+            margin-bottom: 20px; overflow: hidden;
+        }
+        .outfit-header {
+            background: #fafafa; padding: 10px 15px;
+            font-weight: 600; font-size: 13px; color: #333;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .outfit-body { padding: 15px; }
+
+        .item-images {
+            display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;
+        }
+        .item-img {
+            width: 70px; height: 70px; object-fit: cover; border-radius: 8px;
+            border: 1px solid #ddd; transition: transform 0.2s;
+        }
+        .item-img:hover { transform: scale(2.5); z-index: 100; position: relative; }
+
+        .item-names {
+            display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px;
+        }
+        .item-name {
+            background: #f0f0f0; padding: 3px 8px; border-radius: 4px;
+            font-size: 11px; color: #333;
+        }
+
+        .section { margin-top: 12px; }
+        .section-label {
+            font-size: 10px; color: #999; text-transform: uppercase;
+            margin-bottom: 4px; font-weight: 600;
+        }
+        .section-content {
+            font-size: 12px; color: #444; line-height: 1.6;
+            background: #fafafa; padding: 10px; border-radius: 6px;
+        }
+        .physical-sensibility {
+            background: #fff3e0; border-left: 3px solid #ff9800;
+        }
+        .physical-sensibility strong { color: #e65100; }
+        .no-physical {
+            font-style: italic; color: #999; font-size: 11px;
+            padding: 10px; background: #fafafa; border-radius: 6px;
+        }
+
+        .legend {
+            display: flex; justify-content: center; gap: 30px;
+            padding: 15px; background: #fafafa; margin-top: 10px;
+            border-radius: 8px; font-size: 12px;
+        }
+        .legend-item { display: flex; align-items: center; gap: 8px; }
+        .legend-color {
+            width: 12px; height: 12px; border-radius: 3px;
+        }
+        .legend-color.control { background: #e3f2fd; }
+        .legend-color.treatment { background: #e8f5e9; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧪 Vision A/B Test: Fair Comparison</h1>
+        <p class="subtitle">Both variants receive identical metadata. Vision also receives wardrobe images.</p>
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color control"></div>
+                <span><strong>Control:</strong> Text metadata only</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color treatment"></div>
+                <span><strong>Treatment:</strong> Text metadata + Images</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="summary-stats">
+        <div class="stat-card">
+            <div class="stat-value">3</div>
+            <div class="stat-label">Scenarios</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">18</div>
+            <div class="stat-label">Total Outfits</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">$0.093</div>
+            <div class="stat-label">Total Cost</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">105.7s</div>
+            <div class="stat-label">Total Time</div>
+        </div>
+    </div>
+
+    <div class="scenario">
+        <div class="scenario-header">
+            <div class="scenario-title">📍 Casual Coffee with Friends</div>
+            <div class="scenario-details">
+                casual coffee with friends followed by some errands | mild, 60-70°F |
+                Style: casual → polished, feeling chic
+            </div>
+        </div>
+
+        <div class="metrics-row">
+            <div class="metrics control">
+                <span class="variant-badge">📝 TEXT-ONLY</span>
+                <div class="metric">
+                    <div class="metric-value">11.6s</div>
+                    <div class="metric-label">Latency</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">$0.0151</div>
+                    <div class="metric-label">Cost</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">3867</div>
+                    <div class="metric-label">Tokens</div>
+                </div>
+            </div>
+            <div class="metrics treatment">
+                <span class="variant-badge">🖼️ VISION</span>
+                <div class="metric">
+                    <div class="metric-value">21.1s</div>
+                    <div class="metric-label">Latency</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">$0.0152</div>
+                    <div class="metric-label">Cost</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">4441</div>
+                    <div class="metric-label">Tokens</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">22</div>
+                    <div class="metric-label">Images</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="outfits-grid">
+            <div class="outfit-column control">
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 1</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/af2eaa4ea72e47a7be330f4e2b6d1b0f.jpg" alt="Blue denim midi skirt with front slit" title="Blue denim midi skirt with front slit">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/38eb3cc11b04441195af08d51bc29c86.jpg" alt="Burgundy crew-neck short-sleeve t-shirt" title="Burgundy crew-neck short-sleeve t-shirt">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/00607576ff2e4dd583c0c7b237e9f51d.jpg" alt="Black structured blazer" title="Black structured blazer">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/e311df970cb64bcaa5077770a4340f9c.jpg" alt="Beige woven leather flats" title="Beige woven leather flats">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Blue denim midi skirt with front slit</span>
+                            <span class="item-name">Burgundy crew-neck short-sleeve t-shirt</span>
+                            <span class="item-name">Black structured blazer</span>
+                            <span class="item-name">Beige woven leather flats</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Tuck the burgundy t-shirt into the denim skirt for a clean silhouette. Wear the black blazer open for a relaxed yet polished look. Style the flats with the skirt for comfort and chic appeal.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">This outfit is perfect for casual coffee and errands, as the denim skirt and t-shirt provide a casual base, while the blazer elevates the look. The mild weather is accommodated with the short sleeves and the blazer for layering. The combination of structured and casual elements aligns with their casual yet polished style aspiration, and the flats add a chic touch.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="no-physical">Not included in text-only prompt</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 2</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/f9bf2d58d91e41a7859a04963b8ae6a0.jpg" alt="Dark wash wide-leg jeans" title="Dark wash wide-leg jeans">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/4eb766a5ce0d479f8dedf19a1ae9bc93.jpg" alt="Beige short-sleeve button-up blouse" title="Beige short-sleeve button-up blouse">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/3e609cab6fbd4b0695a084d913c05d81.jpg" alt="Black knee-high leather boots" title="Black knee-high leather boots">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Dark wash wide-leg jeans</span>
+                            <span class="item-name">Beige short-sleeve button-up blouse</span>
+                            <span class="item-name">Black knee-high leather boots</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Partially tuck the blouse into the wide-leg jeans. Wear the boots over the jeans for a sleek look and ensure the blouse's buttons are visible to add detail.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">This outfit is versatile for both coffee and errands, combining the ease of wide-leg jeans with the sophistication of a button-up blouse. The knee-high boots provide a chic edge and are suitable for mild weather. The mix of casual and polished elements honors their style DNA, while the styling creates a balanced and chic look.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="no-physical">Not included in text-only prompt</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 3</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/f9bf2d58d91e41a7859a04963b8ae6a0.jpg" alt="Dark wash wide-leg jeans" title="Dark wash wide-leg jeans">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/0deb82af0ca24e819aff4d9de8b5725a.jpg" alt="Camel ribbed V-neck sweater" title="Camel ribbed V-neck sweater">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/e311df970cb64bcaa5077770a4340f9c.jpg" alt="Beige woven leather flats" title="Beige woven leather flats">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Dark wash wide-leg jeans</span>
+                            <span class="item-name">Camel ribbed V-neck sweater</span>
+                            <span class="item-name">Beige woven leather flats</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Style the sweater with a front tuck into the wide-leg jeans to emphasize the waist. Add a statement necklace for a polished finish.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">This outfit balances comfort and style for a casual day out, with the sweater and jeans offering ease of movement. It's suitable for mild temperatures with its mid-weight fabrics. The combination of casual jeans with a chic sweater and flats aligns with their style goals, while the necklace adds a polished touch.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="no-physical">Not included in text-only prompt</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="outfit-column treatment">
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 1</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/501da7f037f940e699cffc8fe05b16f0.jpg" alt="Dark brown fuzzy long-sleeve sweater" title="Dark brown fuzzy long-sleeve sweater">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/af2eaa4ea72e47a7be330f4e2b6d1b0f.jpg" alt="Blue denim midi skirt with front slit" title="Blue denim midi skirt with front slit">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/e311df970cb64bcaa5077770a4340f9c.jpg" alt="Beige woven leather flats" title="Beige woven leather flats">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Dark brown fuzzy long-sleeve sweater</span>
+                            <span class="item-name">Blue denim midi skirt with front slit</span>
+                            <span class="item-name">Beige woven leather flats</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Leave the sweater untucked to maintain a smooth silhouette over the structured skirt. The front slit adds movement and prevents the outfit from looking too heavy.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">The relaxed fit of the sweater complements the structured skirt without creating bulk. The flats keep the look casual while the woven texture adds interest.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="section-content physical-sensibility"><strong>✓</strong> The relaxed sweater fits comfortably over the structured skirt, allowing for ease of movement.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 2</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/38eb3cc11b04441195af08d51bc29c86.jpg" alt="Burgundy crew-neck short-sleeve t-shirt" title="Burgundy crew-neck short-sleeve t-shirt">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/f9bf2d58d91e41a7859a04963b8ae6a0.jpg" alt="Dark wash wide-leg jeans" title="Dark wash wide-leg jeans">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/3e609cab6fbd4b0695a084d913c05d81.jpg" alt="Black knee-high leather boots" title="Black knee-high leather boots">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Burgundy crew-neck short-sleeve t-shirt</span>
+                            <span class="item-name">Dark wash wide-leg jeans</span>
+                            <span class="item-name">Black knee-high leather boots</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Tuck the t-shirt into the jeans to define the waist and balance the wide-leg silhouette. The boots add a chic finish that elevates the casual ensemble.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">The fitted t-shirt balances the volume of the wide-leg jeans, while the structured boots add polish.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="section-content physical-sensibility"><strong>✓</strong> The fitted top tucks neatly into the high-waisted jeans, creating a streamlined silhouette.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 3</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/8e5d1419c09f4235b6e626d10ac99310.jpg" alt="Ivory cropped button-up cardigan" title="Ivory cropped button-up cardigan">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/ca01209fd3cc410a9737fa1186c9b2b6.jpg" alt="Blue wide-leg jeans" title="Blue wide-leg jeans">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/95b3142a44714164b7fbdf92940a1982.jpg" alt="Beige sleeveless knit vest" title="Beige sleeveless knit vest">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Ivory cropped button-up cardigan</span>
+                            <span class="item-name">Blue wide-leg jeans</span>
+                            <span class="item-name">Beige sleeveless knit vest</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Layer the vest over the cardigan for added warmth and texture. Pair with wide-leg jeans for a balanced look.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">The fitted cardigan provides a sleek base, while the relaxed vest adds depth without bulk. The wide-leg jeans balance the top-heavy layers.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="section-content physical-sensibility"><strong>✓</strong> The cropped cardigan layers smoothly under the vest, maintaining a tidy appearance.</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="scenario">
+        <div class="scenario-header">
+            <div class="scenario-title">📍 Work Meeting + Drinks</div>
+            <div class="scenario-details">
+                important client presentation followed by drinks with girlfriends | cool, 55-65°F |
+                Style: casual → polished, feeling confident
+            </div>
+        </div>
+
+        <div class="metrics-row">
+            <div class="metrics control">
+                <span class="variant-badge">📝 TEXT-ONLY</span>
+                <div class="metric">
+                    <div class="metric-value">16.2s</div>
+                    <div class="metric-label">Latency</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">$0.0161</div>
+                    <div class="metric-label">Cost</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">3965</div>
+                    <div class="metric-label">Tokens</div>
+                </div>
+            </div>
+            <div class="metrics treatment">
+                <span class="variant-badge">🖼️ VISION</span>
+                <div class="metric">
+                    <div class="metric-value">25.0s</div>
+                    <div class="metric-label">Latency</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">$0.0150</div>
+                    <div class="metric-label">Cost</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">4423</div>
+                    <div class="metric-label">Tokens</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">22</div>
+                    <div class="metric-label">Images</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="outfits-grid">
+            <div class="outfit-column control">
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 1</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/00607576ff2e4dd583c0c7b237e9f51d.jpg" alt="Black structured blazer" title="Black structured blazer">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/4eb766a5ce0d479f8dedf19a1ae9bc93.jpg" alt="Beige short-sleeve button-up blouse" title="Beige short-sleeve button-up blouse">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/f9bf2d58d91e41a7859a04963b8ae6a0.jpg" alt="Dark wash wide-leg jeans" title="Dark wash wide-leg jeans">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/3e609cab6fbd4b0695a084d913c05d81.jpg" alt="Black knee-high leather boots" title="Black knee-high leather boots">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Black structured blazer</span>
+                            <span class="item-name">Beige short-sleeve button-up blouse</span>
+                            <span class="item-name">Dark wash wide-leg jeans</span>
+                            <span class="item-name">Black knee-high leather boots</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Tuck the blouse into the jeans for a polished silhouette. Roll up the blazer sleeves slightly for a relaxed yet professional vibe. Ensure the jeans are worn over the boots for a streamlined look.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">This outfit is perfect for the client presentation due to the structured blazer and polished blouse, projecting professionalism. The boots add a chic touch for the evening with friends. The outfit is weather-appropriate, as the blazer provides warmth while the open-toe boots balance the cool temperature. The combination of structured and relaxed pieces aligns with their style DNA of casual yet polished confidence. Proportional contrast is achieved with the fitted blazer and wide-leg jeans, while textural contrast is seen between the crisp blouse and leather boots.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="no-physical">Not included in text-only prompt</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 2</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/501da7f037f940e699cffc8fe05b16f0.jpg" alt="Dark brown fuzzy long-sleeve sweater" title="Dark brown fuzzy long-sleeve sweater">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/af2eaa4ea72e47a7be330f4e2b6d1b0f.jpg" alt="Blue denim midi skirt with front slit" title="Blue denim midi skirt with front slit">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/e311df970cb64bcaa5077770a4340f9c.jpg" alt="Beige woven leather flats" title="Beige woven leather flats">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Dark brown fuzzy long-sleeve sweater</span>
+                            <span class="item-name">Blue denim midi skirt with front slit</span>
+                            <span class="item-name">Beige woven leather flats</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Partially tuck the sweater into the skirt to define the waist. Add a simple necklace to draw attention to the neckline. Let the flats' bow detail peek out for a playful touch.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">This outfit is both professional and relaxed, suitable for the presentation and a casual outing with friends. The sweater is warm enough for the cool weather, while the skirt's slit adds a hint of edge. The flats are comfortable for all-day wear and add elegance. The fuzzy texture of the sweater contrasts with the denim skirt, aligning with their style DNA by blending casual comfort with polished elements.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="no-physical">Not included in text-only prompt</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 3</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/0deb82af0ca24e819aff4d9de8b5725a.jpg" alt="Camel ribbed V-neck sweater" title="Camel ribbed V-neck sweater">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/f9bf2d58d91e41a7859a04963b8ae6a0.jpg" alt="Dark wash wide-leg jeans" title="Dark wash wide-leg jeans">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/3e609cab6fbd4b0695a084d913c05d81.jpg" alt="Black knee-high leather boots" title="Black knee-high leather boots">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Camel ribbed V-neck sweater</span>
+                            <span class="item-name">Dark wash wide-leg jeans</span>
+                            <span class="item-name">Black knee-high leather boots</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Tuck the sweater into the jeans for a sleek look. Allow the jeans to drape over the boots to create a long leg line. Add a belt for an extra touch of sophistication.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">This ensemble is ideal for transitioning from a professional meeting to a casual evening, with the sweater providing warmth and the jeans offering comfort. The boots elevate the outfit's elegance, making it suitable for both settings. The ribbed texture of the sweater contrasts nicely with the smooth denim, while the V-neck adds a flattering touch. The outfit aligns with their style DNA by combining casual, polished, and confident elements.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="no-physical">Not included in text-only prompt</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="outfit-column treatment">
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 1</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/3e609cab6fbd4b0695a084d913c05d81.jpg" alt="Black knee-high leather boots" title="Black knee-high leather boots">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/4eb766a5ce0d479f8dedf19a1ae9bc93.jpg" alt="Beige short-sleeve button-up blouse" title="Beige short-sleeve button-up blouse">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/00607576ff2e4dd583c0c7b237e9f51d.jpg" alt="Black structured blazer" title="Black structured blazer">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/ca01209fd3cc410a9737fa1186c9b2b6.jpg" alt="Blue wide-leg jeans" title="Blue wide-leg jeans">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Black knee-high leather boots</span>
+                            <span class="item-name">Beige short-sleeve button-up blouse</span>
+                            <span class="item-name">Black structured blazer</span>
+                            <span class="item-name">Blue wide-leg jeans</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Leave the blouse untucked to avoid bunching under the blazer. The structured blazer adds polish, while the boots elevate the look with elegance.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">The structured blazer and boots add a touch of sophistication to the relaxed fit of the wide-leg jeans, creating a balanced silhouette.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="section-content physical-sensibility"><strong>✓</strong> The flowy blouse fits comfortably under the structured blazer without bunching.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 2</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/95b3142a44714164b7fbdf92940a1982.jpg" alt="Beige sleeveless knit vest" title="Beige sleeveless knit vest">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/f9bf2d58d91e41a7859a04963b8ae6a0.jpg" alt="Dark wash wide-leg jeans" title="Dark wash wide-leg jeans">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/8e5d1419c09f4235b6e626d10ac99310.jpg" alt="Ivory cropped button-up cardigan" title="Ivory cropped button-up cardigan">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/e311df970cb64bcaa5077770a4340f9c.jpg" alt="Beige woven leather flats" title="Beige woven leather flats">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Beige sleeveless knit vest</span>
+                            <span class="item-name">Dark wash wide-leg jeans</span>
+                            <span class="item-name">Ivory cropped button-up cardigan</span>
+                            <span class="item-name">Beige woven leather flats</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Layer the vest over the cardigan for added warmth. The flats add an elegant touch to this comfortable, chic outfit.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">The cropped cardigan adds structure, while the wide-leg jeans keep the look casual yet polished.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="section-content physical-sensibility"><strong>✓</strong> The vest fits comfortably over the fitted cardigan, allowing for easy layering.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 3</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/c0ac6f87f7f1499483cf60c484cbcd3b.jpg" alt="Navy oversized sweater" title="Navy oversized sweater">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/af2eaa4ea72e47a7be330f4e2b6d1b0f.jpg" alt="Blue denim midi skirt with front slit" title="Blue denim midi skirt with front slit">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/3e609cab6fbd4b0695a084d913c05d81.jpg" alt="Black knee-high leather boots" title="Black knee-high leather boots">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Navy oversized sweater</span>
+                            <span class="item-name">Blue denim midi skirt with front slit</span>
+                            <span class="item-name">Black knee-high leather boots</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Tuck the front of the oversized sweater slightly into the skirt to define the waist. The boots add a chic, autumn-ready finish.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">The oversized sweater provides comfort and warmth, while the slit in the skirt adds movement and style.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="section-content physical-sensibility"><strong>✓</strong> The sweater's oversized fit allows for easy tucking without bulk.</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="scenario">
+        <div class="scenario-header">
+            <div class="scenario-title">📍 Date Night Dinner</div>
+            <div class="scenario-details">
+                dinner date at upscale restaurant | evening, indoor, 68-72°F |
+                Style: classic → relaxed, feeling playful
+            </div>
+        </div>
+
+        <div class="metrics-row">
+            <div class="metrics control">
+                <span class="variant-badge">📝 TEXT-ONLY</span>
+                <div class="metric">
+                    <div class="metric-value">11.7s</div>
+                    <div class="metric-label">Latency</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">$0.0163</div>
+                    <div class="metric-label">Cost</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">3981</div>
+                    <div class="metric-label">Tokens</div>
+                </div>
+            </div>
+            <div class="metrics treatment">
+                <span class="variant-badge">🖼️ VISION</span>
+                <div class="metric">
+                    <div class="metric-value">20.1s</div>
+                    <div class="metric-label">Latency</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">$0.0152</div>
+                    <div class="metric-label">Cost</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">4438</div>
+                    <div class="metric-label">Tokens</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">22</div>
+                    <div class="metric-label">Images</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="outfits-grid">
+            <div class="outfit-column control">
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 1</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/501da7f037f940e699cffc8fe05b16f0.jpg" alt="Dark brown fuzzy long-sleeve sweater" title="Dark brown fuzzy long-sleeve sweater">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/af2eaa4ea72e47a7be330f4e2b6d1b0f.jpg" alt="Blue denim midi skirt with front slit" title="Blue denim midi skirt with front slit">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/3e609cab6fbd4b0695a084d913c05d81.jpg" alt="Black knee-high leather boots" title="Black knee-high leather boots">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Dark brown fuzzy long-sleeve sweater</span>
+                            <span class="item-name">Blue denim midi skirt with front slit</span>
+                            <span class="item-name">Black knee-high leather boots</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Tuck the front of the sweater into the skirt to create a defined waistline. Wear the boots with the skirt to add a touch of elegance and keep the outfit playful. Consider adding a simple necklace to balance the neckline.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">This outfit is perfect for a dinner date at an upscale restaurant as it combines classic and relaxed elements with a touch of playfulness. The dark brown sweater offers warmth and style appropriate for the indoor temperature of 68-72°F. The midi skirt with a front slit provides a relaxed, playful vibe, while the knee-high boots add elegance and sophistication, suitable for the upscale setting. The overall ensemble aligns with the user's style DNA by blending classic pieces with relaxed silhouettes and playful details.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="no-physical">Not included in text-only prompt</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 2</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/8e5d1419c09f4235b6e626d10ac99310.jpg" alt="Ivory cropped button-up cardigan" title="Ivory cropped button-up cardigan">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/f9bf2d58d91e41a7859a04963b8ae6a0.jpg" alt="Dark wash wide-leg jeans" title="Dark wash wide-leg jeans">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/e311df970cb64bcaa5077770a4340f9c.jpg" alt="Beige woven leather flats" title="Beige woven leather flats">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Ivory cropped button-up cardigan</span>
+                            <span class="item-name">Dark wash wide-leg jeans</span>
+                            <span class="item-name">Beige woven leather flats</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Style the cardigan with the jeans by leaving a few buttons open at the top for a relaxed look. Cuff the jeans to showcase the flats and add a playful touch. Consider a simple belt to accentuate the waist.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">This ensemble is well-suited for a dinner date, offering a chic and relaxed look with a playful edge. The cardigan provides a classic touch, while the wide-leg jeans offer a modern, relaxed silhouette, perfect for the 68-72°F indoor temperature. The woven flats add a playful and elegant element, ensuring comfort and style for an upscale dining experience. This outfit honors the user's style DNA by incorporating classic pieces with relaxed fits and playful accessories.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="no-physical">Not included in text-only prompt</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 3</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/0deb82af0ca24e819aff4d9de8b5725a.jpg" alt="Camel ribbed V-neck sweater" title="Camel ribbed V-neck sweater">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/ca01209fd3cc410a9737fa1186c9b2b6.jpg" alt="Blue wide-leg jeans" title="Blue wide-leg jeans">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/3e609cab6fbd4b0695a084d913c05d81.jpg" alt="Black knee-high leather boots" title="Black knee-high leather boots">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Camel ribbed V-neck sweater</span>
+                            <span class="item-name">Blue wide-leg jeans</span>
+                            <span class="item-name">Black knee-high leather boots</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Tuck the sweater into the jeans for a polished look. Roll up the sleeves slightly to add a relaxed feel. Wear the boots over the jeans for a sophisticated touch, and add a simple bracelet to echo the sweater's color.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">This outfit is ideal for an upscale dinner date, combining classic elegance with relaxed comfort. The camel ribbed sweater provides warmth and sophistication suitable for the indoor setting, while the wide-leg jeans offer a relaxed and playful silhouette. The black knee-high boots add a touch of classic elegance, elevating the overall look for a more formal dining experience. This ensemble successfully incorporates the user's style DNA by merging classic elements with relaxed fits and playful styling details.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="no-physical">Not included in text-only prompt</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="outfit-column treatment">
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 1</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/af2eaa4ea72e47a7be330f4e2b6d1b0f.jpg" alt="Blue denim midi skirt with front slit" title="Blue denim midi skirt with front slit">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/8e5d1419c09f4235b6e626d10ac99310.jpg" alt="Ivory cropped button-up cardigan" title="Ivory cropped button-up cardigan">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/3e609cab6fbd4b0695a084d913c05d81.jpg" alt="Black knee-high leather boots" title="Black knee-high leather boots">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Blue denim midi skirt with front slit</span>
+                            <span class="item-name">Ivory cropped button-up cardigan</span>
+                            <span class="item-name">Black knee-high leather boots</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">The structured skirt with a front slit pairs well with the fitted cropped cardigan, creating a balanced silhouette. The boots add elegance and elongation.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">The cardigan's fitted shape complements the structured skirt, while the boots provide a touch of sophistication for an upscale dinner.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="section-content physical-sensibility"><strong>✓</strong> The fitted cardigan tucks neatly into the structured skirt, avoiding bulkiness.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 2</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/f9bf2d58d91e41a7859a04963b8ae6a0.jpg" alt="Dark wash wide-leg jeans" title="Dark wash wide-leg jeans">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/95b3142a44714164b7fbdf92940a1982.jpg" alt="Beige sleeveless knit vest" title="Beige sleeveless knit vest">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/00607576ff2e4dd583c0c7b237e9f51d.jpg" alt="Black structured blazer" title="Black structured blazer">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/e311df970cb64bcaa5077770a4340f9c.jpg" alt="Beige woven leather flats" title="Beige woven leather flats">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Dark wash wide-leg jeans</span>
+                            <span class="item-name">Beige sleeveless knit vest</span>
+                            <span class="item-name">Black structured blazer</span>
+                            <span class="item-name">Beige woven leather flats</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Layer the knit vest over the wide-leg jeans and finish with the structured blazer for a polished yet relaxed look. The flats add a playful touch.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">The relaxed fit of the jeans contrasts with the structured blazer, while the knit vest adds texture and warmth.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="section-content physical-sensibility"><strong>✓</strong> The vest layers comfortably over the jeans, and the blazer adds a tailored finish.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="outfit-card">
+                    <div class="outfit-header">Outfit 3</div>
+                    <div class="outfit-body">
+                        <div class="item-images">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/38eb3cc11b04441195af08d51bc29c86.jpg" alt="Burgundy crew-neck short-sleeve t-shirt" title="Burgundy crew-neck short-sleeve t-shirt">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/ca01209fd3cc410a9737fa1186c9b2b6.jpg" alt="Blue wide-leg jeans" title="Blue wide-leg jeans">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/7c0d85c7e1f54005b821749905e922f8.jpg" alt="Beige oversized knit sweater" title="Beige oversized knit sweater">
+                            <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/e311df970cb64bcaa5077770a4340f9c.jpg" alt="Beige woven leather flats" title="Beige woven leather flats">
+                        </div>
+                        <div class="item-names">
+                            <span class="item-name">Burgundy crew-neck short-sleeve t-shirt</span>
+                            <span class="item-name">Blue wide-leg jeans</span>
+                            <span class="item-name">Beige oversized knit sweater</span>
+                            <span class="item-name">Beige woven leather flats</span>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Styling Notes</div>
+                            <div class="section-content">Layer the oversized sweater over the fitted t-shirt for warmth, pairing with wide-leg jeans and flats for a playful, relaxed look.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Why It Works</div>
+                            <div class="section-content">The fitted t-shirt balances the oversized sweater, while the wide-leg jeans provide a comfortable, stylish base.</div>
+                        </div>
+
+                        <div class="section">
+                            <div class="section-label">Physical Sensibility</div>
+                            <div class="section-content physical-sensibility"><strong>✓</strong> The sweater fits comfortably over the t-shirt, and the jeans provide a relaxed silhouette.</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

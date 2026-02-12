@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>3x3 Try-On Comparison</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; max-width: 1400px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        h1 { text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 20px; }
+        .descriptor { text-align: center; background: #e3f2fd; padding: 10px; border-radius: 8px; margin-bottom: 20px; font-family: monospace; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px; }
+        .header { font-weight: 600; text-align: center; padding: 10px; background: #333; color: white; border-radius: 8px 8px 0 0; }
+        .cell { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .cell img { width: 100%; height: auto; max-height: 600px; object-fit: contain; cursor: pointer; }
+        .cell img:hover { opacity: 0.9; }
+        .fullscreen-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; cursor: pointer; }
+        .fullscreen-overlay img { max-width: 95%; max-height: 95%; object-fit: contain; }
+        .fullscreen-overlay.active { display: flex; }
+        .latency { text-align: center; padding: 8px; font-size: 14px; color: #666; background: #f9f9f9; }
+        .outfit-row { margin-bottom: 30px; }
+        .outfit-label { text-align: center; font-weight: 600; margin: 15px 0; padding: 10px; background: #fff3e0; border-radius: 8px; }
+        .summary { background: white; padding: 20px; border-radius: 8px; margin-top: 20px; }
+        .summary h3 { margin-top: 0; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px 12px; border: 1px solid #ddd; text-align: left; }
+        th { background: #f5f5f5; }
+        .personal { background: #ffebee; }
+        .runway { background: #e8f5e9; }
+        .nano { background: #e3f2fd; }
+    </style>
+</head>
+<body>
+    <h1>3x3 Try-On Comparison</h1>
+    <p class="subtitle">Personal Photo vs Runway Gen-4 vs Nano Banana</p>
+    <div class="descriptor">Descriptor: "5 feet 4 eastern asian with black wavy hair at chest length"</div>
+
+    <!-- Column Headers -->
+    <div class="grid">
+        <div class="header personal">Personal Photo</div>
+        <div class="header runway">Runway Gen-4</div>
+        <div class="header nano">Nano Banana</div>
+    </div>
+
+    <div class="outfit-row">
+        <div class="grid">
+            <div class="cell personal">
+                <img src="https://dnznrvs05pmza.cloudfront.net/71284baf-c677-4041-aeb6-a36bb5b67e2b.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiMDVkNjNkNzZhZWM1NzM0ZCIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc3MDMzNjAwMH0.o6Xl7kmCYQ4-lBPVDWrJqmqnYLlrQKYrDcNbxSq2-7U" alt="Personal Photo">
+                <div class="latency">51.2s</div>
+            </div>
+            <div class="cell runway">
+                <img src="https://dnznrvs05pmza.cloudfront.net/f11d815d-2755-4a38-bc1f-3d5f66bdd54e.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiODNhZWRjYWQwZGY2YjY5ZCIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc3MDMzNjAwMH0.6WJ4kUousK6BEO4lX-fC5WpnFZX3_x5iAWzAAAn1pXQ" alt="Runway Gen-4">
+                <div class="latency">30.5s</div>
+            </div>
+            <div class="cell nano">
+                <img src="https://dnznrvs05pmza.cloudfront.net/gemini/gemini-2.5-flash-image/images/e0183813-7ca0-4390-8786-f71ec5999d24/gemini_2_5_flash___5_feet_4_eastern_asian_with_black_wavy_hair_at_chest_length__A_single_confident_w.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiNDRhNzYyYmQxYmQ5N2YwYSIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc3MDMzNjAwMH0.606VruX5qM5ctDdaaZac19mcfXt9oGZmKf72XcMF5eQ" alt="Nano Banana">
+                <div class="latency">16.7s</div>
+            </div>
+        </div>
+        <div class="outfit-label">Outfit 4: Grey cashmere crewneck sweater, Black and white houndstooth trousers, White and ...</div>
+    </div>
+
+    <div class="outfit-row">
+        <div class="grid">
+            <div class="cell personal">
+                <img src="https://dnznrvs05pmza.cloudfront.net/2c6f5972-4d01-445a-9aca-8b3615fb9993.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiMGQyNDhkM2U2MDM4YjUzZSIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc3MDMzNjAwMH0.NydJdGaM2PTlkE58tosvQwrFkXcWQqSBFQHQx3L1LtY" alt="Personal Photo">
+                <div class="latency">28.1s</div>
+            </div>
+            <div class="cell runway">
+                <img src="https://dnznrvs05pmza.cloudfront.net/b1fb0673-3fb6-43ea-99da-000c4d5ae1b9.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiNmQ2OGYxMGFjNjYyYjhiNyIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc3MDMzNjAwMH0.KkfLy3sreuKYg1Y58fV2fdJLpLrcFb55dr6G6f0bzfs" alt="Runway Gen-4">
+                <div class="latency">35.1s</div>
+            </div>
+            <div class="cell nano">
+                <img src="https://dnznrvs05pmza.cloudfront.net/gemini/gemini-2.5-flash-image/images/cfc0d626-2c34-4f18-9383-9511f3c78237/gemini_2_5_flash___5_feet_4_eastern_asian_with_black_wavy_hair_at_chest_length__A_single_confident_w.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiNzRhNWFlN2E4M2ZmM2I1MCIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc3MDMzNjAwMH0.3sGLLFeoREpd6VcGOsz2Kyk_FljcqAXtKAPSSCqtENc" alt="Nano Banana">
+                <div class="latency">16.7s</div>
+            </div>
+        </div>
+        <div class="outfit-label">Outfit 5: Royal blue button-up dress with chest pockets, Light brown / greenplaid structur...</div>
+    </div>
+
+    <div class="outfit-row">
+        <div class="grid">
+            <div class="cell personal">
+                <img src="https://dnznrvs05pmza.cloudfront.net/e824e062-46a6-4b78-a6af-cb3dda8c48ba.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiMjhlNzAyNzQwMDRiY2JjZiIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc3MDMzNjAwMH0.HXAcvOaRfHQc4uGtQbvrR930KnYZkNX3SuctTMB7QZk" alt="Personal Photo">
+                <div class="latency">30.4s</div>
+            </div>
+            <div class="cell runway">
+                <img src="about:blank" alt="Runway Gen-4">
+                <div class="latency">58.0s</div>
+            </div>
+            <div class="cell nano">
+                <img src="https://dnznrvs05pmza.cloudfront.net/gemini/gemini-2.5-flash-image/images/9a2d2722-cce1-4abe-aca6-484c2a9391c3/gemini_2_5_flash___5_feet_4_eastern_asian_with_black_wavy_hair_at_chest_length__A_single_confident_w.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiM2ViNTgzZWY1MjFkYjJiZiIsImJ1Y2tldCI6InJ1bndheS10YXNrLWFydGlmYWN0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc3MDMzNjAwMH0.tpi2ZnKeCS2eaUaXvKROrdPWyMzzDSGaUbpP65-6WaE" alt="Nano Banana">
+                <div class="latency">16.6s</div>
+            </div>
+        </div>
+        <div class="outfit-label">Outfit 6: Blue denim button-up shirt with victorian collar and flare sleeves, Medium wash ...</div>
+    </div>
+
+    <div class="summary">
+        <h3>Latency Summary</h3>
+        <table>
+            <tr>
+                <th>Outfit</th>
+                <th>Personal Photo</th>
+                <th>Runway Gen-4</th>
+                <th>Nano Banana</th>
+            </tr>
+            <tr>
+                <td>Outfit 4</td>
+                <td>51.2s</td>
+                <td>30.5s</td>
+                <td>16.7s</td>
+            </tr>
+            <tr>
+                <td>Outfit 5</td>
+                <td>28.1s</td>
+                <td>35.1s</td>
+                <td>16.7s</td>
+            </tr>
+            <tr>
+                <td>Outfit 6</td>
+                <td>30.4s</td>
+                <td>58.0s</td>
+                <td>16.6s</td>
+            </tr>
+            <tr style="font-weight: bold; background: #f5f5f5;">
+                <td>Average</td>
+                <td>36.6s</td>
+                <td>41.2s</td>
+                <td>16.6s</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Fullscreen overlay for viewing full images -->
+    <div class="fullscreen-overlay" id="overlay" onclick="this.classList.remove('active')">
+        <img id="fullscreen-img" src="" alt="Full size">
+    </div>
+
+    <script>
+        document.querySelectorAll('.cell img').forEach(img => {
+            img.addEventListener('click', function() {
+                document.getElementById('fullscreen-img').src = this.src;
+                document.getElementById('overlay').classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

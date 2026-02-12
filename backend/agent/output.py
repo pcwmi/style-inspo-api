@@ -127,13 +127,11 @@ class StatefulSMSOutput(SMSOutput):
         is_outfit = images and (layout == "outfit" or len(images) >= 2)
 
         if is_outfit:
-            # Normalize to web format (items[].image_path) for consistency
-            # This ensures SMS-saved outfits work with visualization_manager
+            # Look up actual item names from URLs (for meaningful context)
+            items_with_names = self._lookup_item_names(images)
+
             outfit_data = {
-                "items": [
-                    {"image_path": url, "name": f"Item {i+1}"}
-                    for i, url in enumerate(images)
-                ],
+                "items": items_with_names,
                 "image_urls": images,  # Keep for backward compat
                 "styling_notes": text,
             }
@@ -149,6 +147,39 @@ class StatefulSMSOutput(SMSOutput):
             # Extract "The magic" section for Runway styling instructions
             styling_hint = self._extract_magic_section(text)
             self._trigger_background_visualization(images, styling_hint)
+
+    def _lookup_item_names(self, image_urls: List[str]) -> List[dict]:
+        """Reverse-lookup item names from image URLs.
+
+        Maps URLs back to wardrobe items so SESSION_STATE shows real names
+        like "Grey cashmere sweater" instead of "Item 1".
+        """
+        try:
+            from services.wardrobe_manager import WardrobeManager
+            wm = WardrobeManager(user_id=self.user_id)
+            all_items = wm.get_wardrobe_items(filter_type="all")
+
+            # Build URL -> item name mapping
+            url_to_name = {}
+            for item in all_items:
+                # URL is stored as image_path, not image_url
+                url = item.get("system_metadata", {}).get("image_path", "")
+                name = item.get("styling_details", {}).get("name", "")
+                if url and name:
+                    url_to_name[url] = name
+
+            # Map each image URL to its name (fallback to generic if not found)
+            result = []
+            for i, url in enumerate(image_urls):
+                name = url_to_name.get(url, f"Item {i+1}")
+                result.append({"image_path": url, "name": name})
+
+            logger.info(f"_lookup_item_names: matched {sum(1 for r in result if not r['name'].startswith('Item '))} of {len(image_urls)} items")
+            return result
+
+        except Exception as e:
+            logger.warning(f"_lookup_item_names failed: {e}, using generic names")
+            return [{"image_path": url, "name": f"Item {i+1}"} for i, url in enumerate(image_urls)]
 
     def _extract_magic_section(self, text: str) -> str:
         """Extract 'The magic:' section from outfit text for Runway styling hints."""

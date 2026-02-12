@@ -64,7 +64,7 @@ class AIProviderFactory:
         """Detect provider from model name."""
         model_lower = model.lower()
 
-        if any(x in model_lower for x in ["gpt-", "o1-", "o1"]):
+        if any(x in model_lower for x in ["gpt-", "o1", "o3", "o4"]):
             return "openai"
         elif "gemini" in model_lower:
             return "google"

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Frontier Model Comparison - Garment Physics</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0; padding: 20px; background: #f5f5f5;
+        }
+        h1 { text-align: center; color: #333; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 30px; }
+
+        .model-section {
+            background: white; border-radius: 12px; padding: 20px;
+            margin: 20px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .model-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px;
+        }
+        .model-name { font-size: 20px; font-weight: bold; color: #333; }
+        .model-metrics { display: flex; gap: 20px; }
+        .metric { text-align: center; }
+        .metric-value { font-size: 18px; font-weight: bold; color: #2196F3; }
+        .metric-label { font-size: 12px; color: #666; }
+
+        .outfit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .outfit-card {
+            border: 1px solid #eee; border-radius: 8px; padding: 15px;
+            background: #fafafa;
+        }
+        .outfit-header { font-weight: bold; margin-bottom: 10px; color: #333; }
+
+        .item-images { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+        .item-img {
+            width: 60px; height: 60px; object-fit: cover; border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+        .item-img:hover { transform: scale(2); z-index: 100; position: relative; }
+
+        .item-names { margin: 10px 0; }
+        .item-name {
+            display: inline-block; background: #e8e8e8; padding: 2px 8px;
+            border-radius: 4px; margin: 2px; font-size: 12px;
+        }
+
+        .section-label { font-size: 11px; color: #999; text-transform: uppercase; margin-top: 10px; }
+        .section-content { font-size: 13px; color: #555; line-height: 1.4; margin: 5px 0; }
+
+        .error { background: #ffebee; color: #c62828; padding: 15px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <h1>🏆 Frontier Model Comparison</h1>
+    <p class="subtitle">Testing garment physics reasoning with vision + chain-of-thought</p>
+
+    <div class="model-section">
+        <div class="model-header">
+            <div class="model-name">GPT-5.1 (Text-Only)</div>
+            <div class="model-metrics">
+                <div class="metric">
+                    <div class="metric-value">31.2s</div>
+                    <div class="metric-label">Latency</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">$0.0000</div>
+                    <div class="metric-label">Cost</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">3</div>
+                    <div class="metric-label">Outfits</div>
+                </div>
+            </div>
+        </div>
+<div class="outfit-grid">
+            <div class="outfit-card">
+                <div class="outfit-header">Outfit 1</div>
+                <div class="item-images">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/af2eaa4ea72e47a7be330f4e2b6d1b0f.jpg" alt="Blue denim midi skirt with front slit" title="Blue denim midi skirt with front slit">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/ee44c5daee9644de8cdf95c8ea2c38be.jpg" alt="Cream oversized knit sweater" title="Cream oversized knit sweater">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/3e609cab6fbd4b0695a084d913c05d81.jpg" alt="Black knee-high leather boots" title="Black knee-high leather boots">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/00607576ff2e4dd583c0c7b237e9f51d.jpg" alt="Black structured blazer" title="Black structured blazer">
+                </div>
+                <div class="item-names">
+                    <span class="item-name">Blue denim midi skirt with front slit</span>
+                    <span class="item-name">Cream oversized knit sweater</span>
+                    <span class="item-name">Black knee-high leather boots</span>
+                    <span class="item-name">Black structured blazer</span>
+                </div>
+                <div class="section-label">Styling Notes</div>
+                <div class="section-content">Front-tuck sweater into skirt; wear blazer open with sleeves pushed up to show knit cuffs.</div>
+                <div class="section-label">Why It Works</div>
+                <div class="section-content">The sharp blazer over a cozy knit with a denim midi and tall boots turns a basic brunch combo into a chic, editorial silhouette.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-header">Outfit 2</div>
+                <div class="item-images">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/f9bf2d58d91e41a7859a04963b8ae6a0.jpg" alt="Dark wash wide-leg jeans" title="Dark wash wide-leg jeans">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/4eb766a5ce0d479f8dedf19a1ae9bc93.jpg" alt="Beige short-sleeve button-up blouse" title="Beige short-sleeve button-up blouse">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/8e5d1419c09f4235b6e626d10ac99310.jpg" alt="Ivory cropped button-up cardigan" title="Ivory cropped button-up cardigan">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/e311df970cb64bcaa5077770a4340f9c.jpg" alt="Beige woven leather flats" title="Beige woven leather flats">
+                </div>
+                <div class="item-names">
+                    <span class="item-name">Dark wash wide-leg jeans</span>
+                    <span class="item-name">Beige short-sleeve button-up blouse</span>
+                    <span class="item-name">Ivory cropped button-up cardigan</span>
+                    <span class="item-name">Beige woven leather flats</span>
+                </div>
+                <div class="section-label">Styling Notes</div>
+                <div class="section-content">Tuck blouse into jeans; button only the middle cardigan button; let belt show at the waist.</div>
+                <div class="section-label">Why It Works</div>
+                <div class="section-content">Layering a cropped button-up cardigan over a buttoned blouse creates an intentional, tailored-on-top contrast to the relaxed wide-leg denim.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-header">Outfit 3</div>
+                <div class="item-images">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/c0ac6f87f7f1499483cf60c484cbcd3b.jpg" alt="Navy oversized sweater" title="Navy oversized sweater">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/95b3142a44714164b7fbdf92940a1982.jpg" alt="Beige sleeveless knit vest" title="Beige sleeveless knit vest">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/ca01209fd3cc410a9737fa1186c9b2b6.jpg" alt="Blue wide-leg jeans" title="Blue wide-leg jeans">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/3e609cab6fbd4b0695a084d913c05d81.jpg" alt="Black knee-high leather boots" title="Black knee-high leather boots">
+                </div>
+                <div class="item-names">
+                    <span class="item-name">Navy oversized sweater</span>
+                    <span class="item-name">Beige sleeveless knit vest</span>
+                    <span class="item-name">Blue wide-leg jeans</span>
+                    <span class="item-name">Black knee-high leather boots</span>
+                </div>
+                <div class="section-label">Styling Notes</div>
+                <div class="section-content">Leave sweater loose; layer vest over it; loosely tuck jean hems into boots for a slouchy stack.</div>
+                <div class="section-label">Why It Works</div>
+                <div class="section-content">The knit vest over an already-oversized sweater plus jeans slouched into boots feels unexpectedly styled yet grounded in cozy, casual pieces.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="model-section">
+        <div class="model-header">
+            <div class="model-name">GPT-5.1 (Vision)</div>
+            <div class="model-metrics">
+                <div class="metric">
+                    <div class="metric-value">33.2s</div>
+                    <div class="metric-label">Latency</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">$0.0000</div>
+                    <div class="metric-label">Cost</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">3</div>
+                    <div class="metric-label">Outfits</div>
+                </div>
+            </div>
+        </div>
+<div class="outfit-grid">
+            <div class="outfit-card">
+                <div class="outfit-header">Outfit 1</div>
+                <div class="item-images">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/af2eaa4ea72e47a7be330f4e2b6d1b0f.jpg" alt="Blue denim midi skirt with front slit" title="Blue denim midi skirt with front slit">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/501da7f037f940e699cffc8fe05b16f0.jpg" alt="Dark brown fuzzy long-sleeve sweater" title="Dark brown fuzzy long-sleeve sweater">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/00607576ff2e4dd583c0c7b237e9f51d.jpg" alt="Black structured blazer" title="Black structured blazer">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/e311df970cb64bcaa5077770a4340f9c.jpg" alt="Beige woven leather flats" title="Beige woven leather flats">
+                </div>
+                <div class="item-names">
+                    <span class="item-name">Blue denim midi skirt with front slit</span>
+                    <span class="item-name">Dark brown fuzzy long-sleeve sweater</span>
+                    <span class="item-name">Black structured blazer</span>
+                    <span class="item-name">Beige woven leather flats</span>
+                </div>
+                <div class="section-label">Styling Notes</div>
+                <div class="section-content">Half-tuck the sweater into the front of the skirt; push blazer sleeves up slightly to show fuzzy cuffs; keep legs bare with flats for a lighter, modern feel.</div>
+                <div class="section-label">Why It Works</div>
+                <div class="section-content">The structured denim skirt and blazer feel polished, while the fuzzy knit and woven flats soften the look; the unexpectedly casual flats make the outfit feel effortless, not overdone.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-header">Outfit 2</div>
+                <div class="item-images">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/7c0d85c7e1f54005b821749905e922f8.jpg" alt="Beige oversized knit sweater" title="Beige oversized knit sweater">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/38eb3cc11b04441195af08d51bc29c86.jpg" alt="Burgundy crew-neck short-sleeve t-shirt" title="Burgundy crew-neck short-sleeve t-shirt">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/f9bf2d58d91e41a7859a04963b8ae6a0.jpg" alt="Dark wash wide-leg jeans" title="Dark wash wide-leg jeans">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/3e609cab6fbd4b0695a084d913c05d81.jpg" alt="Black knee-high leather boots" title="Black knee-high leather boots">
+                </div>
+                <div class="item-names">
+                    <span class="item-name">Beige oversized knit sweater</span>
+                    <span class="item-name">Burgundy crew-neck short-sleeve t-shirt</span>
+                    <span class="item-name">Dark wash wide-leg jeans</span>
+                    <span class="item-name">Black knee-high leather boots</span>
+                </div>
+                <div class="section-label">Styling Notes</div>
+                <div class="section-content">Tuck the burgundy tee into jeans; wear sweater mostly untucked with a slight front tuck; let the tee neckline peek out; jeans fall over boots for a long leg line.</div>
+                <div class="section-label">Why It Works</div>
+                <div class="section-content">Cozy volume on top meets sleek boots and dark denim; the slim burgundy tee peeking out adds a chic color pop that keeps the neutrals from feeling flat and makes the comfort look intentional.</div>
+            </div>
+
+            <div class="outfit-card">
+                <div class="outfit-header">Outfit 3</div>
+                <div class="item-images">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/f288ab5a603847a2b5496650ec996b9a.jpg" alt="Cropped denim button-up shirt" title="Cropped denim button-up shirt">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/8e5d1419c09f4235b6e626d10ac99310.jpg" alt="Ivory cropped button-up cardigan" title="Ivory cropped button-up cardigan">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/ca01209fd3cc410a9737fa1186c9b2b6.jpg" alt="Blue wide-leg jeans" title="Blue wide-leg jeans">
+                    <img class="item-img" src="https://style-inspo.s3.us-east-2.amazonaws.com/dana/items/e311df970cb64bcaa5077770a4340f9c.jpg" alt="Beige woven leather flats" title="Beige woven leather flats">
+                </div>
+                <div class="item-names">
+                    <span class="item-name">Cropped denim button-up shirt</span>
+                    <span class="item-name">Ivory cropped button-up cardigan</span>
+                    <span class="item-name">Blue wide-leg jeans</span>
+                    <span class="item-name">Beige woven leather flats</span>
+                </div>
+                <div class="section-label">Styling Notes</div>
+                <div class="section-content">Button the denim shirt, tuck its front lightly into the jeans; wear the cardigan open with sleeves pushed up; keep hems skimming the tops of the flats.</div>
+                <div class="section-label">Why It Works</div>
+                <div class="section-content">Denim-on-denim sets a casual base, while the cropped ivory cardigan unexpectedly adds prim polish; the mirrored lengths and soft beige flats turn a simple jeans look into a chic, styled set.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="model-section">
+        <div class="model-header">
+            <div class="model-name">o3 (Vision)</div>
+            <div class="model-metrics">
+                <div class="metric">
+                    <div class="metric-value">0.8s</div>
+                    <div class="metric-label">Latency</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">$0.0000</div>
+                    <div class="metric-label">Cost</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">0</div>
+                    <div class="metric-label">Outfits</div>
+                </div>
+            </div>
+        </div>
+<div class="outfit-grid">        </div>
+    </div>
+
+</body>
+</html>
