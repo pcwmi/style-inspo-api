@@ -198,8 +198,14 @@ class VisualizationManager:
             logger.warning("No garment images provided")
             return {"success": False, "error": "No garment images"}
 
-        # Limit to 3 images (Runway API limit)
-        garment_images = garment_images[:3]
+        # Select up to 3 images for Runway (API limit)
+        # Strategy: first 2 + last 1 to capture variety (statement pieces often listed last)
+        if len(garment_images) > 3:
+            selected = garment_images[:2] + [garment_images[-1]]
+            logger.info(f"Selected 3 of {len(garment_images)} images for viz: first 2 + last (statement)")
+            garment_images = selected
+        else:
+            logger.info(f"Using all {len(garment_images)} images for visualization")
 
         # Fetch user's model descriptor
         profile = self.profile_manager.get_profile(self.user_id)

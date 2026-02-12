@@ -37,21 +37,21 @@ class SMSOutput(OutputHandler):
 
     def _split_message_sections(self, text: str) -> tuple[Optional[str], Optional[str]]:
         """
-        Split message into magic/how-to-wear sections for 3-part SMS flow.
+        Split message into magic/identity sections for 3-part SMS flow.
 
         Returns (before_image, after_image) where:
         - before_image = "The magic:" section
-        - after_image = "How to wear it:" section
+        - after_image = "This outfit says:" section
 
         If text doesn't match the expected format, returns (text, None).
         """
         if not text:
             return None, None
 
-        # Look for the "How to wear it:" marker (case insensitive, with or without bold)
+        # Look for the "This outfit says:" marker (case insensitive, with or without bold)
         import re
-        # Match **How to wear it:** or How to wear it: (with optional whitespace)
-        pattern = r'(\*{0,2}How to wear it:?\*{0,2})'
+        # Match **This outfit says:** or This outfit says: (with optional whitespace)
+        pattern = r'(\*{0,2}This outfit says:?\*{0,2})'
         match = re.search(pattern, text, re.IGNORECASE)
 
         if match:
@@ -113,8 +113,12 @@ class StatefulSMSOutput(SMSOutput):
     def __init__(self, phone: str, user_id: str, state_manager):
         super().__init__(phone, user_id)
         self.state_manager = state_manager
+        self.message_sent = False  # Track if send() was called (to avoid duplicate sends)
 
     def send(self, text: Optional[str], images: List[str], layout: str = "list"):
+        # Mark that send() was called (prevents duplicate sends in sms.py)
+        self.message_sent = True
+
         # First, send via parent class (collage)
         super().send(text, images, layout)
 
@@ -136,6 +140,11 @@ class StatefulSMSOutput(SMSOutput):
             self.state_manager.set_last_outfit(outfit_data)
             logger.info(f"StatefulSMSOutput: captured outfit with {len(images)} items to state")
 
+            # Send expectation message for visualization (Step 1: set user expectations)
+            from services.twilio_service import send_sms
+            send_sms(self.phone, "✨ Generating a styled version for you... (~15 more seconds)")
+            logger.info(f"StatefulSMSOutput: sent visualization expectation message to {self.phone}")
+
             # Trigger background visualization (sends follow-up MMS)
             self._trigger_background_visualization(images)
 
@@ -155,7 +164,7 @@ class StatefulSMSOutput(SMSOutput):
 
                 if result and result.get("visualization_url"):
                     viz_url = result["visualization_url"]
-                    send_mms(self.phone, "Here's how it looks styled on you!", [viz_url])
+                    send_mms(self.phone, "Here's how it looks on you! 👗", [viz_url])
                     logger.info(f"StatefulSMSOutput: sent visualization to {self.phone}")
                 else:
                     # Silent fail - don't bother user

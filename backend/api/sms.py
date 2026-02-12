@@ -25,6 +25,8 @@ logger = logging.getLogger(__name__)
 # Phone to user mapping (hardcoded for MVP)
 PHONE_TO_USER = {
     os.getenv("PEICHIN_PHONE_NUMBER", ""): "peichin",
+    os.getenv("DANA_PHONE_NUMBER", ""): "dana",
+    os.getenv("KATE_PHONE_NUMBER", ""): "kate",
 }
 
 
@@ -147,11 +149,15 @@ async def process_outfit_request(user_id: str, phone: str, message: str, image_u
         response = agent.run(message, image_urls=image_data_uris)
         logger.info(f"Agent completed. Response: {response[:200] if response else '(none)'}...")
 
-        # Send text response to user (agent may return text without using send_message tool)
+        # Send text response to user ONLY if agent didn't already send via send_message tool
         # This handles text-only responses like answering questions about style patterns
-        if response:
+        # but avoids duplicate sends when agent used send_message for outfit delivery
+        if response and not output.message_sent:
             send_sms(phone, response)
             logger.info(f"Sent agent text response to {phone}")
+
+        # Always record agent response in conversation state
+        if response:
             state_manager.append_message("assistant", response)
 
     except Exception as e:
