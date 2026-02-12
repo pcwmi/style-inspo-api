@@ -147,8 +147,11 @@ async def process_outfit_request(user_id: str, phone: str, message: str, image_u
         response = agent.run(message, image_urls=image_data_uris)
         logger.info(f"Agent completed. Response: {response[:200] if response else '(none)'}...")
 
-        # Record assistant response
+        # Send text response to user (agent may return text without using send_message tool)
+        # This handles text-only responses like answering questions about style patterns
         if response:
+            send_sms(phone, response)
+            logger.info(f"Sent agent text response to {phone}")
             state_manager.append_message("assistant", response)
 
     except Exception as e:
