@@ -4,10 +4,12 @@ Visualization Manager
 Orchestrates outfit visualization generation using AI providers (Runway ML, etc.).
 Handles fetching user data, calling providers, and storing results permanently.
 
-Pre-Composite Strategy (Feb 2026):
-Instead of sending 3 individual images to Runway (which loses items in 5-7 piece outfits),
-we generate a flat-lay collage of ALL items and send that as a single reference image.
-A/B testing showed pre-composite works slightly better for multi-item outfits.
+Multi-Slot Collage Strategy (Feb 2026):
+Instead of compressing all items into 1 collage (346px/item), we split items across
+all 3 Runway reference slots with smaller collages (525px/item). A/B testing showed
+52% higher per-item resolution produces noticeably better fidelity.
+
+Distribution: 4→2+2, 5→2+2+1, 6→2+2+2, 7→2+2+3, 8+→3+3+2
 """
 
 import logging
@@ -26,10 +28,10 @@ from .providers.base import ImageGenerationRequest
 
 logger = logging.getLogger(__name__)
 
-# Pre-composite flat-lay settings
-FLATLAY_CANVAS_SIZE = 1080  # Square canvas for Runway
-FLATLAY_BACKGROUND = (240, 240, 240)  # Neutral gray
-FLATLAY_PADDING = 10
+# Collage settings
+CANVAS_SIZE = 1080  # Square canvas for Runway
+BACKGROUND = (240, 240, 240)  # Neutral gray
+PADDING = 10
 
 
 def _download_image(url: str) -> Optional[Image.Image]:
@@ -39,7 +41,7 @@ def _download_image(url: str) -> Optional[Image.Image]:
         response.raise_for_status()
         img = Image.open(BytesIO(response.content))
         if img.mode in ('RGBA', 'P', 'LA'):
-            background = Image.new('RGB', img.size, FLATLAY_BACKGROUND)
+            background = Image.new('RGB', img.size, BACKGROUND)
             if img.mode == 'P':
                 img = img.convert('RGBA')
             background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
@@ -100,10 +102,10 @@ def generate_flatlay_collage(image_urls: List[str]) -> Optional[Image.Image]:
         cols, rows = 3, 3
 
     # Calculate cell size
-    cell_size = (FLATLAY_CANVAS_SIZE - (cols + 1) * FLATLAY_PADDING) // cols
+    cell_size = (CANVAS_SIZE - (cols + 1) * PADDING) // cols
 
     # Create canvas
-    canvas = Image.new('RGB', (FLATLAY_CANVAS_SIZE, FLATLAY_CANVAS_SIZE), FLATLAY_BACKGROUND)
+    canvas = Image.new('RGB', (CANVAS_SIZE, CANVAS_SIZE), BACKGROUND)
 
     # Place images
     for idx, img in enumerate(images):
@@ -115,12 +117,115 @@ def generate_flatlay_collage(image_urls: List[str]) -> Optional[Image.Image]:
 
         cropped = _crop_to_fill(img, cell_size)
 
-        x = FLATLAY_PADDING + col * (cell_size + FLATLAY_PADDING)
-        y = FLATLAY_PADDING + row * (cell_size + FLATLAY_PADDING)
+        x = PADDING + col * (cell_size + PADDING)
+        y = PADDING + row * (cell_size + PADDING)
 
         canvas.paste(cropped, (x, y))
 
     return canvas
+
+
+def generate_slot_collage(image_urls: List[str]) -> Optional[Image.Image]:
+    """
+    Generate a collage for a single Runway slot (1-3 items).
+
+    Layout adapts to item count:
+    - 1 item: centered, 700px
+    - 2 items: side by side, 525px each
+    - 3 items: 1x3 row, 346px each
+
+    Canvas: 1080x1080 (Runway native)
+    """
+    images = []
+    for url in image_urls[:3]:  # Max 3 items per slot
+        img = _download_image(url)
+        if img:
+            images.append(img)
+
+    if not images:
+        return None
+
+    num_images = len(images)
+    canvas = Image.new('RGB', (CANVAS_SIZE, CANVAS_SIZE), BACKGROUND)
+
+    if num_images == 1:
+        # Single item: centered, large
+        cell_size = 700
+        img = _crop_to_fill(images[0], cell_size)
+        x = (CANVAS_SIZE - cell_size) // 2
+        y = (CANVAS_SIZE - cell_size) // 2
+        canvas.paste(img, (x, y))
+
+    elif num_images == 2:
+        # 2 items side by side: 525px each
+        cell_size = (CANVAS_SIZE - 3 * PADDING) // 2
+        y = (CANVAS_SIZE - cell_size) // 2
+        for idx, img in enumerate(images):
+            cropped = _crop_to_fill(img, cell_size)
+            x = PADDING + idx * (cell_size + PADDING)
+            canvas.paste(cropped, (x, y))
+
+    else:  # 3 items
+        # 3 items in a row: 346px each
+        cell_size = (CANVAS_SIZE - 4 * PADDING) // 3
+        y = (CANVAS_SIZE - cell_size) // 2
+        for idx, img in enumerate(images):
+            cropped = _crop_to_fill(img, cell_size)
+            x = PADDING + idx * (cell_size + PADDING)
+            canvas.paste(cropped, (x, y))
+
+    return canvas
+
+
+def generate_multi_slot_collages(image_urls: List[str]) -> List[Image.Image]:
+    """
+    Distribute items across up to 3 Runway slots for maximum fidelity.
+
+    Distribution strategy (fills 3 slots, puts extras in last slot):
+    - 4 items: 2 + 2 (2 collages)
+    - 5 items: 2 + 2 + 1 (3 collages)
+    - 6 items: 2 + 2 + 2 (3 collages)
+    - 7 items: 2 + 2 + 3 (3 collages)
+    - 8+ items: 3 + 3 + rest (3 collages)
+
+    Returns list of PIL Images (max 3).
+    """
+    n = len(image_urls)
+
+    if n <= 3:
+        # Just use individual images (no collaging needed)
+        collages = []
+        for url in image_urls:
+            img = _download_image(url)
+            if img:
+                # Create single-item collage for consistency
+                collage = generate_slot_collage([url])
+                if collage:
+                    collages.append(collage)
+        return collages
+
+    # Determine distribution
+    if n == 4:
+        distribution = [2, 2]
+    elif n == 5:
+        distribution = [2, 2, 1]
+    elif n == 6:
+        distribution = [2, 2, 2]
+    elif n == 7:
+        distribution = [2, 2, 3]
+    else:  # 8+
+        distribution = [3, 3, n - 6]  # First two get 3, last gets remainder
+
+    collages = []
+    idx = 0
+    for count in distribution:
+        slot_urls = image_urls[idx:idx + count]
+        collage = generate_slot_collage(slot_urls)
+        if collage:
+            collages.append(collage)
+        idx += count
+
+    return collages[:3]  # Max 3 for Runway
 
 
 class VisualizationManager:
@@ -207,24 +312,28 @@ class VisualizationManager:
         if not all_garment_images:
             raise ValueError(f"Outfit {outfit_id} has no garment images")
 
-        # Pre-composite strategy: create flat-lay collage for outfits with 4+ items
+        # Multi-slot strategy: distribute items across up to 3 Runway slots
+        # This gives 52% higher per-item resolution (525px vs 346px)
         if len(all_garment_images) > 3:
-            logger.info(f"Outfit has {len(all_garment_images)} items, using PRE-COMPOSITE flat-lay")
-            flatlay = generate_flatlay_collage(all_garment_images)
+            logger.info(f"Outfit has {len(all_garment_images)} items, using MULTI-SLOT collages")
+            collages = generate_multi_slot_collages(all_garment_images)
 
-            if flatlay:
-                # Upload collage to S3 and use as single reference
-                flatlay_buffer = BytesIO()
-                flatlay.save(flatlay_buffer, format='JPEG', quality=90)
-                flatlay_buffer.seek(0)
+            if collages:
+                # Upload each collage to S3
+                garment_images = []
+                for i, collage in enumerate(collages):
+                    collage_buffer = BytesIO()
+                    collage.save(collage_buffer, format='JPEG', quality=90)
+                    collage_buffer.seek(0)
 
-                flatlay_filename = f"flatlay_{uuid.uuid4().hex[:8]}.jpg"
-                flatlay_url = self.storage.save_file(flatlay_buffer, f"visualizations/{flatlay_filename}")
-                logger.info(f"Flat-lay uploaded: {flatlay_url}")
+                    collage_filename = f"collage_{uuid.uuid4().hex[:8]}_{i+1}.jpg"
+                    collage_url = self.storage.save_file(collage_buffer, f"visualizations/{collage_filename}")
+                    garment_images.append(collage_url)
+                    logger.info(f"Collage {i+1}/{len(collages)} uploaded: {collage_url}")
 
-                garment_images = [flatlay_url]
+                logger.info(f"Using {len(garment_images)} multi-slot collages")
             else:
-                logger.warning("Flat-lay generation failed, falling back to first 3 images")
+                logger.warning("Multi-slot collage generation failed, falling back to first 3 images")
                 garment_images = all_garment_images[:3]
         else:
             garment_images = all_garment_images
@@ -303,8 +412,14 @@ class VisualizationManager:
         Unlike visualize_outfit(), this doesn't require a saved outfit.
         Used when we have image URLs but no outfit_id (e.g., SMS collage).
 
+        For 4+ items, uses multi-slot collage strategy to maximize fidelity:
+        - 4 items: 2+2 across 2 slots
+        - 5 items: 2+2+1 across 3 slots
+        - 6 items: 2+2+2 across 3 slots
+        - 7 items: 2+2+3 across 3 slots
+
         Args:
-            garment_images: List of garment image URLs (max 3 used)
+            garment_images: List of garment image URLs (all items supported)
             provider_name: Visualization provider (default: "runway")
             styling_notes: Optional styling hint for Runway (e.g., "sweater draped over shoulders")
 
@@ -320,29 +435,32 @@ class VisualizationManager:
             logger.warning("No garment images provided")
             return {"success": False, "error": "No garment images"}
 
-        # Pre-composite strategy: create flat-lay collage of ALL items
-        # This ensures we don't lose items in 5-7 piece outfits
-        use_precomposite = len(garment_images) > 3
+        # Store original images for reference
+        original_images = garment_images
 
-        if use_precomposite:
-            logger.info(f"Using PRE-COMPOSITE: creating flat-lay of {len(garment_images)} items")
-            flatlay = generate_flatlay_collage(garment_images)
+        # Multi-slot strategy: distribute items across up to 3 Runway slots
+        # This gives 52% higher per-item resolution (525px vs 346px)
+        if len(garment_images) > 3:
+            logger.info(f"Using MULTI-SLOT: creating collages from {len(garment_images)} items")
+            collages = generate_multi_slot_collages(garment_images)
 
-            if flatlay:
-                # Upload collage to S3 and use as single reference
-                flatlay_buffer = BytesIO()
-                flatlay.save(flatlay_buffer, format='JPEG', quality=90)
-                flatlay_buffer.seek(0)
+            if collages:
+                # Upload each collage to S3
+                garment_images = []
+                for i, collage in enumerate(collages):
+                    collage_buffer = BytesIO()
+                    collage.save(collage_buffer, format='JPEG', quality=90)
+                    collage_buffer.seek(0)
 
-                flatlay_filename = f"flatlay_{uuid.uuid4().hex[:8]}.jpg"
-                flatlay_url = self.storage.save_file(flatlay_buffer, f"visualizations/{flatlay_filename}")
-                logger.info(f"Flat-lay uploaded: {flatlay_url}")
+                    collage_filename = f"collage_{uuid.uuid4().hex[:8]}_{i+1}.jpg"
+                    collage_url = self.storage.save_file(collage_buffer, f"visualizations/{collage_filename}")
+                    garment_images.append(collage_url)
+                    logger.info(f"Collage {i+1}/{len(collages)} uploaded: {collage_url}")
 
-                # Use single flatlay as reference
-                garment_images = [flatlay_url]
+                logger.info(f"Using {len(garment_images)} multi-slot collages")
             else:
-                logger.warning("Flat-lay generation failed, falling back to smart selection")
-                garment_images = garment_images[:2] + [garment_images[-1]]
+                logger.warning("Multi-slot collage generation failed, falling back to first 3 images")
+                garment_images = original_images[:3]
         else:
             logger.info(f"Using all {len(garment_images)} images for visualization")
 
