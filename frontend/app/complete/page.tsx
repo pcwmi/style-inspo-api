@@ -100,6 +100,7 @@ function CompletePageContent() {
         user: user,
         mode: 'complete',
         anchor_items: selectedItems.join(','),
+        anchor_names: selectedItemNames.join(','),
         stream: 'true'
       })
       if (debugMode) params.append('debug', 'true')

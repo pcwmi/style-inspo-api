@@ -21,8 +21,45 @@ function RevealPageContent() {
   const mode = searchParams.get('mode') || 'occasion'
   const occasions = searchParams.get('occasions') || ''
   const anchorItems = searchParams.get('anchor_items') || ''
+  const anchorNames = searchParams.get('anchor_names') || ''
   const weatherCondition = searchParams.get('weather_condition') || ''
   const temperatureRange = searchParams.get('temperature_range') || ''
+
+  // Generate contextual header based on user intent
+  const getContextualHeader = () => {
+    if (mode === 'complete' && anchorNames) {
+      // Complete mode: featuring specific items
+      const names = anchorNames.split(',').filter(Boolean)
+      if (names.length === 1) {
+        return `Ways to style your ${names[0].toLowerCase()}`
+      } else if (names.length === 2) {
+        return `Outfits with your ${names[0].toLowerCase()} & ${names[1].toLowerCase()}`
+      } else {
+        return `Outfits featuring your selected pieces`
+      }
+    } else if (mode === 'occasion' && occasions) {
+      // Occasion mode: for specific occasion
+      const occasionList = occasions.split(',').filter(Boolean)
+      const formatOccasion = (occ: string) => {
+        const mappings: Record<string, string> = {
+          'casual': 'casual day',
+          'work': 'workday',
+          'date-night': 'date night',
+          'special-event': 'special event',
+          'weekend': 'weekend',
+          'travel': 'travels',
+          'active': 'active day'
+        }
+        return mappings[occ.toLowerCase()] || occ.toLowerCase()
+      }
+      if (occasionList.length === 1) {
+        return `Here's what could work for your ${formatOccasion(occasionList[0])}`
+      } else {
+        return `Here's what could work for your day`
+      }
+    }
+    return `Here's what could work for your day`
+  }
 
   const [outfits, setOutfits] = useState<any[]>([])
   const [reasoning, setReasoning] = useState<string | null>(null)
@@ -226,7 +263,7 @@ function RevealPageContent() {
           {outfits.length > 0 && (
             <>
               <h1 className="text-2xl md:text-3xl font-bold mb-5 md:mb-8">
-                Here's what could work for your day
+                {getContextualHeader()}
               </h1>
               {outfits.map((outfit, idx) => (
                 <OutfitCard
@@ -309,7 +346,7 @@ function RevealPageContent() {
         )}
 
         <h1 className="text-2xl md:text-3xl font-bold mb-5 md:mb-8">
-          Here's what could work for your day
+          {getContextualHeader()}
         </h1>
 
         {/* Show reasoning if debug mode is on */}
