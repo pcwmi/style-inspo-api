@@ -42,9 +42,9 @@ export function ShowcaseLanding() {
         <div className="relative w-full mb-6 md:mb-8 -mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto md:overflow-visible hide-scrollbar">
           <div className="flex gap-3 w-max md:grid md:grid-cols-3 md:gap-4 md:w-full">
             {[
-              { src: '/showcase/hero-outfit-1.png', alt: 'Blazer and bow tee outfit with Runway visualization' },
-              { src: '/showcase/hero-outfit-2.png', alt: 'Grey sweater and denim skirt outfit with Runway visualization' },
-              { src: '/showcase/hero-outfit-3.png', alt: 'Teal jumpsuit and floral heels outfit with Runway visualization' },
+              { src: '/showcase/hero-outfit-1.jpg', alt: 'Blazer and bow tee outfit visualization' },
+              { src: '/showcase/hero-outfit-2.jpg', alt: 'Sweater and denim skirt outfit visualization' },
+              { src: '/showcase/hero-outfit-3.jpg', alt: 'Teal jumpsuit and scarf outfit visualization' },
             ].map((item, i) => (
               <div key={i} className="shrink-0 w-[260px] md:w-auto">
                 <div className="bg-white rounded-xl shadow-lg border border-[rgba(26,22,20,0.08)] overflow-hidden">
