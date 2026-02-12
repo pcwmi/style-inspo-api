@@ -1,12 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { api } from '@/lib/api'
 import { posthog } from '@/lib/posthog'
 import { ModelDescriptorModal } from './ModelDescriptorModal'
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 type VisualizationState = 'idle' | 'checking_descriptor' | 'generating' | 'complete' | 'error'
 
@@ -31,12 +33,59 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
     const [savedOutfitId, setSavedOutfitId] = useState<string | null>(null)
 
     // Visualization states
-    const [vizState, setVizState] = useState<VisualizationState>('idle')
-    const [vizProgress, setVizProgress] = useState(0)
+    const [vizState, setVizState] = useState<VisualizationState>(
+        outfit.viz_pending ? 'generating' : 'idle'
+    )
+    const [vizProgress, setVizProgress] = useState(outfit.viz_pending ? 30 : 0)
     const [vizUrl, setVizUrl] = useState<string | null>(null)
     const [vizError, setVizError] = useState<string | null>(null)
     const [showDescriptorModal, setShowDescriptorModal] = useState(false)
     const [imageExpanded, setImageExpanded] = useState(false)
+
+    // Poll for viz status if outfit has viz_key (auto-generated on reveal page)
+    useEffect(() => {
+        if (!outfit.viz_key || vizUrl) return
+
+        let pollCount = 0
+        const maxPolls = 20  // 60s max (3s * 20)
+
+        const pollInterval = setInterval(async () => {
+            pollCount++
+            if (pollCount > maxPolls) {
+                clearInterval(pollInterval)
+                setVizState('idle')
+                setVizProgress(0)
+                return
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/api/visualization/status/${outfit.viz_key}`)
+                const data = await res.json()
+
+                if (data.status === 'complete' && data.url) {
+                    clearInterval(pollInterval)
+                    setVizUrl(data.url)
+                    setVizState('complete')
+                    setVizProgress(100)
+                    posthog.capture('visualization_complete', {
+                        viz_key: outfit.viz_key,
+                        auto_generated: true
+                    })
+                } else if (data.status === 'failed') {
+                    clearInterval(pollInterval)
+                    setVizError(data.error || 'Visualization failed')
+                    setVizState('error')
+                } else {
+                    // Still pending - update progress
+                    setVizProgress(Math.min(30 + pollCount * 3, 90))
+                }
+            } catch (e) {
+                console.error('Viz poll error:', e)
+            }
+        }, 3000)
+
+        return () => clearInterval(pollInterval)
+    }, [outfit.viz_key, vizUrl])
 
     const handleSave = async () => {
         try {
@@ -256,6 +305,44 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
                 <h3 className="font-semibold mb-2 text-base">Why This Works</h3>
                 <p className="text-ink text-sm md:text-base leading-relaxed">{outfit.why_it_works}</p>
             </div>
+
+            {/* Auto-generated visualization (from streaming endpoint) */}
+            {outfit.viz_key && !savedOutfitId && (
+                <div className="mb-4 border-t border-[rgba(26,22,20,0.12)] pt-4">
+                    {vizUrl ? (
+                        <div
+                            className="aspect-[4/5] rounded-lg overflow-hidden cursor-pointer relative bg-gradient-to-b from-purple-50 to-pink-50"
+                            onClick={() => setImageExpanded(true)}
+                        >
+                            <img
+                                src={vizUrl}
+                                alt="Outfit visualization"
+                                className="w-full h-full object-cover"
+                            />
+                            <div className="absolute bottom-2 right-2 bg-white/80 px-2 py-1 rounded-full text-xs">
+                                Tap to expand
+                            </div>
+                        </div>
+                    ) : vizState === 'generating' ? (
+                        <div className="flex items-center gap-3 p-4 bg-sand/20 rounded-lg">
+                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-sand border-t-terracotta"></div>
+                            <div className="flex-1">
+                                <p className="text-sm font-medium text-ink">Creating your styled look...</p>
+                                <div className="w-full bg-sand/50 rounded-full h-1.5 mt-2">
+                                    <div
+                                        className="bg-terracotta h-1.5 rounded-full transition-all duration-300"
+                                        style={{ width: `${vizProgress}%` }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    ) : vizState === 'error' ? (
+                        <div className="p-4 bg-red-50 rounded-lg">
+                            <p className="text-sm text-red-600">{vizError || 'Visualization unavailable'}</p>
+                        </div>
+                    ) : null}
+                </div>
+            )}
 
             {/* Actions */}
             {(allowSave || allowDislike) && (

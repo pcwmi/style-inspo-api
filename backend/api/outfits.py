@@ -5,6 +5,7 @@ Outfit generation API endpoints
 from fastapi import APIRouter, HTTPException, Query, UploadFile, File
 from fastapi.responses import StreamingResponse
 import asyncio
+import hashlib
 import json
 import logging
 import os
@@ -21,6 +22,82 @@ from services.storage_manager import StorageManager
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+
+def _trigger_background_visualization(user_id: str, outfit_id: str, items: list):
+    """Spawn background thread to generate visualization for saved outfit."""
+    import threading
+
+    def run_visualization():
+        try:
+            from services.visualization.visualization_manager import VisualizationManager
+
+            logger.info(f"Starting background visualization for outfit {outfit_id}")
+
+            # Extract image URLs from items
+            garment_images = []
+            for item in items:
+                image_path = item.get("image_path") or item.get("system_metadata", {}).get("image_path")
+                if image_path:
+                    garment_images.append(image_path)
+
+            if not garment_images:
+                logger.warning(f"No images for outfit {outfit_id}, skipping visualization")
+                return
+
+            viz_manager = VisualizationManager(user_id)
+            result = viz_manager.visualize_outfit(outfit_id)
+
+            if result and result.get("success"):
+                logger.info(f"Background visualization complete for outfit {outfit_id}")
+            else:
+                logger.warning(f"Background visualization failed for outfit {outfit_id}")
+
+        except Exception as e:
+            logger.error(f"Background visualization error for outfit {outfit_id}: {e}")
+
+    # Run in background thread
+    thread = threading.Thread(target=run_visualization, daemon=True)
+    thread.start()
+    logger.info(f"Spawned background visualization thread for outfit {outfit_id}")
+
+
+def _trigger_visualization_by_key(user_id: str, viz_key: str, garment_images: list):
+    """
+    Spawn background thread to generate visualization, store by viz_key.
+
+    Used by streaming endpoint (web flow) - triggers on GENERATE, not save.
+    Results stored in Redis by viz_key for frontend polling.
+    """
+    import threading
+
+    def run_visualization():
+        try:
+            from services.visualization.visualization_manager import VisualizationManager
+            from services.visualization.viz_cache import set_viz_pending, set_viz_complete, set_viz_failed
+
+            logger.info(f"Starting background viz for key {viz_key}")
+            set_viz_pending(viz_key)
+
+            viz_manager = VisualizationManager(user_id)
+            result = viz_manager.visualize_from_images(garment_images)
+
+            if result and result.get("visualization_url"):
+                set_viz_complete(viz_key, result["visualization_url"])
+                logger.info(f"Viz complete for key {viz_key}: {result['visualization_url'][:50]}...")
+            else:
+                error = result.get("error", "Unknown error") if result else "No result"
+                set_viz_failed(viz_key, error)
+                logger.warning(f"Viz failed for key {viz_key}: {error}")
+
+        except Exception as e:
+            from services.visualization.viz_cache import set_viz_failed
+            set_viz_failed(viz_key, str(e))
+            logger.error(f"Viz error for key {viz_key}: {e}")
+
+    thread = threading.Thread(target=run_visualization, daemon=True)
+    thread.start()
+    logger.info(f"Spawned viz thread for key {viz_key}")
 
 
 def log_generation_to_s3(
@@ -297,6 +374,20 @@ async def generate_outfits_stream(
                     "vibe_keywords": outfit.get("vibe_keywords", [])
                 })
 
+                # Generate viz_key and trigger background visualization
+                garment_images = [
+                    item.get('image_path') for item in enriched_items
+                    if item.get('image_path')
+                ]
+                if garment_images:
+                    # Create stable hash from sorted image URLs
+                    viz_key = hashlib.md5('|'.join(sorted(garment_images)).encode()).hexdigest()[:12]
+                    enriched_outfit['viz_key'] = viz_key
+                    enriched_outfit['viz_pending'] = True
+
+                    # Trigger background visualization
+                    _trigger_visualization_by_key(user_id, viz_key, garment_images)
+
                 yield f"event: outfit\ndata: {json.dumps({'outfit_number': outfit_num, 'outfit': enriched_outfit})}\n\n"
                 await asyncio.sleep(0)  # Allow event loop to process
 
@@ -376,6 +467,10 @@ async def save_outfit(request: SaveOutfitRequest):
             "item_count": len(outfit_wrapper.items)
         })
 
+        # Note: Visualization is now triggered during GENERATE (streaming endpoint),
+        # not during save. This ensures viz starts at t=0 when outfit is generated.
+        # If the outfit was generated with viz_key, it's already being processed.
+
         return {"success": True, "message": "Outfit saved", "outfit_id": outfit_id}
     except HTTPException:
         raise
@@ -411,6 +506,39 @@ async def dislike_outfit(request: DislikeOutfitRequest):
     except Exception as e:
         logger.error(f"Error disliking outfit for {request.user_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/outfits/{outfit_id}/viz-status")
+async def get_visualization_status(outfit_id: str, user: str = Query(..., description="User ID")):
+    """Get visualization status for an outfit (for web polling)"""
+    try:
+        manager = SavedOutfitsManager(user_id=user)
+        outfit = manager.get_outfit_by_id(outfit_id)
+
+        if not outfit:
+            raise HTTPException(status_code=404, detail="Outfit not found")
+
+        return {
+            "pending": outfit.get("visualization_pending", False),
+            "url": outfit.get("visualization_url")
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching viz status for outfit {outfit_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/visualization/status/{viz_key}")
+async def get_visualization_status_by_key(viz_key: str):
+    """
+    Get visualization status by viz_key (for reveal page polling).
+
+    This endpoint is used by the web flow when outfits are generated but not yet saved.
+    The viz_key is a hash of the garment image URLs, returned with each outfit during streaming.
+    """
+    from services.visualization.viz_cache import get_viz_status
+    return get_viz_status(viz_key)
 
 
 @router.get("/outfits/{user_id}/saved")
