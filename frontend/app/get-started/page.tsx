@@ -159,9 +159,9 @@ function GetStartedContent() {
               type="text"
               placeholder="Pick a username"
               value={username}
-              onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+              onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, ''))}
               className={`w-full px-4 py-3 text-base border rounded-lg focus:outline-none focus:ring-2 bg-white ${
-                usernameStatus === 'available' ? 'border-green-400 focus:ring-green-400' :
+                usernameStatus === 'available' ? 'border-terracotta focus:ring-terracotta' :
                 usernameStatus === 'taken' || usernameStatus === 'invalid' ? 'border-red-400 focus:ring-red-400' :
                 'border-[rgba(26,22,20,0.12)] focus:ring-terracotta'
               }`}
@@ -175,7 +175,7 @@ function GetStartedContent() {
                 <div className="animate-spin h-5 w-5 border-2 border-sand border-t-terracotta rounded-full" />
               )}
               {usernameStatus === 'available' && (
-                <svg className="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-5 w-5 text-terracotta" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               )}
@@ -186,7 +186,7 @@ function GetStartedContent() {
               )}
             </div>
           </div>
-          <p className="text-xs text-muted mt-2">Lowercase letters, numbers, and underscores only</p>
+          <p className="text-xs text-muted mt-2">Letters, numbers, and underscores only (saved as lowercase)</p>
 
           {/* Error/suggestion message */}
           {usernameError && (
