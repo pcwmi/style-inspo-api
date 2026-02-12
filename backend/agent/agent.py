@@ -62,21 +62,32 @@ class StylingAgent:
 
         lines = []
 
-        # Last outfit context
+        # Current outfit context
         last_outfit = self.conversation_context.get("last_outfit", {})
         if last_outfit:
             # Handle both formats: "items" (list of dicts) or "image_urls" (list of URLs)
             if last_outfit.get("items"):
                 items = last_outfit["items"]
                 item_names = [item.get("name", "Unknown") for item in items]
-                lines.append(f"[CONTEXT] Last outfit I showed you: {', '.join(item_names)}")
+                lines.append(f"[CONTEXT] Current outfit (just shown): {', '.join(item_names)}")
             elif last_outfit.get("image_urls"):
                 count = len(last_outfit["image_urls"])
-                lines.append(f"[CONTEXT] Last outfit I showed you had {count} items")
+                lines.append(f"[CONTEXT] Current outfit had {count} items")
 
             if last_outfit.get("styling_notes"):
                 notes = last_outfit["styling_notes"][:200]
                 lines.append(f"[CONTEXT] Styling notes: {notes}")
+
+        # Outfit history (for "go back" functionality)
+        outfit_history = self.conversation_context.get("outfit_history", [])
+        if outfit_history:
+            lines.append("[CONTEXT] Previous outfits (user can ask to go back):")
+            # Show most recent first (reversed)
+            for i, prev_outfit in enumerate(reversed(outfit_history)):
+                if prev_outfit.get("items"):
+                    items = prev_outfit["items"]
+                    item_names = [item.get("name", "Unknown") for item in items]
+                    lines.append(f"  Previous {i+1}: {', '.join(item_names)}")
 
         # Recent conversation history
         messages = self.conversation_context.get("messages", [])
