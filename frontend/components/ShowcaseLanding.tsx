@@ -1,30 +1,4 @@
-'use client'
-
 import Link from 'next/link'
-import { useState } from 'react'
-
-function ShowcaseImage({ src, alt, priority }: { src: string; alt: string; priority?: boolean }) {
-  const [hasError, setHasError] = useState(false)
-
-  if (hasError) {
-    return (
-      <div className="w-full h-full bg-sand/30 flex items-center justify-center">
-        <p className="text-muted/40 text-sm text-center px-4">{alt}</p>
-      </div>
-    )
-  }
-
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={src}
-      alt={alt}
-      className="w-full h-full object-cover object-top"
-      onError={() => setHasError(true)}
-      loading={priority ? 'eager' : 'lazy'}
-    />
-  )
-}
 
 export function ShowcaseLanding() {
   return (
@@ -49,10 +23,12 @@ export function ShowcaseLanding() {
               <div key={i} className="shrink-0 w-[260px] md:w-auto">
                 <div className="bg-white rounded-xl shadow-lg border border-[rgba(26,22,20,0.08)] overflow-hidden">
                   <div className="aspect-[4/5]">
-                    <ShowcaseImage
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
                       src={item.src}
                       alt={item.alt}
-                      priority={i === 0}
+                      className="w-full h-full object-cover object-top"
+                      loading={i === 0 ? 'eager' : 'lazy'}
                     />
                   </div>
                 </div>
@@ -83,9 +59,12 @@ export function ShowcaseLanding() {
               <div className="md:w-1/2 mb-6 md:mb-0">
                 <div className="bg-bone rounded-xl overflow-hidden border border-[rgba(26,22,20,0.06)]">
                   <div className="aspect-[4/5]">
-                    <ShowcaseImage
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
                       src="/showcase/sms-flow.png"
                       alt="SMS conversation showing outfit request and response"
+                      className="w-full h-full object-cover object-top"
+                      loading="lazy"
                     />
                   </div>
                 </div>
@@ -103,9 +82,12 @@ export function ShowcaseLanding() {
               <div className="md:w-1/2 mb-6 md:mb-0">
                 <div className="bg-bone rounded-xl overflow-hidden border border-[rgba(26,22,20,0.06)]">
                   <div className="aspect-[4/5]">
-                    <ShowcaseImage
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
                       src="/showcase/visualization.png"
                       alt="AI visualization showing outfit on a model"
+                      className="w-full h-full object-cover object-top"
+                      loading="lazy"
                     />
                   </div>
                 </div>
@@ -123,9 +105,12 @@ export function ShowcaseLanding() {
               <div className="md:w-1/2 mb-6 md:mb-0">
                 <div className="bg-bone rounded-xl overflow-hidden border border-[rgba(26,22,20,0.06)]">
                   <div className="aspect-[4/5]">
-                    <ShowcaseImage
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
                       src="/showcase/wardrobe.png"
                       alt="Wardrobe grid showing uploaded clothing items"
+                      className="w-full h-full object-cover object-top"
+                      loading="lazy"
                     />
                   </div>
                 </div>
