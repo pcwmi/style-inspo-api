@@ -64,7 +64,7 @@ export function ShowcaseLanding() {
         {/* Primary CTA */}
         <div className="max-w-md mx-auto mb-16 md:mb-20">
           <Link
-            href="/words"
+            href="/get-started"
             className="block w-full bg-terracotta text-white text-center py-3.5 md:py-4 px-6 rounded-lg font-medium hover:opacity-90 transition active:opacity-80 min-h-[48px] flex items-center justify-center"
           >
             Get Started
@@ -165,7 +165,7 @@ export function ShowcaseLanding() {
             Upload a few pieces from your closet. AI does the rest.
           </p>
           <Link
-            href="/words"
+            href="/get-started"
             className="block w-full bg-terracotta text-white text-center py-3.5 md:py-4 px-6 rounded-lg font-medium hover:opacity-90 transition active:opacity-80 min-h-[48px] flex items-center justify-center"
           >
             Get Started

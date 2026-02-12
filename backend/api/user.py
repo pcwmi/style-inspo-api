@@ -12,6 +12,60 @@ from services.activity_logger import log_activity
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
+# Reserved usernames that cannot be used
+RESERVED_USERNAMES = {
+    "admin", "api", "system", "root", "default", "user", "test",
+    "null", "undefined", "anonymous", "guest", "support", "help",
+    "style", "inspo", "styleinspo", "wardrobe", "outfit", "profile"
+}
+
+
+@router.get("/users/check-username/{username}")
+async def check_username(username: str):
+    """
+    Check if a username is available for registration.
+
+    Validates:
+    - Length: 3-20 characters
+    - Format: lowercase alphanumeric and underscores only
+    - Not reserved
+    - Not already taken (no existing profile in S3)
+    """
+    import re
+
+    # Normalize to lowercase
+    username = username.lower().strip()
+
+    # Validate length
+    if len(username) < 3:
+        return {"available": False, "reason": "Username must be at least 3 characters"}
+    if len(username) > 20:
+        return {"available": False, "reason": "Username must be 20 characters or less"}
+
+    # Validate format (lowercase alphanumeric + underscores)
+    if not re.match(r'^[a-z0-9_]+$', username):
+        return {"available": False, "reason": "Only lowercase letters, numbers, and underscores allowed"}
+
+    # Check reserved usernames
+    if username in RESERVED_USERNAMES:
+        return {"available": False, "reason": "This username is reserved"}
+
+    # Check if profile already exists
+    try:
+        profile_manager = UserProfileManager(user_id=username)
+        existing_profile = profile_manager.get_profile(username)
+
+        if existing_profile:
+            # Suggest alternative
+            suggestion = f"{username}_{hash(username) % 1000:03d}"
+            return {"available": False, "reason": "Username already taken", "suggestion": suggestion}
+
+        return {"available": True}
+    except Exception as e:
+        logger.error(f"Error checking username {username}: {e}")
+        # If we can't check, assume available (will fail at creation if taken)
+        return {"available": True}
+
 
 @router.get("/users/{user_id}/profile", response_model=ProfileResponse)
 async def get_profile(user_id: str):
