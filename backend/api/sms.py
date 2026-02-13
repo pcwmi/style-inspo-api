@@ -14,8 +14,11 @@ import logging
 import random
 import re
 import base64
+import uuid
 import httpx
+from io import BytesIO
 from typing import Optional, List
+from PIL import Image
 from fastapi import APIRouter, Form, BackgroundTasks, Response
 
 from services.twilio_service import send_sms
@@ -92,6 +95,37 @@ async def download_twilio_media(media_urls: List[str]) -> List[str]:
     return data_uris
 
 
+async def upload_photos_to_s3(data_uris: List[str], user_id: str) -> List[str]:
+    """
+    Upload base64 data URIs to S3 for persistence across conversation turns.
+
+    Returns list of S3 URLs. Photos are stored so the agent can "look back"
+    at what the user sent in previous messages.
+    """
+    from services.storage_manager import StorageManager
+
+    storage = StorageManager(
+        storage_type=os.getenv("STORAGE_TYPE", "local"),
+        user_id=user_id
+    )
+
+    s3_urls = []
+    for data_uri in data_uris:
+        try:
+            # Decode base64 data URI → PIL Image
+            header, encoded = data_uri.split(",", 1)
+            image_bytes = base64.b64decode(encoded)
+            image = Image.open(BytesIO(image_bytes))
+
+            filename = f"sms_{uuid.uuid4().hex[:8]}.jpg"
+            url = storage.save_image(image, filename, subfolder="sms_photos")
+            s3_urls.append(url)
+        except Exception as e:
+            logger.error(f"Failed to upload photo to S3: {e}")
+
+    return s3_urls
+
+
 async def process_outfit_request(user_id: str, phone: str, message: str, image_urls: list[str] = None):
     """
     Background task to process user request.
@@ -115,8 +149,28 @@ async def process_outfit_request(user_id: str, phone: str, message: str, image_u
         state = state_manager.get_or_create_state(user_id)
         logger.info(f"Loaded conversation state for {phone}: {len(state.messages)} prior messages")
 
-        # Record user message
-        state_manager.append_message("user", message)
+        # Download Twilio media and convert to base64 (Twilio URLs require auth)
+        image_data_uris = None
+        s3_photo_urls = None
+        if image_urls:
+            logger.info(f"Downloading {len(image_urls)} images from Twilio...")
+            image_data_uris = await download_twilio_media(image_urls)
+            logger.info(f"Downloaded {len(image_data_uris)} images as base64")
+
+            # Upload photos to S3 for persistence across turns
+            s3_photo_urls = await upload_photos_to_s3(image_data_uris, user_id)
+            logger.info(f"Persisted {len(s3_photo_urls)} photos to S3")
+
+        # Record user message WITH photo URLs (so conversation history includes photos)
+        state_manager.append_message("user", message, image_urls=s3_photo_urls)
+
+        # Collect historical photo URLs from prior messages
+        historical_photos = []
+        for msg in state.messages:
+            if msg.get("image_urls"):
+                historical_photos.extend(msg["image_urls"])
+        if historical_photos:
+            logger.info(f"Found {len(historical_photos)} historical photo(s) from prior turns")
 
         # Build conversation context for agent
         conversation_context = {
@@ -127,13 +181,6 @@ async def process_outfit_request(user_id: str, phone: str, message: str, image_u
             # TODO: Add synthesized_preferences once preference synthesis job is implemented
             # "synthesized_preferences": await get_synthesized_preferences(user_id)
         }
-
-        # Download Twilio media and convert to base64 (Twilio URLs require auth)
-        image_data_uris = None
-        if image_urls:
-            logger.info(f"Downloading {len(image_urls)} images from Twilio...")
-            image_data_uris = await download_twilio_media(image_urls)
-            logger.info(f"Downloaded {len(image_data_uris)} images as base64")
 
         # Import here to avoid circular imports
         from agent.agent import StylingAgent
@@ -151,7 +198,12 @@ async def process_outfit_request(user_id: str, phone: str, message: str, image_u
         )
 
         # Run agent - it will call resolve_items + send_message as needed
-        response = agent.run(message, image_urls=image_data_uris)
+        # historical_image_urls: photos from prior turns so agent can "look back"
+        response = agent.run(
+            message,
+            image_urls=image_data_uris,
+            historical_image_urls=historical_photos if historical_photos else None
+        )
         logger.info(f"Agent completed. Response: {response[:200] if response else '(none)'}...")
 
         # Send text response to user ONLY if agent didn't already send via send_message tool

@@ -116,8 +116,11 @@ class StylingAgent:
             for msg in messages[-10:]:  # Last 10 messages
                 role = "User" if msg.get("role") == "user" else "You"
                 content = msg.get("content", "")
-                # Show full content, not truncated - model needs full context
-                conv_lines.append(f"{role}: {content}")
+                # Mark messages that had photos so agent knows which turn the photo came from
+                photo_marker = ""
+                if msg.get("image_urls"):
+                    photo_marker = " [📷 photo included as image below]"
+                conv_lines.append(f"{role}: {content}{photo_marker}")
 
             if conv_lines:
                 sections.append("[RECENT CONVERSATION]\n" + "\n".join(conv_lines))
@@ -144,18 +147,32 @@ class StylingAgent:
             return "\n\n".join(sections) + "\n\n---\n\n"
         return ""
 
-    def run(self, user_message: str, image_urls: list[str] = None) -> str:
-        """Run the agent loop until completion."""
+    def run(self, user_message: str, image_urls: list[str] = None, historical_image_urls: list[str] = None) -> str:
+        """Run the agent loop until completion.
+
+        Args:
+            user_message: Current turn's text message
+            image_urls: Current turn's images (base64 data URIs from Twilio)
+            historical_image_urls: Photos from prior turns (S3 URLs) so agent can "look back"
+        """
         # Prepend conversation context for stateful SMS
         context_prefix = self._build_context_prefix()
         if context_prefix:
             user_message = context_prefix + user_message
             logger.info(f"Added conversation context ({len(context_prefix)} chars)")
 
+        # Merge historical + current images so agent sees full visual context
+        all_images = []
+        if historical_image_urls:
+            all_images.extend(historical_image_urls)
+            logger.info(f"Including {len(historical_image_urls)} historical photo(s) from prior turns")
+        if image_urls:
+            all_images.extend(image_urls)
+
         if self.provider == "anthropic":
-            return self._run_anthropic(user_message, image_urls=image_urls)
+            return self._run_anthropic(user_message, image_urls=all_images or None)
         else:
-            return self._run_openai(user_message, image_urls=image_urls)
+            return self._run_openai(user_message, image_urls=all_images or None)
 
     def _run_anthropic(self, user_message: str, image_urls: list[str] = None) -> str:
         """Anthropic/Claude agent loop."""

@@ -172,20 +172,24 @@ class ConversationStateManager:
             return self.set_last_outfit(outfit, push_to_history=False)
         return False
 
-    def append_message(self, role: str, content: str) -> bool:
+    def append_message(self, role: str, content: str, image_urls: list = None) -> bool:
         """Append a message to conversation history.
 
         Args:
             role: 'user' or 'assistant'
             content: Message text (full content preserved for better reasoning)
+            image_urls: Optional list of S3 URLs for photos sent with this message
         """
         state = self.get_state()
         if state:
-            state.messages.append({
+            msg = {
                 "role": role,
                 "content": content,  # Full content - model reasons better with complete history
                 "timestamp": datetime.utcnow().isoformat() + "Z"
-            })
+            }
+            if image_urls:
+                msg["image_urls"] = image_urls
+            state.messages.append(msg)
             return self.save_state(state)
         return False
 
