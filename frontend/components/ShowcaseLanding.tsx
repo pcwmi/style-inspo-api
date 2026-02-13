@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { AutoplayVideo } from './AutoplayVideo'
 
 export function ShowcaseLanding() {
   return (
@@ -54,48 +55,42 @@ export function ShowcaseLanding() {
           <h2 className="text-center text-2xl md:text-3xl mb-10 md:mb-14">How it works</h2>
 
           <div className="space-y-12 md:space-y-16">
-            {/* Card 1: Text your closet */}
+            {/* Card 1: Text your stylist */}
             <div className="md:flex md:items-center md:gap-10">
               <div className="md:w-1/2 mb-6 md:mb-0">
                 <div className="bg-bone rounded-xl overflow-hidden border border-[rgba(26,22,20,0.06)]">
-                  <div className="aspect-[4/5]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src="/showcase/sms-flow.png"
-                      alt="SMS conversation showing outfit request and response"
+                  <div className="aspect-[9/16]">
+                    <AutoplayVideo
+                      src="/showcase/sms-iterate.mp4"
                       className="w-full h-full object-cover object-top"
-                      loading="lazy"
                     />
                   </div>
                 </div>
               </div>
               <div className="md:w-1/2">
-                <h3 className="text-xl md:text-2xl mb-3">Text your closet</h3>
+                <h3 className="text-xl md:text-2xl mb-3">Text your stylist. Push back until you love it.</h3>
                 <p className="text-muted text-base leading-relaxed mb-0">
-                  Text a request, get a styled outfit back in 21 seconds. AI matches items from your actual wardrobe and sends a photo collage via SMS.
+                  Text a request, get a styled outfit back in seconds. Don&apos;t love something? Say so — AI iterates until the look is right.
                 </p>
               </div>
             </div>
 
-            {/* Card 2: See it styled */}
+            {/* Card 2: Steal the look */}
             <div className="md:flex md:items-center md:gap-10 md:flex-row-reverse">
               <div className="md:w-1/2 mb-6 md:mb-0">
                 <div className="bg-bone rounded-xl overflow-hidden border border-[rgba(26,22,20,0.06)]">
-                  <div className="aspect-[4/5]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src="/showcase/visualization.png"
-                      alt="AI visualization showing outfit on a model"
+                  <div className="aspect-[9/16]">
+                    <AutoplayVideo
+                      src="/showcase/sms-inspo.mp4"
                       className="w-full h-full object-cover object-top"
-                      loading="lazy"
                     />
                   </div>
                 </div>
               </div>
               <div className="md:w-1/2">
-                <h3 className="text-xl md:text-2xl mb-3">See it styled</h3>
+                <h3 className="text-xl md:text-2xl mb-3">Steal the look — from your own closet</h3>
                 <p className="text-muted text-base leading-relaxed mb-0">
-                  AI generates how the outfit looks on a relatable model using Runway Gen-4. See the full look before you open your closet.
+                  Send an Instagram photo you love. AI maps it to pieces you already own, shows you a styled version, and tells you exactly how to wear it.
                 </p>
               </div>
             </div>
