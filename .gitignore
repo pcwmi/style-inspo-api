@@ -59,3 +59,46 @@ build/
 dump.rdb
 
 .vercel
+
+# Playwright MCP screenshots
+.playwright-mcp/
+backend/.playwright-mcp/
+
+# Eval results (large HTML/JSON artifacts)
+backend/tests/outfit_eval/results/
+
+# Digest HTML reports
+backend/digest-*.html
+backend/daily-analysis-preview.html
+
+# Ad-hoc test scripts (not in tests/ directory)
+backend/test_*.py
+backend/generate_*.py
+
+# Prompt comparison artifacts
+backend/prompt_comparison_*/
+
+# Root-level screenshots and images (not frontend assets)
+hero-*.png
+homepage-*.png
+mobile-*.png
+showcase-*.png
+welcome-page-*.png
+turbo-comparison-*.png
+outfit-extraction-*.png
+see-it-styled-*.png
+
+# PDFs
+*.pdf
+
+# Root-level mockup HTMLs
+og-image-generator.html
+sms-mockup.html
+
+# .claude HTML artifacts (mockups, demos, comparisons)
+.claude/*.html
+.claude/mockups/*.html
+
+# LinkedIn post drafts
+.claude/linkedin-post-*.md
+.claude/linkedin-post-*.html
