@@ -165,7 +165,7 @@ TOOLS = [
     # --- OUTFIT ACTIONS ---
     {
         "name": "save_outfit",
-        "description": "Save an outfit to the user's saved outfits. Call this when you've created an outfit the user wants to keep. Returns the outfit_id needed for visualization.",
+        "description": "Save an outfit to the user's saved outfits. Only call this when the user explicitly asks to save, or confirms after you offer. Never save silently. Returns the outfit_id needed for visualization.",
         "input_schema": {
             "type": "object",
             "properties": {
