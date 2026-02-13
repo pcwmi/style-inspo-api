@@ -196,7 +196,7 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete, user }:
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl animate-in fade-in zoom-in duration-200">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-serif font-semibold">Upload Photos</h2>
+                    <h2 className="text-xl font-serif font-semibold">Upload Individual Items</h2>
                     <button
                         onClick={onClose}
                         className="text-gray-400 hover:text-gray-600 p-2"
@@ -206,26 +206,29 @@ export default function UploadModal({ isOpen, onClose, onUploadComplete, user }:
                 </div>
 
                 {uploads.length === 0 ? (
-                    <div
-                        className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${isDragOver ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
-                            }`}
-                        onDragOver={(e) => { e.preventDefault(); setIsDragOver(true) }}
-                        onDragLeave={() => setIsDragOver(false)}
-                        onDrop={handleDrop}
-                        onClick={() => fileInputRef.current?.click()}
-                    >
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            className="hidden"
-                            multiple
-                            accept="image/*"
-                            onChange={handleFileSelect}
-                        />
-                        <div className="text-4xl mb-4">📷</div>
-                        <p className="text-gray-600 font-medium mb-2">Click to upload or drag photos here</p>
-                        <p className="text-sm text-gray-400">JPG, PNG up to 10MB</p>
-                    </div>
+                    <>
+                        <div
+                            className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors ${isDragOver ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
+                                }`}
+                            onDragOver={(e) => { e.preventDefault(); setIsDragOver(true) }}
+                            onDragLeave={() => setIsDragOver(false)}
+                            onDrop={handleDrop}
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                className="hidden"
+                                multiple
+                                accept="image/*"
+                                onChange={handleFileSelect}
+                            />
+                            <div className="text-4xl mb-4">📷</div>
+                            <p className="text-gray-600 font-medium mb-2">Click to upload or drag photos here</p>
+                            <p className="text-sm text-gray-400">JPG, PNG up to 10MB</p>
+                        </div>
+
+                    </>
                 ) : (
                     <div className="space-y-4 max-h-[60vh] overflow-y-auto">
                         {uploads.map((upload, i) => (

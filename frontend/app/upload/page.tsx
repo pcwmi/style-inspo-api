@@ -303,7 +303,7 @@ function UploadPageContent() {
           </>
         ) : (
           <>
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">Upload Wardrobe Items</h1>
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">Add to Your Closet</h1>
             <p className="text-muted mb-5 md:mb-8 text-base leading-relaxed">
               Upload at least 10 photos with a mix of top/bottom/shoes/accessories. More pieces lead to more inspiration.
             </p>
@@ -381,7 +381,7 @@ function UploadPageContent() {
               (uploading || isProcessing) ? 'opacity-70 cursor-not-allowed' : ''
             }`}
           >
-            {uploading ? 'Uploading...' : isProcessing ? 'Processing...' : 'Upload Photos'}
+            {uploading ? 'Uploading...' : isProcessing ? 'Processing...' : 'Upload Individual Items'}
           </label>
         </div>
 

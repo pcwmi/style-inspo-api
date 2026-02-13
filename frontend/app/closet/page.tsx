@@ -7,6 +7,8 @@ import { api } from '@/lib/api'
 import { useWardrobe, useConsiderBuying } from '@/lib/queries'
 import { getSubCategories, filterBySubCategory, WardrobeItem } from '@/lib/categoryUtils'
 import UploadModal from '@/components/UploadModal'
+import UploadChoiceModal from '@/components/UploadChoiceModal'
+import { OutfitExtractModal } from '@/components/OutfitExtractModal'
 import PhotoGuidelines from '@/components/PhotoGuidelines'
 import CategoryTabs from '@/components/CategoryTabs'
 import WardrobeGrid from '@/components/WardrobeGrid'
@@ -26,7 +28,9 @@ function ClosetContent() {
 
     const [activeCategory, setActiveCategory] = useState('All')
     const [activeSubCategory, setActiveSubCategory] = useState<string | null>(null)
+    const [showUploadChoice, setShowUploadChoice] = useState(false)
     const [showUploadModal, setShowUploadModal] = useState(false)
+    const [showOutfitExtract, setShowOutfitExtract] = useState(false)
     const [showGuidelines, setShowGuidelines] = useState(false)
     const [analyzingCount, setAnalyzingCount] = useState(0)
     const [showDeleteAllModal, setShowDeleteAllModal] = useState(false)
@@ -91,14 +95,14 @@ function ClosetContent() {
         if (!hasSeenGuidelines) {
             setShowGuidelines(true)
         } else {
-            setShowUploadModal(true)
+            setShowUploadChoice(true)
         }
     }
 
     const handleGuidelinesContinue = () => {
         localStorage.setItem(`photo_guidelines_seen_${user}`, 'true')
         setShowGuidelines(false)
-        setShowUploadModal(true)
+        setShowUploadChoice(true)
     }
 
     const handleUploadComplete = (count: number, jobIds: string[]) => {
@@ -303,11 +307,25 @@ function ClosetContent() {
                 onContinue={handleGuidelinesContinue}
             />
 
+            <UploadChoiceModal
+                isOpen={showUploadChoice}
+                onClose={() => setShowUploadChoice(false)}
+                onSelectIndividual={() => { setShowUploadChoice(false); setShowUploadModal(true) }}
+                onSelectOutfit={() => { setShowUploadChoice(false); setShowOutfitExtract(true) }}
+            />
+
             <UploadModal
                 isOpen={showUploadModal}
                 onClose={() => setShowUploadModal(false)}
                 onUploadComplete={handleUploadComplete}
                 user={user}
+            />
+
+            <OutfitExtractModal
+                isOpen={showOutfitExtract}
+                userId={user}
+                onClose={() => setShowOutfitExtract(false)}
+                onComplete={() => fetchWardrobe()}
             />
 
             {/* Delete All Confirmation Modal */}
