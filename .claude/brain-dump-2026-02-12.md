@@ -342,3 +342,31 @@ Two key insights:
 2. **Answer with pictures > words** - visualization > collage > text description
 
 These should be core principles in the agent prompt, not MODE-specific rules.
+
+---
+
+## 21:15 - Slot-Based Outfit Validator: Eval-First Approach Works
+
+### The Problem (Solved)
+
+AI model generates physically impossible outfits (vest + cardigan + blazer, t-shirt on t-shirt). This is the #1 trust-busting moment. Previous attempts: prompt rules (model ignores them during generation), vision/images (model can SEE bulk but doesn't understand physical consequences). Both failed.
+
+### The Solution: Deterministic Post-Filter
+
+Built `backend/services/outfit_validator.py` — maps each item's `sub_category` to a body "slot" and rejects outfits with >1 item per slot.
+
+**Slots:** base_top (tee, blouse), mid_layer (sweater, cardigan, vest), outer_layer (blazer, jacket, coat), bottom, shoes, dress, accessory
+
+**Key design decision:** Name-based fallback in `get_slot()` is critical because sub_category metadata is unreliable — vests have no mapping in `restructure_metadata.py`, so checking item name for keywords like "vest", "cardigan" catches what metadata misses.
+
+### Eval Results
+
+- **General outfits (3 users × ~12 each):** 2% filter rate — not restrictive at all
+- **Dana's vest stress test (complete-the-look × 4 occasions):** 58% filter rate — AI kept pairing vest + sweater (same sub_category) and vest + cardigan (both mid_layers)
+- The 5 passing vest outfits were genuinely good layered looks (vest + button-up + blazer, vest + tee + jeans)
+
+### The Meta-Learning: Eval Before Deploy
+
+Instead of wiring to production immediately, built an eval script that generates outfits and shows side-by-side what would PASS vs get FILTERED. This validated the filter doesn't kill outfit quality before touching production. The concern about being "overly restrictive" was unfounded for general outfits but very real for the vest case — seeing the 58% rate and confirming the filtered outfits were actually bad gave confidence to deploy.
+
+**Pattern:** For any filter/constraint that could reduce output quality, run a side-by-side eval first. The cost is ~5 min of API calls. The benefit is confidence in the decision.

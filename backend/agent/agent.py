@@ -483,6 +483,7 @@ class StylingAgent:
             # --- RESOLVER (text → images) ---
             elif tool_name == "resolve_items":
                 from primitives.matching import match_items_to_wardrobe
+                from services.outfit_validator import validate_outfit
                 descriptions = tool_input.get("descriptions", [])
                 matched = match_items_to_wardrobe(self.user_id, descriptions)
 
@@ -493,10 +494,35 @@ class StylingAgent:
                         resolved.append({
                             "description": descriptions[i],
                             "name": item["name"],
+                            "category": item.get("category", "unknown"),
+                            "sub_category": item.get("sub_category", ""),
                             "image_url": item.get("image_path")
                         })
                     else:
                         unresolved.append(descriptions[i])
+
+                # Validate outfit physical plausibility
+                is_valid, rejection_reason = validate_outfit(resolved)
+                if not is_valid:
+                    logger.warning(
+                        f"resolve_items outfit filtered: {rejection_reason} | "
+                        f"Items: {[r['name'] for r in resolved]}"
+                    )
+                    try:
+                        from services.activity_logger import log_activity
+                        log_activity(self.user_id, "outfit_filtered", {
+                            "reason": rejection_reason,
+                            "channel": "sms",
+                            "items": [{"name": r["name"], "category": r.get("category"), "sub_category": r.get("sub_category")} for r in resolved],
+                        })
+                    except Exception:
+                        pass
+                    return {
+                        "resolved": resolved,
+                        "unresolved": unresolved,
+                        "validation_error": rejection_reason,
+                        "suggestion": f"This outfit has a physical conflict: {rejection_reason}. Please try a different combination of items."
+                    }
 
                 logger.info(f"resolve_items: {len(resolved)} resolved, {len(unresolved)} unresolved")
                 return {"resolved": resolved, "unresolved": unresolved}

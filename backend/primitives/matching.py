@@ -106,6 +106,7 @@ def match_items_to_wardrobe(
             results.append({
                 "name": matched.get("styling_details", {}).get("name", item_name),
                 "category": matched.get("styling_details", {}).get("category", "unknown"),
+                "sub_category": matched.get("styling_details", {}).get("sub_category", ""),
                 "image_path": image_path,
                 "matched": True,
                 "id": matched.get("id")
@@ -115,6 +116,7 @@ def match_items_to_wardrobe(
             results.append({
                 "name": item_name,
                 "category": "unknown",
+                "sub_category": "",
                 "image_path": None,
                 "matched": False,
                 "id": None

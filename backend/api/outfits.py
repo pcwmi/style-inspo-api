@@ -301,8 +301,6 @@ async def generate_outfits_stream(
                     outfit, reasoning_text = result
                 else:
                     outfit = result
-                
-                outfit_num += 1
 
                 # Enrich outfit with full item data (images, etc.)
                 enriched_items = []
@@ -345,15 +343,37 @@ async def generate_outfits_stream(
                     if matched:
                         # Handle image_path - wardrobe items have it in system_metadata, consider-buying items have it at top level
                         image_path = matched.get("system_metadata", {}).get("image_path") or matched.get("image_path")
-                        
+
                         enriched_items.append({
                             "id": matched.get("id"),
                             "name": matched.get("styling_details", {}).get("name", item_name),
                             "category": matched.get("styling_details", {}).get("category", "unknown"),
+                            "sub_category": matched.get("styling_details", {}).get("sub_category", ""),
                             "image_path": image_path
                         })
                     else:
-                        enriched_items.append({"name": item_name, "category": "unknown"})
+                        enriched_items.append({"name": item_name, "category": "unknown", "sub_category": ""})
+
+                # Validate outfit physical plausibility (slot-based check)
+                from services.outfit_validator import validate_outfit
+                is_valid, rejection_reason = validate_outfit(enriched_items)
+                if not is_valid:
+                    logger.warning(
+                        f"Outfit {outfit_num} filtered: {rejection_reason} | "
+                        f"Items: {[i.get('name') for i in enriched_items]}"
+                    )
+                    try:
+                        from services.activity_logger import log_activity
+                        log_activity(user_id, "outfit_filtered", {
+                            "reason": rejection_reason,
+                            "channel": "web",
+                            "items": [{"name": i.get("name"), "category": i.get("category"), "sub_category": i.get("sub_category")} for i in enriched_items],
+                        })
+                    except Exception:
+                        pass
+                    continue  # Skip this outfit
+
+                outfit_num += 1
 
                 enriched_outfit = {
                     "items": enriched_items,
