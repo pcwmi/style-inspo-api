@@ -288,11 +288,11 @@ class GPTVisionAnalyzer(ImageAnalyzer):
             print(f"GPT-4V analysis failed: {str(e)}")
             return self._get_fallback_analysis()
 
-    def _get_fallback_analysis(self) -> Dict[str, str]:
+    def _get_fallback_analysis(self, category_hint: str = 'tops') -> Dict[str, str]:
         """Fallback analysis if GPT-4V fails"""
         return {
             'name': 'Clothing Item',
-            'category': 'tops',
+            'category': category_hint,
             'colors': 'Unable to detect',
             'cut': 'Unable to detect',
             'texture': 'Unable to detect',

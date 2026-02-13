@@ -45,6 +45,10 @@ export function OutfitExtractModal({
   const [extractedItems, setExtractedItems] = useState<ExtractedItem[]>([])
   const [error, setError] = useState<string | null>(null)
   const [removingItems, setRemovingItems] = useState<Set<string>>(new Set())
+  const [editingItem, setEditingItem] = useState<string | null>(null)
+  const [editName, setEditName] = useState('')
+  const [editCategory, setEditCategory] = useState('')
+  const [savingEdit, setSavingEdit] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   if (!isOpen) return null
@@ -57,6 +61,9 @@ export function OutfitExtractModal({
     setExtractedItems([])
     setError(null)
     setRemovingItems(new Set())
+    setEditingItem(null)
+    setEditName('')
+    setEditCategory('')
   }
 
   const handleClose = () => {
@@ -192,6 +199,31 @@ export function OutfitExtractModal({
     }
   }
 
+  const handleEditItem = (item: ExtractedItem) => {
+    setEditingItem(item.item_id)
+    setEditName(item.name)
+    setEditCategory(item.category)
+  }
+
+  const handleSaveEdit = async (itemId: string) => {
+    setSavingEdit(true)
+    try {
+      await api.updateItem(userId, itemId, {
+        styling_details: { name: editName, category: editCategory }
+      })
+      setExtractedItems(prev => prev.map(i =>
+        i.item_id === itemId ? { ...i, name: editName, category: editCategory } : i
+      ))
+      setEditingItem(null)
+    } catch (err: any) {
+      console.error('Failed to update item:', err)
+    } finally {
+      setSavingEdit(false)
+    }
+  }
+
+  const CATEGORY_OPTIONS = ['tops', 'bottoms', 'dresses', 'outerwear', 'footwear', 'accessories', 'bags']
+
   const handleDone = () => {
     onComplete()
     handleClose()
@@ -287,12 +319,13 @@ export function OutfitExtractModal({
           {phase === 'reviewing' && (
             <div>
               <p className="text-muted text-sm mb-4">
-                These items have been added to your closet. Remove any that don't look right.
+                Tap an item to edit details. Remove anything that doesn't look right.
               </p>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-3">
                 {extractedItems.map(item => (
-                  <div key={item.item_id} className="relative group">
-                    <div className="aspect-[3/4] bg-gray-50 rounded-lg overflow-hidden">
+                  <div key={item.item_id} className="flex gap-3 p-3 bg-gray-50 rounded-xl">
+                    {/* Thumbnail */}
+                    <div className="w-20 h-24 flex-shrink-0 bg-white rounded-lg overflow-hidden">
                       {item.image_path ? (
                         <img
                           src={item.image_path.startsWith('http')
@@ -307,15 +340,68 @@ export function OutfitExtractModal({
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-ink mt-1 truncate">{item.name}</p>
-                    <span className="text-[10px] text-muted capitalize">{item.category}</span>
-                    <button
-                      onClick={() => handleRemoveItem(item.item_id)}
-                      disabled={removingItems.has(item.item_id)}
-                      className="absolute top-1 right-1 bg-white/90 rounded-full w-6 h-6 flex items-center justify-center text-xs text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-                    >
-                      {removingItems.has(item.item_id) ? '...' : 'x'}
-                    </button>
+
+                    {/* Details */}
+                    <div className="flex-1 min-w-0">
+                      {editingItem === item.item_id ? (
+                        <div className="space-y-2">
+                          <input
+                            type="text"
+                            value={editName}
+                            onChange={e => setEditName(e.target.value)}
+                            className="w-full text-sm font-medium bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-terracotta"
+                            autoFocus
+                          />
+                          <select
+                            value={editCategory}
+                            onChange={e => setEditCategory(e.target.value)}
+                            className="w-full text-xs bg-white border border-gray-200 rounded-lg px-2.5 py-1.5 capitalize focus:outline-none focus:border-terracotta"
+                          >
+                            {CATEGORY_OPTIONS.map(cat => (
+                              <option key={cat} value={cat}>{cat}</option>
+                            ))}
+                          </select>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleSaveEdit(item.item_id)}
+                              disabled={savingEdit}
+                              className="text-xs font-medium text-white bg-terracotta rounded-lg px-3 py-1.5 hover:opacity-90 disabled:opacity-50"
+                            >
+                              {savingEdit ? '...' : 'Save'}
+                            </button>
+                            <button
+                              onClick={() => setEditingItem(null)}
+                              className="text-xs text-muted hover:text-ink px-2 py-1.5"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div onClick={() => handleEditItem(item)} className="cursor-pointer">
+                          <p className="text-sm font-medium text-ink truncate">{item.name}</p>
+                          <span className="text-xs text-muted capitalize">{item.category}</span>
+                          <p className="text-[10px] text-terracotta/70 mt-1">Tap to edit</p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Delete button - always visible */}
+                    {editingItem !== item.item_id && (
+                      <button
+                        onClick={() => handleRemoveItem(item.item_id)}
+                        disabled={removingItems.has(item.item_id)}
+                        className="flex-shrink-0 self-center w-8 h-8 flex items-center justify-center rounded-full text-red-400 hover:bg-red-50 hover:text-red-600 transition disabled:opacity-50"
+                      >
+                        {removingItems.has(item.item_id) ? (
+                          <div className="w-4 h-4 border-2 border-red-300 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        )}
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>

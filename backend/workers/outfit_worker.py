@@ -609,6 +609,18 @@ def extract_outfit_items_job(user_id, file_path, filename):
                 item_buffer.name = f"{item_info['name'].replace(' ', '_')}.png"
                 analysis = analyzer.analyze_clothing_item(item_buffer)
 
+                # Identification stage (full photo) is more reliable for name/category
+                # than analysis stage (small crop that loses context).
+                # Always prefer identification-stage data for these fields.
+                if item_info.get('name'):
+                    analysis['name'] = item_info['name']
+                if item_info.get('category'):
+                    analysis['category'] = item_info['category']
+                if item_info.get('colors'):
+                    analysis['colors'] = ', '.join(item_info['colors']) if isinstance(item_info['colors'], list) else item_info['colors']
+                if item_info.get('description'):
+                    analysis['description'] = item_info['description']
+
                 # Reconstruct complete garment from partial crop
                 if job:
                     job.meta['status_message'] = f'Reconstructing {item_info["name"]}... ({i+1} of {total_items})'
