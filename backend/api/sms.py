@@ -11,6 +11,7 @@ Agent-native architecture:
 
 import os
 import logging
+import random
 import re
 import base64
 import httpx
@@ -208,8 +209,15 @@ async def incoming_sms(
             media_type="application/xml"
         )
 
-    # Send immediate acknowledgment
-    send_sms(From, "Working on your outfit... (about 30 seconds)")
+    # Send immediate in-character acknowledgment
+    ack_messages = [
+        "Ooh, let me look at this...",
+        "Hmm, I have some ideas...",
+        "Give me a sec...",
+        "Let me think on this...",
+        "Oh I'm already seeing something...",
+    ]
+    send_sms(From, random.choice(ack_messages))
 
     # Queue background processing
     background_tasks.add_task(
