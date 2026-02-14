@@ -56,57 +56,16 @@ class StylingAgent:
             self.client = openai.OpenAI()
 
     def _build_context_prefix(self) -> str:
-        """Build structured context that helps model reason.
+        """Build context from conversation history.
 
-        Structure:
-        - SESSION STATE: Current goal, fixed items, what just happened
-        - RECENT CONVERSATION: Full history (not truncated) for reasoning
-        - USER PREFERENCES: Synthesized patterns (not raw feedback accumulation)
+        The conversation IS the state. No parallel session state needed —
+        the agent reads what was said, what photos were attached, and
+        reasons from there.
         """
         if not self.conversation_context:
             return ""
 
         sections = []
-
-        # --- SESSION STATE ---
-        session_lines = []
-
-        # Current outfit context
-        last_outfit = self.conversation_context.get("last_outfit", {})
-        if last_outfit:
-            if last_outfit.get("items"):
-                items = last_outfit["items"]
-                item_names = [item.get("name", "Unknown") for item in items]
-                session_lines.append(f"Current outfit shown: {', '.join(item_names)}")
-            elif last_outfit.get("image_urls"):
-                count = len(last_outfit["image_urls"])
-                session_lines.append(f"Current outfit: {count} items shown")
-
-        # Outfit history (for "go back" functionality)
-        outfit_history = self.conversation_context.get("outfit_history", [])
-        if outfit_history:
-            session_lines.append(f"Previous outfits available: {len(outfit_history)} (user can say 'go back')")
-            # Show most recent in history
-            for i, prev_outfit in enumerate(reversed(outfit_history[:2])):  # Last 2
-                if prev_outfit.get("items"):
-                    items = prev_outfit["items"]
-                    item_names = [item.get("name", "Unknown") for item in items]
-                    session_lines.append(f"  Previous {i+1}: {', '.join(item_names[:4])}...")
-
-        # Image descriptions (analyzed images for context without re-sending raw images)
-        image_descriptions = self.conversation_context.get("image_descriptions", [])
-        if image_descriptions:
-            session_lines.append("Images user sent (analyzed):")
-            for img in image_descriptions[-3:]:  # Last 3 images
-                desc = img.get("description", {})
-                if isinstance(desc, dict):
-                    summary = desc.get("summary", str(desc)[:100])
-                else:
-                    summary = str(desc)[:100]
-                session_lines.append(f"  - {summary}")
-
-        if session_lines:
-            sections.append("[SESSION STATE]\n" + "\n".join(session_lines))
 
         # --- RECENT CONVERSATION ---
         messages = self.conversation_context.get("messages", [])

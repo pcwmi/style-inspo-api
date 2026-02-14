@@ -173,13 +173,9 @@ async def process_outfit_request(user_id: str, phone: str, message: str, image_u
             logger.info(f"Found {len(historical_photos)} historical photo(s) from prior turns")
 
         # Build conversation context for agent
+        # The conversation IS the state — agent reads messages + photos and reasons from there
         conversation_context = {
-            "last_outfit": state.last_outfit,
-            "outfit_history": state.outfit_history,
             "messages": state.messages,
-            "image_descriptions": state.image_descriptions,
-            # TODO: Add synthesized_preferences once preference synthesis job is implemented
-            # "synthesized_preferences": await get_synthesized_preferences(user_id)
         }
 
         # Import here to avoid circular imports
