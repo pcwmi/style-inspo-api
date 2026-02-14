@@ -514,6 +514,12 @@ class StylingAgent:
                     logger.info(f"send_message (no handler): text={text[:50] if text else None}..., {len(images)} images")
                     return {"status": "no_output_handler", "would_send": {"text": text, "images": images, "layout": layout}}
 
+            # --- WEB BROWSING ---
+            elif tool_name == "browse_url":
+                from services.web_browsing import browse_url
+                result = browse_url(tool_input["url"])
+                return result
+
             else:
                 return {"error": f"Unknown tool: {tool_name}"}
 

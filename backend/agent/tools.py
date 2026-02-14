@@ -261,6 +261,23 @@ TOOLS = [
         }
     },
 
+    # --- WEB BROWSING ---
+    {
+        "name": "browse_url",
+        "description": "Fetch a web page (e.g. a sale or collection page) and extract the products listed on it. Returns product names, prices, sale prices, and links. Use this when a user shares a URL and wants shopping advice.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                **REASONING_FIELD,
+                "url": {
+                    "type": "string",
+                    "description": "The URL to browse (e.g. https://frame-store.com/collections/sale-women)"
+                }
+            },
+            "required": ["reasoning", "url"]
+        }
+    },
+
     # --- CONSIDERING (SHOPPING) ---
     {
         "name": "get_considering_items",
