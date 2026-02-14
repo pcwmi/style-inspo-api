@@ -55,100 +55,92 @@ class StylingAgent:
             import openai
             self.client = openai.OpenAI()
 
-    def _build_context_prefix(self) -> str:
-        """Build context from conversation history.
+    def _build_conversation_messages(self) -> list[dict]:
+        """Convert conversation history to OpenAI multi-turn messages.
 
-        The conversation IS the state. No parallel session state needed —
-        the agent reads what was said, what photos were attached, and
-        reasons from there.
+        Each message keeps its photos attached. The API understands
+        which image belongs to which turn naturally.
         """
         if not self.conversation_context:
-            return ""
+            return []
 
-        sections = []
+        messages = []
+        for msg in self.conversation_context.get("messages", [])[-10:]:
+            role = msg["role"]  # "user" or "assistant"
+            content = msg.get("content", "")
+            image_urls = msg.get("image_urls", [])
 
-        # --- RECENT CONVERSATION ---
-        messages = self.conversation_context.get("messages", [])
-        if messages:
-            conv_lines = []
-            # Full recent history (not truncated) - model reasons better with complete context
-            for msg in messages[-10:]:  # Last 10 messages
-                role = "User" if msg.get("role") == "user" else "You"
-                content = msg.get("content", "")
-                # Mark messages that had photos so agent knows which turn the photo came from
-                photo_marker = ""
-                if msg.get("image_urls"):
-                    photo_marker = " [📷 photo included as image below]"
-                conv_lines.append(f"{role}: {content}{photo_marker}")
+            if role == "user" and image_urls:
+                # User message with photos → content array
+                content_parts = [{"type": "text", "text": content}]
+                for url in image_urls:
+                    content_parts.append({
+                        "type": "image_url",
+                        "image_url": {"url": url}
+                    })
+                messages.append({"role": "user", "content": content_parts})
+            else:
+                # Text-only message
+                messages.append({"role": role, "content": content})
 
-            if conv_lines:
-                sections.append("[RECENT CONVERSATION]\n" + "\n".join(conv_lines))
+        return messages
 
-        # --- USER PREFERENCES ---
-        # Note: In future, this will come from synthesized preferences (periodic LLM job).
-        # For now, we'll pull from profile when it's passed in context.
-        preferences = self.conversation_context.get("synthesized_preferences", {})
-        if preferences:
-            pref_lines = []
-            if preferences.get("style_words"):
-                pref_lines.append(f"Style words: {', '.join(preferences['style_words'])}")
-            if preferences.get("likes"):
-                pref_lines.append(f"Tends to like: {', '.join(preferences['likes'])}")
-            if preferences.get("avoids"):
-                pref_lines.append(f"Tends to avoid: {', '.join(preferences['avoids'])}")
-            if preferences.get("style_dna"):
-                pref_lines.append(f"Style DNA: {preferences['style_dna']}")
+    def _build_conversation_messages_anthropic(self) -> list[dict]:
+        """Convert conversation history to Anthropic multi-turn messages."""
+        if not self.conversation_context:
+            return []
 
-            if pref_lines:
-                sections.append("[USER PREFERENCES]\n" + "\n".join(pref_lines))
+        messages = []
+        for msg in self.conversation_context.get("messages", [])[-10:]:
+            role = msg["role"]
+            content = msg.get("content", "")
+            image_urls = msg.get("image_urls", [])
 
-        if sections:
-            return "\n\n".join(sections) + "\n\n---\n\n"
-        return ""
+            if role == "user" and image_urls:
+                content_parts = [{"type": "text", "text": content}]
+                for url in image_urls:
+                    content_parts.append({
+                        "type": "image",
+                        "source": {"type": "url", "url": url}
+                    })
+                messages.append({"role": "user", "content": content_parts})
+            else:
+                messages.append({"role": role, "content": content})
 
-    def run(self, user_message: str, image_urls: list[str] = None, historical_image_urls: list[str] = None) -> str:
+        return messages
+
+    def run(self, user_message: str, image_urls: list[str] = None) -> str:
         """Run the agent loop until completion.
 
         Args:
             user_message: Current turn's text message
             image_urls: Current turn's images (base64 data URIs from Twilio)
-            historical_image_urls: Photos from prior turns (S3 URLs) so agent can "look back"
         """
-        # Prepend conversation context for stateful SMS
-        context_prefix = self._build_context_prefix()
-        if context_prefix:
-            user_message = context_prefix + user_message
-            logger.info(f"Added conversation context ({len(context_prefix)} chars)")
-
-        # Merge historical + current images so agent sees full visual context
-        all_images = []
-        if historical_image_urls:
-            all_images.extend(historical_image_urls)
-            logger.info(f"Including {len(historical_image_urls)} historical photo(s) from prior turns")
-        if image_urls:
-            all_images.extend(image_urls)
-
         if self.provider == "anthropic":
-            return self._run_anthropic(user_message, image_urls=all_images or None)
+            return self._run_anthropic(user_message, image_urls=image_urls)
         else:
-            return self._run_openai(user_message, image_urls=all_images or None)
+            return self._run_openai(user_message, image_urls=image_urls)
 
     def _run_anthropic(self, user_message: str, image_urls: list[str] = None) -> str:
         """Anthropic/Claude agent loop."""
-        # Build user message content (text + optional images)
+        # Start with conversation history (each message with its own photos)
+        messages = self._build_conversation_messages_anthropic()
+        history_count = len(messages)
+
+        # Add current turn
         if image_urls:
-            # Claude vision format
             user_content = [{"type": "text", "text": user_message}]
             for url in image_urls:
                 user_content.append({
                     "type": "image",
                     "source": {"type": "url", "url": url}
                 })
-            logger.info(f"Including {len(image_urls)} image(s) in user message")
+            logger.info(f"Including {len(image_urls)} image(s) in current message")
         else:
             user_content = user_message
 
-        messages = [{"role": "user", "content": user_content}]
+        messages.append({"role": "user", "content": user_content})
+        logger.info(f"Sending {len(messages)} messages ({history_count} history + current)")
 
         for turn in range(self.max_turns):
             logger.info(f"Agent turn {turn + 1} (anthropic/{self.model})")
@@ -197,23 +189,27 @@ class StylingAgent:
 
     def _run_openai(self, user_message: str, image_urls: list[str] = None) -> str:
         """OpenAI agent loop."""
-        # Build user message content (text + optional images)
+        # Start with system prompt
+        messages = [{"role": "system", "content": STYLING_SYSTEM_PROMPT}]
+
+        # Add conversation history (each message with its own photos)
+        history = self._build_conversation_messages()
+        messages.extend(history)
+
+        # Add current turn
         if image_urls:
-            # Vision API format: array of content parts
             user_content = [{"type": "text", "text": user_message}]
             for url in image_urls:
                 user_content.append({
                     "type": "image_url",
                     "image_url": {"url": url}
                 })
-            logger.info(f"Including {len(image_urls)} image(s) in user message")
+            logger.info(f"Including {len(image_urls)} image(s) in current message")
         else:
             user_content = user_message
 
-        messages = [
-            {"role": "system", "content": STYLING_SYSTEM_PROMPT},
-            {"role": "user", "content": user_content}
-        ]
+        messages.append({"role": "user", "content": user_content})
+        logger.info(f"Sending {len(messages)} messages ({len(history)} history + current)")
 
         for turn in range(self.max_turns):
             logger.info(f"Agent turn {turn + 1} (openai/{self.model})")

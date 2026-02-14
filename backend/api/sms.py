@@ -164,14 +164,6 @@ async def process_outfit_request(user_id: str, phone: str, message: str, image_u
         # Record user message WITH photo URLs (so conversation history includes photos)
         state_manager.append_message("user", message, image_urls=s3_photo_urls)
 
-        # Collect historical photo URLs from prior messages
-        historical_photos = []
-        for msg in state.messages:
-            if msg.get("image_urls"):
-                historical_photos.extend(msg["image_urls"])
-        if historical_photos:
-            logger.info(f"Found {len(historical_photos)} historical photo(s) from prior turns")
-
         # Build conversation context for agent
         # The conversation IS the state — agent reads messages + photos and reasons from there
         conversation_context = {
@@ -194,11 +186,10 @@ async def process_outfit_request(user_id: str, phone: str, message: str, image_u
         )
 
         # Run agent - it will call resolve_items + send_message as needed
-        # historical_image_urls: photos from prior turns so agent can "look back"
+        # Photos from prior turns are in conversation_context["messages"]
         response = agent.run(
             message,
             image_urls=image_data_uris,
-            historical_image_urls=historical_photos if historical_photos else None
         )
         logger.info(f"Agent completed. Response: {response[:200] if response else '(none)'}...")
 
