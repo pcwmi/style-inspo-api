@@ -370,3 +370,80 @@ Built `backend/services/outfit_validator.py` — maps each item's `sub_category`
 Instead of wiring to production immediately, built an eval script that generates outfits and shows side-by-side what would PASS vs get FILTERED. This validated the filter doesn't kill outfit quality before touching production. The concern about being "overly restrictive" was unfounded for general outfits but very real for the vest case — seeing the 58% rate and confirming the filtered outfits were actually bad gave confidence to deploy.
 
 **Pattern:** For any filter/constraint that could reduce output quality, run a side-by-side eval first. The cost is ~5 min of API calls. The benefit is confidence in the decision.
+
+---
+
+## 22:30 - Agentic Context Management Breakthrough
+
+### From Session State Hack to First-Principles Design
+
+**The problem chain (morning WhatsApp test):**
+1. RL context from last night bleeding through (48 prior messages, 24h TTL)
+2. First answer good but too long with unnecessary confirmation
+3. "Sneakers" → whole outfit changed instead of just adding sneakers
+4. "Start over" → still couldn't revert to original outfit
+
+**Root cause discovery:** Photos are EPHEMERAL. `sms.py:119` stores only text body via `state_manager.append_message("user", message)`. Photos are downloaded as base64 and passed to agent once, then gone. The agent literally cannot "look back" at what you were wearing.
+
+**SESSION STATE is a hack compensating for incomplete conversation messages.** It tracks `last_outfit`, `outfit_history`, `image_descriptions` — all because the conversation history doesn't carry this data. But it's lossy: it knows the items but not which were fixed (from photo) vs suggested (by agent).
+
+### Two Options Evaluated
+
+**Option 1: Store photo in S3, reference URL in conversation message**
+- Agent can literally re-examine the photo on subsequent turns
+- ~1,200 tokens per image per turn (manageable for 3-5 turn sessions)
+- Structural fix: the photo persists
+
+**Option 2: Non-blocking parallel annotation (photo → closet item mapping)**
+- Zero latency if non-blocking (runs alongside agent)
+- Text annotation cheaper than re-sending image
+- But: only available Turn 2+, and if Option 1 gives agent the photo, marginal additional value
+
+**Decision:** Option 1 now, design for A/B testing Option 2 later.
+
+### Design Principles That Emerged
+
+1. **Don't use code to guess intent** (established earlier, reinforced here)
+2. **Enrich context window, don't build parallel state** — SESSION STATE is a lossy parallel representation
+3. **The conversation IS the state** — if it's lossy, fix the conversation, don't compensate with hacks
+4. **Agent does work once, we just need to not throw it away**
+5. **Photo persistence is a storage problem, not an intelligence problem**
+6. **Context enrichment should be invisible to user** — don't sacrifice UX to manage context
+
+### Bidirectional Gap
+
+Not just inbound (photo disappears). Outbound too: agent's outfit suggestions are only in collage images, not in stored text. Output format says `**The magic:** [text] + images via send_message` — the specific item names may only live in the images.
+
+**Fix:** After agent runs, annotate both sides:
+- User message: what items were in the photo
+- Assistant message: what items were suggested in the outfit
+
+This data already flows through `resolve_items` and `send_message` tool calls. We just capture it and write it back into conversation messages.
+
+### Architecture Direction
+
+Kill SESSION STATE entirely once conversation messages carry full context (photos + item annotations). Fields like `last_outfit`, `outfit_history` become unnecessary when conversation history is complete.
+
+### The Eigenquestion
+
+**"Is this a context problem or an intelligence problem?"** Most of our agent failures (wrong swaps, can't revert, context bleeding) are context problems. The agent reasons well when it has the right information. Fix the information, not the reasoning.
+
+---
+
+## 14:20 - Visualization Provider Comparison: Runway vs Flux 2 Pro vs Flux Kontext vs GPT Image
+
+Tested across 4 users (peichin, dana, anneka, alexi), 9+ outfits.
+
+**Flux 2 Pro (winner on fidelity):** Best garment fidelity among all providers. Vibes comparable to Runway. Half the cost ($0.03 vs $0.08/img). BUT latency is ~2x slower (20-26s avg vs Runway's 11-13s). Uses fal.ai multi-reference edit endpoint (fal-ai/flux-2-pro/edit) with up to 9 reference images. Our pre-composite collage trick works with it.
+
+**Flux Kontext Pro:** Fastest (10.8s avg), $0.04/img, but single-input image editing — fidelity not as good as Flux 2 Pro. Takes one collage and transforms it.
+
+**GPT Image 1 (ruled out):** Worse vibes than Runway, fidelity on par (not better), and slower (20s at quality=low, 67s at quality=high). Not viable.
+
+**Runway (current baseline):** Best vibes/editorial feel, fastest in eval (11-13s), but worst garment fidelity. Items get dropped (vest disappears), awkward layering. $0.08/img — most expensive.
+
+**Key insight:** The latency trade-off is the blocker. Flux 2 Pro is better on everything except speed. The 20-26s is within Runway's typical production range (25-35s per brain dumps), but in this eval Runway ran faster (11-13s). Need to decide if fidelity improvement justifies the latency regression.
+
+**Open question:** Could we use Flux 2 Pro's text-to-image endpoint (fal-ai/flux-2-pro) instead of the edit endpoint? Advertised at 3-5s. But unclear if it supports reference images the same way.
+
+**Infrastructure built:** Provider abstraction already exists. New providers implemented at backend/services/visualization/providers/{gpt_image,flux_kontext,flux2pro}.py. Factory updated. Eval script at backend/tests/viz_eval/scripts/provider_comparison.py generates side-by-side HTML comparisons. FAL_KEY added to .env.

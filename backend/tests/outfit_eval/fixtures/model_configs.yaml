@@ -137,3 +137,13 @@ models:
     max_tokens: 2000
     prompt_version: vision_v1
     description: "Treatment: GPT-4o with wardrobe images (low detail, 85 tokens each)"
+
+  # ===== PRODUCTION MODEL (Feb 2026) =====
+  # GPT-5.2 with chain-of-thought - matches production agent config
+  - id: gpt52_chain_of_thought
+    name: "GPT-5.2 (Chain-of-Thought)"
+    model: gpt-5.2
+    temperature: 0.7
+    max_tokens: 3000
+    prompt_version: chain_of_thought_v1
+    description: "Production model: GPT-5.2 with chain-of-thought reasoning"

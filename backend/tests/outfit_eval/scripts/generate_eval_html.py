@@ -36,7 +36,7 @@ def parse_outfit_string(outfit_str):
         'why_it_works': why_it_works
     }
 
-def get_image_url(item_name, wardrobe_items):
+def get_image_url(item_name, wardrobe_items, user_id='peichin'):
     """Find image URL for an item by name"""
     for item in wardrobe_items:
         name = item.get('styling_details', {}).get('name', '')
@@ -46,8 +46,18 @@ def get_image_url(item_name, wardrobe_items):
                 if image_path.startswith('http'):
                     return image_path
                 filename = image_path.split('/')[-1] if '/' in image_path else image_path
-                return f"https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/{filename}"
+                return f"https://style-inspo.s3.us-east-2.amazonaws.com/{user_id}/items/{filename}"
     return None
+
+
+def extract_user_from_scenario_id(scenario_id):
+    """Extract user_id from scenario_id (e.g., 'casual_weekend_alexi' -> 'alexi')."""
+    # Known users — check if scenario_id ends with a known user
+    known_users = ['peichin', 'alexi', 'dimple', 'kate', 'dana', 'heather', 'mia', 'anneka', 'rana']
+    for user in known_users:
+        if scenario_id.endswith(f'_{user}'):
+            return user
+    return 'peichin'  # default
 
 def detect_eval_type(results):
     """Detect if this is A/B test (multiple models/prompts per scenario) or single model"""
@@ -604,16 +614,27 @@ def main():
     models_count = len(set(r['model_name'] for r in results))
     print(f"📝 Scenarios: {scenarios_count} | Models: {models_count}")
 
-    # Load wardrobe
-    print("🔄 Loading wardrobe from S3...")
-    try:
-        wm = WardrobeManager(user_id='peichin')
-        wardrobe_data = wm.load_wardrobe_data()
-        wardrobe_items = wardrobe_data.get('items', [])
-        print(f"✅ Loaded {len(wardrobe_items)} wardrobe items")
-    except Exception as e:
-        print(f"⚠️  Warning: Could not load wardrobe ({e}), continuing with empty wardrobe")
-        wardrobe_items = []
+    # Detect unique users from scenario IDs
+    user_ids = set()
+    for r in results:
+        user_id = extract_user_from_scenario_id(r['scenario_id'])
+        user_ids.add(user_id)
+
+    # Load wardrobes for all users
+    wardrobe_items = []
+    wardrobe_by_user = {}
+    for uid in user_ids:
+        print(f"🔄 Loading wardrobe for {uid} from S3...")
+        try:
+            wm = WardrobeManager(user_id=uid)
+            wardrobe_data = wm.load_wardrobe_data()
+            items = wardrobe_data.get('items', [])
+            wardrobe_by_user[uid] = items
+            wardrobe_items.extend(items)
+            print(f"✅ Loaded {len(items)} wardrobe items for {uid}")
+        except Exception as e:
+            print(f"⚠️  Warning: Could not load wardrobe for {uid} ({e})")
+            wardrobe_by_user[uid] = []
 
     # Group results
     grouped = group_results(results, eval_type)

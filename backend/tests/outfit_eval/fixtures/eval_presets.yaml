@@ -121,3 +121,13 @@ text-vs-vision:
     - gpt4o_vision
   scenarios: fixtures/test_scenarios.json
   iterations: 3
+
+# Alexi retention test - validate physics errors are fixed before re-engaging
+alexi-test:
+  description: "Alexi's wardrobe: 10 scenarios targeting known physics failure modes (GPT-5.2 production model)"
+  models: fixtures/model_configs.yaml
+  model_ids:
+    - gpt52_chain_of_thought
+  scenarios: fixtures/test_scenarios.json
+  user_filter: "alexi"
+  iterations: 1

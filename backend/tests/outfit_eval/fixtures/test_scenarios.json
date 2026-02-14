@@ -180,5 +180,181 @@
       }
     },
     "description": "A/B test for reasoning hypothesis: Tests whether AI avoids tucking ruffled shirt into stiff leather waistband"
+  },
+
+  {
+    "id": "casual_weekend_alexi",
+    "name": "Casual Weekend Brunch (Alexi)",
+    "user_id": "alexi",
+    "scenario_type": "occasion",
+    "occasion": "casual weekend brunch with friends",
+    "weather": "mild and sunny",
+    "temperature_range": "65-75°F",
+    "style_profile": {
+      "three_words": {
+        "current": "versatile",
+        "aspirational": "confident",
+        "feeling": "comfortable"
+      }
+    },
+    "description": "Standard casual outing for street/edgy wardrobe"
+  },
+  {
+    "id": "night_out_alexi",
+    "name": "Night Out at a Bar (Alexi)",
+    "user_id": "alexi",
+    "scenario_type": "occasion",
+    "occasion": "drinks at a trendy bar with friends",
+    "weather": "evening, cool",
+    "temperature_range": "55-65°F",
+    "style_profile": {
+      "three_words": {
+        "current": "versatile",
+        "aspirational": "confident",
+        "feeling": "comfortable"
+      }
+    },
+    "description": "Edgy night out - test if AI leans into her aesthetic"
+  },
+  {
+    "id": "concert_alexi",
+    "name": "Concert / Music Festival (Alexi)",
+    "user_id": "alexi",
+    "scenario_type": "occasion",
+    "occasion": "outdoor music festival, standing and dancing all day",
+    "weather": "warm and sunny",
+    "temperature_range": "75-85°F",
+    "style_profile": {
+      "three_words": {
+        "current": "versatile",
+        "aspirational": "confident",
+        "feeling": "comfortable"
+      }
+    },
+    "description": "Her sweet spot - festival style from graphic tees and edgy pieces"
+  },
+  {
+    "id": "first_date_alexi",
+    "name": "First Date - Casual Dinner (Alexi)",
+    "user_id": "alexi",
+    "scenario_type": "occasion",
+    "occasion": "first date at a casual restaurant",
+    "weather": "cool evening",
+    "temperature_range": "55-65°F",
+    "style_profile": {
+      "three_words": {
+        "current": "versatile",
+        "aspirational": "confident",
+        "feeling": "comfortable"
+      }
+    },
+    "description": "Put-together but still herself - test elevating streetwear"
+  },
+  {
+    "id": "job_interview_alexi",
+    "name": "Job Interview - Creative Field (Alexi)",
+    "user_id": "alexi",
+    "scenario_type": "occasion",
+    "occasion": "job interview at a creative agency",
+    "weather": "mild",
+    "temperature_range": "65-72°F",
+    "style_profile": {
+      "three_words": {
+        "current": "versatile",
+        "aspirational": "confident",
+        "feeling": "comfortable"
+      }
+    },
+    "description": "Can she dress up from this wardrobe without losing identity?"
+  },
+  {
+    "id": "complete_leather_jacket_alexi",
+    "name": "Complete My Look: Black Leather Biker Jacket (Alexi)",
+    "user_id": "alexi",
+    "scenario_type": "complete_my_look",
+    "anchor_item_name": "Black leather biker jacket",
+    "occasion": "cool evening out",
+    "weather": "cool and breezy",
+    "temperature_range": "50-60°F",
+    "style_profile": {
+      "three_words": {
+        "current": "versatile",
+        "aspirational": "confident",
+        "feeling": "comfortable"
+      }
+    },
+    "description": "PHYSICS TRAP: Test layering - does AI put a bulky hoodie under a fitted leather jacket?"
+  },
+  {
+    "id": "complete_combat_boots_alexi",
+    "name": "Complete My Look: Black Combat Boots (Alexi)",
+    "user_id": "alexi",
+    "scenario_type": "complete_my_look",
+    "anchor_item_name": "Black leather lace-up combat boots",
+    "occasion": "casual day out",
+    "weather": "cool",
+    "temperature_range": "55-65°F",
+    "style_profile": {
+      "three_words": {
+        "current": "versatile",
+        "aspirational": "confident",
+        "feeling": "comfortable"
+      }
+    },
+    "description": "Test boot styling with rest of wardrobe - proportions matter"
+  },
+  {
+    "id": "complete_mini_skirt_alexi",
+    "name": "Complete My Look: Black Leather Mini Skirt (Alexi)",
+    "user_id": "alexi",
+    "scenario_type": "complete_my_look",
+    "anchor_item_name": "Black leather mini skirt",
+    "occasion": "night out",
+    "weather": "cool evening",
+    "temperature_range": "55-65°F",
+    "style_profile": {
+      "three_words": {
+        "current": "versatile",
+        "aspirational": "confident",
+        "feeling": "comfortable"
+      }
+    },
+    "description": "Edgy styling test - leather mini skirt needs the right top weight"
+  },
+  {
+    "id": "complete_hoodie_alexi",
+    "name": "Complete My Look: Grey Tie-Dye Hoodie (Alexi)",
+    "user_id": "alexi",
+    "scenario_type": "complete_my_look",
+    "anchor_item_name": "Grey tie-dye graphic hoodie",
+    "occasion": "casual errands and coffee",
+    "weather": "cool",
+    "temperature_range": "50-60°F",
+    "style_profile": {
+      "three_words": {
+        "current": "versatile",
+        "aspirational": "confident",
+        "feeling": "comfortable"
+      }
+    },
+    "description": "PHYSICS TRAP: Hoodie is bulky - does AI layer another bulky item over it or keep it balanced?"
+  },
+  {
+    "id": "complete_sheer_dress_alexi",
+    "name": "Complete My Look: Black Sheer Embroidered Dress (Alexi)",
+    "user_id": "alexi",
+    "scenario_type": "complete_my_look",
+    "anchor_item_name": "Black sheer embroidered dress",
+    "occasion": "evening event",
+    "weather": "mild evening",
+    "temperature_range": "60-70°F",
+    "style_profile": {
+      "three_words": {
+        "current": "versatile",
+        "aspirational": "confident",
+        "feeling": "comfortable"
+      }
+    },
+    "description": "Styling challenge - sheer dress needs thoughtful layering/accessories"
   }
 ]
