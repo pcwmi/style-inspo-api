@@ -85,6 +85,9 @@ def _trigger_visualization_by_key(user_id: str, viz_key: str, garment_images: li
             if result and result.get("visualization_url"):
                 set_viz_complete(viz_key, result["visualization_url"])
                 logger.info(f"Viz complete for key {viz_key}: {result['visualization_url'][:50]}...")
+
+                # Persist to saved outfit if it exists (handles race: viz completes after save)
+                _persist_viz_to_saved_outfit(user_id, viz_key, result["visualization_url"])
             else:
                 error = result.get("error", "Unknown error") if result else "No result"
                 set_viz_failed(viz_key, error)
@@ -98,6 +101,24 @@ def _trigger_visualization_by_key(user_id: str, viz_key: str, garment_images: li
     thread = threading.Thread(target=run_visualization, daemon=True)
     thread.start()
     logger.info(f"Spawned viz thread for key {viz_key}")
+
+
+def _persist_viz_to_saved_outfit(user_id: str, viz_key: str, viz_url: str):
+    """If a saved outfit matches this viz_key, persist the URL to S3."""
+    try:
+        manager = SavedOutfitsManager(user_id=user_id)
+        saved_outfits = manager.get_saved_outfits(enrich_with_current_images=False)
+        for outfit in saved_outfits:
+            outfit_data = outfit.get("outfit_data", {})
+            items = outfit_data.get("items", [])
+            garment_images = sorted([i.get("image_path", "") for i in items if i.get("image_path")])
+            candidate_key = hashlib.md5('|'.join(garment_images).encode()).hexdigest()[:12]
+            if candidate_key == viz_key and not outfit.get("visualization_url"):
+                manager.update_outfit_visualization(outfit["id"], viz_url)
+                logger.info(f"Persisted viz URL to saved outfit {outfit['id']}")
+                break
+    except Exception as e:
+        logger.error(f"Failed to persist viz to saved outfit: {e}")
 
 
 def log_generation_to_s3(
@@ -487,9 +508,14 @@ async def save_outfit(request: SaveOutfitRequest):
             "item_count": len(outfit_wrapper.items)
         })
 
-        # Note: Visualization is now triggered during GENERATE (streaming endpoint),
-        # not during save. This ensures viz starts at t=0 when outfit is generated.
-        # If the outfit was generated with viz_key, it's already being processed.
+        # Persist visualization URL if already generated (viz runs during GENERATE)
+        viz_key = request.outfit.get("viz_key")
+        if viz_key and outfit_id:
+            from services.visualization.viz_cache import get_viz_status
+            viz_status = get_viz_status(viz_key)
+            if viz_status.get("status") == "complete" and viz_status.get("url"):
+                manager.update_outfit_visualization(outfit_id, viz_status["url"])
+                logger.info(f"Persisted viz URL from Redis to saved outfit {outfit_id}")
 
         return {"success": True, "message": "Outfit saved", "outfit_id": outfit_id}
     except HTTPException:
@@ -538,9 +564,25 @@ async def get_visualization_status(outfit_id: str, user: str = Query(..., descri
         if not outfit:
             raise HTTPException(status_code=404, detail="Outfit not found")
 
+        pending = outfit.get("visualization_pending", False)
+        url = outfit.get("visualization_url")
+
+        # Don't report pending for stale outfits (saved >5 min ago with no URL)
+        # These are leftovers from before we persisted viz URLs on save
+        if pending and not url:
+            saved_at = outfit.get("saved_at", "")
+            if saved_at:
+                from datetime import datetime, timezone
+                try:
+                    saved_time = datetime.fromisoformat(saved_at.replace("Z", "+00:00"))
+                    if (datetime.now(timezone.utc) - saved_time).total_seconds() > 300:
+                        pending = False
+                except (ValueError, TypeError):
+                    pending = False
+
         return {
-            "pending": outfit.get("visualization_pending", False),
-            "url": outfit.get("visualization_url")
+            "pending": pending,
+            "url": url
         }
     except HTTPException:
         raise
