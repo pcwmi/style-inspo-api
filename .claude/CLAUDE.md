@@ -245,217 +245,55 @@ Users reject outfits that violate physical reality:
 - Comment Streamlit-specific code that will need mobile alternatives
 - Keep file storage patterns abstracted for future cloud migration
 
-## Critical Debugging & Implementation Lessons
+## Pre-Action Gates
 
-**From Nov 5, 2025 debugging session: EXIF orientation and code path analysis**
+**These are blocking checks. Run the relevant gate BEFORE taking the action.**
 
-### Lesson 1: Always Check Dual Storage Systems (Local vs Production)
-**Problem**: Fixed EXIF orientation for local files, but production uses S3 URLs which bypassed the fix entirely.
+### GATE: Before Every Commit/Push
 
-**What happened**:
-- Fixed `outfit_visualizer.py` to apply `ImageOps.exif_transpose()` for local files
-- Code worked in local dev (files on disk)
-- Failed in production (S3 URLs) because `if image_path.startswith("http")` bypassed the fix
-- Spent 2 hours before realizing local != production storage
-
-**Prevention checklist**:
-- [ ] Check `STORAGE_TYPE` environment variable (local vs s3)
-- [ ] Test fixes with BOTH local files AND S3 URLs
-- [ ] Search codebase for `if image_path.startswith("http")` - these branches handle storage differently
-- [ ] When fixing image processing, verify the fix applies to ALL storage backends
-
-### Lesson 2: Verify Actual Code Paths in Use
-**Problem**: Fixed `outfit_visualizer.py` but `new_onboarding.py` used completely different rendering code.
-
-**What happened**:
-- Assumed new onboarding flow used `OutfitVisualizer` class
-- Actually used custom `_build_collage_html()` function instead
-- Fixed wrong code path, wasted time
-
-**Prevention checklist**:
-- [ ] Use `grep` to find actual function calls in the flow
-- [ ] Trace from user-facing page backwards to rendering logic
-- [ ] Don't assume shared component usage - verify with code search
-- [ ] Check git history: "When was this file last modified?" vs "When was the flow built?"
-
-### Lesson 3: Visual Regression Testing Before Pushing
-**Problem**: Switched from custom editorial styling to generic `OutfitVisualizer` style, regressing UX.
-
-**What happened**:
-- Replaced custom rendering with `OutfitVisualizer.display_magazine_style_outfit()`
-- Assumed functional fix = UX preserved
-- OutfitVisualizer had completely different visual design
-- Lost editorial "How to Style" aesthetic
-
-**Prevention checklist**:
-- [ ] Before pushing visual changes, ask: "What does this page look like NOW vs AFTER?"
-- [ ] If replacing rendering code, compare HTML/CSS output
-- [ ] Check for custom CSS classes that will be lost
-- [ ] Screenshots before/after when touching UI code
-
-### Lesson 4: Fix at the Source, Not the Symptoms
-**Problem**: Tried fixing orientation at display time (multiple locations) instead of upload time (one location).
-
-**What happened**:
-- Initially planned to add EXIF fix to 6+ display locations
-- Realized images should be saved correctly ONCE at upload
-- Upload handler fix (wardrobe_manager.py line 88) solved ALL downstream issues
-
-**Prevention checklist**:
-- [ ] Map the data flow: Where is data created? Where is it used?
-- [ ] Fix at creation/upload, not at every display location
-- [ ] Ask: "If we fix this at the source, what downstream fixes become unnecessary?"
-- [ ] One-time processing > repeated processing at every render
-
-### Lesson 5: Cursor vs Claude Code Workflow
-**Problem**: Spent time with Cursor on wrong approach, then repeated with Claude Code.
-
-**What works**:
-- Use **Cursor** for: Rapid implementation, known patterns, UI polish
-- Use **Claude Code** for: Architecture diagnosis, multi-file analysis, tracing code paths
-- When stuck with Cursor for >20 min: Switch to Claude Code for diagnosis BEFORE trying more Cursor fixes
-
-**Prevention checklist**:
-- [ ] If Cursor's 2nd attempt fails, stop and diagnose with Claude Code
-- [ ] Use Claude Code to verify approach BEFORE delegating to Cursor
-- [ ] Claude Code = strategy, Cursor = tactics
-- [ ] Don't repeat failed approaches across tools
-
-### Lesson 6: Test Incrementally with Production Data
-**Problem**: Fixed code locally, pushed, tested in production, nothing worked.
-
-**Better approach**:
-- Fix upload handler → Push → Test ONE photo upload → Verify orientation
-- Then fix display → Push → Test display
-- Incremental validation catches issues earlier
-
-**Prevention checklist**:
-- [ ] Push smallest testable unit
-- [ ] Validate in production immediately after each push
-- [ ] If first fix doesn't work, diagnose why before adding more fixes
-- [ ] Production environment is source of truth, not local dev
-
-### Lesson 7: Validate Specs Solve the Actual Problem (Dec 2025 SSE Streaming)
-**Problem**: Created a "streaming" spec that only set a static progress message, leaving users staring at "Creating outfit 1 of 3..." for 20 seconds with no updates.
-
-**What went wrong**:
-- Optimized for "easy to implement" instead of "solves the problem"
-- True streaming requires piping tokens through SSE as they generate
-- Instead, spec only added 4 lines of `job.meta` updates at START and END of generation
-- Rationalized it as "MVP" when it was actually useless
-- Buried the real solution in "Future Enhancements (out of scope)"
-
-**The useless spec said**:
 ```
-"For MVP, we'll emit progress events at job milestones rather than during AI generation"
-```
-This means: set message once, wait 20 seconds, done. That's not streaming.
-
-**Prevention checklist**:
-- [ ] Before handing spec to Cursor, walk through UX second-by-second: "At t=0 user sees X, at t=5 they see Y, at t=20 they see Z"
-- [ ] Ask: "Does this actually solve the problem during the slow part?"
-- [ ] If labeling something "MVP", be explicit: "This MVP won't help during the 20s wait, only before/after"
-- [ ] Don't bury the real solution in "Future Enhancements" without flagging it
-- [ ] When user says "streaming to reduce latency", validate: are we actually streaming content, or just setting a loading message?
-
-**First-principles validation for streaming features**:
-- OpenAI's streaming API sends tokens as they generate (every ~50-100ms)
-- True streaming = user sees text appearing character by character
-- Fake streaming = set a message once, wait for full response, show result
-- Before implementing, run a time study to understand what actually gets generated when
-
-**Claude Code + Cursor workflow improvement**:
-- Claude Code creates spec → Claude Code validates UX second-by-second → User approves → Cursor implements
-- If Claude Code can't demo "user sees X at t=5", the spec isn't ready
-
-### Lesson 8: Always Test Locally BEFORE Commit/Push
-**Problem**: Committed and pushed code without testing locally first, resulting in broken production deploy.
-
-**What happened** (Jan 2026 HEIC orientation fix):
-- Wrote fix for HEIC image orientation
-- Created todo list: "Modify code → Commit/Push → Test"
-- Pushed untested code to production
-- Code had a bug (double rotation)
-- Had to push a second fix after local testing revealed the issue
-
-**Why this matters**:
-- Production deploys take time (~2 min)
-- Users may see broken features
-- Git history cluttered with "fix the fix" commits
-- Debugging in production is harder than local
-
-**Correct workflow**:
-1. Write the code change
-2. **Test locally** with real data (not mocked)
-3. Verify the fix works as expected
-4. THEN commit and push
-
-**Prevention checklist**:
-- [ ] Before ANY commit: "Have I tested this locally?"
-- [ ] For image processing: test with actual image files
-- [ ] For API changes: test with curl/Postman locally
-- [ ] TodoWrite should ALWAYS have "Test locally" BEFORE "Commit/Push"
-- [ ] If you can't test locally, explicitly acknowledge the risk
-
-**TodoWrite template for code changes**:
-```
-1. Implement the fix
-2. Test locally with real data   ← MUST come before commit
-3. Commit and push
-4. Verify in production
+1. Run: cd backend && python -c "from main import app"
+2. If you added ANY new import → check it's in requirements.txt
+3. If you added ANY new env var → verify it exists in Railway
+4. If you touched image/file code → test with both local files AND S3 URLs
 ```
 
-### Lesson 9: Full-Stack Integration Debugging (Jan 2026 - Image Orientation)
+A pre-commit hook enforces step 1 automatically. Steps 2-4 are manual.
 
-**Problem**: Simple bug (missing `preserveExif: true`) took 5 pushes over a month to fix.
+### GATE: Before Deploying a Provider/Module from a Prior Session
 
-**What happened**:
-- Nov-Dec 2025: Fixed backend EXIF handling multiple times
-- Jan 1, 2026: Added backend HEIC support
-- Jan 2, 2026: Finally fixed frontend - issue was `browser-image-compression` stripping EXIF
+Prior sessions may have `pip install`ed packages that never made it to `requirements.txt`. Before deploying code built in a different session:
+- Check every import in the new files against `requirements.txt`
+- Run the import smoke test above
 
-**Why advanced models couldn't help**:
-- We tested backend in isolation (test_exif_integration.py) ✅
-- Backend test bypassed frontend, so it passed
-- We kept asking model to fix backend when bug was in frontend
-- **Models can't fix bad methodology** - if you test the wrong thing, model will fix the wrong thing
+### GATE: Before Fixing a Bug
 
-**Root cause of delay**:
-1. **Tested components, not integration** - backend test bypassed frontend
-2. **Didn't trace full flow** - Browser → Compression → Upload → Backend
-3. **Assumed library defaults** - didn't check `browser-image-compression` docs
-4. **Wrong scope** - fixed backend (last step) when bug was in step 2
+1. **Trace the full data flow first** — map every step from user input to final output
+2. **Grep for the actual code path** — don't assume which file handles the flow; verify with search
+3. **If it spans frontend + backend** — test the integration, not just one component
+4. **Check third-party library defaults** — don't assume libraries do "the right thing"
+5. **If 2 fixes haven't worked** — stop fixing and widen scope; you're probably in the wrong component
 
-**Prevention checklist**:
-- [ ] For bugs spanning frontend/backend: trace ENTIRE flow first
-- [ ] Test with production-like data flow (real browser uploads, not Python mocks)
-- [ ] When 2+ fixes don't work: widen scope, check integration points
-- [ ] For third-party libraries: check defaults, don't assume "right behavior"
-- [ ] Component tests are necessary but not sufficient - need integration tests
+### GATE: Before Changing Rendering/UI Code
 
-**Debugging template for full-stack issues**:
-```
-1. Map the full data flow (every step from user to storage)
-2. Test each step with production-like data
-3. Check library defaults and configurations
-4. Don't assume any step works - verify each one
-5. If stuck after 2 attempts, trace end-to-end before more fixes
-```
+1. **Screenshot the current state** before touching anything
+2. **Compare HTML/CSS output** of old vs new rendering path
+3. **Check for custom CSS classes** that will be lost in a component swap
 
-**Key insight**: The fix was 1 line (`preserveExif: true`) but took a month because we debugged the wrong component. Advanced models can't compensate for testing the wrong thing.
+### GATE: Before Writing a Spec
 
-### Lesson 10: Verify Data Structure Before Bulk Operations (Jan 2026)
+Walk through UX second-by-second: "At t=0 user sees X, at t=5 they see Y, at t=20 they see Z." If the spec doesn't help during the slow/painful part, it doesn't solve the problem.
 
-**Problem**: Deleted all 35 saved outfits thinking empty `items` arrays meant broken data.
+### GATE: Before Bulk Delete/Modify
 
-**What happened**:
-- Manager code looked for `outfits[].items`
-- Actual S3 structure was `saved[].outfit_data.items`
-- All outfits appeared "empty" due to wrong key path
-- Bulk deleted everything, S3 versioning saved us
+1. **Read ONE full record** and print its actual structure
+2. **Show the user** exactly what will be deleted/modified and the count
+3. **Get explicit confirmation** before proceeding
+4. Never assume empty/null = broken — verify the key path first
 
-**Prevention checklist**:
-- [ ] Before bulk delete: read ONE full record and print its structure
-- [ ] Never assume empty = broken - verify the key path exists
-- [ ] Show user exactly what will be deleted and get explicit confirmation
-- [ ] Have S3 versioning enabled on all user data buckets
+### Workflow Rules
+
+- **Fix at the source, not the symptoms.** Map where data is created vs displayed. Fix at creation (1 place), not display (N places).
+- **Push smallest testable unit.** Validate in production immediately after each push.
+- **Cursor = tactics, Claude Code = strategy.** If Cursor's 2nd attempt fails, switch to Claude Code for diagnosis before trying more Cursor fixes.
+- **Production environment is the source of truth**, not local dev. Test with real data flows (browser uploads, not Python mocks).
