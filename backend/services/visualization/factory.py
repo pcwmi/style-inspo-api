@@ -45,14 +45,17 @@ class VisualizationProviderFactory:
             from .providers.runway import RunwayProvider
             return RunwayProvider()
 
-        # Future provider implementations:
-        # if provider_name == "fashn":
-        #     from .providers.fashn import FashnProvider
-        #     return FashnProvider()
-        #
-        # if provider_name == "replicate":
-        #     from .providers.replicate import ReplicateProvider
-        #     return ReplicateProvider()
+        if provider_name == "gpt_image":
+            from .providers.gpt_image import GPTImageProvider
+            return GPTImageProvider()
+
+        if provider_name == "flux_kontext":
+            from .providers.flux_kontext import FluxKontextProvider
+            return FluxKontextProvider()
+
+        if provider_name == "flux2pro":
+            from .providers.flux2pro import Flux2ProProvider
+            return Flux2ProProvider()
 
         return None  # Provider type not found
 
@@ -65,7 +68,7 @@ class VisualizationProviderFactory:
         Returns:
             List of provider name strings
         """
-        return ["runway"]  # Update as new providers are added
+        return ["runway", "gpt_image", "flux_kontext", "flux2pro"]
 
 
     @staticmethod
@@ -76,4 +79,4 @@ class VisualizationProviderFactory:
         Returns:
             Default provider name
         """
-        return "runway"
+        return "flux2pro"

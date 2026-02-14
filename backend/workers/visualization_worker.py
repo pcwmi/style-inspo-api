@@ -18,7 +18,7 @@ if backend_dir not in sys.path:
 logger = logging.getLogger(__name__)
 
 
-def visualize_outfit_job(user_id: str, outfit_id: str, provider_name: str = "runway") -> dict:
+def visualize_outfit_job(user_id: str, outfit_id: str, provider_name: str = "flux2pro") -> dict:
     """
     Background job for outfit visualization generation.
 

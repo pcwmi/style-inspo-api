@@ -253,7 +253,7 @@ class VisualizationManager:
         self.profile_manager = UserProfileManager(user_id=user_id)
         self.provider_factory = VisualizationProviderFactory()
 
-    def visualize_outfit(self, outfit_id: str, provider_name: str = "runway") -> Dict:
+    def visualize_outfit(self, outfit_id: str, provider_name: str = "flux2pro") -> Dict:
         """
         Generate visualization for a saved outfit.
 
@@ -405,7 +405,7 @@ class VisualizationManager:
             'metadata': result.metadata
         }
 
-    def visualize_from_images(self, garment_images: list, provider_name: str = "runway", styling_notes: str = "") -> Dict:
+    def visualize_from_images(self, garment_images: list, provider_name: str = "flux2pro", styling_notes: str = "") -> Dict:
         """
         Generate visualization directly from image URLs (for SMS flow).
 
