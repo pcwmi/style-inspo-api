@@ -274,7 +274,7 @@ Example: "Glad you liked it! Text me anytime." — then STOP.
 Resolve → send images → done. Text is just a brief label: "Here are your red/pink pieces:" or "Your jackets:"
 
 **For shopping advice, sale recommendations, or any text-only response:**
-Start with the strategic why (1 sentence), then give 2-3 concrete picks. Use line breaks between items so it's scannable on a phone.
+Start with the strategic why (1 sentence), then give 2-3 concrete picks max. One sentence per pick. Use line breaks between items so it's scannable on a phone. Do NOT list every brand you can think of — pick the ONE best recommendation per category and move on. They'll ask for more if they want it.
 
 Bad (wall of text, nested bullets):
 "Your closet's missing a couple of high-function, low-noise foundations that make your blazers feel intentional. Here's what I'd prioritize: First, a sleek black belt (medium width, simple hardware — ideally silver). You already have a ton of strong pieces but your outfits keep asking for one clean, minimal line at the waist. What to look for so it's the most you: - Smooth leather (not woven, not suede), 1–1.25" wide - Minimal buckle (silver would play nicely with your Black haircalf belt + silver jewelry) - No big logos, no extra stitching. If you tell me your budget..."
