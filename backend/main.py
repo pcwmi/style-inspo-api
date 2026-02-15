@@ -36,6 +36,13 @@ async def lifespan(app: FastAPI):
     else:
         logging.info("DATABASE_URL not configured, skipping database initialization")
 
+    # Warm up rembg model (background removal for collages)
+    try:
+        from services.bg_removal import warm_up_model
+        warm_up_model()
+    except Exception as e:
+        logging.warning(f"rembg warm-up skipped: {e}")
+
     yield
 
     # Shutdown: Close database connection
@@ -95,6 +102,10 @@ app.include_router(auth.router, prefix="/api", tags=["auth"])
 
 # Register analysis router - daily usage analysis
 app.include_router(analysis.router, prefix="/api", tags=["analysis"])
+
+# Register agent-web router - agent-powered outfit generation for web
+from api import agent_web
+app.include_router(agent_web.router, prefix="/api", tags=["agent_web"])
 
 
 @app.get("/")

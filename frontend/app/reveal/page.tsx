@@ -18,6 +18,7 @@ function RevealPageContent() {
   const jobId = searchParams.get('job')
   const debugMode = searchParams.get('debug') === 'true'
   const streamMode = searchParams.get('stream') === 'true'
+  const agentMode = searchParams.get('agent') === 'true'
   const mode = searchParams.get('mode') || 'occasion'
   const occasions = searchParams.get('occasions') || ''
   const anchorItems = searchParams.get('anchor_items') || ''
@@ -93,7 +94,10 @@ function RevealPageContent() {
       if (deviceId) params.append('device_id', deviceId)
 
       try {
-        eventSource = new EventSource(`${API_URL}/api/outfits/generate/stream?${params.toString()}`)
+        const streamEndpoint = agentMode
+          ? `${API_URL}/api/outfits/generate/agent-stream`
+          : `${API_URL}/api/outfits/generate/stream`
+        eventSource = new EventSource(`${streamEndpoint}?${params.toString()}`)
 
         eventSource.addEventListener('outfit', (e) => {
           const data = JSON.parse(e.data)
@@ -253,7 +257,7 @@ function RevealPageContent() {
       eventSource?.close()
       if (pollInterval) clearInterval(pollInterval)
     }
-  }, [streamMode, jobId, mode, occasions, anchorItems, weatherCondition, temperatureRange, user, debugMode])
+  }, [streamMode, agentMode, jobId, mode, occasions, anchorItems, weatherCondition, temperatureRange, user, debugMode])
 
   if (status === 'loading') {
     return (

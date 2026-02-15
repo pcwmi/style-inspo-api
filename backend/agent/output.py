@@ -63,6 +63,37 @@ class SMSOutput(OutputHandler):
         # No marker found - send all text before image
         return text, None
 
+    def _resolve_items_for_collage(self, image_urls: List[str]) -> List[dict]:
+        """Resolve item metadata from image URLs for flat-lay collage."""
+        try:
+            from services.wardrobe_manager import WardrobeManager
+            wm = WardrobeManager(user_id=self.user_id)
+            all_items = wm.get_wardrobe_items(filter_type="all")
+
+            url_to_item = {}
+            for item in all_items:
+                url = item.get("system_metadata", {}).get("image_path", "")
+                if url:
+                    url_to_item[url] = item
+
+            resolved = []
+            for url in image_urls:
+                item = url_to_item.get(url)
+                if item:
+                    resolved.append({
+                        "image_url": url,
+                        "name": item.get("styling_details", {}).get("name", ""),
+                        "category": item.get("styling_details", {}).get("category", ""),
+                        "sub_category": item.get("styling_details", {}).get("sub_category", ""),
+                    })
+                else:
+                    resolved.append({"image_url": url, "category": "unknown", "sub_category": ""})
+            return resolved
+
+        except Exception as e:
+            logger.warning(f"SMSOutput._resolve_items_for_collage failed: {e}")
+            return [{"image_url": url, "category": "unknown", "sub_category": ""} for url in image_urls]
+
     def send(self, text: Optional[str], images: List[str], layout: str = "list", visualize: bool = False):
         from services.twilio_service import send_sms, send_mms
         from services.collage import generate_outfit_collage
@@ -76,11 +107,15 @@ class SMSOutput(OutputHandler):
 
         import time
 
+        # Resolve item metadata for category-aware flat-lay
+        resolved_items = self._resolve_items_for_collage(images)
+
         # Split images into chunks of 6 for collage generation
         chunks = [images[i:i+6] for i in range(0, len(images), 6)]
+        item_chunks = [resolved_items[i:i+6] for i in range(0, len(resolved_items), 6)]
         collage_urls = []
-        for chunk in chunks:
-            url = generate_outfit_collage(self.user_id, chunk)
+        for chunk_urls, chunk_items in zip(chunks, item_chunks):
+            url = generate_outfit_collage(self.user_id, chunk_urls, items=chunk_items)
             if url:
                 collage_urls.append(url)
 
@@ -235,6 +270,131 @@ class StatefulSMSOutput(SMSOutput):
         thread = threading.Thread(target=run_visualization, daemon=True)
         thread.start()
         logger.info(f"StatefulSMSOutput: spawned visualization thread for {self.user_id}")
+
+
+class WebOutput(OutputHandler):
+    """Web output - collects structured outfits for SSE streaming.
+
+    When the agent calls send_message with layout="outfit", this handler
+    enriches the data into the format the frontend expects (items with IDs,
+    image_paths, styling_notes, viz_key) and puts it on a queue for the
+    SSE endpoint to stream.
+    """
+
+    def __init__(self, user_id: str, outfit_queue=None):
+        self.user_id = user_id
+        self.outfit_queue = outfit_queue  # thread-safe queue for SSE bridge
+        self.outfits = []
+        self._pending_reasoning = []  # Accumulated reasoning since last outfit
+
+    def capture_reasoning(self, tool_name: str, reasoning: str):
+        """Called by agent loop when a tool is invoked with reasoning."""
+        if reasoning:
+            self._pending_reasoning.append({"tool": tool_name, "reasoning": reasoning})
+
+    def send(self, text: Optional[str], images: List[str], layout: str = "list", visualize: bool = False):
+        if layout == "outfit" and images:
+            enriched = self._enrich_outfit(text, images, visualize)
+            self.outfits.append(enriched)
+            if self.outfit_queue:
+                self.outfit_queue.put_nowait(enriched)
+        else:
+            # Non-outfit messages (browse results, text-only) — log but don't queue as outfit
+            logger.info(f"WebOutput: non-outfit message ({len(images)} images, layout={layout})")
+
+    def _enrich_outfit(self, text: Optional[str], images: List[str], visualize: bool) -> dict:
+        """Convert agent send_message into web outfit format."""
+        import hashlib
+
+        # Reverse-lookup image URLs to wardrobe items
+        enriched_items = self._resolve_items_from_urls(images)
+
+        # Parse agent text into styling_notes and why_it_works
+        styling_notes, why_it_works = self._parse_agent_text(text)
+
+        outfit = {
+            "items": enriched_items,
+            "styling_notes": styling_notes,
+            "why_it_works": why_it_works,
+            "confidence_level": "medium",
+            "vibe_keywords": [],
+        }
+
+        # Attach accumulated reasoning and reset
+        if self._pending_reasoning:
+            outfit["agent_reasoning"] = list(self._pending_reasoning)
+            self._pending_reasoning = []
+
+        # Viz key + background trigger
+        garment_images = [item.get("image_path") for item in enriched_items if item.get("image_path")]
+        if visualize and garment_images:
+            viz_key = hashlib.md5('|'.join(sorted(garment_images)).encode()).hexdigest()[:12]
+            outfit["viz_key"] = viz_key
+            outfit["viz_pending"] = True
+
+            from api.outfits import _trigger_visualization_by_key
+            _trigger_visualization_by_key(self.user_id, viz_key, garment_images)
+
+        return outfit
+
+    def _resolve_items_from_urls(self, image_urls: List[str]) -> list:
+        """Map image URLs back to full wardrobe item data."""
+        try:
+            from services.wardrobe_manager import WardrobeManager
+            wm = WardrobeManager(user_id=self.user_id)
+            all_items = wm.get_wardrobe_items(filter_type="all")
+
+            url_to_item = {}
+            for item in all_items:
+                url = item.get("system_metadata", {}).get("image_path", "")
+                if url:
+                    url_to_item[url] = item
+
+            enriched = []
+            for url in image_urls:
+                item = url_to_item.get(url)
+                if item:
+                    enriched.append({
+                        "id": item.get("id"),
+                        "name": item.get("styling_details", {}).get("name", ""),
+                        "category": item.get("styling_details", {}).get("category", ""),
+                        "sub_category": item.get("styling_details", {}).get("sub_category", ""),
+                        "image_path": url,
+                    })
+                else:
+                    enriched.append({"name": "Unknown item", "category": "unknown", "sub_category": "", "image_path": url})
+            return enriched
+
+        except Exception as e:
+            logger.warning(f"WebOutput._resolve_items_from_urls failed: {e}")
+            return [{"name": f"Item {i+1}", "category": "unknown", "sub_category": "", "image_path": url} for i, url in enumerate(image_urls)]
+
+    def _parse_agent_text(self, text: Optional[str]) -> tuple:
+        """Split agent text into (styling_notes, why_it_works)."""
+        if not text:
+            return "", ""
+
+        import re
+
+        # Extract "The magic:" section
+        magic_match = re.search(
+            r'\*{0,2}The magic:?\*{0,2}\s*(.+?)(?=\*{0,2}This outfit says|\Z)',
+            text, re.DOTALL | re.IGNORECASE
+        )
+        # Extract "This outfit says:" section
+        identity_match = re.search(
+            r'\*{0,2}This outfit says:?\*{0,2}\s*(.+)',
+            text, re.DOTALL | re.IGNORECASE
+        )
+
+        styling = magic_match.group(1).strip() if magic_match else text.strip()
+        why = identity_match.group(1).strip() if identity_match else ""
+
+        # Clean markdown bold markers
+        styling = re.sub(r'\*+', '', styling).strip()
+        why = re.sub(r'\*+', '', why).strip()
+
+        return styling, why
 
 
 class MockOutput(OutputHandler):
