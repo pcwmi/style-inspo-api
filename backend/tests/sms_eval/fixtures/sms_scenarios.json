@@ -166,5 +166,47 @@
         "image_type": null
       }
     ]
+  },
+  {
+    "id": "shopping_wardrobe_gaps_peichin",
+    "name": "Shopping: What should I buy next?",
+    "user_id": "peichin",
+    "use_case": "shopping",
+    "description": "User asks what to buy to level up wardrobe, then narrows to shoes",
+    "turns": [
+      {
+        "turn": 1,
+        "user_message": "What should I buy next to make the most of what I already have?",
+        "image_url": null,
+        "image_type": null
+      },
+      {
+        "turn": 2,
+        "user_message": "I think shoes - what kind of shoes am I missing?",
+        "image_url": null,
+        "image_type": null
+      }
+    ]
+  },
+  {
+    "id": "shopping_specific_need_peichin",
+    "name": "Shopping: Need work shoes",
+    "user_id": "peichin",
+    "use_case": "shopping",
+    "description": "User needs specific purchase advice, then asks for brand recs",
+    "turns": [
+      {
+        "turn": 1,
+        "user_message": "I need a good pair of shoes for work that aren't too formal. What should I look for?",
+        "image_url": null,
+        "image_type": null
+      },
+      {
+        "turn": 2,
+        "user_message": "Any specific brands or styles you'd recommend?",
+        "image_url": null,
+        "image_type": null
+      }
+    ]
   }
 ]

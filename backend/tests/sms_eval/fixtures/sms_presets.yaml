@@ -35,3 +35,8 @@ quick-browse:
   description: "Quick test: 1 browse scenario, 1 iteration"
   scenario_filter: "browse_color"
   iterations: 1
+
+shopping-only:
+  description: "Shopping advice scenarios only"
+  use_case_filter: "shopping"
+  iterations: 1

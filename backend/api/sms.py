@@ -204,6 +204,22 @@ async def process_outfit_request(user_id: str, phone: str, message: str, image_u
         if response:
             state_manager.append_message("assistant", response)
 
+        # Persist agent conversation log for eval/replay
+        try:
+            from services.agent_logger import log_agent_turn
+            log_agent_turn(
+                user_id=user_id,
+                channel="sms",
+                user_message=message,
+                image_urls=s3_photo_urls,
+                agent_response=response,
+                turn_log=agent.turn_log,
+                model=agent.model,
+                conversation_length=len(state.messages),
+            )
+        except Exception as e:
+            logger.warning(f"Failed to log agent turn: {e}")
+
     except Exception as e:
         logger.error(f"Error processing request: {e}", exc_info=True)
         send_sms(phone, "Sorry, I had trouble with that. Please try again!")

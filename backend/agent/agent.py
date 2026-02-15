@@ -38,6 +38,7 @@ class StylingAgent:
         self.max_turns = 10
         self.output = output  # Injected output handler (modality-aware)
         self.conversation_context = conversation_context  # For stateful SMS
+        self.turn_log = []  # Structured trace of this run
 
         # Set default model per provider
         if model:
@@ -155,9 +156,12 @@ class StylingAgent:
 
             logger.info(f"Stop reason: {response.stop_reason}")
 
-            # Log agent's text and tool calls with reasoning
+            # Extract text and tool calls for logging
+            response_text = ""
+            tool_calls_log = []
             for block in response.content:
                 if hasattr(block, "text") and block.text:
+                    response_text = block.text
                     logger.info(f"Agent text: {block.text[:300]}...")
                 if block.type == "tool_use":
                     args = dict(block.input)
@@ -165,6 +169,16 @@ class StylingAgent:
                     if reasoning:
                         logger.info(f"Reasoning: {reasoning}")
                     logger.info(f"Tool call: {block.name}({json.dumps(args, default=str)[:200]})")
+                    tool_calls_log.append({"tool": block.name, "args": args})
+
+            # Log LLM response to turn trace
+            self.turn_log.append({
+                "type": "llm_response",
+                "turn": turn + 1,
+                "text": response_text,
+                "tool_calls": tool_calls_log,
+                "finish_reason": response.stop_reason,
+            })
 
             if response.stop_reason == "end_turn":
                 return self._extract_text_anthropic(response)
@@ -176,6 +190,13 @@ class StylingAgent:
                 for block in response.content:
                     if block.type == "tool_use":
                         result = self._execute_tool(block.name, block.input)
+                        # Log tool result to turn trace
+                        self.turn_log.append({
+                            "type": "tool_result",
+                            "tool": block.name,
+                            "args": {k: v for k, v in block.input.items() if k != "reasoning"},
+                            "result_keys": list(result.keys()) if isinstance(result, dict) else None,
+                        })
                         tool_results.append({
                             "type": "tool_result",
                             "tool_use_id": block.id,
@@ -225,10 +246,12 @@ class StylingAgent:
             logger.info(f"Finish reason: {choice.finish_reason}")
 
             # Log agent's text response (if any)
-            if choice.message.content:
-                logger.info(f"Agent text: {choice.message.content[:300]}...")
+            response_text = choice.message.content or ""
+            if response_text:
+                logger.info(f"Agent text: {response_text[:300]}...")
 
             # Log each tool call with reasoning
+            tool_calls_log = []
             if choice.message.tool_calls:
                 for tc in choice.message.tool_calls:
                     args = json.loads(tc.function.arguments)
@@ -236,18 +259,37 @@ class StylingAgent:
                     if reasoning:
                         logger.info(f"Reasoning: {reasoning}")
                     logger.info(f"Tool call: {tc.function.name}({json.dumps(args, default=str)[:200]})")
+                    tool_calls_log.append({"tool": tc.function.name, "args": args})
+
+            # Log LLM response to turn trace
+            self.turn_log.append({
+                "type": "llm_response",
+                "turn": turn + 1,
+                "text": response_text,
+                "tool_calls": tool_calls_log,
+                "finish_reason": choice.finish_reason,
+            })
 
             if choice.finish_reason == "stop":
-                return choice.message.content or ""
+                return response_text
 
             if choice.finish_reason == "tool_calls":
                 messages.append(choice.message)
 
                 for tool_call in choice.message.tool_calls:
+                    tool_args = json.loads(tool_call.function.arguments)
+                    tool_args_clean = {k: v for k, v in tool_args.items() if k != "reasoning"}
                     result = self._execute_tool(
                         tool_call.function.name,
-                        json.loads(tool_call.function.arguments)
+                        tool_args
                     )
+                    # Log tool result to turn trace
+                    self.turn_log.append({
+                        "type": "tool_result",
+                        "tool": tool_call.function.name,
+                        "args": tool_args_clean,
+                        "result_keys": list(result.keys()) if isinstance(result, dict) else None,
+                    })
                     messages.append({
                         "role": "tool",
                         "tool_call_id": tool_call.id,
@@ -271,6 +313,11 @@ class StylingAgent:
         When the agent runs in a background task, HTTP calls to localhost would
         deadlock because the server is blocked waiting for the background task.
         """
+        # Capture reasoning for WebOutput (if it supports it)
+        reasoning = tool_input.get("reasoning")
+        if reasoning and self.output and hasattr(self.output, 'capture_reasoning'):
+            self.output.capture_reasoning(tool_name, reasoning)
+
         try:
             # Import managers locally to avoid circular imports
             from services.wardrobe_manager import WardrobeManager
