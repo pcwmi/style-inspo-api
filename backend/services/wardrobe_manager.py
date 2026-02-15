@@ -212,6 +212,61 @@ class WardrobeManager:
             logger.error(f"Error updating item {item_id}: {str(e)}")
             return None
 
+    def update_item_image(self, item_id: str, image_file) -> Optional[str]:
+        """Replace an item's image (used by prettify jobs after extraction).
+
+        Args:
+            item_id: The wardrobe item ID
+            image_file: File-like object with .name attribute containing the new image
+
+        Returns:
+            New image path/URL, or None on failure
+        """
+        try:
+            # Reload data to avoid stale state
+            self.wardrobe_data = self.load_wardrobe_data()
+            items = self.wardrobe_data.get("items", [])
+
+            target_item = None
+            for item in items:
+                if item.get("id") == item_id:
+                    target_item = item
+                    break
+
+            if not target_item:
+                logger.warning(f"Item {item_id} not found for image update")
+                return None
+
+            image_file.seek(0)
+            unique_filename = f"{uuid.uuid4().hex}.jpg"
+
+            image = Image.open(image_file)
+            image = ImageOps.exif_transpose(image)
+
+            if image.mode in ('RGBA', 'LA', 'P'):
+                rgb_image = Image.new('RGB', image.size, (255, 255, 255))
+                if image.mode == 'P':
+                    image = image.convert('RGBA')
+                rgb_image.paste(image, mask=image.split()[-1] if image.mode == 'RGBA' else None)
+                image = rgb_image
+            elif image.mode != 'RGB':
+                image = image.convert('RGB')
+
+            new_path = self.storage.save_image(image, unique_filename)
+
+            target_item.setdefault("system_metadata", {})["image_path"] = new_path
+            target_item.setdefault("system_metadata", {})["prettified"] = True
+            target_item["system_metadata"]["last_updated"] = datetime.datetime.now().isoformat()
+            self.wardrobe_data["last_updated"] = datetime.datetime.now().isoformat()
+            self.save_wardrobe_data()
+
+            logger.info(f"Updated image for item {item_id} -> {new_path}")
+            return new_path
+
+        except Exception as e:
+            logger.error(f"Error updating image for item {item_id}: {e}")
+            return None
+
     def get_wardrobe_items(self, filter_type: str = "all") -> List[Dict]:
         """Get wardrobe items with flexible filtering"""
         items = self.wardrobe_data.get("items", [])

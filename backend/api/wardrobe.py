@@ -2,7 +2,7 @@
 Wardrobe API endpoints
 """
 
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Response
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Response, Query
 from typing import List, Optional
 from pydantic import BaseModel
 import logging
@@ -145,6 +145,34 @@ async def upload_outfit(
         }
     except Exception as e:
         logger.error(f"Error uploading outfit for {user_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/wardrobe/{user_id}/prettify-status")
+async def get_prettify_status(user_id: str, item_ids: str = Query(...)):
+    """Check which items have been prettified (image updated after extraction).
+
+    Args:
+        item_ids: Comma-separated list of item IDs to check
+    """
+    try:
+        manager = WardrobeManager(user_id=user_id)
+        items = manager.get_wardrobe_items("all")
+        ids_to_check = [id.strip() for id in item_ids.split(",") if id.strip()]
+
+        result = {}
+        for item in items:
+            item_id = item.get("id")
+            if item_id in ids_to_check:
+                sys_meta = item.get("system_metadata", {})
+                result[item_id] = {
+                    "prettified": sys_meta.get("prettified", False),
+                    "image_path": sys_meta.get("image_path"),
+                }
+
+        return result
+    except Exception as e:
+        logger.error(f"Error checking prettify status for {user_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

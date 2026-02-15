@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { api } from '@/lib/api'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -21,6 +21,7 @@ interface ExtractedItem {
   category: string
   image_path: string | null
   colors: string | string[]
+  prettified?: boolean
 }
 
 interface OutfitExtractModalProps {
@@ -50,6 +51,80 @@ export function OutfitExtractModal({
   const [editCategory, setEditCategory] = useState('')
   const [savingEdit, setSavingEdit] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const prettifyIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // Poll for prettified images when in reviewing phase
+  const pollPrettifyStatus = useCallback(async (items: ExtractedItem[]) => {
+    const unprettifiedIds = items
+      .filter(i => !i.prettified && i.item_id)
+      .map(i => i.item_id)
+
+    if (unprettifiedIds.length === 0) {
+      // All done, stop polling
+      if (prettifyIntervalRef.current) {
+        clearInterval(prettifyIntervalRef.current)
+        prettifyIntervalRef.current = null
+      }
+      return
+    }
+
+    try {
+      const status = await api.getPrettifyStatus(userId, unprettifiedIds)
+
+      setExtractedItems(prev => {
+        let changed = false
+        const updated = prev.map(item => {
+          const itemStatus = status[item.item_id]
+          if (itemStatus?.prettified && !item.prettified) {
+            changed = true
+            return {
+              ...item,
+              image_path: itemStatus.image_path || item.image_path,
+              prettified: true,
+            }
+          }
+          return item
+        })
+        return changed ? updated : prev
+      })
+    } catch {
+      // Silently continue polling
+    }
+  }, [userId])
+
+  // Start/stop prettify polling based on phase and items
+  useEffect(() => {
+    if (phase !== 'reviewing' || extractedItems.length === 0) {
+      if (prettifyIntervalRef.current) {
+        clearInterval(prettifyIntervalRef.current)
+        prettifyIntervalRef.current = null
+      }
+      return
+    }
+
+    const allPrettified = extractedItems.every(i => i.prettified)
+    if (allPrettified) {
+      if (prettifyIntervalRef.current) {
+        clearInterval(prettifyIntervalRef.current)
+        prettifyIntervalRef.current = null
+      }
+      return
+    }
+
+    // Poll every 3 seconds
+    if (!prettifyIntervalRef.current) {
+      prettifyIntervalRef.current = setInterval(() => {
+        pollPrettifyStatus(extractedItems)
+      }, 3000)
+    }
+
+    return () => {
+      if (prettifyIntervalRef.current) {
+        clearInterval(prettifyIntervalRef.current)
+        prettifyIntervalRef.current = null
+      }
+    }
+  }, [phase, extractedItems, pollPrettifyStatus])
 
   if (!isOpen) return null
 
@@ -64,6 +139,10 @@ export function OutfitExtractModal({
     setEditingItem(null)
     setEditName('')
     setEditCategory('')
+    if (prettifyIntervalRef.current) {
+      clearInterval(prettifyIntervalRef.current)
+      prettifyIntervalRef.current = null
+    }
   }
 
   const handleClose = () => {
@@ -231,6 +310,12 @@ export function OutfitExtractModal({
 
   const activeItemCount = extractedItems.length
 
+  const getImageUrl = (imagePath: string) => {
+    return imagePath.startsWith('http')
+      ? imagePath
+      : `${API_URL}/api/images/${imagePath.split('/').pop()}`
+  }
+
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="bg-white w-full sm:max-w-lg sm:rounded-lg rounded-t-2xl shadow-xl max-h-[90vh] flex flex-col">
@@ -324,16 +409,20 @@ export function OutfitExtractModal({
               <div className="space-y-3">
                 {extractedItems.map(item => (
                   <div key={item.item_id} className="flex gap-3 p-3 bg-gray-50 rounded-xl">
-                    {/* Thumbnail */}
-                    <div className="w-20 h-24 flex-shrink-0 bg-white rounded-lg overflow-hidden">
+                    {/* Thumbnail with shimmer for unprettified items */}
+                    <div className="w-20 h-24 flex-shrink-0 bg-white rounded-lg overflow-hidden relative">
                       {item.image_path ? (
-                        <img
-                          src={item.image_path.startsWith('http')
-                            ? item.image_path
-                            : `${API_URL}/api/images/${item.image_path.split('/').pop()}`}
-                          alt={item.name}
-                          className="w-full h-full object-cover"
-                        />
+                        <>
+                          <img
+                            src={getImageUrl(item.image_path)}
+                            alt={item.name}
+                            className="w-full h-full object-cover transition-opacity duration-500"
+                          />
+                          {/* Shimmer overlay for items being prettified */}
+                          {!item.prettified && (
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer" />
+                          )}
+                        </>
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">
                           No preview
@@ -381,7 +470,10 @@ export function OutfitExtractModal({
                         <div onClick={() => handleEditItem(item)} className="cursor-pointer">
                           <p className="text-sm font-medium text-ink truncate">{item.name}</p>
                           <span className="text-xs text-muted capitalize">{item.category}</span>
-                          <p className="text-[10px] text-terracotta/70 mt-1">Tap to edit</p>
+                          {!item.prettified && (
+                            <p className="text-[10px] text-terracotta/60 mt-1">Enhancing photo...</p>
+                          )}
+                          <p className="text-[10px] text-terracotta/70 mt-0.5">Tap to edit</p>
                         </div>
                       )}
                     </div>
@@ -454,6 +546,17 @@ export function OutfitExtractModal({
           )}
         </div>
       </div>
+
+      {/* Shimmer animation keyframes */}
+      <style jsx>{`
+        @keyframes shimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
+        }
+        .animate-shimmer {
+          animation: shimmer 1.5s infinite;
+        }
+      `}</style>
     </div>
   )
 }

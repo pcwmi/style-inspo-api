@@ -283,5 +283,12 @@ export const api = {
     }
 
     return res.json()
+  },
+
+  // Prettify Status (progressive image updates after extraction)
+  async getPrettifyStatus(userId: string, itemIds: string[]): Promise<Record<string, { prettified: boolean; image_path: string | null }>> {
+    const res = await fetch(`${API_URL}/api/wardrobe/${userId}/prettify-status?item_ids=${itemIds.join(',')}`)
+    if (!res.ok) return {}
+    return res.json()
   }
 }

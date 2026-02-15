@@ -539,8 +539,11 @@ def analyze_item_job(user_id, file_path, filename, use_real_ai=True):
 def extract_outfit_items_job(user_id, file_path, filename):
     """Background job to extract individual items from an outfit photo.
 
-    Uses GPT-4o vision to identify items + bounding boxes, then crops each
-    item, removes background with rembg, analyzes with GPT-4o, and adds to wardrobe.
+    Phase A (fast, ~5-8s): Identify items with GPT-4o vision, crop raw images
+    (no rembg/analysis/reconstruction), save to wardrobe immediately.
+    Phase B (background): Auto-enqueue prettify jobs per item for rembg + reconstruction.
+
+    This gives users something to interact with in ~5s instead of waiting 2-3 min.
     """
     from io import BytesIO
     from PIL import Image
@@ -582,62 +585,48 @@ def extract_outfit_items_job(user_id, file_path, filename):
         source_image = Image.open(BytesIO(image_data))
         total_items = len(items)
         extracted_items = []
-        analyzer = create_image_analyzer(use_real_ai=True)
         wardrobe_manager = WardrobeManager(user_id=user_id)
 
-        # 30-90% - Extract each item (distributed evenly)
+        # 30-90% - Crop each item (fast - no rembg, no analysis, no reconstruction)
         for i, item_info in enumerate(items):
             item_progress = 30 + int((i / total_items) * 60)
             if job:
                 job.meta['progress'] = item_progress
-                job.meta['status_message'] = f'Extracting {item_info["name"]}... ({i+1} of {total_items})'
+                job.meta['status_message'] = f'Cropping {item_info["name"]}... ({i+1} of {total_items})'
                 job.meta['current_item'] = i + 1
                 job.meta['total_items'] = total_items
                 job.save_meta()
 
             try:
-                # Crop + background removal
+                # Crop only - NO rembg, NO GPT-4o analysis, NO reconstruction
                 item_bytes = extractor.extract_item(
                     source_image,
                     item_info['bbox_pct'],
                     item_info['name'],
-                    remove_bg=True
+                    remove_bg=False
                 )
 
-                # AI analysis of extracted item
+                # Build analysis from identification-stage data only
+                analysis = {
+                    'name': item_info.get('name', 'Unknown Item'),
+                    'category': item_info.get('category', 'tops'),
+                    'sub_category': item_info.get('sub_category', ''),
+                    'colors': ', '.join(item_info.get('colors', [])) if isinstance(item_info.get('colors'), list) else item_info.get('colors', ''),
+                    'cut': item_info.get('description', ''),
+                    'texture': '',
+                    'style': '',
+                    'fit': '',
+                    'brand': None,
+                    'trend_status': '',
+                    'styling_notes': '',
+                    'design_details': '',
+                    'fabric': '',
+                }
+
                 item_buffer = BytesIO(item_bytes)
                 item_buffer.name = f"{item_info['name'].replace(' ', '_')}.png"
-                analysis = analyzer.analyze_clothing_item(item_buffer)
 
-                # Identification stage (full photo) is more reliable for name/category
-                # than analysis stage (small crop that loses context).
-                # Always prefer identification-stage data for these fields.
-                if item_info.get('name'):
-                    analysis['name'] = item_info['name']
-                if item_info.get('category'):
-                    analysis['category'] = item_info['category']
-                if item_info.get('colors'):
-                    analysis['colors'] = ', '.join(item_info['colors']) if isinstance(item_info['colors'], list) else item_info['colors']
-                if item_info.get('description'):
-                    analysis['description'] = item_info['description']
-
-                # Reconstruct complete garment from partial crop
-                if job:
-                    job.meta['status_message'] = f'Reconstructing {item_info["name"]}... ({i+1} of {total_items})'
-                    job.save_meta()
-
-                reconstructed_bytes = extractor.reconstruct_garment(
-                    item_bytes=item_bytes,
-                    analysis=analysis,
-                    item_info=item_info,
-                    all_items=items,
-                )
-
-                save_bytes = reconstructed_bytes if reconstructed_bytes else item_bytes
-                item_buffer = BytesIO(save_bytes)
-                item_buffer.name = f"{item_info['name'].replace(' ', '_')}.png"
-
-                # Add to wardrobe
+                # Add to wardrobe immediately with raw crop
                 item_buffer.seek(0)
                 item_data = wardrobe_manager.add_wardrobe_item(
                     uploaded_file=item_buffer,
@@ -647,16 +636,17 @@ def extract_outfit_items_job(user_id, file_path, filename):
 
                 extracted_items.append({
                     "item_id": item_data["id"] if item_data else None,
-                    "name": analysis.get("name", item_info["name"]),
-                    "category": analysis.get("category", item_info["category"]),
+                    "name": item_info.get("name", "Unknown Item"),
+                    "category": item_info.get("category", "tops"),
                     "image_path": item_data.get("system_metadata", {}).get("image_path") if item_data else None,
                     "colors": analysis.get("colors", ""),
+                    "prettified": False,
                 })
 
                 log_activity(user_id, "item_extracted", {
                     "item_id": item_data["id"] if item_data else None,
-                    "name": analysis.get("name", item_info["name"]),
-                    "category": analysis.get("category", "unknown"),
+                    "name": item_info.get("name", "Unknown Item"),
+                    "category": item_info.get("category", "unknown"),
                     "source": "outfit_extraction"
                 })
 
@@ -664,18 +654,37 @@ def extract_outfit_items_job(user_id, file_path, filename):
                 logger.warning(f"Failed to extract item '{item_info['name']}': {e}")
                 continue
 
-        # 100% - Complete
+        # 100% - Complete (user can start reviewing immediately)
         if job:
             job.meta['progress'] = 100
             job.meta['status_message'] = f'Extracted {len(extracted_items)} items'
             job.meta['extracted_items'] = extracted_items
             job.save_meta()
 
-        # Clean up staged file
+        # Phase B: Auto-enqueue prettify jobs for each item (background, non-blocking)
         try:
-            storage.delete_file(file_path)
+            from redis import Redis
+            from rq import Queue
+            redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+            redis_conn = Redis.from_url(redis_url)
+            prettify_queue = Queue("analysis", connection=redis_conn)
+
+            for i, item in enumerate(extracted_items):
+                if item.get("item_id"):
+                    prettify_queue.enqueue(
+                        prettify_extracted_item_job,
+                        user_id,
+                        item["item_id"],
+                        file_path,
+                        items[i],  # original item_info with bbox
+                        job_timeout=300
+                    )
+            logger.info(f"Enqueued {len(extracted_items)} prettify jobs for {user_id}")
         except Exception as e:
-            logger.warning(f"Failed to cleanup staged file {file_path}: {e}")
+            logger.warning(f"Failed to enqueue prettify jobs: {e}")
+
+        # Don't clean up staged file yet - prettify jobs need it
+        # Cleanup happens after all prettify jobs complete (or on a delay)
 
         return {
             "items": extracted_items,
@@ -685,6 +694,80 @@ def extract_outfit_items_job(user_id, file_path, filename):
 
     except Exception as e:
         logger.error(f"Error in extract_outfit_items_job for {user_id}: {e}", exc_info=True)
+        if job:
+            job.meta['error'] = str(e)
+            job.save_meta()
+        raise
+
+
+def prettify_extracted_item_job(user_id, item_id, source_photo_path, item_info):
+    """Background job to prettify an extracted item (rembg + reconstruction).
+
+    Runs after the fast extraction phase. Updates the wardrobe item's image
+    with a clean product-style photo.
+    """
+    from io import BytesIO
+    from PIL import Image
+    from services.storage_manager import StorageManager
+    from services.image_extractor import OutfitItemExtractor
+
+    job = get_current_job()
+    storage_type = os.getenv("STORAGE_TYPE", "local")
+    storage = StorageManager(storage_type=storage_type, user_id=user_id)
+
+    try:
+        item_name = item_info.get("name", "item")
+        logger.info(f"Prettifying '{item_name}' (item_id={item_id}) for {user_id}")
+
+        # Load source photo
+        image_data = storage.load_file(source_photo_path)
+        if not image_data:
+            logger.warning(f"Source photo not found at {source_photo_path}, skipping prettify")
+            return {"status": "skipped", "reason": "source_photo_missing"}
+
+        source_image = Image.open(BytesIO(image_data))
+        extractor = OutfitItemExtractor()
+
+        # Re-crop with background removal
+        item_bytes = extractor.extract_item(
+            source_image,
+            item_info['bbox_pct'],
+            item_info['name'],
+            remove_bg=True
+        )
+
+        # Build analysis from identification-stage data for reconstruction prompt
+        analysis = {
+            'name': item_info.get('name', 'Unknown Item'),
+            'category': item_info.get('category', 'tops'),
+            'colors': ', '.join(item_info.get('colors', [])) if isinstance(item_info.get('colors'), list) else item_info.get('colors', ''),
+            'description': item_info.get('description', ''),
+        }
+
+        # Reconstruct clean product photo
+        reconstructed_bytes = extractor.reconstruct_garment(
+            item_bytes=item_bytes,
+            analysis=analysis,
+            item_info=item_info,
+        )
+
+        save_bytes = reconstructed_bytes if reconstructed_bytes else item_bytes
+
+        # Update wardrobe item's image
+        wardrobe_manager = WardrobeManager(user_id=user_id)
+        item_buffer = BytesIO(save_bytes)
+        item_buffer.name = f"{item_name.replace(' ', '_')}_prettified.png"
+        new_image_path = wardrobe_manager.update_item_image(item_id, item_buffer)
+
+        if new_image_path:
+            logger.info(f"Prettified '{item_name}' successfully -> {new_image_path}")
+            return {"status": "complete", "item_id": item_id, "image_path": new_image_path}
+        else:
+            logger.warning(f"Failed to update image for '{item_name}'")
+            return {"status": "failed", "item_id": item_id}
+
+    except Exception as e:
+        logger.error(f"Error prettifying item {item_id} for {user_id}: {e}", exc_info=True)
         if job:
             job.meta['error'] = str(e)
             job.save_meta()
