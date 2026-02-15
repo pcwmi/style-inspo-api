@@ -44,7 +44,9 @@ def log_agent_turn(user_id, channel, user_message, image_urls, agent_response,
     date_str = timestamp.strftime("%Y-%m-%d")
     filename = f"agent_logs/{date_str}.json"
 
-    existing = storage.load_json(filename) or {"date": date_str, "turns": []}
+    existing = storage.load_json(filename) or {}
+    if "turns" not in existing:
+        existing = {"date": date_str, "turns": []}
     existing["turns"].append(entry)
     storage.save_json(existing, filename)
 
