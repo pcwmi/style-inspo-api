@@ -237,7 +237,7 @@ TOOLS = [
     # --- OUTPUT (send to user) ---
     {
         "name": "send_message",
-        "description": "Send a message to the user with optional images. Use this to SHOW items/outfits, not just describe them.",
+        "description": "Send a message to the user with optional images. Use this to SHOW items/outfits, not just describe them. Set visualize=true ONLY for complete styled outfits to generate a model visualization.",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -255,6 +255,10 @@ TOOLS = [
                     "type": "string",
                     "enum": ["list", "outfit"],
                     "description": "How to display: 'list' for browsing items, 'outfit' for styled combination"
+                },
+                "visualize": {
+                    "type": "boolean",
+                    "description": "Generate a styled model visualization. Use ONLY for complete outfits, NOT for browsing/showing individual items."
                 }
             },
             "required": ["reasoning"]

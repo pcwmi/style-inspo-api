@@ -1,0 +1,170 @@
+[
+  {
+    "id": "inspo_casual_street_peichin",
+    "name": "Inspiration: Casual street look",
+    "user_id": "peichin",
+    "use_case": "inspiration_photo",
+    "description": "User sends inspo photo of casual street style, asks to recreate, then swaps shoes",
+    "turns": [
+      {
+        "turn": 1,
+        "user_message": "Create this look for me!",
+        "image_url": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600",
+        "image_type": "inspiration"
+      },
+      {
+        "turn": 2,
+        "user_message": "Love it but can we swap the shoes for something more casual?",
+        "image_url": null,
+        "image_type": null
+      }
+    ]
+  },
+  {
+    "id": "inspo_elevated_workwear_peichin",
+    "name": "Inspiration: Elevated workwear",
+    "user_id": "peichin",
+    "use_case": "inspiration_photo",
+    "description": "User sends inspo photo of polished workwear, asks to recreate, then asks for more edge",
+    "turns": [
+      {
+        "turn": 1,
+        "user_message": "I love this vibe - can you recreate it from my closet?",
+        "image_url": "https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?w=600",
+        "image_type": "inspiration"
+      },
+      {
+        "turn": 2,
+        "user_message": "This is great but can you make it a bit more edgy?",
+        "image_url": null,
+        "image_type": null
+      }
+    ]
+  },
+  {
+    "id": "selfie_complete_sweater_peichin",
+    "name": "Selfie: Complete sweater look",
+    "user_id": "peichin",
+    "use_case": "selfie_improve",
+    "description": "User wearing a sweater asks to complete the look, then swaps shoes for sneakers",
+    "turns": [
+      {
+        "turn": 1,
+        "user_message": "Help me complete this look to feel more dressed",
+        "image_url": "s3://wardrobe_item:Grey cashmere crewneck sweater",
+        "image_type": "selfie"
+      },
+      {
+        "turn": 2,
+        "user_message": "What about sneakers instead?",
+        "image_url": null,
+        "image_type": null
+      }
+    ]
+  },
+  {
+    "id": "selfie_improve_denim_peichin",
+    "name": "Selfie: Improve denim look",
+    "user_id": "peichin",
+    "use_case": "selfie_improve",
+    "description": "User wearing denim asks to style it better, then asks for a scarf addition",
+    "turns": [
+      {
+        "turn": 1,
+        "user_message": "How can I style this better?",
+        "image_url": "s3://wardrobe_item:Light wash straight leg jeans",
+        "image_type": "selfie"
+      },
+      {
+        "turn": 2,
+        "user_message": "Can you add a scarf or some accessory?",
+        "image_url": null,
+        "image_type": null
+      }
+    ]
+  },
+  {
+    "id": "occasion_dinner_date_peichin",
+    "name": "Occasion: Dinner date 60\u00b0F",
+    "user_id": "peichin",
+    "use_case": "occasion",
+    "description": "User asks for dinner date outfit, then asks to make it more casual",
+    "turns": [
+      {
+        "turn": 1,
+        "user_message": "Outfit for dinner date tonight, 60 degrees",
+        "image_url": null,
+        "image_type": null
+      },
+      {
+        "turn": 2,
+        "user_message": "Can we make it more casual?",
+        "image_url": null,
+        "image_type": null
+      }
+    ]
+  },
+  {
+    "id": "occasion_weekend_brunch_peichin",
+    "name": "Occasion: Weekend brunch",
+    "user_id": "peichin",
+    "use_case": "occasion",
+    "description": "User asks for brunch outfit, then swaps the shoes",
+    "turns": [
+      {
+        "turn": 1,
+        "user_message": "What should I wear to brunch with friends this Saturday? It'll be about 55 degrees",
+        "image_url": null,
+        "image_type": null
+      },
+      {
+        "turn": 2,
+        "user_message": "Swap the shoes for something I can walk more in",
+        "image_url": null,
+        "image_type": null
+      }
+    ]
+  },
+  {
+    "id": "browse_color_filter_peichin",
+    "name": "Browse: Show items by color",
+    "user_id": "peichin",
+    "use_case": "browse",
+    "description": "User asks to see all pink/red items, then picks items for an outfit",
+    "turns": [
+      {
+        "turn": 1,
+        "user_message": "Show me all my pink and red clothing",
+        "image_url": null,
+        "image_type": null
+      },
+      {
+        "turn": 2,
+        "user_message": "Make an outfit with the burgundy top and black skirt",
+        "image_url": null,
+        "image_type": null
+      }
+    ]
+  },
+  {
+    "id": "browse_category_peichin",
+    "name": "Browse: Show all jackets",
+    "user_id": "peichin",
+    "use_case": "browse",
+    "description": "User asks to see all jackets/outerwear, then asks which goes with jeans",
+    "turns": [
+      {
+        "turn": 1,
+        "user_message": "What jackets do I have?",
+        "image_url": null,
+        "image_type": null
+      },
+      {
+        "turn": 2,
+        "user_message": "Which one would go best with jeans and a white tee?",
+        "image_url": null,
+        "image_type": null
+      }
+    ]
+  }
+]

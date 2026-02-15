@@ -1,0 +1,72 @@
+[
+  {
+    "scenario_id": "browse_color_filter_peichin",
+    "scenario_name": "Browse: Show items by color",
+    "use_case": "browse",
+    "user_id": "peichin",
+    "description": "User asks to see all pink/red items, then picks items for an outfit",
+    "iteration": 0,
+    "timestamp": "2026-02-14T17:01:31.792818",
+    "turns": [
+      {
+        "turn": 1,
+        "user_message": "Show me all my pink and red clothing",
+        "image_url": null,
+        "image_type": null,
+        "agent_text_response": "Here are your pink + red pieces (including burgundy/rust):",
+        "output_messages": [
+          {
+            "text": "Here are your pink + red pieces (including burgundy/rust):",
+            "images": [
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/dab7733fbd3a400d88abe6c89bbb2a36_1766518349.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e3bcf7bca70d49ec8c2736d15892319a.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/bee862e4421c425ab9b967a177445851.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2d6f032223814df381ee515dc7f43336.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/a8edefdf96e949168d666a93f8995f52.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b450ceda54e84db0839f16d86a7cde6d.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b3a9181a97804d7cad00e067ffda865b.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/00fe05abd100400eac9be4e4b9c09d8c.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/98b2e0247fa44b3cb97c0ef363571b79_1764837302.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/bb19b894fb7742bea28dd029afe72f52.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9e71553a90df4f7f9a97b8e72814a0af.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/c876d90b191a4b2c80575e13c48919bb.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2c5c31d146b74290b0f60cbf165576fb.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d3e79387d01e4fe88030ff21d383dae0.jpg"
+            ],
+            "layout": "list",
+            "visualize": false
+          }
+        ],
+        "latency_seconds": 16.6,
+        "success": true,
+        "error": null
+      },
+      {
+        "turn": 2,
+        "user_message": "Make an outfit with the burgundy top and black skirt",
+        "image_url": null,
+        "image_type": null,
+        "agent_text_response": "**The magic:** Burgundy + black can read predictable\u2026 so we make it *editorial* by mixing \u201cpolished\u201d textures: your **Burgundy and cream striped ribbed sweater** against the glossy **Black faux leather pleated skirt**, finished with **Black Patent Leather Loafers**. It stays classic, feels relaxed (loafers + **Black leather tote bag**), and the **Gold swirl earrings with pearl center** are the playful little wink\u2014special without doing \u201ctoo much around the neck.\u201d",
+        "output_messages": [
+          {
+            "text": "**The magic:** Burgundy + black can read predictable\u2026 so we make it *editorial* by mixing \u201cpolished\u201d textures: the ribbed stripe up top + the glossy pleats + patent loafers. It stays classic, feels relaxed (loafers/tote), and the pearl-swirls are the playful wink\u2014special without getting \u2018too much around the neck.\u2019",
+            "images": [
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/98b2e0247fa44b3cb97c0ef363571b79_1764837302.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/32fcec6583934f9aaa71044d5cae8fad_1765844146.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9a58462d4c2a46b2977dd9a9588ba869.jpg"
+            ],
+            "layout": "outfit",
+            "visualize": false
+          }
+        ],
+        "latency_seconds": 20.8,
+        "success": true,
+        "error": null
+      }
+    ],
+    "total_latency_seconds": 37.8
+  }
+]

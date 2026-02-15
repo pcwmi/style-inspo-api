@@ -102,6 +102,8 @@ Layout guide:
 - `layout="outfit"` for styled outfit combinations
 - `layout="list"` for browsing items (sweaters, dresses, etc.)
 
+Set `visualize=true` when sending a complete styled outfit. Do NOT set it when browsing/showing individual items.
+
 **Browsing sale/collection pages:**
 - `browse_url`: Fetch a URL and extract the products on it
 - Use when a user shares a link to a sale page, collection page, or store

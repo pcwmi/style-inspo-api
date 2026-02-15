@@ -1,0 +1,71 @@
+[
+  {
+    "scenario_id": "browse_color_filter_peichin",
+    "scenario_name": "Browse: Show items by color",
+    "use_case": "browse",
+    "user_id": "peichin",
+    "description": "User asks to see all pink/red items, then picks items for an outfit",
+    "iteration": 0,
+    "timestamp": "2026-02-14T17:05:17.500739",
+    "turns": [
+      {
+        "turn": 1,
+        "user_message": "Show me all my pink and red clothing",
+        "image_url": null,
+        "image_type": null,
+        "agent_text_response": "Here are your pink + red pieces (including burgundy):",
+        "output_messages": [
+          {
+            "text": "Here are your pink + red pieces (including burgundy):",
+            "images": [
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/dab7733fbd3a400d88abe6c89bbb2a36_1766518349.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/e3bcf7bca70d49ec8c2736d15892319a.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/bee862e4421c425ab9b967a177445851.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2d6f032223814df381ee515dc7f43336.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/a8edefdf96e949168d666a93f8995f52.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b450ceda54e84db0839f16d86a7cde6d.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/00fe05abd100400eac9be4e4b9c09d8c.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/b3a9181a97804d7cad00e067ffda865b.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72e058de83f7408481d06413080e2918.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/2c5c31d146b74290b0f60cbf165576fb.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/d3e79387d01e4fe88030ff21d383dae0.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/98b2e0247fa44b3cb97c0ef363571b79_1764837302.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/bb19b894fb7742bea28dd029afe72f52.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9e71553a90df4f7f9a97b8e72814a0af.jpg"
+            ],
+            "layout": "list",
+            "visualize": false
+          }
+        ],
+        "latency_seconds": 16.2,
+        "success": true,
+        "error": null
+      },
+      {
+        "turn": 2,
+        "user_message": "Make an outfit with the burgundy top and black skirt",
+        "image_url": null,
+        "image_type": null,
+        "agent_text_response": "**The magic:** Classic + a little dangerous: the romantic burgundy ruffle against the slick black pleats feels editorial, and the patent loafers make it modern and relaxed (not date-night costume).",
+        "output_messages": [
+          {
+            "text": "**The magic:** Classic + a little dangerous: the romantic burgundy ruffle against the slick black pleats feels editorial, and the patent loafers make it modern and relaxed (not date-night costume).\n",
+            "images": [
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/9e71553a90df4f7f9a97b8e72814a0af.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/40a98dc5ee7d44b4ac27e8cfa9b2a5ef_1767296623.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/72a351f5d94e405181a083f767f42553.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/32fcec6583934f9aaa71044d5cae8fad_1765844146.jpg",
+              "https://style-inspo.s3.us-east-2.amazonaws.com/peichin/items/4f6bb064f737413bb50780be1aae859c.jpg"
+            ],
+            "layout": "outfit",
+            "visualize": true
+          }
+        ],
+        "latency_seconds": 14.8,
+        "success": true,
+        "error": null
+      }
+    ],
+    "total_latency_seconds": 31.2
+  }
+]

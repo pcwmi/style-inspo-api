@@ -16,7 +16,7 @@ class OutputHandler(ABC):
     """Base class for modality-specific output."""
 
     @abstractmethod
-    def send(self, text: Optional[str], images: List[str], layout: str = "list"):
+    def send(self, text: Optional[str], images: List[str], layout: str = "list", visualize: bool = False):
         """
         Send a message to the user.
 
@@ -24,6 +24,7 @@ class OutputHandler(ABC):
             text: Optional text message
             images: List of image URLs to include
             layout: 'list' for browsing items, 'outfit' for styled collage
+            visualize: Whether to generate a styled model visualization (agent decides)
         """
         pass
 
@@ -62,7 +63,7 @@ class SMSOutput(OutputHandler):
         # No marker found - send all text before image
         return text, None
 
-    def send(self, text: Optional[str], images: List[str], layout: str = "list"):
+    def send(self, text: Optional[str], images: List[str], layout: str = "list", visualize: bool = False):
         from services.twilio_service import send_sms, send_mms
         from services.collage import generate_outfit_collage
 
@@ -73,32 +74,41 @@ class SMSOutput(OutputHandler):
                 logger.info(f"SMSOutput: sent text to {self.phone}")
             return
 
-        # Generate collage for images (both layouts use collage for SMS efficiency)
-        collage_url = generate_outfit_collage(self.user_id, images)
+        import time
 
-        if collage_url:
-            import time
-            # Split text into before/after image sections
-            before_image, after_image = self._split_message_sections(text)
+        # Split images into chunks of 6 for collage generation
+        chunks = [images[i:i+6] for i in range(0, len(images), 6)]
+        collage_urls = []
+        for chunk in chunks:
+            url = generate_outfit_collage(self.user_id, chunk)
+            if url:
+                collage_urls.append(url)
 
-            # Send in 3 parts: magic → image → how to wear it
-            # Add delays to help WhatsApp deliver in order
-            if before_image:
-                send_sms(self.phone, before_image)
-                time.sleep(0.5)  # 500ms delay
-            send_mms(self.phone, " ", [collage_url])
-            if after_image:
-                time.sleep(0.5)  # 500ms delay
-                send_sms(self.phone, after_image)
-
-            logger.info(f"SMSOutput: sent {len(images)} images as {layout} collage to {self.phone}")
-        else:
-            # Fallback: send text only if collage fails
+        if not collage_urls:
+            # Fallback: send text only if all collages fail
             logger.warning("SMSOutput: collage generation failed, sending text only")
             if text:
                 send_sms(self.phone, text)
             else:
                 send_sms(self.phone, "Here are your items (images unavailable)")
+            return
+
+        # Split text into before/after image sections
+        before_image, after_image = self._split_message_sections(text)
+
+        # Send: text → collage(s) → after-image text
+        if before_image:
+            send_sms(self.phone, before_image)
+            time.sleep(0.5)
+
+        for collage_url in collage_urls:
+            send_mms(self.phone, " ", [collage_url])
+            time.sleep(0.5)
+
+        if after_image:
+            send_sms(self.phone, after_image)
+
+        logger.info(f"SMSOutput: sent {len(images)} images as {len(collage_urls)} collage(s) to {self.phone}")
 
 
 class StatefulSMSOutput(SMSOutput):
@@ -115,36 +125,32 @@ class StatefulSMSOutput(SMSOutput):
         self.state_manager = state_manager
         self.message_sent = False  # Track if send() was called (to avoid duplicate sends)
 
-    def send(self, text: Optional[str], images: List[str], layout: str = "list"):
+    def send(self, text: Optional[str], images: List[str], layout: str = "list", visualize: bool = False):
         # Mark that send() was called (prevents duplicate sends in sms.py)
         self.message_sent = True
 
-        # First, send via parent class (collage)
-        super().send(text, images, layout)
+        # First, send via parent class (collage + text)
+        super().send(text, images, layout, visualize)
 
-        # Capture outfit for state if this looks like an outfit
-        # (layout="outfit" or multiple images suggesting a styled look)
-        is_outfit = images and (layout == "outfit" or len(images) >= 2)
-
-        if is_outfit:
+        # Agent decides whether this is an outfit worth saving + visualizing
+        if visualize and images:
             # Look up actual item names from URLs (for meaningful context)
             items_with_names = self._lookup_item_names(images)
 
             outfit_data = {
                 "items": items_with_names,
-                "image_urls": images,  # Keep for backward compat
+                "image_urls": images,
                 "styling_notes": text,
             }
             self.state_manager.set_last_outfit(outfit_data)
             logger.info(f"StatefulSMSOutput: captured outfit with {len(images)} items to state")
 
-            # Send expectation message for visualization (Step 1: set user expectations)
+            # Send expectation message for visualization
             from services.twilio_service import send_sms
-            send_sms(self.phone, "✨ Generating a styled version for you... (~15 more seconds)")
+            send_sms(self.phone, "Generating a styled version for you... (~15 more seconds)")
             logger.info(f"StatefulSMSOutput: sent visualization expectation message to {self.phone}")
 
             # Trigger background visualization (sends follow-up MMS)
-            # Extract "The magic" section for Runway styling instructions
             styling_hint = self._extract_magic_section(text)
             self._trigger_background_visualization(images, styling_hint)
 
@@ -237,10 +243,11 @@ class MockOutput(OutputHandler):
     def __init__(self):
         self.messages = []
 
-    def send(self, text: Optional[str], images: List[str], layout: str = "list"):
+    def send(self, text: Optional[str], images: List[str], layout: str = "list", visualize: bool = False):
         self.messages.append({
             "text": text,
             "images": images,
-            "layout": layout
+            "layout": layout,
+            "visualize": visualize,
         })
-        logger.info(f"MockOutput: captured message with {len(images)} images, layout={layout}")
+        logger.info(f"MockOutput: captured message with {len(images)} images, layout={layout}, visualize={visualize}")

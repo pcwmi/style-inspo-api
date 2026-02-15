@@ -504,15 +504,16 @@ class StylingAgent:
                 text = tool_input.get("text")
                 images = tool_input.get("images", [])
                 layout = tool_input.get("layout", "list")
+                visualize = tool_input.get("visualize", False)
 
                 if self.output:
-                    self.output.send(text=text, images=images, layout=layout)
-                    logger.info(f"send_message: sent {len(images)} images with layout={layout}")
-                    return {"status": "sent", "images_count": len(images)}
+                    self.output.send(text=text, images=images, layout=layout, visualize=visualize)
+                    logger.info(f"send_message: sent {len(images)} images with layout={layout}, visualize={visualize}")
+                    return {"status": "sent", "images_count": len(images), "visualize": visualize}
                 else:
                     # No output handler - just log what would be sent
                     logger.info(f"send_message (no handler): text={text[:50] if text else None}..., {len(images)} images")
-                    return {"status": "no_output_handler", "would_send": {"text": text, "images": images, "layout": layout}}
+                    return {"status": "no_output_handler", "would_send": {"text": text, "images": images, "layout": layout, "visualize": visualize}}
 
             # --- WEB BROWSING ---
             elif tool_name == "browse_url":

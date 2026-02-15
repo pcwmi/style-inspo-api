@@ -1,0 +1,37 @@
+# SMS Agent Quality Eval Presets
+# Usage: python scripts/run_sms_eval.py --preset <name>
+
+quick-sms:
+  description: "Quick test: 1 occasion scenario, 1 iteration"
+  scenario_filter: "occasion_dinner"
+  iterations: 1
+
+full-sms-peichin:
+  description: "All SMS use cases for peichin (1 iteration each)"
+  user_filter: "peichin"
+  iterations: 1
+
+inspo-only:
+  description: "Inspiration photo scenarios only"
+  use_case_filter: "inspiration_photo"
+  iterations: 1
+
+selfie-only:
+  description: "Selfie/improve scenarios only"
+  use_case_filter: "selfie_improve"
+  iterations: 1
+
+occasion-only:
+  description: "Occasion-based scenarios only"
+  use_case_filter: "occasion"
+  iterations: 1
+
+browse-only:
+  description: "Browse/filter scenarios only"
+  use_case_filter: "browse"
+  iterations: 1
+
+quick-browse:
+  description: "Quick test: 1 browse scenario, 1 iteration"
+  scenario_filter: "browse_color"
+  iterations: 1
