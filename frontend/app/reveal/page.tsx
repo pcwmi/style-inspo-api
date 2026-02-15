@@ -18,7 +18,7 @@ function RevealPageContent() {
   const jobId = searchParams.get('job')
   const debugMode = searchParams.get('debug') === 'true'
   const streamMode = searchParams.get('stream') === 'true'
-  const agentMode = searchParams.get('agent') === 'true'
+  const agentMode = searchParams.get('agent') !== 'false'
   const mode = searchParams.get('mode') || 'occasion'
   const occasions = searchParams.get('occasions') || ''
   const anchorItems = searchParams.get('anchor_items') || ''
