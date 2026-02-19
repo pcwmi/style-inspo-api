@@ -63,37 +63,6 @@ class SMSOutput(OutputHandler):
         # No marker found - send all text before image
         return text, None
 
-    def _resolve_items_for_collage(self, image_urls: List[str]) -> List[dict]:
-        """Resolve item metadata from image URLs for flat-lay collage."""
-        try:
-            from services.wardrobe_manager import WardrobeManager
-            wm = WardrobeManager(user_id=self.user_id)
-            all_items = wm.get_wardrobe_items(filter_type="all")
-
-            url_to_item = {}
-            for item in all_items:
-                url = item.get("system_metadata", {}).get("image_path", "")
-                if url:
-                    url_to_item[url] = item
-
-            resolved = []
-            for url in image_urls:
-                item = url_to_item.get(url)
-                if item:
-                    resolved.append({
-                        "image_url": url,
-                        "name": item.get("styling_details", {}).get("name", ""),
-                        "category": item.get("styling_details", {}).get("category", ""),
-                        "sub_category": item.get("styling_details", {}).get("sub_category", ""),
-                    })
-                else:
-                    resolved.append({"image_url": url, "category": "unknown", "sub_category": ""})
-            return resolved
-
-        except Exception as e:
-            logger.warning(f"SMSOutput._resolve_items_for_collage failed: {e}")
-            return [{"image_url": url, "category": "unknown", "sub_category": ""} for url in image_urls]
-
     def send(self, text: Optional[str], images: List[str], layout: str = "list", visualize: bool = False):
         from services.twilio_service import send_sms, send_mms
         from services.collage import generate_outfit_collage
@@ -107,15 +76,11 @@ class SMSOutput(OutputHandler):
 
         import time
 
-        # Resolve item metadata for category-aware flat-lay
-        resolved_items = self._resolve_items_for_collage(images)
-
         # Split images into chunks of 6 for collage generation
         chunks = [images[i:i+6] for i in range(0, len(images), 6)]
-        item_chunks = [resolved_items[i:i+6] for i in range(0, len(resolved_items), 6)]
         collage_urls = []
-        for chunk_urls, chunk_items in zip(chunks, item_chunks):
-            url = generate_outfit_collage(self.user_id, chunk_urls, items=chunk_items)
+        for chunk in chunks:
+            url = generate_outfit_collage(self.user_id, chunk)
             if url:
                 collage_urls.append(url)
 
