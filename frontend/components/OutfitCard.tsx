@@ -7,7 +7,6 @@ import Link from 'next/link'
 import { api } from '@/lib/api'
 import { posthog } from '@/lib/posthog'
 import { ModelDescriptorModal } from './ModelDescriptorModal'
-import { getItemPosition } from '@/lib/flatlay'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -235,73 +234,62 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
         <div className="bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-4 md:p-6 mb-4 md:mb-6 shadow-sm">
             <h2 className="text-lg md:text-xl font-semibold mb-3 md:mb-4">Outfit {index}</h2>
 
-            {/* Outfit images - editorial flat-lay */}
-            <div className="relative w-full mb-4 bg-[#f5f3f0] rounded-lg overflow-hidden" style={{ paddingBottom: '133%' }}>
+            {/* Outfit images */}
+            <div className="grid grid-cols-3 gap-2 mb-4">
                 {outfit.items.map((item: any, idx: number) => {
                     const imagePath = item.system_metadata?.image_path || item.image_path
                     const isConsidering = item.id?.startsWith('consider_')
                     const isSynthetic = !imagePath && item.category === "unknown"
                     const itemName = item.name || `Item ${idx + 1}`
 
-                    const pos = getItemPosition(
-                        item.category || 'unknown',
-                        item.sub_category,
-                        idx,
-                        outfit.items.length,
-                        outfit.items.map((i: any) => ({ category: i.category || 'unknown', sub_category: i.sub_category })),
-                    )
-
                     return (
-                        <div
-                            key={idx}
-                            className="absolute"
-                            style={{
-                                left: pos.left,
-                                top: pos.top,
-                                width: pos.width,
-                                transform: `translate(-50%, -50%) rotate(${pos.rotation}deg)`,
-                                zIndex: pos.zIndex,
-                            }}
-                        >
-                            <div className={`relative rounded-lg overflow-hidden shadow-md ${
-                                isSynthetic
-                                    ? 'bg-gradient-to-br from-sand to-bone border-2 border-dashed border-terracotta/30 aspect-square'
-                                    : ''
-                            }`}>
-                                {/* Considering badge */}
-                                {isConsidering && (
-                                    <div className="absolute top-1 right-1 bg-terracotta backdrop-blur-sm px-1.5 py-0.5 rounded-full z-10">
-                                        <span className="text-[9px] font-medium text-white">Considering</span>
+                        <div key={idx} className={`relative aspect-square rounded overflow-hidden ${
+                            isSynthetic
+                                ? 'bg-gradient-to-br from-sand to-bone border-2 border-dashed border-terracotta/30'
+                                : 'bg-sand'
+                        }`}>
+                            {/* Considering badge */}
+                            {isConsidering && (
+                                <div className="absolute top-2 right-2 bg-terracotta backdrop-blur-sm px-2 py-0.5 rounded-full z-10">
+                                    <span className="text-xs font-medium text-white">Considering</span>
+                                </div>
+                            )}
+                            {isSynthetic ? (
+                                <>
+                                    {/* "Suggested" badge */}
+                                    <div className="absolute top-2 left-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md shadow-sm">
+                                        <div className="flex items-center gap-1.5 justify-center">
+                                            <svg className="w-3 h-3 text-terracotta" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z"/>
+                                            </svg>
+                                            <span className="text-[10px] font-medium text-terracotta uppercase tracking-wide">
+                                                Suggested
+                                            </span>
+                                        </div>
                                     </div>
-                                )}
-                                {isSynthetic ? (
-                                    <div className="aspect-square flex flex-col items-center justify-center p-2">
-                                        <svg className="w-3 h-3 text-terracotta mb-1" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z"/>
-                                        </svg>
-                                        <p className="text-center text-[10px] font-medium text-ink leading-tight">
+                                    {/* Item name */}
+                                    <div className="absolute inset-0 flex items-center justify-center p-3 pt-10">
+                                        <p className="text-center text-sm font-medium text-ink leading-tight">
                                             {itemName}
                                         </p>
                                     </div>
-                                ) : imagePath ? (
-                                    imagePath.startsWith('http') ? (
-                                        <img
-                                            src={imagePath}
-                                            alt={itemName}
-                                            className="w-full h-auto rounded-lg"
-                                        />
-                                    ) : (
-                                        <div className="relative aspect-square">
-                                            <Image
-                                                src={imagePath.startsWith('/') ? imagePath : `/${imagePath}`}
-                                                alt={itemName}
-                                                fill
-                                                className="object-cover rounded-lg"
-                                            />
-                                        </div>
-                                    )
-                                ) : null}
-                            </div>
+                                </>
+                            ) : imagePath ? (
+                                imagePath.startsWith('http') ? (
+                                    <img
+                                        src={imagePath}
+                                        alt={itemName}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <Image
+                                        src={imagePath.startsWith('/') ? imagePath : `/${imagePath}`}
+                                        alt={itemName}
+                                        fill
+                                        className="object-cover"
+                                    />
+                                )
+                            ) : null}
                         </div>
                     )
                 })}
