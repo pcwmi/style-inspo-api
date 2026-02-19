@@ -125,13 +125,28 @@ def match_items_to_wardrobe(
     return results
 
 
+def _normalize_dashes(text: str) -> str:
+    """Normalize all dash variants to a single hyphen for matching."""
+    import unicodedata
+    # Replace em dash, en dash, minus sign, and double dashes with single hyphen
+    for ch in ('\u2014', '\u2013', '\u2012', '\u2015', '\u2212'):
+        text = text.replace(ch, '-')
+    text = text.replace('--', '-')
+    return text
+
+
 def _fuzzy_match(name1: str, name2: str) -> bool:
     """
     Substring match only - same logic as the reveal page (outfits.py line 265).
 
     This is intentionally simple. The word-overlap strategy was removed because
     it caused bad matches like 'black loafers' -> 'black shirt' (shared "black").
+
+    Normalizes unicode dashes (em dash, en dash, etc.) before comparing,
+    since LLMs often reformat '--' to '—' between turns.
     """
+    name1 = _normalize_dashes(name1)
+    name2 = _normalize_dashes(name2)
     return name1 in name2 or name2 in name1
 
 
