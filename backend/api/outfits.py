@@ -28,6 +28,16 @@ def _trigger_background_visualization(user_id: str, outfit_id: str, items: list)
     """Spawn background thread to generate visualization for saved outfit."""
     import threading
 
+    # Skip if outfit already has a visualization
+    try:
+        manager = SavedOutfitsManager(user_id=user_id)
+        outfit = manager.get_outfit(outfit_id)
+        if outfit and outfit.get("visualization_url"):
+            logger.info(f"Outfit {outfit_id} already has viz, skipping")
+            return
+    except Exception:
+        pass  # If check fails, proceed with generation
+
     def run_visualization():
         try:
             from services.visualization.visualization_manager import VisualizationManager
@@ -70,6 +80,13 @@ def _trigger_visualization_by_key(user_id: str, viz_key: str, garment_images: li
     Results stored in Redis by viz_key for frontend polling.
     """
     import threading
+    from services.visualization.viz_cache import get_viz_status
+
+    # Skip if already generating or done
+    existing = get_viz_status(viz_key)
+    if existing.get("status") in ["pending", "complete"]:
+        logger.info(f"Viz already {existing['status']} for key {viz_key}, skipping")
+        return
 
     def run_visualization():
         try:
