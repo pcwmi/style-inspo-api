@@ -39,6 +39,7 @@ logging.getLogger("openai").setLevel(logging.WARNING)
 
 from agent.agent import StylingAgent
 from agent.output import MockOutput
+from api.sms import preload_user_context
 from services.wardrobe_manager import WardrobeManager
 
 
@@ -148,6 +149,9 @@ def run_scenario(scenario: Dict, iteration: int, wardrobe_cache: Dict) -> Dict:
     turn_results = []
     total_start = time.time()
 
+    # Pre-load user context once per scenario (mirrors production sms.py)
+    preloaded = preload_user_context(scenario["user_id"])
+
     for turn_def in scenario["turns"]:
         turn_num = turn_def["turn"]
 
@@ -167,7 +171,8 @@ def run_scenario(scenario: Dict, iteration: int, wardrobe_cache: Dict) -> Dict:
             user_id=scenario["user_id"],
             provider="openai",
             output=output,
-            conversation_context=conversation_context
+            conversation_context=conversation_context,
+            preloaded_context=preloaded
         )
 
         # Build image args
@@ -189,7 +194,7 @@ def run_scenario(scenario: Dict, iteration: int, wardrobe_cache: Dict) -> Dict:
             success = False
             error = str(e)
 
-        # Capture turn result
+        # Capture turn result (including LLM turn count and token usage)
         turn_results.append({
             "turn": turn_num,
             "user_message": turn_def["user_message"],
@@ -198,6 +203,12 @@ def run_scenario(scenario: Dict, iteration: int, wardrobe_cache: Dict) -> Dict:
             "agent_text_response": response,
             "output_messages": output.messages,
             "latency_seconds": round(latency, 1),
+            "llm_turns": len([e for e in agent.turn_log if e["type"] == "llm_response"]),
+            "token_usage": {
+                "input": agent.total_input_tokens,
+                "output": agent.total_output_tokens,
+                "cached": agent.total_cached_tokens,
+            },
             "success": success,
             "error": error,
         })
@@ -323,8 +334,10 @@ def main():
             for tr in result["turns"]:
                 status = "OK" if tr["success"] else "FAIL"
                 n_images = sum(len(m.get("images", [])) for m in tr["output_messages"])
+                tokens = tr.get("token_usage", {})
                 text_preview = (tr["agent_text_response"] or "")[:80]
-                print(f"    Turn {tr['turn']}: {status} ({tr['latency_seconds']}s, {n_images} images)")
+                print(f"    Turn {tr['turn']}: {status} ({tr['latency_seconds']}s, {tr.get('llm_turns', '?')} LLM calls, {n_images} images)")
+                print(f"      Tokens: {tokens.get('input', 0)} in ({tokens.get('cached', 0)} cached), {tokens.get('output', 0)} out")
                 print(f"      Agent: {text_preview}...")
 
             print(f"    Total: {result['total_latency_seconds']}s")

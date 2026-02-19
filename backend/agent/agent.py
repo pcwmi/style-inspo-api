@@ -31,14 +31,19 @@ class StylingAgent:
         provider: Provider = "anthropic",
         model: Optional[str] = None,
         output: Optional[any] = None,  # OutputHandler for send_message
-        conversation_context: Optional[dict] = None  # Stateful conversation context
+        conversation_context: Optional[dict] = None,  # Stateful conversation context
+        preloaded_context: Optional[str] = None  # Pre-fetched profile/items/feedback
     ):
         self.user_id = user_id
         self.provider = provider
         self.max_turns = 10
         self.output = output  # Injected output handler (modality-aware)
         self.conversation_context = conversation_context  # For stateful SMS
+        self.preloaded_context = preloaded_context  # Eliminates context-gathering round-trip
         self.turn_log = []  # Structured trace of this run
+        self.total_input_tokens = 0
+        self.total_output_tokens = 0
+        self.total_cached_tokens = 0
 
         # Set default model per provider
         if model:
@@ -210,8 +215,18 @@ class StylingAgent:
 
     def _run_openai(self, user_message: str, image_urls: list[str] = None) -> str:
         """OpenAI agent loop."""
-        # Start with system prompt
-        messages = [{"role": "system", "content": STYLING_SYSTEM_PROMPT}]
+        # Start with system prompt (+ preloaded context if available)
+        system_prompt = STYLING_SYSTEM_PROMPT
+        if self.preloaded_context:
+            system_prompt += (
+                "\n\n---\n\n# User Context (pre-loaded)\n\n"
+                "The user's profile, wardrobe, and feedback are provided below. "
+                "Do NOT call get_profile, get_items, or get_feedback_patterns — this data is already here. "
+                "Go straight to reasoning about outfits and calling resolve_items + send_message.\n\n"
+                + self.preloaded_context
+            )
+            logger.info("Injected preloaded context into system prompt")
+        messages = [{"role": "system", "content": system_prompt}]
 
         # Add conversation history (each message with its own photos)
         history = self._build_conversation_messages()
@@ -242,6 +257,19 @@ class StylingAgent:
                 tool_choice="auto"
             )
 
+            # Log token usage including cache status
+            if hasattr(response, 'usage') and response.usage:
+                usage = response.usage
+                cached = getattr(usage, 'prompt_tokens_details', None)
+                cached_tokens = cached.cached_tokens if cached and hasattr(cached, 'cached_tokens') else 0
+                self.total_input_tokens += usage.prompt_tokens
+                self.total_output_tokens += usage.completion_tokens
+                self.total_cached_tokens += cached_tokens
+                logger.info(
+                    f"Tokens: {usage.prompt_tokens} input ({cached_tokens} cached), "
+                    f"{usage.completion_tokens} output"
+                )
+
             choice = response.choices[0]
             logger.info(f"Finish reason: {choice.finish_reason}")
 
@@ -271,6 +299,11 @@ class StylingAgent:
             })
 
             if choice.finish_reason == "stop":
+                logger.info(
+                    f"Agent complete: {turn + 1} turns, "
+                    f"{self.total_input_tokens} total input ({self.total_cached_tokens} cached), "
+                    f"{self.total_output_tokens} total output"
+                )
                 return response_text
 
             if choice.finish_reason == "tool_calls":

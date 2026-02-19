@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 def log_agent_turn(user_id, channel, user_message, image_urls, agent_response,
-                   turn_log, model, conversation_length):
+                   turn_log, model, conversation_length, token_usage=None):
     """Persist a complete agent turn trace to S3 for eval/replay."""
     storage = StorageManager(
         storage_type=os.getenv("STORAGE_TYPE", "local"),
@@ -39,6 +39,8 @@ def log_agent_turn(user_id, channel, user_message, image_urls, agent_response,
         },
         "trace": turn_log,
     }
+    if token_usage:
+        entry["token_usage"] = token_usage
 
     # Append to daily log file (one file per user per day)
     date_str = timestamp.strftime("%Y-%m-%d")
