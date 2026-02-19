@@ -521,6 +521,18 @@ class StylingAgent:
                     occasion=tool_input.get("occasion", "")
                 )
                 logger.info(f"save_outfit saved with ID: {outfit_id}")
+
+                # Link SMS visualization if available in conversation state
+                if hasattr(self.output, 'state_manager'):
+                    try:
+                        state = self.output.state_manager.get_state()
+                        viz_url = (state.last_outfit or {}).get("visualization_url") if state else None
+                        if viz_url:
+                            manager.update_outfit_visualization(outfit_id, viz_url)
+                            logger.info(f"save_outfit: linked SMS visualization to {outfit_id}")
+                    except Exception as e:
+                        logger.warning(f"save_outfit: failed to link SMS viz: {e}")
+
                 return {"outfit_id": outfit_id, "status": "saved"}
 
             # Tools that still need HTTP (external services)

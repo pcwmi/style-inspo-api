@@ -223,6 +223,16 @@ class StatefulSMSOutput(SMSOutput):
                     viz_url = result["visualization_url"]
                     send_mms(self.phone, "Here's how it looks on you! 👗", [viz_url])
                     logger.info(f"StatefulSMSOutput: sent visualization to {self.phone}")
+
+                    # Persist viz URL to conversation state for later save_outfit linkage
+                    try:
+                        state = self.state_manager.get_state()
+                        if state and state.last_outfit:
+                            state.last_outfit["visualization_url"] = viz_url
+                            self.state_manager.save_state(state)
+                            logger.info(f"StatefulSMSOutput: persisted viz_url to conversation state")
+                    except Exception as e:
+                        logger.warning(f"StatefulSMSOutput: failed to persist viz_url: {e}")
                 else:
                     # Silent fail - don't bother user
                     logger.warning(f"StatefulSMSOutput: visualization failed for {self.user_id}")
