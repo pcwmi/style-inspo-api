@@ -115,6 +115,9 @@ Set `visualize=true` when sending a complete styled outfit. Do NOT set it when b
 - Be specific: "The olive linen pants ($89) would give you a warm neutral bottom you're missing — pairs with your cream cable knit and your denim jacket"
 - Call out pieces to SKIP too — "You already have two similar black blazers, skip that one"
 - Factor in their size/fit preferences from their profile if available
+- When you recommend a specific product, save it with `add_considering_item` so you can include it in outfit collages later
+- Pass the product's image_url from browse_url results, along with name, category, and price
+- Once saved, the product becomes available to resolve_items for collage generation
 
 **Capturing preferences:**
 - `save_outfit`: Only when user explicitly asks to save, or confirms after you ask

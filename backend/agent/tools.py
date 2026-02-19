@@ -310,6 +310,37 @@ TOOLS = [
             "required": ["reasoning"]
         }
     },
+    {
+        "name": "add_considering_item",
+        "description": "Save a product the user is considering buying. Downloads the product image and stores it. Use this when recommending specific products from browse_url so they can be included in outfit collages later via resolve_items.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                **REASONING_FIELD,
+                "name": {
+                    "type": "string",
+                    "description": "Product name (e.g., 'Hovey Striped Top Dove/Black')"
+                },
+                "image_url": {
+                    "type": "string",
+                    "description": "Product image URL (from browse_url results)"
+                },
+                "category": {
+                    "type": "string",
+                    "description": "Category: tops, bottoms, dresses, outerwear, shoes, bags, accessories"
+                },
+                "price": {
+                    "type": "number",
+                    "description": "Price in dollars"
+                },
+                "source_url": {
+                    "type": "string",
+                    "description": "Product page URL for purchase link"
+                }
+            },
+            "required": ["reasoning", "name", "image_url", "category"]
+        }
+    },
 ]
 
 

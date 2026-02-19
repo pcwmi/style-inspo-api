@@ -601,6 +601,53 @@ class StylingAgent:
                 result = browse_url(tool_input["url"])
                 return result
 
+            # --- CONSIDERING (SHOPPING) ---
+            elif tool_name == "add_considering_item":
+                import requests
+                from io import BytesIO
+                from services.consider_buying_manager import ConsiderBuyingManager
+
+                name = tool_input.get("name", "Unnamed")
+                image_url = tool_input.get("image_url")
+                category = tool_input.get("category", "tops")
+                price = tool_input.get("price")
+                source_url = tool_input.get("source_url")
+
+                # Download image from URL
+                try:
+                    headers = {"User-Agent": "StyleInspo/1.0"}
+                    resp = requests.get(image_url, timeout=15, headers=headers)
+                    resp.raise_for_status()
+                    image_file = BytesIO(resp.content)
+                except Exception as e:
+                    return {"error": f"Failed to download image: {e}"}
+
+                # Build analysis_data (skip LLM analysis — agent already knows the details)
+                analysis_data = {
+                    "name": name,
+                    "category": category,
+                    "sub_category": f"{category}_general",
+                    "colors": [],
+                    "style": "casual",
+                    "brand": "",
+                }
+
+                manager = ConsiderBuyingManager(user_id=self.user_id)
+                item = manager.add_item(
+                    analysis_data=analysis_data,
+                    image=image_file,
+                    price=price,
+                    source_url=source_url,
+                )
+
+                logger.info(f"add_considering_item: saved '{name}' as {item.get('id')}")
+                return {
+                    "success": True,
+                    "item_id": item.get("id"),
+                    "name": item.get("styling_details", {}).get("name"),
+                    "message": f"Saved '{name}' to considering items. You can now include it in resolve_items."
+                }
+
             else:
                 return {"error": f"Unknown tool: {tool_name}"}
 
