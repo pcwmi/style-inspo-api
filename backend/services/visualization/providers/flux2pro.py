@@ -141,7 +141,13 @@ class Flux2ProProvider(ImageGenerationProvider):
         """Create prompt for Flux 2 Pro multi-reference edit."""
         item_names = request.prompt_text if request.prompt_text else "the garments shown"
 
-        descriptor_block = f"{model_descriptor}\n\n" if model_descriptor else ""
+        # Append brand-reference anchor to calibrate body proportions.
+        # Raw descriptors like "size 10 curvy" cause fal to exaggerate body size.
+        # The brand reference grounds proportions to mainstream catalog models.
+        if model_descriptor:
+            descriptor_block = f"{model_descriptor}. Proportions similar to a J.Crew or Madewell catalog model.\n\n"
+        else:
+            descriptor_block = ""
 
         prompt = (
             f"{descriptor_block}"
