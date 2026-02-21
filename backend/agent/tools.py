@@ -77,7 +77,7 @@ TOOLS = [
     },
     {
         "name": "get_feedback_patterns",
-        "description": "Get patterns in what the user loves (saved outfits) AND hates (dislikes). Returns both positive and negative feedback with reasons. USE THIS to understand their taste — learn from successes AND avoid repeating mistakes.",
+        "description": "Get patterns in what the user loves (saved outfits) AND hates (dislikes), plus silent feedback (save rate and patterns from outfits generated but not saved). Returns explicit positive/negative feedback with reasons, and implicit signal from save rate. USE THIS to understand their taste — learn from successes, avoid repeating mistakes, and calibrate based on their overall save rate.",
         "input_schema": {
             "type": "object",
             "properties": {

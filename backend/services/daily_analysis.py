@@ -261,6 +261,10 @@ async def run_daily_analysis(date_str: Optional[str] = None, exclude_users: List
 
         analysis_results[user_id] = user_analysis
 
+    # Persist silent feedback patterns per user (rolling 30-day window)
+    for user_id, user_analysis in analysis_results.items():
+        _persist_silent_feedback(user_id, date_str, user_analysis)
+
     # Generate HTML email
     html_content = generate_analysis_email(date_str, analysis_results)
 
@@ -281,6 +285,50 @@ async def run_daily_analysis(date_str: Optional[str] = None, exclude_users: List
         "email_sent": email_sent,
         "users": list(analysis_results.keys())
     }
+
+
+def _persist_silent_feedback(user_id: str, date_str: str, user_analysis: Dict) -> None:
+    """
+    Persist daily silent feedback summary to S3 for agent consumption.
+
+    Maintains a rolling 30-day window of daily entries at
+    {user_id}/silent_feedback_patterns.json
+    """
+    total = user_analysis["total_outfits"]
+    saved = user_analysis["total_saved"]
+    if total == 0:
+        return
+
+    save_rate = round(saved / total * 100)
+    entry = {
+        "date": date_str,
+        "generated": total,
+        "saved": saved,
+        "save_rate": f"{save_rate}%",
+        "pattern": user_analysis.get("pattern", ""),
+    }
+
+    try:
+        storage = StorageManager(storage_type="s3", user_id=user_id)
+
+        # Load existing entries
+        try:
+            existing = storage.load_json("silent_feedback_patterns.json")
+            entries = existing.get("entries", [])
+        except Exception:
+            entries = []
+
+        # Replace if same date already exists, otherwise append
+        entries = [e for e in entries if e.get("date") != date_str]
+        entries.append(entry)
+
+        # Trim to 30 days
+        entries = sorted(entries, key=lambda e: e.get("date", ""))[-30:]
+
+        storage.save_json({"entries": entries}, "silent_feedback_patterns.json")
+        logger.info(f"Persisted silent feedback for {user_id}: {save_rate}% save rate")
+    except Exception as e:
+        logger.warning(f"Failed to persist silent feedback for {user_id}: {e}")
 
 
 def generate_analysis_email(date_str: str, analysis_results: Dict) -> str:

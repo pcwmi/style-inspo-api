@@ -152,12 +152,53 @@ async def get_feedback_patterns(user_id: str) -> Dict[str, Any]:
             "worn": bool(s.get("worn_at")),
         })
 
-    return {
+    # --- Silent feedback (generated but not saved/disliked) ---
+    silent_patterns = _load_silent_feedback(user_id)
+
+    result = {
         "total_disliked": len(disliked_list),
         "total_saved": len(saved_list),
         "actionable_negative": actionable_negative,
         "feedback": feedback,
     }
+    if silent_patterns:
+        result["silent_patterns"] = silent_patterns
+
+    return result
+
+
+def _load_silent_feedback(user_id: str) -> Optional[Dict]:
+    """
+    Load persisted silent feedback patterns from S3.
+
+    Returns compact summary for agent: overall save rate + most recent pattern.
+    """
+    try:
+        from services.storage_manager import StorageManager
+        storage = StorageManager(storage_type="s3", user_id=user_id)
+        data = storage.load_json("silent_feedback_patterns.json")
+        entries = data.get("entries", [])
+        if not entries:
+            return None
+
+        total_generated = sum(e.get("generated", 0) for e in entries)
+        total_saved = sum(e.get("saved", 0) for e in entries)
+        overall_rate = round(total_saved / total_generated * 100) if total_generated > 0 else 0
+
+        # Most recent entry with a pattern
+        recent_pattern = ""
+        for e in reversed(entries):
+            if e.get("pattern"):
+                recent_pattern = e["pattern"]
+                break
+
+        return {
+            "overall_save_rate": f"{overall_rate}% ({total_saved} saved of {total_generated} generated, last {len(entries)} days)",
+            "recent_pattern": recent_pattern,
+            "last_updated": entries[-1].get("date", ""),
+        }
+    except Exception:
+        return None
 
 
 # --- WRITE PRIMITIVES ---
