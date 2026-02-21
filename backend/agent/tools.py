@@ -381,6 +381,52 @@ TOOLS = [
             "required": ["reasoning", "item_id", "decision"]
         }
     },
+    {
+        "name": "delete_considering_item",
+        "description": "Remove an item from the considering list. Use when user says 'remove that', 'not interested anymore', or 'take it off the list'. Call get_considering_items first to find the item_id.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                **REASONING_FIELD,
+                "item_id": {
+                    "type": "string",
+                    "description": "The considering item ID (from get_considering_items)"
+                }
+            },
+            "required": ["reasoning", "item_id"]
+        }
+    },
+    {
+        "name": "update_considering_item",
+        "description": "Update details of a considering item (name, category, price, notes). Use when user corrects info or adds context about a product.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                **REASONING_FIELD,
+                "item_id": {
+                    "type": "string",
+                    "description": "The considering item ID (from get_considering_items)"
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Updated product name"
+                },
+                "category": {
+                    "type": "string",
+                    "description": "Updated category"
+                },
+                "price": {
+                    "type": "number",
+                    "description": "Updated price in dollars"
+                },
+                "notes": {
+                    "type": "string",
+                    "description": "Notes about the item (e.g., 'runs small', 'wait for sale')"
+                }
+            },
+            "required": ["reasoning", "item_id"]
+        }
+    },
 ]
 
 

@@ -132,6 +132,8 @@ Set `visualize=true` when sending a complete styled outfit. Do NOT set it when b
 - `get_considering_items`: Check what products they're considering buying
 - `get_considering_stats`: Show their buying stats (bought, passed, money saved)
 - `decide_considering_item`: When user says "I bought the top", "pass on those pants", "got the shoes". Call `get_considering_items` first to find the item_id, then record the decision.
+- `delete_considering_item`: When user says "remove that", "not interested anymore", "take it off the list". Call `get_considering_items` first to find the item_id.
+- `update_considering_item`: When user corrects product details or adds notes ("actually it's $89", "that's a dress not a top", "note: wait for sale").
 - Confirm briefly and reinforce: "Nice pickup!" or "Smart pass — you already have something similar."
 
 **When showing outfits:**

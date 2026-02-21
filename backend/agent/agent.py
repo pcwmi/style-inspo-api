@@ -739,6 +739,26 @@ class StylingAgent:
                 logger.info(f"decide_considering_item: {decision} on {item_id}")
                 return {"success": True, "item_id": item_id, "decision": decision}
 
+            elif tool_name == "delete_considering_item":
+                from services.consider_buying_manager import ConsiderBuyingManager
+                manager = ConsiderBuyingManager(user_id=self.user_id)
+                item_id = tool_input.get("item_id")
+                manager.delete_item(item_id)
+                logger.info(f"delete_considering_item: deleted {item_id}")
+                return {"success": True, "item_id": item_id}
+
+            elif tool_name == "update_considering_item":
+                from services.consider_buying_manager import ConsiderBuyingManager
+                manager = ConsiderBuyingManager(user_id=self.user_id)
+                item_id = tool_input.get("item_id")
+                updates = {}
+                for field in ("name", "category", "price", "notes"):
+                    if field in tool_input:
+                        updates[field] = tool_input[field]
+                result = manager.update_considering_item(item_id, updates)
+                logger.info(f"update_considering_item: updated {item_id} with {list(updates.keys())}")
+                return {"success": True, "item_id": item_id, "updated_fields": list(updates.keys())}
+
             else:
                 return {"error": f"Unknown tool: {tool_name}"}
 
