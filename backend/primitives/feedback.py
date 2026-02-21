@@ -4,7 +4,7 @@ Feedback Primitives - Disliked outfit/feedback operations.
 Primitives:
 - save_feedback(user_id, outfit_data, reason) -> Feedback
 - get_feedback(user_id) -> List[Feedback]
-- get_feedback_patterns(user_id) -> FeedbackPatterns
+- get_feedback_patterns(user_id) -> FeedbackPatterns (positive + negative)
 """
 
 from fastapi import APIRouter, HTTPException
@@ -13,6 +13,7 @@ from typing import Dict, List, Optional, Any
 import logging
 
 from services.disliked_outfits_manager import DislikedOutfitsManager
+from services.saved_outfits_manager import SavedOutfitsManager
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -75,20 +76,15 @@ async def get_feedback(user_id: str) -> Dict[str, Any]:
 @router.get("/{user_id}/patterns")
 async def get_feedback_patterns(user_id: str) -> Dict[str, Any]:
     """
-    Get feedback with full context for agent to reason about.
+    Get positive AND negative feedback patterns for agent reasoning.
 
-    Filters out generic checkbox responses that don't teach anything.
-    Only returns freeform feedback with actionable insights.
+    Signal strength hierarchy:
+    1. Explicit dislikes with freeform reasons (strongest)
+    2. Explicit saves with reasons (strong)
+    3. Save rate / silent patterns (directional, added separately)
 
-    Args:
-        user_id: User identifier
-
-    Returns:
-        {
-            "total_feedback": int,
-            "actionable_feedback": int,
-            "feedback": [{"items": [...], "reason": str, "date": str}]
-        }
+    Negative: filters out generic checkbox responses.
+    Positive: includes ALL saves (checkbox and freeform).
     """
     # Generic checkbox responses that don't teach the agent anything
     USELESS_CHECKBOX_RESPONSES = {
@@ -100,11 +96,14 @@ async def get_feedback_patterns(user_id: str) -> Dict[str, Any]:
         "doesn't fit my style",
     }
 
-    manager = DislikedOutfitsManager(user_id=user_id)
-    feedback_list = manager.get_disliked_outfits(enrich_with_current_images=False)
-
     feedback = []
-    for f in feedback_list:
+
+    # --- Negative feedback (dislikes) ---
+    dislike_manager = DislikedOutfitsManager(user_id=user_id)
+    disliked_list = dislike_manager.get_disliked_outfits(enrich_with_current_images=False)
+
+    actionable_negative = 0
+    for f in disliked_list:
         reason = f.get("user_reason", "").strip()
 
         # Skip empty or generic checkbox feedback
@@ -127,13 +126,37 @@ async def get_feedback_patterns(user_id: str) -> Dict[str, Any]:
         feedback.append({
             "items": item_names,
             "reason": reason.strip('"'),
-            "date": f.get("disliked_at", "")[:10]
+            "date": f.get("disliked_at", "")[:10],
+            "type": "negative",
+        })
+        actionable_negative += 1
+
+    # --- Positive feedback (saved outfits) ---
+    save_manager = SavedOutfitsManager(user_id=user_id)
+    saved_list = save_manager.get_saved_outfits(enrich_with_current_images=False)
+
+    for s in saved_list:
+        reason = s.get("user_reason", "").strip()
+        if not reason:
+            continue
+
+        outfit_data = s.get("outfit_data", {})
+        items = outfit_data.get("items", [])
+        item_names = [item.get("name", "Unknown") for item in items]
+
+        feedback.append({
+            "items": item_names,
+            "reason": reason,
+            "date": s.get("saved_at", "")[:10],
+            "type": "positive",
+            "worn": bool(s.get("worn_at")),
         })
 
     return {
-        "total_feedback": len(feedback_list),
-        "actionable_feedback": len(feedback),
-        "feedback": feedback
+        "total_disliked": len(disliked_list),
+        "total_saved": len(saved_list),
+        "actionable_negative": actionable_negative,
+        "feedback": feedback,
     }
 
 

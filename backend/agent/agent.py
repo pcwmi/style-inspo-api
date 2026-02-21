@@ -396,7 +396,7 @@ class StylingAgent:
                 return {"feedback": feedback, "count": len(feedback)}
 
             elif tool_name == "get_feedback_patterns":
-                # Filter out useless checkbox responses, keep only actionable feedback
+                # Positive + negative feedback patterns
                 USELESS_CHECKBOX_RESPONSES = {
                     "the outfit doesn't make sense",
                     "not my style",
@@ -406,38 +406,57 @@ class StylingAgent:
                     "doesn't fit my style",
                 }
 
-                manager = DislikedOutfitsManager(user_id=self.user_id)
-                feedback_list = manager.get_disliked_outfits(enrich_with_current_images=False)
+                feedback = []
 
-                actionable_feedback = []
-                for f in feedback_list:
+                # Negative (dislikes) — filter out generic checkbox
+                dislike_mgr = DislikedOutfitsManager(user_id=self.user_id)
+                disliked_list = dislike_mgr.get_disliked_outfits(enrich_with_current_images=False)
+                actionable_negative = 0
+
+                for f in disliked_list:
                     reason = f.get("user_reason", "").strip()
                     if not reason:
                         continue
                     if reason.lower().strip('"') in USELESS_CHECKBOX_RESPONSES:
                         continue
-
-                    # Clean up "Other: " prefix
                     reason_clean = reason.strip('"').strip()
                     if reason_clean.lower().startswith('other:'):
                         reason = reason_clean[6:].strip()
                     else:
                         reason = reason_clean
 
-                    outfit_data = f.get("outfit_data", {})
-                    items = outfit_data.get("items", [])
-                    item_names = [item.get("name", "Unknown") for item in items]
+                    items = f.get("outfit_data", {}).get("items", [])
+                    feedback.append({
+                        "items": [i.get("name", "Unknown") for i in items],
+                        "reason": reason.strip('"'),
+                        "date": f.get("disliked_at", "")[:10],
+                        "type": "negative",
+                    })
+                    actionable_negative += 1
 
-                    actionable_feedback.append({
-                        "items": item_names,
+                # Positive (saves) — include all with reasons
+                from services.saved_outfits_manager import SavedOutfitsManager
+                save_mgr = SavedOutfitsManager(user_id=self.user_id)
+                saved_list = save_mgr.get_saved_outfits(enrich_with_current_images=False)
+
+                for s in saved_list:
+                    reason = s.get("user_reason", "").strip()
+                    if not reason:
+                        continue
+                    items = s.get("outfit_data", {}).get("items", [])
+                    feedback.append({
+                        "items": [i.get("name", "Unknown") for i in items],
                         "reason": reason,
-                        "date": f.get("disliked_at", "")[:10]
+                        "date": s.get("saved_at", "")[:10],
+                        "type": "positive",
+                        "worn": bool(s.get("worn_at")),
                     })
 
                 return {
-                    "total_feedback": len(feedback_list),
-                    "actionable_feedback": len(actionable_feedback),
-                    "feedback": actionable_feedback
+                    "total_disliked": len(disliked_list),
+                    "total_saved": len(saved_list),
+                    "actionable_negative": actionable_negative,
+                    "feedback": feedback,
                 }
 
             elif tool_name == "save_feedback":

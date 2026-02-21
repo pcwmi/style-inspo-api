@@ -77,7 +77,7 @@ TOOLS = [
     },
     {
         "name": "get_feedback_patterns",
-        "description": "Analyze feedback to find patterns in what the user dislikes. Returns common reasons, avoided items, and raw feedback. USE THIS to avoid repeating past mistakes.",
+        "description": "Get patterns in what the user loves (saved outfits) AND hates (dislikes). Returns both positive and negative feedback with reasons. USE THIS to understand their taste — learn from successes AND avoid repeating mistakes.",
         "input_schema": {
             "type": "object",
             "properties": {
