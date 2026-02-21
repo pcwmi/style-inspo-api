@@ -162,6 +162,22 @@ TOOLS = [
         }
     },
 
+    {
+        "name": "mark_worn",
+        "description": "Mark a saved outfit as worn. Use when user says 'I wore this today' or 'wore outfit #1'. Call get_not_worn_outfits first to find the outfit_id.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                **REASONING_FIELD,
+                "outfit_id": {
+                    "type": "string",
+                    "description": "The outfit ID to mark as worn (from get_saved_outfits or get_not_worn_outfits)"
+                }
+            },
+            "required": ["reasoning", "outfit_id"]
+        }
+    },
+
     # --- OUTFIT ACTIONS ---
     {
         "name": "save_outfit",
@@ -339,6 +355,30 @@ TOOLS = [
                 }
             },
             "required": ["reasoning", "name", "image_url", "category"]
+        }
+    },
+    {
+        "name": "decide_considering_item",
+        "description": "Record a buying decision on an item the user is considering. Use when user says 'I bought the top' or 'pass on those pants'. Call get_considering_items first to find the item_id.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                **REASONING_FIELD,
+                "item_id": {
+                    "type": "string",
+                    "description": "The considering item ID (from get_considering_items)"
+                },
+                "decision": {
+                    "type": "string",
+                    "enum": ["bought", "passed"],
+                    "description": "Whether the user bought or passed on the item"
+                },
+                "reason": {
+                    "type": "string",
+                    "description": "Why they made this decision (optional but useful for learning)"
+                }
+            },
+            "required": ["reasoning", "item_id", "decision"]
         }
     },
 ]

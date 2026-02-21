@@ -452,12 +452,39 @@ class StylingAgent:
                         "worn": bool(s.get("worn_at")),
                     })
 
-                return {
+                # Silent feedback (generated but not saved/disliked)
+                silent_patterns = None
+                try:
+                    from services.storage_manager import StorageManager
+                    storage = StorageManager(storage_type="s3", user_id=self.user_id)
+                    data = storage.load_json("silent_feedback_patterns.json")
+                    entries = data.get("entries", [])
+                    if entries:
+                        total_gen = sum(e.get("generated", 0) for e in entries)
+                        total_sav = sum(e.get("saved", 0) for e in entries)
+                        rate = round(total_sav / total_gen * 100) if total_gen > 0 else 0
+                        recent_pattern = ""
+                        for e in reversed(entries):
+                            if e.get("pattern"):
+                                recent_pattern = e["pattern"]
+                                break
+                        silent_patterns = {
+                            "overall_save_rate": f"{rate}% ({total_sav} saved of {total_gen} generated, last {len(entries)} days)",
+                            "recent_pattern": recent_pattern,
+                            "last_updated": entries[-1].get("date", ""),
+                        }
+                except Exception:
+                    pass
+
+                result = {
                     "total_disliked": len(disliked_list),
                     "total_saved": len(saved_list),
                     "actionable_negative": actionable_negative,
                     "feedback": feedback,
                 }
+                if silent_patterns:
+                    result["silent_patterns"] = silent_patterns
+                return result
 
             elif tool_name == "save_feedback":
                 manager = DislikedOutfitsManager(user_id=self.user_id)
@@ -511,6 +538,16 @@ class StylingAgent:
                 manager = SavedOutfitsManager(user_id=self.user_id)
                 outfits = manager.get_worn_outfits()
                 return {"outfits": outfits, "count": len(outfits)}
+
+            elif tool_name == "mark_worn":
+                manager = SavedOutfitsManager(user_id=self.user_id)
+                outfit_id = tool_input.get("outfit_id")
+                result = manager.mark_outfit_worn(outfit_id)
+                if result:
+                    logger.info(f"mark_worn: marked outfit {outfit_id} as worn")
+                    return {"success": True, "outfit_id": outfit_id, "worn_at": result.get("worn_at")}
+                else:
+                    return {"error": f"Outfit {outfit_id} not found"}
 
             elif tool_name == "save_outfit":
                 manager = SavedOutfitsManager(user_id=self.user_id)
@@ -678,6 +715,29 @@ class StylingAgent:
                     "name": item.get("styling_details", {}).get("name"),
                     "message": f"Saved '{name}' to considering items. You can now include it in resolve_items."
                 }
+
+            elif tool_name == "get_considering_items":
+                from services.consider_buying_manager import ConsiderBuyingManager
+                manager = ConsiderBuyingManager(user_id=self.user_id)
+                status = tool_input.get("status")
+                items = manager.get_items(status=status)
+                return {"items": items, "count": len(items)}
+
+            elif tool_name == "get_considering_stats":
+                from services.consider_buying_manager import ConsiderBuyingManager
+                manager = ConsiderBuyingManager(user_id=self.user_id)
+                stats = manager.get_stats()
+                return {"stats": stats}
+
+            elif tool_name == "decide_considering_item":
+                from services.consider_buying_manager import ConsiderBuyingManager
+                manager = ConsiderBuyingManager(user_id=self.user_id)
+                item_id = tool_input.get("item_id")
+                decision = tool_input.get("decision")
+                reason = tool_input.get("reason")
+                manager.record_decision(item_id, decision, reason)
+                logger.info(f"decide_considering_item: {decision} on {item_id}")
+                return {"success": True, "item_id": item_id, "decision": decision}
 
             else:
                 return {"error": f"Unknown tool: {tool_name}"}
