@@ -94,7 +94,7 @@ function LoginPageContent() {
 
         <div className="mt-8 pt-6 border-t border-[rgba(26,22,20,0.12)] text-center">
           <p className="text-sm text-muted">
-            New to Style Inspo?{' '}
+            New to Mira?{' '}
             <Link href="/welcome" className="text-terracotta hover:underline">
               Get started
             </Link>

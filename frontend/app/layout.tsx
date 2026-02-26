@@ -3,11 +3,11 @@ import './globals.css'
 import { Providers } from './providers'
 
 export const metadata: Metadata = {
-  title: 'Style Inspo — AI Styling Assistant',
-  description: 'AI that knows your wardrobe, learns your taste, and helps you get dressed with confidence.',
+  title: 'Mira — your stylist friend',
+  description: 'Text her what you\'re wearing. She knows your closet, your taste, and texts back.',
   openGraph: {
-    title: 'Style Inspo — AI Styling Assistant',
-    description: 'AI that knows your wardrobe, learns your taste, and helps you get dressed with confidence.',
+    title: 'Mira — your stylist friend',
+    description: 'Text her what you\'re wearing. She knows your closet, your taste, and texts back.',
     images: ['/showcase/og-image.png'],
   },
 }

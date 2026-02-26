@@ -106,7 +106,7 @@ export function DashboardClient() {
         {/* Header with auth state */}
         <div className="flex justify-between items-start mb-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold mb-2">Style Inspo</h1>
+            <h1 className="text-2xl md:text-3xl font-bold mb-2">Mira</h1>
             <p className="text-muted text-base leading-relaxed">Welcome back, {displayName}</p>
           </div>
           {authUser && (

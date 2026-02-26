@@ -1,5 +1,5 @@
 /**
- * Authentication utilities for Style Inspo
+ * Authentication utilities for Mira
  *
  * Handles:
  * - Session management via HTTP-only cookies
