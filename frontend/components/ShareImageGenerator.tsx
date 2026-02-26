@@ -53,7 +53,7 @@ export function ShareImageGenerator({
       ctx.fillStyle = '#1a1614'  // ink color
       ctx.font = 'bold 48px system-ui, -apple-system, sans-serif'
       ctx.textAlign = 'center'
-      ctx.fillText('Mira', width / 2, 80)
+      ctx.fillText('StyleInspo', width / 2, 80)
 
       ctx.font = '32px system-ui, -apple-system, sans-serif'
       ctx.fillStyle = '#666'
@@ -82,7 +82,7 @@ export function ShareImageGenerator({
       ctx.fillStyle = '#666'
       ctx.font = '24px system-ui, -apple-system, sans-serif'
       ctx.textAlign = 'center'
-      ctx.fillText('textmira.vercel.app', width / 2, height - 30)
+      ctx.fillText('styleinspo.vercel.app', width / 2, height - 30)
 
       // Convert to blob and share
       canvas.toBlob(async (blob) => {
@@ -94,11 +94,11 @@ export function ShareImageGenerator({
 
         // Check if Web Share API is supported
         if (navigator.share && navigator.canShare) {
-          const file = new File([blob], 'mira-outfit.png', { type: 'image/png' })
+          const file = new File([blob], 'styleinspo-outfit.png', { type: 'image/png' })
           const shareData = {
             files: [file],
-            title: 'My Mira Outfit',
-            text: outfitName ? `Check out this outfit: ${outfitName}` : 'Check out this outfit I styled with Mira!'
+            title: 'My StyleInspo Outfit',
+            text: outfitName ? `Check out this outfit: ${outfitName}` : 'Check out this outfit I planned with StyleInspo!'
           }
 
           if (navigator.canShare(shareData)) {
@@ -195,7 +195,7 @@ export function ShareImageGenerator({
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = 'mira-outfit.png'
+    a.download = 'styleinspo-outfit.png'
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)

@@ -147,7 +147,7 @@ function GetStartedContent() {
 
         {/* Section 1: Username */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold mb-3">Welcome to Mira</h1>
+          <h1 className="text-2xl md:text-3xl font-bold mb-3">Welcome to Style Inspo</h1>
           <p className="text-muted text-base">Let's create your style profile</p>
         </div>
 

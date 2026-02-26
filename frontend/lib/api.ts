@@ -1,5 +1,5 @@
 /**
- * API client for Mira backend
+ * API client for Style Inspo backend
  */
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
