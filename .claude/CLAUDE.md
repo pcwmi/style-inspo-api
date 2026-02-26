@@ -291,6 +291,11 @@ Walk through UX second-by-second: "At t=0 user sees X, at t=5 they see Y, at t=2
 3. **Get explicit confirmation** before proceeding
 4. Never assume empty/null = broken — verify the key path first
 
+### GATE: Before Running Evals
+
+- **Always generate outfit images** — eval review pages must include outfit collage pictures, not just text. Extract images from `send_message` tool calls so the reviewer can visually compare outfits.
+- Show the eval HTML in a browser (via Playwright or local HTTP server) so the user can see the visual side-by-side.
+
 ### Workflow Rules
 
 - **Fix at the source, not the symptoms.** Map where data is created vs displayed. Fix at creation (1 place), not display (N places).
