@@ -447,3 +447,74 @@ Tested across 4 users (peichin, dana, anneka, alexi), 9+ outfits.
 **Open question:** Could we use Flux 2 Pro's text-to-image endpoint (fal-ai/flux-2-pro) instead of the edit endpoint? Advertised at 3-5s. But unclear if it supports reference images the same way.
 
 **Infrastructure built:** Provider abstraction already exists. New providers implemented at backend/services/visualization/providers/{gpt_image,flux_kontext,flux2pro}.py. Factory updated. Eval script at backend/tests/viz_eval/scripts/provider_comparison.py generates side-by-side HTML comparisons. FAL_KEY added to .env.
+
+---
+
+## 22:00 - Onboarding Redesign: 4-Persona Debate on Replacing 3-Words Flow
+
+### The Problem
+
+Real user data shows the 3-words onboarding is broken:
+- **Kate**: "I was so mystified by the 'describe your style' words. I felt kind of stuck" → picked generic: casual/Chic/bold
+- **Dana**: picked generic classic/chic/confident despite having deeply trained ChatGPT on her nuanced taste
+- **Anneka**: rebelled against the format entirely, wrote full sentences: "Bright and colorful but classic and comfortable" / "Classy with a fun bold flare of color"
+- **Core insight from Kate**: "I didn't know my style until ChatGPT gave me the words" — the app should GIVE users their words, not ASK for them
+
+### Method: 4-Persona Debate Team
+
+Ran a structured debate across 4 agent personas, 2 rounds each:
+
+| Persona | Represents | Core Anxiety |
+|---------|-----------|--------------|
+| **The Overthinker** | Fashion-forward, paralyzed by word choice (Kate/Dana) | "Every word feels like a lie by omission" |
+| **The Style-Insecure** | Doesn't feel they have a style | "The app is asking me to be my own stylist before it will agree to be my stylist" |
+| **The Aspirer** | Knows what they want but can't execute (Dana's vest problem) | "I own the outfit but can't make it look right" |
+| **UX Designer** | Professional lens on engagement/completion | "Never ask users to generate when you can ask them to recognize" |
+
+### The Consensus Design: Sort → Mirror → (Optional) Context → Upload
+
+**Screen 1: Image Sort (~30 sec)** — 12 outfit photos, three-option sort:
+- "I wear this" (left)
+- "I wish I could wear this" (center)
+- "Not me" (skip)
+
+This single mechanic serves all personas: Overthinker reacts instead of generating words. Style-Insecure doesn't need vocabulary — "I wish I could" is safe aspiration without claiming expertise. Aspirer's gap between "I wear" and "I wish" captures the aspiration-reality tension structurally.
+
+**Screen 2: The Mirror (~10 sec)** — AI generates style fingerprint and reflects it back: "Your style is relaxed structure with a pull toward bold color." This is the Kate moment — the app gives you the words. Trust is built here.
+
+**Screen 3: Optional free-text** — "Anything else we should know?" Pressure valve for Anneka-types who want to add nuance. Skippable for everyone else.
+
+**Then → Upload photos.**
+
+### Key Insights from the Debate
+
+1. **"Never ask users to generate when you can ask them to recognize"** — universal agreement across all 4 personas
+2. **The three-option sort captures gap data implicitly** — no separate "what goes wrong?" step needed. The delta between "I wear" and "I wish" IS the aspiration-reality tension.
+3. **Self-awareness is the variable, not style preference** — different users need different depths of questioning
+4. **Onboarding's job isn't to capture perfect style data** — it's to earn the right to learn more through usage
+5. **The eigenquestion**: "Should onboarding capture your style, or earn the right to learn your style?" Answer: earn the right.
+6. **Framing matters more than mechanic** — "Sort these outfits" = test. "Swipe through some looks, no wrong answers" = browsing Instagram. The Style-Insecure needs: "You don't need to know your style. That's our job."
+7. **The Mirror moment is the hook** — like Spotify Wrapped, reflecting the user back to themselves creates the aha moment and earns trust for the upload step
+
+### Backend Data Model Change
+
+Current: `three_words: { current, aspirational, feeling }` (user-generated strings)
+New: `style_fingerprint: { image_selections[], current_tags[], aspirational_tags[], ai_summary, user_refinement? }` (AI-derived from image sort)
+
+The agent gets both raw image selections AND derived words — richer context than three generic adjectives.
+
+### Unresolved
+
+- **Image curation** — editorial task, not technical. Need 12-15 diverse outfit photos spanning the style spectrum, tagged with style attributes. Must include diverse body types and "attainable" looks.
+- **Branching vs single path** — Aspirer argued for branching based on self-awareness level. UX Designer argued single path for V1. Decision: ship single path, add branching later if PostHog shows aspirer churn.
+- **MVP approach** — could retrofit existing `/words` page (replace text fields with image grid + toggle states) without full rearchitecture
+
+### What This Replaces
+
+| Current | New |
+|---------|-----|
+| 3 text fields with random chips | 12 images with 3-way sort |
+| User generates words | AI generates fingerprint |
+| Generic results (casual/chic/bold) | Nuanced visual taste profile with contradictions |
+| No gap data | Aspiration-reality tension captured structurally |
+| ~45-90 sec of anxious word-picking | ~40-60 sec of engaged browsing |
