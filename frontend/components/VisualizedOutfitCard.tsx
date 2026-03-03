@@ -40,6 +40,7 @@ interface VisualizedOutfitCardProps {
   onMarkAsWorn?: () => void  // Called when user clicks mark as worn
   onUploadPhoto?: () => void  // Called when user wants to upload a photo for worn outfit
   onWornComplete?: (wornAt: string, photoUrl?: string) => void  // Called after marking worn
+  onUnsave?: () => void  // Called when user wants to unsave/remove this outfit
 }
 
 type VisualizationState = 'not_visualized' | 'generating' | 'visualized'
@@ -60,7 +61,8 @@ export function VisualizedOutfitCard({
   onVisualizationComplete,
   onMarkAsWorn,
   onUploadPhoto,
-  onWornComplete
+  onWornComplete,
+  onUnsave
 }: VisualizedOutfitCardProps) {
   const [visualizationUrl, setVisualizationUrl] = useState(initialVisualizationUrl)
   const [wornAt, setWornAt] = useState(initialWornAt)
@@ -592,6 +594,16 @@ export function VisualizedOutfitCard({
         <h3 className="font-semibold mb-2 text-base">Why This Works</h3>
         <p className="text-ink text-sm md:text-base leading-relaxed">{outfit.why_it_works}</p>
       </div>
+
+      {/* Unsave button */}
+      {onUnsave && (
+        <button
+          onClick={onUnsave}
+          className="text-sm text-muted hover:text-red-500 transition mb-3 md:mb-4"
+        >
+          Remove from saved
+        </button>
+      )}
 
       {/* Share button - only shown when both visualization and worn photo exist */}
       {visualizationUrl && wornPhotoUrl && (

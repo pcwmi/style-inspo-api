@@ -178,6 +178,22 @@ TOOLS = [
         }
     },
 
+    {
+        "name": "delete_outfit",
+        "description": "Remove a saved outfit from the user's collection (unsave it). Use when user says 'unsave that outfit', 'remove that outfit', 'delete that saved outfit', etc. Call get_saved_outfits first to find the outfit_id.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                **REASONING_FIELD,
+                "outfit_id": {
+                    "type": "string",
+                    "description": "The outfit ID to delete (from get_saved_outfits)"
+                }
+            },
+            "required": ["reasoning", "outfit_id"]
+        }
+    },
+
     # --- OUTFIT ACTIONS ---
     {
         "name": "save_outfit",

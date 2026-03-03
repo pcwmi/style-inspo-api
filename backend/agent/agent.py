@@ -549,6 +549,16 @@ class StylingAgent:
                 else:
                     return {"error": f"Outfit {outfit_id} not found"}
 
+            elif tool_name == "delete_outfit":
+                manager = SavedOutfitsManager(user_id=self.user_id)
+                outfit_id = tool_input.get("outfit_id")
+                deleted = manager.delete_outfit(outfit_id)
+                if deleted:
+                    logger.info(f"delete_outfit: deleted outfit {outfit_id}")
+                    return {"success": True, "outfit_id": outfit_id}
+                else:
+                    return {"error": f"Outfit {outfit_id} not found"}
+
             elif tool_name == "save_outfit":
                 manager = SavedOutfitsManager(user_id=self.user_id)
 

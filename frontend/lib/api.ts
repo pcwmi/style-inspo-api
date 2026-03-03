@@ -144,6 +144,14 @@ export const api = {
     return res.json()
   },
 
+  async deleteOutfit(userId: string, outfitId: string) {
+    const res = await fetch(`${API_URL}/primitives/outfits/${userId}/${outfitId}`, {
+      method: 'DELETE'
+    })
+    if (!res.ok) throw new Error('Failed to delete outfit')
+    return res.json()
+  },
+
   async getDislikedOutfits(userId: string) {
     const res = await fetch(`${API_URL}/api/outfits/${userId}/disliked`)
     if (!res.ok) throw new Error('Failed to fetch disliked outfits')

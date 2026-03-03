@@ -139,6 +139,18 @@ function SavedPageContent() {
     setShowPhotoModal(true)
   }
 
+  // Handle unsave outfit
+  const handleUnsave = async (outfitId: string) => {
+    if (!confirm('Remove this outfit from your saved collection?')) return
+    try {
+      await api.deleteOutfit(user, outfitId)
+      setOutfits(prev => prev.filter(o => (o.id || o.outfit_id) !== outfitId))
+    } catch (err: any) {
+      console.error('Failed to unsave outfit:', err)
+      alert('Failed to remove outfit. Please try again.')
+    }
+  }
+
   // Handle photo upload complete
   const handlePhotoComplete = (outfitId: string, photoUrl: string) => {
     setOutfits(prev => prev.map(outfit =>
@@ -248,6 +260,7 @@ function SavedPageContent() {
                       onVisualizationComplete={(url) => handleVisualizationComplete(outfitId, url)}
                       onMarkAsWorn={() => handleMarkAsWorn(outfitId)}
                       onUploadPhoto={() => handleUploadPhoto(outfitId)}
+                      onUnsave={() => handleUnsave(outfitId)}
                     />
                     </div>
                   )
