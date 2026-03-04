@@ -372,17 +372,18 @@ class SavedOutfitsManager:
         Returns:
             True if deleted, False if not found
         """
-        data = self._read_json()
-        saved_list = data.get("saved", [])
-        original_count = len(saved_list)
+        with _WRITE_LOCK:
+            data = self._read_json()
+            saved_list = data.get("saved", [])
+            original_count = len(saved_list)
 
-        data["saved"] = [o for o in saved_list if o.get("id") != outfit_id]
+            data["saved"] = [o for o in saved_list if o.get("id") != outfit_id]
 
-        if len(data["saved"]) == original_count:
-            return False  # Not found
+            if len(data["saved"]) == original_count:
+                return False  # Not found
 
-        data["last_updated"] = _now_iso()
-        self._atomic_write(data)
+            data["last_updated"] = _now_iso()
+            self.storage.save_json(data, "saved_outfits.json")
         return True
 
     def _read_json(self) -> Dict:
