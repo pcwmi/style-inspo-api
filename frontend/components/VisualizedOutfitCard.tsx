@@ -41,6 +41,8 @@ interface VisualizedOutfitCardProps {
   onUploadPhoto?: () => void  // Called when user wants to upload a photo for worn outfit
   onWornComplete?: (wornAt: string, photoUrl?: string) => void  // Called after marking worn
   onUnsave?: () => void  // Called when user wants to unsave/remove this outfit
+  isUnsaved?: boolean  // If true, show empty bookmark (pending unsave)
+  onResave?: () => void  // Called when user clicks empty bookmark to re-save
 }
 
 type VisualizationState = 'not_visualized' | 'generating' | 'visualized'
@@ -62,7 +64,9 @@ export function VisualizedOutfitCard({
   onMarkAsWorn,
   onUploadPhoto,
   onWornComplete,
-  onUnsave
+  onUnsave,
+  isUnsaved = false,
+  onResave
 }: VisualizedOutfitCardProps) {
   const [visualizationUrl, setVisualizationUrl] = useState(initialVisualizationUrl)
   const [wornAt, setWornAt] = useState(initialWornAt)
@@ -227,7 +231,7 @@ export function VisualizedOutfitCard({
               Visualized
             </span>
           )}
-          {onUnsave && (
+          {onUnsave && !isUnsaved && (
             <button
               onClick={onUnsave}
               className="relative p-1.5 rounded-full hover:bg-red-50 transition group"
@@ -240,6 +244,18 @@ export function VisualizedOutfitCard({
               {/* Diagonal slash overlay */}
               <svg className="w-5 h-5 absolute inset-0 m-auto opacity-0 group-hover:opacity-100 transition" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2.5}>
                 <path d="M18 6L6 18" strokeLinecap="round" />
+              </svg>
+            </button>
+          )}
+          {isUnsaved && onResave && (
+            <button
+              onClick={onResave}
+              className="p-1.5 rounded-full hover:bg-sand transition group"
+              title="Save again"
+            >
+              {/* Empty bookmark */}
+              <svg className="w-5 h-5 text-muted group-hover:text-terracotta transition" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
               </svg>
             </button>
           )}

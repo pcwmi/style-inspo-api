@@ -28,9 +28,11 @@ function SavedPageContent() {
   const [showPhotoModal, setShowPhotoModal] = useState(false)
   const [pendingPhotoOutfitId, setPendingPhotoOutfitId] = useState<string | null>(null)
   const [hasScrolledToOutfit, setHasScrolledToOutfit] = useState(false)
-  const [undoToast, setUndoToast] = useState<{ outfitId: string; outfit: any; timer: ReturnType<typeof setTimeout> } | null>(null)
+  const [undoToast, setUndoToast] = useState<{ outfitId: string; timer: ReturnType<typeof setTimeout> } | null>(null)
+  // Set of outfit IDs pending unsave (shown with empty bookmark)
+  const [pendingUnsaveIds, setPendingUnsaveIds] = useState<Set<string>>(new Set())
   // Ref-backed map of pending deletes to avoid stale closure issues with rapid clicks
-  const pendingDeletesRef = useRef<Map<string, { outfit: any; timer: ReturnType<typeof setTimeout> }>>(new Map())
+  const pendingDeletesRef = useRef<Map<string, { timer: ReturnType<typeof setTimeout> }>>(new Map())
 
   useEffect(() => {
     async function fetchData() {
@@ -149,6 +151,13 @@ function SavedPageContent() {
       clearTimeout(pending.timer)
       pendingDeletesRef.current.delete(outfitId)
     }
+    // Remove from UI
+    setOutfits(prev => prev.filter(o => (o.id || o.outfit_id) !== outfitId))
+    setPendingUnsaveIds(prev => {
+      const next = new Set(prev)
+      next.delete(outfitId)
+      return next
+    })
     try {
       await api.deleteOutfit(user, outfitId)
     } catch (err: any) {
@@ -163,28 +172,31 @@ function SavedPageContent() {
       commitDelete(pendingId)
     })
 
-    // Optimistically remove from UI
-    const removedOutfit = outfits.find(o => (o.id || o.outfit_id) === outfitId)
-    setOutfits(prev => prev.filter(o => (o.id || o.outfit_id) !== outfitId))
+    // Mark as pending unsave (icon becomes empty, card stays visible)
+    setPendingUnsaveIds(prev => new Set(prev).add(outfitId))
 
-    // Set up undo timer — actually delete after 5 seconds
+    // Set up timer — actually delete after 5 seconds
     const timer = setTimeout(async () => {
       pendingDeletesRef.current.delete(outfitId)
       setUndoToast(null)
+      // Now remove from UI and delete from backend
+      setOutfits(prev => prev.filter(o => (o.id || o.outfit_id) !== outfitId))
+      setPendingUnsaveIds(prev => {
+        const next = new Set(prev)
+        next.delete(outfitId)
+        return next
+      })
       try {
         await api.deleteOutfit(user, outfitId)
       } catch (err: any) {
         console.error('Failed to unsave outfit:', err)
-        if (removedOutfit) {
-          setOutfits(prev => [...prev, removedOutfit])
-        }
       }
     }, 5000)
 
     // Track in ref (not affected by stale closures)
-    pendingDeletesRef.current.set(outfitId, { outfit: removedOutfit, timer })
-    setUndoToast({ outfitId, outfit: removedOutfit, timer })
-  }, [user, outfits, commitDelete])
+    pendingDeletesRef.current.set(outfitId, { timer })
+    setUndoToast({ outfitId, timer })
+  }, [user, commitDelete])
 
   // Handle undo — only undoes the most recent unsave (shown in toast)
   const handleUndo = useCallback(() => {
@@ -194,10 +206,30 @@ function SavedPageContent() {
       clearTimeout(pending.timer)
       pendingDeletesRef.current.delete(undoToast.outfitId)
     }
-    if (undoToast.outfit) {
-      setOutfits(prev => [...prev, undoToast.outfit])
-    }
+    // Remove from pending unsave set (icon goes back to filled)
+    setPendingUnsaveIds(prev => {
+      const next = new Set(prev)
+      next.delete(undoToast.outfitId)
+      return next
+    })
     setUndoToast(null)
+  }, [undoToast])
+
+  // Handle re-save (clicking empty bookmark) — same as undo
+  const handleResave = useCallback((outfitId: string) => {
+    const pending = pendingDeletesRef.current.get(outfitId)
+    if (pending) {
+      clearTimeout(pending.timer)
+      pendingDeletesRef.current.delete(outfitId)
+    }
+    setPendingUnsaveIds(prev => {
+      const next = new Set(prev)
+      next.delete(outfitId)
+      return next
+    })
+    if (undoToast?.outfitId === outfitId) {
+      setUndoToast(null)
+    }
   }, [undoToast])
 
   // Handle photo upload complete
@@ -310,6 +342,8 @@ function SavedPageContent() {
                       onMarkAsWorn={() => handleMarkAsWorn(outfitId)}
                       onUploadPhoto={() => handleUploadPhoto(outfitId)}
                       onUnsave={() => handleUnsave(outfitId)}
+                      isUnsaved={pendingUnsaveIds.has(outfitId)}
+                      onResave={() => handleResave(outfitId)}
                     />
                     </div>
                   )
