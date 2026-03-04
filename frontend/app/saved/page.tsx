@@ -92,6 +92,11 @@ function SavedPageContent() {
     return { notWornOutfits: notWorn, wornOutfits: worn }
   }, [outfits])
 
+  // Active counts exclude pending-unsave outfits
+  const activeOutfitCount = outfits.length - pendingUnsaveIds.size
+  const activeNotWornCount = notWornOutfits.filter(o => !pendingUnsaveIds.has(o.id || o.outfit_id)).length
+  const activeWornCount = wornOutfits.filter(o => !pendingUnsaveIds.has(o.id || o.outfit_id)).length
+
   const displayedOutfits = activeTab === 'not_worn' ? notWornOutfits : wornOutfits
 
   // Handle visualize button click - check for descriptor first
@@ -278,9 +283,9 @@ function SavedPageContent() {
 
         <h1 className="text-2xl md:text-3xl font-bold mb-2">Saved Outfits</h1>
         <p className="text-muted mb-4 text-base leading-relaxed">
-          {outfits.length === 0
+          {activeOutfitCount === 0
             ? "You haven't saved any outfits yet. Save outfits you love from the reveal page!"
-            : `${outfits.length} saved outfit${outfits.length === 1 ? '' : 's'}`}
+            : `${activeOutfitCount} saved outfit${activeOutfitCount === 1 ? '' : 's'}`}
         </p>
 
         {outfits.length > 0 && (
@@ -295,7 +300,7 @@ function SavedPageContent() {
                     : 'text-muted hover:text-ink'
                 }`}
               >
-                Not Yet Worn ({notWornOutfits.length})
+                Not Yet Worn ({activeNotWornCount})
               </button>
               <button
                 onClick={() => setActiveTab('worn')}
@@ -305,7 +310,7 @@ function SavedPageContent() {
                     : 'text-muted hover:text-ink'
                 }`}
               >
-                Worn ({wornOutfits.length})
+                Worn ({activeWornCount})
               </button>
             </div>
 
