@@ -100,6 +100,11 @@ export function VisualizedOutfitCard({
           setVisualizationUrl(data.url)
           setVizState('visualized')
           if (onVisualizationComplete) onVisualizationComplete(data.url)
+        } else if (data.pending === false) {
+          // Visualization failed or timed out — stop polling
+          clearInterval(pollInterval)
+          setVizState('not_visualized')
+          setProgress(0)
         } else {
           // Update progress (simulate progress based on poll count)
           setProgress(Math.min(30 + pollCount * 3, 90))

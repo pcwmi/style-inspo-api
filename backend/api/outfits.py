@@ -65,6 +65,11 @@ def _trigger_background_visualization(user_id: str, outfit_id: str, items: list)
 
         except Exception as e:
             logger.error(f"Background visualization error for outfit {outfit_id}: {e}")
+            try:
+                manager = SavedOutfitsManager(user_id=user_id)
+                manager.clear_visualization_pending(outfit_id, error=str(e))
+            except Exception:
+                pass
 
     # Run in background thread
     thread = threading.Thread(target=run_visualization, daemon=True)
@@ -594,6 +599,13 @@ async def get_visualization_status(outfit_id: str, user: str = Query(..., descri
                     saved_time = datetime.fromisoformat(saved_at.replace("Z", "+00:00"))
                     if (datetime.now(timezone.utc) - saved_time).total_seconds() > 300:
                         pending = False
+                        # Permanently clear the stale flag so it doesn't re-trigger
+                        try:
+                            manager.clear_visualization_pending(
+                                outfit_id, error="Visualization timed out"
+                            )
+                        except Exception:
+                            pass
                 except (ValueError, TypeError):
                     pending = False
 
