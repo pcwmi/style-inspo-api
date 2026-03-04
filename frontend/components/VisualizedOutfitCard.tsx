@@ -37,6 +37,7 @@ interface VisualizedOutfitCardProps {
   hasDescriptor?: boolean  // If false, onVisualize() is called but API call is skipped (parent shows modal)
   onVisualize?: () => void
   onVisualizationComplete?: (url: string) => void
+  onVisualizationFailed?: () => void  // Called when auto-poll detects viz failed/timed out
   onMarkAsWorn?: () => void  // Called when user clicks mark as worn
   onUploadPhoto?: () => void  // Called when user wants to upload a photo for worn outfit
   onWornComplete?: (wornAt: string, photoUrl?: string) => void  // Called after marking worn
@@ -59,6 +60,7 @@ export function VisualizedOutfitCard({
   hasDescriptor = true,  // Default true so standalone usage works
   onVisualize,
   onVisualizationComplete,
+  onVisualizationFailed,
   onMarkAsWorn,
   onUploadPhoto,
   onWornComplete,
@@ -88,6 +90,7 @@ export function VisualizedOutfitCard({
         clearInterval(pollInterval)
         setVizState('not_visualized')
         setProgress(0)
+        if (onVisualizationFailed) onVisualizationFailed()
         return
       }
 
@@ -105,6 +108,7 @@ export function VisualizedOutfitCard({
           clearInterval(pollInterval)
           setVizState('not_visualized')
           setProgress(0)
+          if (onVisualizationFailed) onVisualizationFailed()
         } else {
           // Update progress (simulate progress based on poll count)
           setProgress(Math.min(30 + pollCount * 3, 90))
@@ -115,7 +119,7 @@ export function VisualizedOutfitCard({
     }, 3000)
 
     return () => clearInterval(pollInterval)
-  }, [visualizationPending, outfitId, user, initialVisualizationUrl, onVisualizationComplete])
+  }, [visualizationPending, outfitId, user, initialVisualizationUrl, onVisualizationComplete, onVisualizationFailed])
 
   // Handle mark as worn
   const handleMarkAsWorn = () => {

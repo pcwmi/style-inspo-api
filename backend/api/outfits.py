@@ -530,7 +530,7 @@ async def save_outfit(request: SaveOutfitRequest):
             "item_count": len(outfit_wrapper.items)
         })
 
-        # Persist visualization URL if already generated (viz runs during GENERATE)
+        # Persist visualization URL if already generated, or mark pending if still running
         viz_key = request.outfit.get("viz_key")
         if viz_key and outfit_id:
             from services.visualization.viz_cache import get_viz_status
@@ -538,6 +538,10 @@ async def save_outfit(request: SaveOutfitRequest):
             if viz_status.get("status") == "complete" and viz_status.get("url"):
                 manager.update_outfit_visualization(outfit_id, viz_status["url"])
                 logger.info(f"Persisted viz URL from Redis to saved outfit {outfit_id}")
+            elif viz_status.get("status") == "pending":
+                # Viz is actually running — set pending so frontend polls
+                manager.set_visualization_pending(outfit_id)
+                logger.info(f"Viz still pending for saved outfit {outfit_id}")
 
         return {"success": True, "message": "Outfit saved", "outfit_id": outfit_id}
     except HTTPException:

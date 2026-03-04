@@ -112,7 +112,7 @@ class SavedOutfitsManager:
                 "challenge_item_id": challenge_item_id,
                 "occasion": occasion.strip() if occasion and occasion.strip() else None,
                 "context": context,
-                "visualization_pending": True,  # For web polling
+                "visualization_pending": False,  # Set true only if viz is actually running
                 "visualization_url": None,
                 "saved_at": _now_iso()
             }
@@ -194,6 +194,20 @@ class SavedOutfitsManager:
             data["last_updated"] = _now_iso()
             self._atomic_write(data)
             return True
+
+        return False
+
+    def set_visualization_pending(self, outfit_id: str) -> bool:
+        """Set visualization_pending flag when viz is actually running."""
+        data = self._read_json()
+        saved_outfits = data.get("saved", [])
+
+        for outfit in saved_outfits:
+            if outfit.get("id") == outfit_id:
+                outfit["visualization_pending"] = True
+                data["last_updated"] = _now_iso()
+                self._atomic_write(data)
+                return True
 
         return False
 

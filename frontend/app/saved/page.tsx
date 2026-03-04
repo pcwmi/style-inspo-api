@@ -110,7 +110,16 @@ function SavedPageContent() {
   const handleVisualizationComplete = (outfitId: string, url: string) => {
     setOutfits(prev => prev.map(outfit =>
       (outfit.id === outfitId || outfit.outfit_id === outfitId)
-        ? { ...outfit, visualization_url: url }
+        ? { ...outfit, visualization_url: url, visualization_pending: false }
+        : outfit
+    ))
+  }
+
+  // Clear pending state when visualization fails or times out
+  const handleVisualizationFailed = (outfitId: string) => {
+    setOutfits(prev => prev.map(outfit =>
+      (outfit.id === outfitId || outfit.outfit_id === outfitId)
+        ? { ...outfit, visualization_pending: false }
         : outfit
     ))
   }
@@ -287,6 +296,7 @@ function SavedPageContent() {
                       hasDescriptor={hasDescriptor === true}
                       onVisualize={() => handleVisualize(outfitId)}
                       onVisualizationComplete={(url) => handleVisualizationComplete(outfitId, url)}
+                      onVisualizationFailed={() => handleVisualizationFailed(outfitId)}
                       onMarkAsWorn={() => handleMarkAsWorn(outfitId)}
                       onUploadPhoto={() => handleUploadPhoto(outfitId)}
                       onUnsave={() => handleUnsave(outfitId)}
