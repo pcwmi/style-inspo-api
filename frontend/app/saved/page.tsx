@@ -159,9 +159,9 @@ function SavedPageContent() {
   // Handle unsave outfit with undo toast
   const handleUnsave = useCallback((outfitId: string) => {
     // Commit ALL previously pending deletes immediately (ref avoids stale closure)
-    for (const [pendingId] of pendingDeletesRef.current) {
+    Array.from(pendingDeletesRef.current.keys()).forEach(pendingId => {
       commitDelete(pendingId)
-    }
+    })
 
     // Optimistically remove from UI
     const removedOutfit = outfits.find(o => (o.id || o.outfit_id) === outfitId)
