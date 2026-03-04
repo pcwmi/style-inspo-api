@@ -1,7 +1,7 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import { Suspense, useState, useEffect, useMemo } from 'react'
+import { Suspense, useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { VisualizedOutfitCard } from '@/components/VisualizedOutfitCard'
 import { ModelDescriptorModal } from '@/components/ModelDescriptorModal'
@@ -29,6 +29,8 @@ function SavedPageContent() {
   const [pendingPhotoOutfitId, setPendingPhotoOutfitId] = useState<string | null>(null)
   const [hasScrolledToOutfit, setHasScrolledToOutfit] = useState(false)
   const [undoToast, setUndoToast] = useState<{ outfitId: string; outfit: any; timer: ReturnType<typeof setTimeout> } | null>(null)
+  // Ref-backed map of pending deletes to avoid stale closure issues with rapid clicks
+  const pendingDeletesRef = useRef<Map<string, { outfit: any; timer: ReturnType<typeof setTimeout> }>>(new Map())
 
   useEffect(() => {
     async function fetchData() {
@@ -140,12 +142,25 @@ function SavedPageContent() {
     setShowPhotoModal(true)
   }
 
+  // Commit a pending delete immediately (used when a new unsave displaces it)
+  const commitDelete = useCallback(async (outfitId: string) => {
+    const pending = pendingDeletesRef.current.get(outfitId)
+    if (pending) {
+      clearTimeout(pending.timer)
+      pendingDeletesRef.current.delete(outfitId)
+    }
+    try {
+      await api.deleteOutfit(user, outfitId)
+    } catch (err: any) {
+      console.error('Failed to delete outfit:', err)
+    }
+  }, [user])
+
   // Handle unsave outfit with undo toast
-  const handleUnsave = (outfitId: string) => {
-    // If there's a pending undo, commit it immediately
-    if (undoToast) {
-      clearTimeout(undoToast.timer)
-      api.deleteOutfit(user, undoToast.outfitId).catch(() => {})
+  const handleUnsave = useCallback((outfitId: string) => {
+    // Commit ALL previously pending deletes immediately (ref avoids stale closure)
+    for (const [pendingId] of pendingDeletesRef.current) {
+      commitDelete(pendingId)
     }
 
     // Optimistically remove from UI
@@ -154,11 +169,11 @@ function SavedPageContent() {
 
     // Set up undo timer — actually delete after 5 seconds
     const timer = setTimeout(async () => {
+      pendingDeletesRef.current.delete(outfitId)
       setUndoToast(null)
       try {
         await api.deleteOutfit(user, outfitId)
       } catch (err: any) {
-        // If delete fails, restore the outfit
         console.error('Failed to unsave outfit:', err)
         if (removedOutfit) {
           setOutfits(prev => [...prev, removedOutfit])
@@ -166,19 +181,24 @@ function SavedPageContent() {
       }
     }, 5000)
 
+    // Track in ref (not affected by stale closures)
+    pendingDeletesRef.current.set(outfitId, { outfit: removedOutfit, timer })
     setUndoToast({ outfitId, outfit: removedOutfit, timer })
-  }
+  }, [user, outfits, commitDelete])
 
-  // Handle undo
-  const handleUndo = () => {
+  // Handle undo — only undoes the most recent unsave (shown in toast)
+  const handleUndo = useCallback(() => {
     if (!undoToast) return
-    clearTimeout(undoToast.timer)
-    // Restore the outfit
+    const pending = pendingDeletesRef.current.get(undoToast.outfitId)
+    if (pending) {
+      clearTimeout(pending.timer)
+      pendingDeletesRef.current.delete(undoToast.outfitId)
+    }
     if (undoToast.outfit) {
       setOutfits(prev => [...prev, undoToast.outfit])
     }
     setUndoToast(null)
-  }
+  }, [undoToast])
 
   // Handle photo upload complete
   const handlePhotoComplete = (outfitId: string, photoUrl: string) => {
