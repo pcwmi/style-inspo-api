@@ -28,6 +28,7 @@ function SavedPageContent() {
   const [showPhotoModal, setShowPhotoModal] = useState(false)
   const [pendingPhotoOutfitId, setPendingPhotoOutfitId] = useState<string | null>(null)
   const [hasScrolledToOutfit, setHasScrolledToOutfit] = useState(false)
+  const [undoToast, setUndoToast] = useState<{ outfitId: string; outfit: any; timer: ReturnType<typeof setTimeout> } | null>(null)
 
   useEffect(() => {
     async function fetchData() {
@@ -139,16 +140,44 @@ function SavedPageContent() {
     setShowPhotoModal(true)
   }
 
-  // Handle unsave outfit
-  const handleUnsave = async (outfitId: string) => {
-    if (!confirm('Remove this outfit from your saved collection?')) return
-    try {
-      await api.deleteOutfit(user, outfitId)
-      setOutfits(prev => prev.filter(o => (o.id || o.outfit_id) !== outfitId))
-    } catch (err: any) {
-      console.error('Failed to unsave outfit:', err)
-      alert('Failed to remove outfit. Please try again.')
+  // Handle unsave outfit with undo toast
+  const handleUnsave = (outfitId: string) => {
+    // If there's a pending undo, commit it immediately
+    if (undoToast) {
+      clearTimeout(undoToast.timer)
+      api.deleteOutfit(user, undoToast.outfitId).catch(() => {})
     }
+
+    // Optimistically remove from UI
+    const removedOutfit = outfits.find(o => (o.id || o.outfit_id) === outfitId)
+    setOutfits(prev => prev.filter(o => (o.id || o.outfit_id) !== outfitId))
+
+    // Set up undo timer — actually delete after 5 seconds
+    const timer = setTimeout(async () => {
+      setUndoToast(null)
+      try {
+        await api.deleteOutfit(user, outfitId)
+      } catch (err: any) {
+        // If delete fails, restore the outfit
+        console.error('Failed to unsave outfit:', err)
+        if (removedOutfit) {
+          setOutfits(prev => [...prev, removedOutfit])
+        }
+      }
+    }, 5000)
+
+    setUndoToast({ outfitId, outfit: removedOutfit, timer })
+  }
+
+  // Handle undo
+  const handleUndo = () => {
+    if (!undoToast) return
+    clearTimeout(undoToast.timer)
+    // Restore the outfit
+    if (undoToast.outfit) {
+      setOutfits(prev => [...prev, undoToast.outfit])
+    }
+    setUndoToast(null)
   }
 
   // Handle photo upload complete
@@ -314,6 +343,21 @@ function SavedPageContent() {
           }}
           onComplete={(photoUrl) => handlePhotoComplete(pendingPhotoOutfitId, photoUrl)}
         />
+      )}
+
+      {/* Undo Toast */}
+      {undoToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-slide-up">
+          <div className="bg-ink text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 text-sm">
+            <span>Outfit removed</span>
+            <button
+              onClick={handleUndo}
+              className="font-semibold text-terracotta hover:text-terracotta/80 transition"
+            >
+              Undo
+            </button>
+          </div>
+        </div>
       )}
     </div>
   )

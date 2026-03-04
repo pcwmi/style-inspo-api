@@ -18,6 +18,15 @@ module.exports = {
         'serif': ['Libre Baskerville', 'serif'],
         'sans': ['DM Sans', 'sans-serif'],
       },
+      keyframes: {
+        'slide-up': {
+          '0%': { opacity: '0', transform: 'translate(-50%, 20px)' },
+          '100%': { opacity: '1', transform: 'translate(-50%, 0)' },
+        },
+      },
+      animation: {
+        'slide-up': 'slide-up 0.2s ease-out',
+      },
     },
   },
   plugins: [],

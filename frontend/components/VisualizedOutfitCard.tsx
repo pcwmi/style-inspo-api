@@ -227,6 +227,22 @@ export function VisualizedOutfitCard({
               Visualized
             </span>
           )}
+          {onUnsave && (
+            <button
+              onClick={onUnsave}
+              className="relative p-1.5 rounded-full hover:bg-red-50 transition group"
+              title="Remove from saved"
+            >
+              {/* Filled bookmark */}
+              <svg className="w-5 h-5 text-terracotta group-hover:text-red-400 transition" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+              </svg>
+              {/* Diagonal slash overlay */}
+              <svg className="w-5 h-5 absolute inset-0 m-auto opacity-0 group-hover:opacity-100 transition" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2.5}>
+                <path d="M18 6L6 18" strokeLinecap="round" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
@@ -594,16 +610,6 @@ export function VisualizedOutfitCard({
         <h3 className="font-semibold mb-2 text-base">Why This Works</h3>
         <p className="text-ink text-sm md:text-base leading-relaxed">{outfit.why_it_works}</p>
       </div>
-
-      {/* Unsave button */}
-      {onUnsave && (
-        <button
-          onClick={onUnsave}
-          className="text-sm text-muted hover:text-red-500 transition mb-3 md:mb-4"
-        >
-          Remove from saved
-        </button>
-      )}
 
       {/* Share button - only shown when both visualization and worn photo exist */}
       {visualizationUrl && wornPhotoUrl && (
