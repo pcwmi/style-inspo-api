@@ -113,16 +113,32 @@ def _trigger_visualization_by_key(user_id: str, viz_key: str, garment_images: li
             else:
                 error = result.get("error", "Unknown error") if result else "No result"
                 set_viz_failed(viz_key, error)
+                _clear_viz_pending_for_key(user_id, viz_key, error)
                 logger.warning(f"Viz failed for key {viz_key}: {error}")
 
         except Exception as e:
             from services.visualization.viz_cache import set_viz_failed
             set_viz_failed(viz_key, str(e))
+            _clear_viz_pending_for_key(user_id, viz_key, str(e))
             logger.error(f"Viz error for key {viz_key}: {e}")
 
     thread = threading.Thread(target=run_visualization, daemon=True)
     thread.start()
     logger.info(f"Spawned viz thread for key {viz_key}")
+
+
+def _clear_viz_pending_for_key(user_id: str, viz_key: str, error: str):
+    """If a saved outfit has this viz_key, clear its pending flag."""
+    try:
+        manager = SavedOutfitsManager(user_id=user_id)
+        saved_outfits = manager.get_saved_outfits(enrich_with_current_images=False)
+        for outfit in saved_outfits:
+            if outfit.get("viz_key") == viz_key and outfit.get("visualization_pending"):
+                manager.clear_visualization_pending(outfit["id"], error=error)
+                logger.info(f"Cleared pending flag for outfit {outfit['id']} (viz_key={viz_key})")
+                break
+    except Exception as e:
+        logger.error(f"Failed to clear viz pending for key {viz_key}: {e}")
 
 
 def _persist_viz_to_saved_outfit(user_id: str, viz_key: str, viz_url: str):
@@ -540,8 +556,9 @@ async def save_outfit(request: SaveOutfitRequest):
                 logger.info(f"Persisted viz URL from Redis to saved outfit {outfit_id}")
             elif viz_status.get("status") == "pending":
                 # Viz is actually running — set pending so frontend polls
-                manager.set_visualization_pending(outfit_id)
+                manager.set_visualization_pending(outfit_id, viz_key=viz_key)
                 logger.info(f"Viz still pending for saved outfit {outfit_id}")
+            # If failed or unknown, leave pending=false (default)
 
         return {"success": True, "message": "Outfit saved", "outfit_id": outfit_id}
     except HTTPException:
@@ -593,25 +610,49 @@ async def get_visualization_status(outfit_id: str, user: str = Query(..., descri
         pending = outfit.get("visualization_pending", False)
         url = outfit.get("visualization_url")
 
-        # Don't report pending for stale outfits (saved >5 min ago with no URL)
-        # These are leftovers from before we persisted viz URLs on save
+        # If DB says pending but no URL, check Redis for the actual viz status
         if pending and not url:
-            saved_at = outfit.get("saved_at", "")
-            if saved_at:
-                from datetime import datetime, timezone
-                try:
-                    saved_time = datetime.fromisoformat(saved_at.replace("Z", "+00:00"))
-                    if (datetime.now(timezone.utc) - saved_time).total_seconds() > 300:
-                        pending = False
-                        # Permanently clear the stale flag so it doesn't re-trigger
-                        try:
-                            manager.clear_visualization_pending(
-                                outfit_id, error="Visualization timed out"
-                            )
-                        except Exception:
-                            pass
-                except (ValueError, TypeError):
+            viz_key = outfit.get("viz_key")
+            if viz_key:
+                from services.visualization.viz_cache import get_viz_status as get_redis_viz_status
+                redis_status = get_redis_viz_status(viz_key)
+                if redis_status.get("status") == "complete" and redis_status.get("url"):
+                    # Viz completed but DB wasn't updated — fix it now
+                    url = redis_status["url"]
                     pending = False
+                    try:
+                        manager.update_outfit_visualization(outfit_id, url)
+                        logger.info(f"Recovered viz URL from Redis for outfit {outfit_id}")
+                    except Exception:
+                        pass
+                elif redis_status.get("status") == "failed":
+                    # Viz failed — clear DB pending flag
+                    pending = False
+                    try:
+                        manager.clear_visualization_pending(
+                            outfit_id, error=redis_status.get("error", "Visualization failed")
+                        )
+                        logger.info(f"Cleared pending flag for failed viz on outfit {outfit_id}")
+                    except Exception:
+                        pass
+
+            # Fallback: stale timeout (90s safety net)
+            if pending and not url:
+                saved_at = outfit.get("saved_at", "")
+                if saved_at:
+                    from datetime import datetime, timezone
+                    try:
+                        saved_time = datetime.fromisoformat(saved_at.replace("Z", "+00:00"))
+                        if (datetime.now(timezone.utc) - saved_time).total_seconds() > 90:
+                            pending = False
+                            try:
+                                manager.clear_visualization_pending(
+                                    outfit_id, error="Visualization timed out"
+                                )
+                            except Exception:
+                                pass
+                    except (ValueError, TypeError):
+                        pending = False
 
         return {
             "pending": pending,

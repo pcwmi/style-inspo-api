@@ -197,14 +197,21 @@ class SavedOutfitsManager:
 
         return False
 
-    def set_visualization_pending(self, outfit_id: str) -> bool:
-        """Set visualization_pending flag when viz is actually running."""
+    def set_visualization_pending(self, outfit_id: str, viz_key: str = None) -> bool:
+        """Set visualization_pending flag when viz is actually running.
+
+        Args:
+            outfit_id: The outfit ID to update
+            viz_key: Optional viz_key hash to store for Redis lookups
+        """
         data = self._read_json()
         saved_outfits = data.get("saved", [])
 
         for outfit in saved_outfits:
             if outfit.get("id") == outfit_id:
                 outfit["visualization_pending"] = True
+                if viz_key:
+                    outfit["viz_key"] = viz_key
                 data["last_updated"] = _now_iso()
                 self._atomic_write(data)
                 return True
