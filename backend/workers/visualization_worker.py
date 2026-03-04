@@ -110,6 +110,14 @@ def visualize_outfit_job(user_id: str, outfit_id: str, provider_name: str = "flu
     except Exception as e:
         logger.error(f"Error in visualize_outfit_job: {e}", exc_info=True)
 
+        # Clear visualization_pending so frontend doesn't poll forever
+        try:
+            from services.saved_outfits_manager import SavedOutfitsManager
+            manager = SavedOutfitsManager(user_id=user_id)
+            manager.clear_visualization_pending(outfit_id, error=str(e))
+        except Exception as cleanup_err:
+            logger.error(f"Failed to clear viz pending flag: {cleanup_err}")
+
         # Log failure
         from services.activity_logger import log_activity
         log_activity(user_id, "visualization_failed", {

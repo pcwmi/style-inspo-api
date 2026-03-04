@@ -197,6 +197,36 @@ class SavedOutfitsManager:
 
         return False
 
+    def clear_visualization_pending(self, outfit_id: str, error: str = "") -> bool:
+        """Clear visualization_pending flag after failure.
+
+        Args:
+            outfit_id: The outfit ID to update
+            error: Optional error message to store
+
+        Returns:
+            True if updated, False if outfit not found
+        """
+        data = self._read_json()
+        saved_outfits = data.get("saved", [])
+
+        updated = False
+        for outfit in saved_outfits:
+            if outfit.get("id") == outfit_id:
+                outfit["visualization_pending"] = False
+                if error:
+                    outfit["visualization_error"] = error
+                outfit["visualization_updated_at"] = _now_iso()
+                updated = True
+                break
+
+        if updated:
+            data["last_updated"] = _now_iso()
+            self._atomic_write(data)
+            return True
+
+        return False
+
     def mark_outfit_worn(self, outfit_id: str, worn_photo_url: Optional[str] = None) -> Optional[Dict]:
         """Mark an outfit as worn, optionally with a photo.
 
