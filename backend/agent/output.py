@@ -12,6 +12,37 @@ from typing import List, Optional
 logger = logging.getLogger(__name__)
 
 
+def resolve_items_metadata(user_id: str, image_urls: List[str]) -> List[dict]:
+    """Map image URLs to wardrobe item metadata for collage layout."""
+    try:
+        from services.wardrobe_manager import WardrobeManager
+        wm = WardrobeManager(user_id=user_id)
+        all_items = wm.get_wardrobe_items(filter_type="all")
+
+        url_to_item = {}
+        for item in all_items:
+            url = item.get("system_metadata", {}).get("image_path", "")
+            if url:
+                url_to_item[url] = item
+
+        result = []
+        for url in image_urls:
+            item = url_to_item.get(url)
+            if item:
+                sd = item.get("styling_details", {})
+                result.append({
+                    "image_url": url,
+                    "category": sd.get("category", "unknown"),
+                    "sub_category": sd.get("sub_category", ""),
+                })
+            else:
+                result.append({"image_url": url, "category": "unknown", "sub_category": ""})
+        return result
+    except Exception as e:
+        logger.warning(f"resolve_items_metadata failed for {user_id}: {e}")
+        return [{"image_url": url, "category": "unknown", "sub_category": ""} for url in image_urls]
+
+
 class OutputHandler(ABC):
     """Base class for modality-specific output."""
 
@@ -64,34 +95,7 @@ class SMSOutput(OutputHandler):
         return text, None
 
     def _resolve_items_metadata(self, image_urls: List[str]) -> List[dict]:
-        """Map image URLs to wardrobe item metadata for collage layout."""
-        try:
-            from services.wardrobe_manager import WardrobeManager
-            wm = WardrobeManager(user_id=self.user_id)
-            all_items = wm.get_wardrobe_items(filter_type="all")
-
-            url_to_item = {}
-            for item in all_items:
-                url = item.get("system_metadata", {}).get("image_path", "")
-                if url:
-                    url_to_item[url] = item
-
-            result = []
-            for url in image_urls:
-                item = url_to_item.get(url)
-                if item:
-                    sd = item.get("styling_details", {})
-                    result.append({
-                        "image_url": url,
-                        "category": sd.get("category", "unknown"),
-                        "sub_category": sd.get("sub_category", ""),
-                    })
-                else:
-                    result.append({"image_url": url, "category": "unknown", "sub_category": ""})
-            return result
-        except Exception as e:
-            logger.warning(f"SMSOutput._resolve_items_metadata failed: {e}")
-            return [{"image_url": url, "category": "unknown", "sub_category": ""} for url in image_urls]
+        return resolve_items_metadata(self.user_id, image_urls)
 
     def send(self, text: Optional[str], images: List[str], layout: str = "list", visualize: bool = False):
         from services.twilio_service import send_sms, send_mms
@@ -404,6 +408,42 @@ class WebOutput(OutputHandler):
         why = re.sub(r'\*+', '', why).strip()
 
         return styling, why
+
+
+class APIOutput(OutputHandler):
+    """Collects agent output for API responses. No side effects."""
+
+    def __init__(self, user_id: str):
+        self.user_id = user_id
+        self.outfits = []
+        self.messages = []
+
+    def send(self, text: Optional[str], images: List[str], layout: str = "list", visualize: bool = False):
+        outfit = {"text": text, "images": images or [], "layout": layout}
+
+        if images:
+            items_meta = self._resolve_items_metadata(images)
+            from services.collage import generate_outfit_collage
+            collage_url = generate_outfit_collage(self.user_id, images, items=items_meta)
+            outfit["collage_url"] = collage_url
+
+            if visualize:
+                try:
+                    from services.visualization.visualization_manager import VisualizationManager
+                    viz_manager = VisualizationManager(self.user_id)
+                    result = viz_manager.visualize_from_images(images)
+                    if result and result.get("visualization_url"):
+                        outfit["visualization_url"] = result["visualization_url"]
+                except Exception as e:
+                    logger.warning(f"APIOutput: visualization failed: {e}")
+
+        self.outfits.append(outfit)
+        if text:
+            self.messages.append(text)
+        logger.info(f"APIOutput: collected outfit with {len(images)} images, visualize={visualize}")
+
+    def _resolve_items_metadata(self, image_urls: List[str]) -> List[dict]:
+        return resolve_items_metadata(self.user_id, image_urls)
 
 
 class MockOutput(OutputHandler):

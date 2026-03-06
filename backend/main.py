@@ -107,6 +107,10 @@ app.include_router(analysis.router, prefix="/api", tags=["analysis"])
 from api import agent_web
 app.include_router(agent_web.router, prefix="/api", tags=["agent_web"])
 
+# Register agent API router - REST endpoint for agent-to-agent calls
+from api import agent_api
+app.include_router(agent_api.router, prefix="/api", tags=["agent_api"])
+
 
 @app.get("/")
 async def root():
