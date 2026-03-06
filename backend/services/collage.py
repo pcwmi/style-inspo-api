@@ -1,12 +1,12 @@
 """
 Collage Service - Editorial flat-lay collage generator.
 
-Creates outfit boards that mimic a body silhouette:
-- Items positioned where they'd be worn on the body
-- Scarf at neckline, bag at hip, shoes at feet
-- Natural overlaps at waist and hem
-- Background removal + hanger cropping
-- Drop shadows for depth
+"Stage and Story" framework — treats the canvas as a magazine spread:
+- Primary zone: Hero item, generous sizing, slight rotation, off-center
+- Secondary zone: Supporting items angled toward the hero, overlapping
+- Edge zone: Accent items completing the diagonal, opposing rotations
+- Diagonal composition (upper-left → lower-right)
+- Background removal + hanger cropping + drop shadows
 
 Output: 1200x1600 portrait canvas (3:4), uploaded to S3.
 """
@@ -28,10 +28,11 @@ logger = logging.getLogger(__name__)
 CANVAS_W = 1200
 CANVAS_H = 1600
 BACKGROUND_COLOR = (245, 243, 240)
+SPINE_X = 560  # 40px left of true center for asymmetric editorial feel
 
 # Slot -> fraction of canvas width for sizing
 SLOT_SIZE = {
-    "outer_layer": 0.58,
+    "outer_layer": 0.68,
     "dress": 0.52,
     "mid_layer": 0.48,
     "base_top": 0.46,
@@ -46,6 +47,20 @@ SHADOW_OFFSET = (6, 10)
 SHADOW_BLUR = 14
 SHADOW_COLOR = (0, 0, 0, 35)
 
+# Rotation ranges per slot type (min_degrees, max_degrees)
+# Only bags and accessories rotate — garments and shoes stay upright
+ROTATION_RANGE = {
+    "outer_layer": (0, 0),
+    "dress": (0, 0),
+    "mid_layer": (0, 0),
+    "base_top": (0, 0),
+    "bottom": (0, 0),
+    "shoes": (0, 0),
+    "bag": (5, 10),
+    "accessory": (8, 15),
+}
+DEFAULT_ROTATION = (0, 0)
+
 # Slots that can have hangers
 HANGER_SLOTS = {"base_top", "mid_layer", "outer_layer", "dress", "bottom"}
 
@@ -54,7 +69,7 @@ def generate_outfit_collage(
     user_id: str,
     image_urls: List[str],
     items: Optional[List[dict]] = None,
-    max_images: int = 6,
+    max_images: int = 8,
 ) -> Optional[str]:
     if not image_urls:
         logger.warning("No image URLs provided for collage")
@@ -126,42 +141,67 @@ def generate_outfit_collage(
     return url
 
 
-# --- Body silhouette layout ---
+def _jitter(base: int, item_count: int, slot_index: int, amplitude: int = 35) -> int:
+    """Deterministic pseudo-random offset. Same inputs = same output."""
+    seed = (item_count * 7 + slot_index * 13) % 31
+    offset = (seed - 15) * amplitude // 15
+    return base + offset
+
+
+def _rotation_angle(slot: str, item_count: int, slot_index: int) -> float:
+    """Deterministic rotation angle. Adjacent items get opposing directions."""
+    min_deg, max_deg = ROTATION_RANGE.get(slot, DEFAULT_ROTATION)
+    seed = (item_count * 11 + slot_index * 17) % 37
+    angle = min_deg + (max_deg - min_deg) * seed / 36.0
+    # Alternate direction: even indices clockwise, odd counter-clockwise
+    if slot_index % 2 == 1:
+        angle = -angle
+    return angle
+
+
+def _rotate_item(img: Image.Image, angle: float) -> Image.Image:
+    """Rotate an RGBA image, expanding canvas to fit, transparent fill."""
+    if abs(angle) < 0.5:
+        return img
+    return img.rotate(angle, expand=True, resample=Image.Resampling.BICUBIC,
+                      fillcolor=(0, 0, 0, 0))
+
+
+# --- "Stage and Story" editorial layout ---
 #
-# The canvas represents a body from shoulders to feet.
-# Each slot has a "body zone" — a vertical region on the canvas
-# and a horizontal position (center, left, right).
+# "Stage and Story" framework — magazine spread composition:
 #
-# Zone map (% of canvas height):
-#   0.05 - 0.35  upper torso (tops, outerwear, mid-layers)
-#   0.30 - 0.65  lower torso (bottoms, dresses)
-#   0.60 - 0.85  feet (shoes)
+# Three compositional zones:
+#   Primary: Hero item — largest/most complex, generous sizing, slight rotation, off-center
+#   Secondary: Supporting items angled toward hero, overlapping edges
+#   Edge: Accents completing a diagonal, opposing rotations
 #
-# Accessories go WHERE they're worn:
-#   scarf/jewelry → near neckline (y ~0.08), tucked beside the top
-#   belt → at waist (y ~0.32)
-#   bag → hip height (y ~0.50), offset to side
-#   hat/sunglasses → above top (y ~0.02)
+# Diagonal flow: upper-left → lower-right
+# Overlap signals relationship (sleeve over waistband, shoe under hem)
+# Adjacent items rotate in opposing directions for visual tension
 
 def _layout_silhouette(
     cleaned: List[Tuple[dict, Image.Image, Optional[str]]],
 ) -> List[Tuple[dict, Image.Image, int, int]]:
     """
-    Place items on canvas mimicking a body silhouette.
+    Editorial flat-lay layout using "Stage and Story" framework.
 
-    Returns list of (item, resized_image, x, y) — top-left pixel coords.
+    Arranges items along a diagonal with rotation, intentional overlaps,
+    and accessories anchored to their nearest garment.
+
+    Returns list of (item, rotated_image, x, y) — top-left pixel coords.
     """
+    n = len(cleaned)  # for deterministic jitter
+    slot_idx = 0  # global counter for rotation alternation
+
     # Group by slot
     by_slot: Dict[str, List[Tuple[dict, Image.Image]]] = {}
     for item, img, slot in cleaned:
         key = slot or "unknown"
         by_slot.setdefault(key, []).append((item, img))
 
-    positions = []  # (item, resized_img, x, y, z_order)
+    positions = []  # (item, rotated_img, x, y, z_order)
 
-    # --- Main garments (center column) ---
-
-    # Determine what we have
     has_outer = "outer_layer" in by_slot
     has_mid = "mid_layer" in by_slot
     has_top = "base_top" in by_slot
@@ -171,114 +211,258 @@ def _layout_silhouette(
     has_bag = "bag" in by_slot
     has_accessory = "accessory" in by_slot
 
-    cx = CANVAS_W // 2  # center x
+    # Track garment bounds for accessory anchoring
+    top_w = 0
+    top_y = 160  # y where the top garment starts (for accessory anchoring)
+    bottom_of_top = 0
+    # Track the hero garment bounds for accessories and bag
+    hero_center_x = SPINE_X
+    hero_center_y = 300
+    hero_right_edge = SPINE_X + 200  # right edge of hero for bag anchoring
+
+    def _place(item, img, slot, x, y, z, si):
+        """Resize, rotate, and append to positions."""
+        w, h = _target_size(img, slot)
+        resized = img.resize((w, h), Image.Resampling.LANCZOS)
+        angle = _rotation_angle(slot, n, si)
+        rotated = _rotate_item(resized, angle)
+        # Adjust position for expanded canvas from rotation
+        dx = (rotated.width - w) // 2
+        dy = (rotated.height - h) // 2
+        final_x = max(x - dx, 5)  # clamp: never go off left edge
+        final_y = max(y - dy, 5)  # clamp: never go off top edge
+        positions.append((item, rotated, final_x, final_y, z))
+        return w, h
 
     if has_dress:
-        # Dress occupies the torso zone
+        # HERO: Dress is the primary item — generous size, slight off-center
         item, img = by_slot["dress"][0]
         w, h = _target_size(img, "dress")
-        x = cx - w // 2
-        y = int(CANVAS_H * 0.08)
-        positions.append((item, img.resize((w, h), Image.Resampling.LANCZOS), x, y, 2))
+        # Diagonal: upper-left region
+        x = _jitter(SPINE_X - w // 2 - 40, n, 0)
+        y = _jitter(120, n, 1)
+        _place(item, img, "dress", x, y, 2, slot_idx)
+        slot_idx += 1
         bottom_of_torso = y + h
+        top_w = w
+        top_y = y
+        bottom_of_top = y + h
+        hero_center_x = x + w // 2
+        hero_center_y = y + h // 2
+        hero_right_edge = x + w
     else:
-        bottom_of_torso = int(CANVAS_H * 0.08)
+        bottom_of_torso = 160
 
-        # Outerwear: behind everything, offset left
+        # Top = HERO (centered, fully visible). Coat = ACCENT to one side.
         if has_outer:
+            # Place top first as hero
+            if has_top:
+                item, img = by_slot["base_top"][0]
+                w, h = _target_size(img, "base_top")
+                x = _jitter(SPINE_X - w // 2 - 30, n, 2)
+                y = _jitter(160, n, 3)
+                _place(item, img, "base_top", x, y, 2, slot_idx)
+                slot_idx += 1
+                bottom_of_torso = max(bottom_of_torso, y + h)
+                top_w = w
+                top_y = y
+                bottom_of_top = y + h
+                hero_center_x = x + w // 2
+                hero_center_y = y + h // 2
+                hero_right_edge = x + w
+
+            # Outerwear: accent to the RIGHT, ~15% overlap with top's right shoulder
             item, img = by_slot["outer_layer"][0]
             w, h = _target_size(img, "outer_layer")
-            x = cx - w // 2 - int(CANVAS_W * 0.06)
-            y = int(CANVAS_H * 0.06)
-            positions.append((item, img.resize((w, h), Image.Resampling.LANCZOS), x, y, 0))
-            bottom_of_torso = max(bottom_of_torso, y + h)
+            ref_tw = top_w or int(CANVAS_W * 0.46)
+            # Position so only ~15% of coat overlaps the top's right edge
+            overlap_px = int(ref_tw * 0.15)
+            x = _jitter(SPINE_X + ref_tw // 2 - overlap_px, n, 0)
+            y = _jitter(80, n, 1)
+            _place(item, img, "outer_layer", x, y, 4, slot_idx)
+            slot_idx += 1
+            # Only use outer for torso reference if no top/mid to define waist
+            if not has_top and not has_mid:
+                bottom_of_torso = max(bottom_of_torso, y + h)
+            if not has_top:
+                top_w = w
+                top_y = y
+                bottom_of_top = y + h
+                hero_center_x = x + w // 2
+                hero_center_y = y + h // 2
+                hero_right_edge = x + w
 
-        # Mid layer: behind top, slight offset
+        else:
+            # No outerwear: top is hero, centered on spine
+            if has_top:
+                item, img = by_slot["base_top"][0]
+                w, h = _target_size(img, "base_top")
+                x = _jitter(SPINE_X - w // 2 - 30, n, 2)
+                y = _jitter(140, n, 3)
+                _place(item, img, "base_top", x, y, 2, slot_idx)
+                slot_idx += 1
+                bottom_of_torso = max(bottom_of_torso, y + h)
+                top_w = w
+                top_y = y
+                bottom_of_top = y + h
+                hero_center_x = x + w // 2
+                hero_center_y = y + h // 2
+                hero_right_edge = x + w
+
+        # Mid layer: secondary, angled toward hero
         if has_mid:
             item, img = by_slot["mid_layer"][0]
             w, h = _target_size(img, "mid_layer")
-            offset = int(CANVAS_W * 0.04) if has_outer else 0
-            x = cx - w // 2 + offset
-            y = int(CANVAS_H * 0.07) if has_outer else int(CANVAS_H * 0.06)
-            positions.append((item, img.resize((w, h), Image.Resampling.LANCZOS), x, y, 1))
+            if has_outer:
+                # Behind outer, peeking out left
+                x = _jitter(SPINE_X - w // 2 + 60, n, 6)
+                y = _jitter(140, n, 7)
+                z = 1
+            elif has_top:
+                # Over top, offset right along diagonal
+                x = _jitter(SPINE_X - w // 2 + 100, n, 6)
+                y = _jitter(80, n, 7)
+                z = 4
+            else:
+                # Solo hero
+                x = _jitter(SPINE_X - w // 2 - 40, n, 6)
+                y = _jitter(120, n, 7)
+                z = 2
+                hero_center_x = x + w // 2
+                hero_center_y = y + h // 2
+                hero_right_edge = x + w
+            _place(item, img, "mid_layer", x, y, z, slot_idx)
+            slot_idx += 1
             bottom_of_torso = max(bottom_of_torso, y + h)
+            if not has_top:
+                top_w = w
+                top_y = y
+                bottom_of_top = y + h
 
-        # Top: main center piece
-        if has_top:
-            item, img = by_slot["base_top"][0]
-            w, h = _target_size(img, "base_top")
-            x = cx - w // 2
-            y_top = int(CANVAS_H * 0.10)
-            if has_outer or has_mid:
-                # Overlap slightly with layer behind
-                y_top = int(CANVAS_H * 0.12)
-            positions.append((item, img.resize((w, h), Image.Resampling.LANCZOS), x, y_top, 2))
-            bottom_of_torso = max(bottom_of_torso, y_top + h)
-
-        # Bottom: overlaps with top at waist
+        # Bottom: aligned with top on the spine, overlapping at waist
         if has_bottom:
             item, img = by_slot["bottom"][0]
             w, h = _target_size(img, "bottom")
-            x = cx - w // 2
-            # Place so top of pants overlaps bottom of top by ~15%
-            waist_y = bottom_of_torso - int(h * 0.10)
-            # But don't go above the top
-            waist_y = max(waist_y, int(CANVAS_H * 0.28))
-            positions.append((item, img.resize((w, h), Image.Resampling.LANCZOS), x, waist_y, 3))
-            bottom_of_torso = waist_y + h
+            # Align with top — same spine axis
+            x = _jitter(SPINE_X - w // 2 - 30, n, 8)
+            # Overlap at waist — pulls bottom up under top like a body
+            overlap_frac = 0.22 if has_outer else 0.18
+            waist_y = bottom_of_torso - int(h * overlap_frac)
+            waist_y = max(waist_y, 420)
+            y = _jitter(waist_y, n, 9)
+            _place(item, img, "bottom", x, y, 3, slot_idx)
+            slot_idx += 1
+            bottom_of_torso = y + h
+            if not bottom_of_top:
+                bottom_of_top = y
 
-    # Shoes: below bottom/dress, slight overlap at hem
+    # Shoes: slightly offset from spine (not centered, not far right)
+    shoe_x_final = SPINE_X
+    shoe_y_final = int(CANVAS_H * 0.75)
+    shoe_w_final = 0
     if has_shoes:
         item, img = by_slot["shoes"][0]
         w, h = _target_size(img, "shoes")
-        shoe_x = cx - w // 2
-        shoe_y = bottom_of_torso - int(h * 0.08)
-        # Don't let shoes go off canvas
-        shoe_y = min(shoe_y, CANVAS_H - h - int(CANVAS_H * 0.04))
-        if has_bag:
-            # Shift shoes slightly left to make room for bag
-            shoe_x = cx - w // 2 - int(CANVAS_W * 0.10)
-        positions.append((item, img.resize((w, h), Image.Resampling.LANCZOS), shoe_x, shoe_y, 4))
+        # Offset slightly LEFT of spine (body silhouette feel)
+        shoe_x = _jitter(SPINE_X - w // 2 - 30, n, 10)
+        shoe_y = bottom_of_torso + 30  # 30px gap below bottom, clear separation
+        shoe_y = max(shoe_y, bottom_of_torso + 20)  # enforce minimum gap
+        if has_dress:
+            shoe_y = max(shoe_y, int(CANVAS_H * 0.78))
+        shoe_y = _jitter(shoe_y, n, 11, amplitude=5)  # tiny jitter
+        shoe_y = max(shoe_y, bottom_of_torso + 20)  # re-enforce gap after jitter
+        # Hard ceiling: shoes must fit on canvas — this always wins
+        shoe_y = min(shoe_y, CANVAS_H - h - 40)
+        _place(item, img, "shoes", shoe_x, shoe_y, 5, slot_idx)
+        slot_idx += 1
+        shoe_x_final = shoe_x
+        shoe_y_final = shoe_y
+        shoe_w_final = w
 
-    # Bag: hip height, offset to the right
-    if has_bag:
+    # EDGE ZONE: Bag — right side when no outerwear
+    bag_on_left = has_bag and has_outer
+    if has_bag and not bag_on_left:
+        # No outerwear → bag goes RIGHT
         item, img = by_slot["bag"][0]
         w, h = _target_size(img, "bag")
-        bag_x = cx + int(CANVAS_W * 0.15)
-        bag_y = int(CANVAS_H * 0.55)
-        if has_shoes:
-            # Place bag near the shoes but to the right
-            bag_y = bottom_of_torso - int(h * 0.15)
-            bag_y = min(bag_y, CANVAS_H - h - int(CANVAS_H * 0.04))
-        positions.append((item, img.resize((w, h), Image.Resampling.LANCZOS), bag_x, bag_y, 5))
+        raw_bag_y = max(bottom_of_top - int(h * 0.2), 450)
+        raw_bag_y = min(raw_bag_y, CANVAS_H - h - 60)
+        bag_y = _jitter(raw_bag_y, n, 13, amplitude=15)
+        bag_y = min(bag_y, CANVAS_H - h - 40)
+        bag_x = _jitter(hero_right_edge + 20, n, 12, amplitude=15)
+        bag_x = max(10, min(bag_x, CANVAS_W - w - 10))
+        _place(item, img, "bag", bag_x, bag_y, 6, slot_idx)
+        slot_idx += 1
 
-    # Accessories: placed where they'd be worn
-    if has_accessory:
-        for idx, (item, img) in enumerate(by_slot["accessory"]):
-            w, h = _target_size(img, "accessory")
-            resized = img.resize((w, h), Image.Resampling.LANCZOS)
+    # EDGE ZONE: Unified left-side strip packing (bag when on left + all accessories)
+    # All left-side items sorted by ideal_y, placed top-to-bottom with guaranteed spacing.
+    if has_accessory or bag_on_left:
+        left_edge_x = SPINE_X - (top_w // 2 if top_w else int(CANVAS_W * 0.23))
+        waist_junction = bottom_of_top if bottom_of_top > 0 else int(top_y + (CANVAS_H * 0.35))
 
-            # First accessory: near neckline, offset to one side
-            if idx == 0:
-                acc_x = cx + int(CANVAS_W * 0.18)
-                acc_y = int(CANVAS_H * 0.06)
-            # Second: other side
-            elif idx == 1:
-                acc_x = cx - int(CANVAS_W * 0.18) - w
-                acc_y = int(CANVAS_H * 0.08)
-            # More: scatter near top
-            else:
-                acc_x = cx + int(CANVAS_W * (0.20 if idx % 2 == 0 else -0.25))
-                acc_y = int(CANVAS_H * (0.04 + idx * 0.06))
+        # Collect all left-side items: (ideal_y, idx, item, img, w, h, z, slot_name, x_calc)
+        left_items = []
 
-            positions.append((item, resized, acc_x, acc_y, 6))
+        # Add bag to unified list when on left
+        if bag_on_left:
+            item, img = by_slot["bag"][0]
+            w, h = _target_size(img, "bag")
+            ideal_y = max(bottom_of_top - int(h * 0.2), 450)
+            bag_x = _jitter(20, n, 12, amplitude=15)
+            bag_x = max(10, min(bag_x, CANVAS_W - w - 10))
+            left_items.append((ideal_y, -1, item, img, w, h, 6, "bag", bag_x))
 
-    # Unknown items: fill remaining space
+        # Add accessories
+        if has_accessory:
+            for idx, (item, img) in enumerate(by_slot["accessory"]):
+                sub_cat = (item.get("sub_category", "") or "").lower()
+                name_lower = (item.get("name", "") or "").lower()
+                w, h = _target_size(img, "accessory")
+
+                if "belt" in sub_cat or "belt" in name_lower:
+                    ideal_y = waist_junction - h // 2
+                    z = 7
+                elif "necklace" in sub_cat or "necklace" in name_lower or "pendant" in name_lower or "jewelry" in sub_cat or "jewellery" in sub_cat:
+                    ideal_y = top_y + int((bottom_of_top - top_y) * 0.15) if bottom_of_top > top_y else top_y + 60
+                    z = 6
+                elif "earring" in sub_cat or "earring" in name_lower:
+                    ideal_y = top_y - 10
+                    z = 6
+                elif "scarf" in sub_cat or "scarf" in name_lower:
+                    ideal_y = top_y + 40
+                    z = 6
+                else:
+                    ideal_y = waist_junction
+                    z = 6
+                acc_x = _jitter(left_edge_x - w + 10, n, 20 + idx, amplitude=15)
+                acc_x = max(10, acc_x)
+                left_items.append((ideal_y, idx, item, img, w, h, z, "accessory", acc_x))
+
+        # Sort by ideal_y (top to bottom)
+        left_items.sort(key=lambda e: e[0])
+
+        # Single placement pass with one occupied_bottom tracker
+        occupied_bottom = 0
+        for ideal_y, idx, item, img, w, h, z, slot_name, item_x in left_items:
+            # Apply jitter to ideal_y BEFORE overlap check
+            jitter_idx = 13 if slot_name == "bag" else 21 + idx
+            jitter_amp = 15 if slot_name == "bag" else 5
+            y = _jitter(ideal_y, n, jitter_idx, amplitude=jitter_amp)
+            y = max(y, top_y)                       # never above garments
+            if occupied_bottom > 0:
+                y = max(y, occupied_bottom + 15)     # never overlap previous item
+            y = min(y, CANVAS_H - h - 40)            # fit on canvas
+            _place(item, img, slot_name, item_x, y, z, slot_idx)
+            slot_idx += 1
+            occupied_bottom = y + h
+
+    # Unknown items
     for item, img in by_slot.get("unknown", []):
         w, h = _target_size(img, "unknown")
-        x = cx - w // 2
+        x = SPINE_X - w // 2
         y = int(CANVAS_H * 0.45)
-        positions.append((item, img.resize((w, h), Image.Resampling.LANCZOS), x, y, 3))
+        _place(item, img, "unknown", x, y, 3, slot_idx)
+        slot_idx += 1
 
     # Sort by z-order so back items render first
     positions.sort(key=lambda p: p[4])
@@ -294,7 +478,17 @@ def _target_size(img: Image.Image, slot: str) -> Tuple[int, int]:
     w = int(img.width * scale)
     h = int(img.height * scale)
 
-    max_h = int(CANVAS_H * 0.42)
+    max_h_frac = {
+        "outer_layer": 0.55,
+        "dress": 0.65,
+        "mid_layer": 0.50,
+        "base_top": 0.40,
+        "bottom": 0.36,
+        "shoes": 0.25,
+        "bag": 0.28,
+        "accessory": 0.20,
+    }
+    max_h = int(CANVAS_H * max_h_frac.get(slot, 0.42))
     if h > max_h:
         scale = max_h / max(img.height, 1)
         w = int(img.width * scale)
