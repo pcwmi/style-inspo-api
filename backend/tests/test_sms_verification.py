@@ -59,29 +59,31 @@ class TestMockOutput:
 
     def test_mock_output_accumulates_messages(self, mock_output):
         """MockOutput should accumulate multiple messages."""
-        mock_output.send(text="First message", images=[], layout="list")
-        mock_output.send(text="Second message", images=["http://example.com/img.jpg"], layout="outfit")
+        mock_output.send(text="First message", images=[])
+        mock_output.present_outfit(text="Second message", images=["http://example.com/img.jpg"])
 
         assert len(mock_output.messages) == 2
         assert mock_output.messages[0]["text"] == "First message"
+        assert mock_output.messages[0]["tool"] == "send_message"
         assert mock_output.messages[1]["images"] == ["http://example.com/img.jpg"]
-        assert mock_output.messages[1]["layout"] == "outfit"
+        assert mock_output.messages[1]["tool"] == "present_outfit"
 
     def test_mock_output_handles_none_text(self, mock_output):
         """MockOutput should handle None text (image-only messages)."""
-        mock_output.send(text=None, images=["http://example.com/img.jpg"], layout="outfit")
+        mock_output.present_outfit(text=None, images=["http://example.com/img.jpg"])
 
         assert len(mock_output.messages) == 1
         assert mock_output.messages[0]["text"] is None
         assert len(mock_output.messages[0]["images"]) == 1
 
-    def test_mock_output_default_layout(self, mock_output):
-        """MockOutput should record the layout parameter."""
-        mock_output.send(text="Test", images=[], layout="list")
-        mock_output.send(text="Test", images=[], layout="outfit")
+    def test_mock_output_tool_field(self, mock_output):
+        """MockOutput should record the tool name for each method."""
+        mock_output.send(text="Test", images=[])
+        mock_output.present_outfit(text="Test", images=["http://example.com/img.jpg"], visualize=True)
 
-        assert mock_output.messages[0]["layout"] == "list"
-        assert mock_output.messages[1]["layout"] == "outfit"
+        assert mock_output.messages[0]["tool"] == "send_message"
+        assert mock_output.messages[1]["tool"] == "present_outfit"
+        assert mock_output.messages[1]["visualize"] is True
 
     def test_mock_output_multiple_images(self, mock_output):
         """MockOutput should handle multiple images."""
@@ -90,7 +92,7 @@ class TestMockOutput:
             "http://example.com/2.jpg",
             "http://example.com/3.jpg"
         ]
-        mock_output.send(text="Outfit", images=images, layout="outfit")
+        mock_output.present_outfit(text="Outfit", images=images)
 
         assert len(mock_output.messages[0]["images"]) == 3
 
@@ -159,7 +161,7 @@ class TestSMSBasicFlow:
         first_message = mock_output.messages[0]
         assert "text" in first_message, "Message should have 'text' field"
         assert "images" in first_message, "Message should have 'images' field"
-        assert "layout" in first_message, "Message should have 'layout' field"
+        assert "tool" in first_message, "Message should have 'tool' field"
 
         logger.info(f"Agent sent {len(mock_output.messages)} message(s)")
         logger.info(f"First message: text={first_message['text'][:100] if first_message['text'] else None}...")
@@ -188,9 +190,9 @@ class TestSMSBasicFlow:
                     f"Image URL should start with http: {img_url}"
                 )
 
-    def test_outfit_uses_correct_layout(self, agent_with_mock):
+    def test_outfit_uses_present_outfit_tool(self, agent_with_mock):
         """
-        Outfit suggestions should use 'outfit' layout for collage.
+        Outfit suggestions should use present_outfit tool for collage.
         """
         agent, mock_output = agent_with_mock
 
@@ -204,12 +206,11 @@ class TestSMSBasicFlow:
                 break
 
         if outfit_message:
-            # Layout should be 'outfit' for styled looks
-            assert outfit_message["layout"] in ["outfit", "list"], (
-                f"Outfit message layout should be 'outfit' or 'list', "
-                f"got: {outfit_message['layout']}"
+            assert outfit_message["tool"] in ["present_outfit", "send_message"], (
+                f"Outfit message tool should be 'present_outfit' or 'send_message', "
+                f"got: {outfit_message['tool']}"
             )
-            logger.info(f"Layout used: {outfit_message['layout']}")
+            logger.info(f"Tool used: {outfit_message['tool']}")
 
 
 @requires_api
@@ -349,7 +350,7 @@ class TestFullSMSFlow:
 
         for i, msg in enumerate(mock_output.messages):
             logger.info(f"Message {i}: text={msg['text'][:50] if msg['text'] else 'None'}..., "
-                       f"images={len(msg['images'])}, layout={msg['layout']}")
+                       f"images={len(msg['images'])}, tool={msg['tool']}")
 
         # Verify at least one message has multiple items (an outfit)
         if outfit_messages:

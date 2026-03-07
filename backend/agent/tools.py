@@ -268,8 +268,32 @@ TOOLS = [
 
     # --- OUTPUT (send to user) ---
     {
+        "name": "present_outfit",
+        "description": "Present a NEW outfit you've composed from wardrobe items. Triggers editorial flat-lay collage. Use this when you've created a new outfit combination from the user's closet.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                **REASONING_FIELD,
+                "text": {
+                    "type": "string",
+                    "description": "Text message to send with the outfit"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Image URLs from resolve_items for the outfit pieces"
+                },
+                "visualize": {
+                    "type": "boolean",
+                    "description": "Generate a styled model visualization. Set true for complete outfits."
+                }
+            },
+            "required": ["reasoning", "images"]
+        }
+    },
+    {
         "name": "send_message",
-        "description": "Send a message to the user with optional images. Use this to SHOW items/outfits, not just describe them. Set visualize=true ONLY for complete styled outfits to generate a model visualization.",
+        "description": "Send text and/or images to the user AS-IS. No collage. Use for text replies, showing saved outfit visualizations, browsing items individually, or any non-outfit message.",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -281,16 +305,7 @@ TOOLS = [
                 "images": {
                     "type": "array",
                     "items": {"type": "string"},
-                    "description": "Image URLs from resolve_items to include"
-                },
-                "layout": {
-                    "type": "string",
-                    "enum": ["list", "outfit"],
-                    "description": "How to display: 'list' for browsing items, 'outfit' for styled combination"
-                },
-                "visualize": {
-                    "type": "boolean",
-                    "description": "Generate a styled model visualization. Use ONLY for complete outfits, NOT for browsing/showing individual items."
+                    "description": "Image URLs to send as-is (no collage processing)"
                 }
             },
             "required": ["reasoning"]

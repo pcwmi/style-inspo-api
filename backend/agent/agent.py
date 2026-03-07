@@ -658,20 +658,30 @@ class StylingAgent:
                 return {"resolved": resolved, "unresolved": unresolved}
 
             # --- OUTPUT (send to user) ---
-            elif tool_name == "send_message":
+            elif tool_name == "present_outfit":
                 text = tool_input.get("text")
                 images = tool_input.get("images", [])
-                layout = tool_input.get("layout", "list")
                 visualize = tool_input.get("visualize", False)
 
                 if self.output:
-                    self.output.send(text=text, images=images, layout=layout, visualize=visualize)
-                    logger.info(f"send_message: sent {len(images)} images with layout={layout}, visualize={visualize}")
+                    self.output.present_outfit(text=text, images=images, visualize=visualize)
+                    logger.info(f"present_outfit: sent {len(images)} images, visualize={visualize}")
                     return {"status": "sent", "images_count": len(images), "visualize": visualize}
                 else:
-                    # No output handler - just log what would be sent
+                    logger.info(f"present_outfit (no handler): text={text[:50] if text else None}..., {len(images)} images")
+                    return {"status": "no_output_handler", "would_send": {"text": text, "images": images, "visualize": visualize}}
+
+            elif tool_name == "send_message":
+                text = tool_input.get("text")
+                images = tool_input.get("images", [])
+
+                if self.output:
+                    self.output.send(text=text, images=images)
+                    logger.info(f"send_message: sent {len(images)} images")
+                    return {"status": "sent", "images_count": len(images)}
+                else:
                     logger.info(f"send_message (no handler): text={text[:50] if text else None}..., {len(images)} images")
-                    return {"status": "no_output_handler", "would_send": {"text": text, "images": images, "layout": layout, "visualize": visualize}}
+                    return {"status": "no_output_handler", "would_send": {"text": text, "images": images}}
 
             # --- WEB BROWSING ---
             elif tool_name == "browse_url":

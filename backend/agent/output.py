@@ -47,16 +47,13 @@ class OutputHandler(ABC):
     """Base class for modality-specific output."""
 
     @abstractmethod
-    def send(self, text: Optional[str], images: List[str], layout: str = "list", visualize: bool = False):
-        """
-        Send a message to the user.
+    def send(self, text: Optional[str], images: List[str]):
+        """Send text and/or images as-is. No collage processing."""
+        pass
 
-        Args:
-            text: Optional text message
-            images: List of image URLs to include
-            layout: 'list' for browsing items, 'outfit' for styled collage
-            visualize: Whether to generate a styled model visualization (agent decides)
-        """
+    @abstractmethod
+    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False):
+        """Present a new outfit with editorial collage."""
         pass
 
 
@@ -97,15 +94,38 @@ class SMSOutput(OutputHandler):
     def _resolve_items_metadata(self, image_urls: List[str]) -> List[dict]:
         return resolve_items_metadata(self.user_id, image_urls)
 
-    def send(self, text: Optional[str], images: List[str], layout: str = "list", visualize: bool = False):
+    def send(self, text: Optional[str], images: List[str]):
+        """Send text and/or images as-is. No collage. Each image sent individually."""
+        from services.twilio_service import send_sms, send_mms
+
+        if not images:
+            if text:
+                send_sms(self.phone, text)
+                logger.info(f"SMSOutput: sent text to {self.phone}")
+            return
+
+        import time
+
+        # Send text first, then each image as individual MMS
+        if text:
+            send_sms(self.phone, text)
+            time.sleep(0.5)
+
+        for image_url in images:
+            send_mms(self.phone, " ", [image_url])
+            time.sleep(0.5)
+
+        logger.info(f"SMSOutput: sent {len(images)} individual image(s) to {self.phone}")
+
+    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False):
+        """Present a new outfit with editorial collage."""
         from services.twilio_service import send_sms, send_mms
         from services.collage import generate_outfit_collage
 
         if not images:
-            # Text only
             if text:
                 send_sms(self.phone, text)
-                logger.info(f"SMSOutput: sent text to {self.phone}")
+                logger.info(f"SMSOutput: sent outfit text (no images) to {self.phone}")
             return
 
         import time
@@ -123,7 +143,6 @@ class SMSOutput(OutputHandler):
                 collage_urls.append(url)
 
         if not collage_urls:
-            # Fallback: send text only if all collages fail
             logger.warning("SMSOutput: collage generation failed, sending text only")
             if text:
                 send_sms(self.phone, text)
@@ -163,16 +182,18 @@ class StatefulSMSOutput(SMSOutput):
         self.state_manager = state_manager
         self.message_sent = False  # Track if send() was called (to avoid duplicate sends)
 
-    def send(self, text: Optional[str], images: List[str], layout: str = "list", visualize: bool = False):
-        # Mark that send() was called (prevents duplicate sends in sms.py)
+    def send(self, text: Optional[str], images: List[str]):
+        self.message_sent = True
+        super().send(text, images)
+
+    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False):
         self.message_sent = True
 
-        # First, send via parent class (collage + text)
-        super().send(text, images, layout, visualize)
+        # Send via parent class (collage + text)
+        super().present_outfit(text, images, visualize)
 
-        # Agent decides whether this is an outfit worth saving + visualizing
+        # Capture outfit state + trigger visualization
         if visualize and images:
-            # Look up actual item names from URLs (for meaningful context)
             items_with_names = self._lookup_item_names(images)
 
             outfit_data = {
@@ -183,12 +204,10 @@ class StatefulSMSOutput(SMSOutput):
             self.state_manager.set_last_outfit(outfit_data)
             logger.info(f"StatefulSMSOutput: captured outfit with {len(images)} items to state")
 
-            # Send expectation message for visualization
             from services.twilio_service import send_sms
             send_sms(self.phone, "Generating a styled version for you... (~15 more seconds)")
             logger.info(f"StatefulSMSOutput: sent visualization expectation message to {self.phone}")
 
-            # Trigger background visualization (sends follow-up MMS)
             styling_hint = self._extract_magic_section(text)
             self._trigger_background_visualization(images, styling_hint)
 
@@ -288,10 +307,10 @@ class StatefulSMSOutput(SMSOutput):
 class WebOutput(OutputHandler):
     """Web output - collects structured outfits for SSE streaming.
 
-    When the agent calls send_message with layout="outfit", this handler
-    enriches the data into the format the frontend expects (items with IDs,
-    image_paths, styling_notes, viz_key) and puts it on a queue for the
-    SSE endpoint to stream.
+    When the agent calls present_outfit, this handler enriches the data
+    into the format the frontend expects (items with IDs, image_paths,
+    styling_notes, viz_key) and puts it on a queue for the SSE endpoint
+    to stream.
     """
 
     def __init__(self, user_id: str, outfit_queue=None):
@@ -305,15 +324,16 @@ class WebOutput(OutputHandler):
         if reasoning:
             self._pending_reasoning.append({"tool": tool_name, "reasoning": reasoning})
 
-    def send(self, text: Optional[str], images: List[str], layout: str = "list", visualize: bool = False):
-        if layout == "outfit" and images:
+    def send(self, text: Optional[str], images: List[str]):
+        # Non-outfit messages (browse results, text-only) — log but don't queue as outfit
+        logger.info(f"WebOutput: non-outfit message ({len(images)} images)")
+
+    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False):
+        if images:
             enriched = self._enrich_outfit(text, images, visualize)
             self.outfits.append(enriched)
             if self.outfit_queue:
                 self.outfit_queue.put_nowait(enriched)
-        else:
-            # Non-outfit messages (browse results, text-only) — log but don't queue as outfit
-            logger.info(f"WebOutput: non-outfit message ({len(images)} images, layout={layout})")
 
     def _enrich_outfit(self, text: Optional[str], images: List[str], visualize: bool) -> dict:
         """Convert agent send_message into web outfit format."""
@@ -418,8 +438,15 @@ class APIOutput(OutputHandler):
         self.outfits = []
         self.messages = []
 
-    def send(self, text: Optional[str], images: List[str], layout: str = "list", visualize: bool = False):
-        outfit = {"text": text, "images": images or [], "layout": layout}
+    def send(self, text: Optional[str], images: List[str]):
+        msg = {"text": text, "images": images or []}
+        self.outfits.append(msg)
+        if text:
+            self.messages.append(text)
+        logger.info(f"APIOutput: collected message with {len(images)} images")
+
+    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False):
+        outfit = {"text": text, "images": images or []}
 
         if images:
             items_meta = self._resolve_items_metadata(images)
@@ -452,11 +479,19 @@ class MockOutput(OutputHandler):
     def __init__(self):
         self.messages = []
 
-    def send(self, text: Optional[str], images: List[str], layout: str = "list", visualize: bool = False):
+    def send(self, text: Optional[str], images: List[str]):
         self.messages.append({
+            "tool": "send_message",
             "text": text,
             "images": images,
-            "layout": layout,
+        })
+        logger.info(f"MockOutput: captured send_message with {len(images)} images")
+
+    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False):
+        self.messages.append({
+            "tool": "present_outfit",
+            "text": text,
+            "images": images,
             "visualize": visualize,
         })
-        logger.info(f"MockOutput: captured message with {len(images)} images, layout={layout}, visualize={visualize}")
+        logger.info(f"MockOutput: captured present_outfit with {len(images)} images, visualize={visualize}")
