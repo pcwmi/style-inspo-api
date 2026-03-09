@@ -102,3 +102,46 @@ sms-mockup.html
 # LinkedIn post drafts
 .claude/linkedin-post-*.md
 .claude/linkedin-post-*.html
+
+# Cursor
+.cursorrules
+
+# Root-level ad-hoc docs (keep only README.md)
+/ADD_WORKER.md
+/DEPLOY*.md
+/FIND_*.md
+/FIX_*.md
+/CURSOR_*.md
+/SSL_*.md
+/SETUP_*.md
+/*_RESULTS.md
+/*_REPORT.md
+/IMPLEMENTATION_SUMMARY.md
+/RESPONSE_PARSING_CLARIFICATION.md
+/LINKEDIN_POST_DRAFT.md
+/LOCAL_TESTING.md
+/OPENAI_API_KEY_SETUP.md
+/RAILWAY_WORKER_ENV_SETUP.md
+/TESTING.md
+
+# Root-level images (catch-all for screenshots)
+/*.png
+/*.jpeg
+/*.jpg
+
+# Root-level HTML mockups (catch-all)
+/*.html
+
+# Eval artifacts
+backend/tests/outfit_eval/*.md
+!backend/tests/outfit_eval/README.md
+backend/tests/streaming_comparison_results/
+backend/tests/feedback_eval/
+backend/tests/sms_eval/results/
+backend/tests/viz_eval/
+
+# Viz comparison
+viz_comparison/
+
+# Test wardrobe photos
+backend/wardrobe_photos/test*/
