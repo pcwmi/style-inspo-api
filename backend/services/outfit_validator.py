@@ -1,12 +1,12 @@
 """
 Outfit Validator - Slot-based physical plausibility check.
 
-EXPERIMENTAL: Not wired to production yet. Used by eval scripts to
-assess filtering impact before deployment.
-
 Maps each item's sub_category to a body "slot" and enforces max
 occupancy per slot. Catches physically impossible combos like
 vest + cardigan (both mid-layers) or t-shirt + t-shirt.
+
+Wired into resolve_items in agent.py — invalid outfits are rejected
+back to the agent with a suggestion to try a different combination.
 """
 
 from typing import Dict, List, Optional, Tuple
