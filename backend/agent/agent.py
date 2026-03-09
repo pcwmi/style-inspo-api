@@ -683,7 +683,15 @@ class StylingAgent:
                     logger.info(f"send_message (no handler): text={text[:50] if text else None}..., {len(images)} images")
                     return {"status": "no_output_handler", "would_send": {"text": text, "images": images}}
 
-            # --- WEB BROWSING ---
+            # --- WEB SEARCH & BROWSING ---
+            elif tool_name == "web_search":
+                from services.web_search import web_search
+                query = tool_input.get("query", "")
+                count = tool_input.get("count", 5)
+                result = web_search(query, count=count)
+                logger.info(f"web_search: '{query}' returned {result.get('result_count', 0)} results")
+                return result
+
             elif tool_name == "browse_url":
                 from services.web_browsing import browse_url
                 result = browse_url(tool_input["url"])
