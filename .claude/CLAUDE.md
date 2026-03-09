@@ -154,7 +154,7 @@ AND properties.$device_id NOT IN (
 - `descriptor_saved` - Model descriptor updates
 - `$rageclick` - Frustration signal (rapid clicks)
 
-**Why filter devices:** Pei-Chin often visits other user URLs (e.g., `?user=dimple`) to view their wardrobes, which inflates those users' event counts. The device filter ensures we see true user behavior.
+**Why filter devices:** The developer often visits other user URLs to view their wardrobes, which inflates those users' event counts. The device filter ensures we see true user behavior.
 
 ## Agent-Native Architecture (Jan 2026)
 
@@ -205,10 +205,10 @@ The agent loop is ~20 lines. Frameworks (LangGraph, CrewAI) are overkill for "si
 
 | User | Expected Use | Actual Use |
 |------|--------------|------------|
-| Dimple | Plan work outfits | Validate purchases ("buy smart") |
-| Alexi | Generate complete outfits | Remember forgotten items, single-item inspiration |
+| User A | Plan work outfits | Validate purchases ("buy smart") |
+| User B | Generate complete outfits | Remember forgotten items, single-item inspiration |
 
-**Key insight:** Neither user uses it for complete outfit generation. Dimple can't (timing/access), Alexi won't (doesn't trust physics).
+**Key insight:** Neither user uses it for complete outfit generation. User A can't (timing/access), User B won't (doesn't trust physics).
 
 ### The Garment Physics Problem
 

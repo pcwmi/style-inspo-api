@@ -2,6 +2,12 @@
 
 AI-powered personal styling from your own closet. Inspired by Allison Bornstein's "Wear it Well" methodology.
 
+**Live app:** [styleinspo.vercel.app](https://styleinspo.vercel.app/)
+
+<p align="center">
+  <img src="frontend/public/showcase/sms-flow.png" alt="SMS outfit generation flow" width="600">
+</p>
+
 **Text it for a quick opinion.** Send a message via SMS or WhatsApp -- "what should I wear to dinner tonight?" -- and get an outfit collage back in seconds. Share Instagram screenshots for inspiration and it will recreate the look from pieces you already own.
 
 **Use the web app for deeper exploration.** Browse your wardrobe visually, generate multiple outfit options, save favorites, and build a style identity over time.
@@ -12,6 +18,14 @@ The styling agent knows your wardrobe, remembers your feedback, and understands 
 
 Agent-native design: intelligence lives in prompts, not code. The system exposes 32 CRUD primitives (wardrobe, profile, outfits, feedback, consider-buy) and lets the AI agent reason about what works together. No framework needed -- the agent loop is ~20 lines.
 
+```
+User texts "date night outfit"
+  → Agent reasons over wardrobe + profile + feedback history
+  → Selects items, explains reasoning
+  → Generates outfit collage image
+  → Sends back via MMS
+```
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -21,6 +35,7 @@ Agent-native design: intelligence lives in prompts, not code. The system exposes
 | AI | OpenAI GPT |
 | Storage | AWS S3 (images), Redis (conversation state) |
 | SMS/MMS | Twilio |
+| Visualization | fal.ai (Flux), Runway (fallback) |
 | Analytics | PostHog |
 | Hosting | Railway (backend), Vercel (frontend) |
 
@@ -64,22 +79,15 @@ style-inspo-api/
 │   ├── api/                 # API routes (wardrobe, outfits, SMS, etc.)
 │   ├── primitives/          # CRUD operations (32 primitives)
 │   ├── services/            # Collage generation, storage, conversations
-│   └── tests/               # Eval harnesses (outfit, SMS, feedback)
+│   └── tests/               # Eval harnesses
 ├── frontend/
 │   ├── src/app/             # Next.js pages
 │   ├── src/components/      # React components
 │   └── src/lib/             # API client, utilities
-├── .claude/                 # Project context and brain dumps
-├── PRODUCT_VISION.md        # Product strategy
-├── STYLE_CONSTITUTION.md    # Styling philosophy and rules
-└── ROADMAP.md               # Current priorities
+└── .claude/                 # Claude Code project context
 ```
 
 ## Deployment
 
-- **Backend**: Railway. Push to `main` triggers automatic deploy.
-- **Frontend**: Vercel. Push to `main` triggers automatic deploy.
-
-## License
-
-Private repository. All rights reserved.
+- **Backend**: Railway -- push to `main` triggers automatic deploy
+- **Frontend**: Vercel -- push to `main` triggers automatic deploy

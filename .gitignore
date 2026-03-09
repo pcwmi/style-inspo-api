@@ -95,13 +95,19 @@ see-it-styled-*.png
 og-image-generator.html
 sms-mockup.html
 
-# .claude HTML artifacts (mockups, demos, comparisons)
+# .claude private notes (backed up separately)
+.claude/brain-dump*.md
+.claude/user-research/
+.claude/plans/
+.claude/linkedin-post*
 .claude/*.html
 .claude/mockups/*.html
-
-# LinkedIn post drafts
-.claude/linkedin-post-*.md
-.claude/linkedin-post-*.html
+.claude/CONSIDERING_DIAGNOSIS*.md
+.claude/DIAGNOSTIC_INSTRUCTIONS.md
+.claude/BACK_BUTTON_AUDIT.md
+.claude/USER_RESEARCH.md
+.claude/settings.local.json
+.claude/hook-test.txt
 
 # Cursor
 .cursorrules
@@ -123,6 +129,11 @@ sms-mockup.html
 /OPENAI_API_KEY_SETUP.md
 /RAILWAY_WORKER_ENV_SETUP.md
 /TESTING.md
+/ARC_SSL*.md
+/CUSTOM_DOMAIN*.md
+/DESIGN_*.md
+/VERCEL_SUPPORT*
+/CLAUDE.md
 
 # Root-level images (catch-all for screenshots)
 /*.png
