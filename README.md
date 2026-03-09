@@ -3,11 +3,6 @@
 AI-powered personal styling from your own closet. Inspired by Allison Bornstein's "Wear it Well" methodology.
 
 **Live app:** [styleinspo.vercel.app](https://styleinspo.vercel.app/)
-
-<p align="center">
-  <img src="frontend/public/showcase/sms-flow.png" alt="SMS outfit generation flow" width="600">
-</p>
-
 **Text it for a quick opinion.** Send a message via SMS or WhatsApp -- "what should I wear to dinner tonight?" -- and get an outfit collage back in seconds. Share Instagram screenshots for inspiration and it will recreate the look from pieces you already own.
 
 **Use the web app for deeper exploration.** Browse your wardrobe visually, generate multiple outfit options, save favorites, and build a style identity over time.
