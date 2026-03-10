@@ -312,7 +312,26 @@ TOOLS = [
         }
     },
 
-    # --- WEB BROWSING ---
+    # --- WEB SEARCH & BROWSING ---
+    {
+        "name": "web_search",
+        "description": "Search the web for fashion items, shopping recommendations, or style inspiration. Use this to find specific products you'd recommend but the user doesn't own — e.g. 'olive linen wide leg pants women under $100' or 'best black leather belt silver buckle'. Returns titles, URLs, descriptions, and thumbnails.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                **REASONING_FIELD,
+                "query": {
+                    "type": "string",
+                    "description": "Search query — be specific with item type, color, material, price range, gender. E.g. 'women cream cable knit cardigan under $150'"
+                },
+                "count": {
+                    "type": "integer",
+                    "description": "Number of results (default 5, max 20). Keep low to save tokens."
+                }
+            },
+            "required": ["reasoning", "query"]
+        }
+    },
     {
         "name": "browse_url",
         "description": "Fetch a web page (e.g. a sale or collection page) and extract the products listed on it. Returns product names, prices, sale prices, and links. Use this when a user shares a URL and wants shopping advice.",

@@ -25,6 +25,9 @@ class Settings:
     # Redis (for RQ job queue)
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
     
+    # Brave Search API (optional - for web_search tool)
+    BRAVE_SEARCH_API_KEY: Optional[str] = os.getenv("BRAVE_SEARCH_API_KEY")
+
     # Runway API (optional)
     RUNWAY_API_KEY: Optional[str] = os.getenv("RUNWAY_API_KEY")
     RUNWAY_MODEL_DESCRIPTOR: Optional[str] = os.getenv("RUNWAY_MODEL_DESCRIPTOR")
