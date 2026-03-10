@@ -18,7 +18,7 @@ from io import BytesIO
 from typing import Dict, List, Optional, Tuple
 
 import requests
-from PIL import Image, ImageFilter
+from PIL import Image, ImageEnhance, ImageFilter
 
 from services.outfit_validator import get_slot
 from services.storage_manager import StorageManager
@@ -39,7 +39,7 @@ SLOT_SIZE = {
     "bottom": 0.44,
     "shoes": 0.26,
     "bag": 0.22,
-    "accessory": 0.20,
+    "accessory": 0.28,
 }
 DEFAULT_SIZE = 0.38
 
@@ -63,6 +63,19 @@ DEFAULT_ROTATION = (0, 0)
 
 # Slots that can have hangers
 HANGER_SLOTS = {"base_top", "mid_layer", "outer_layer", "dress", "bottom"}
+
+
+def _normalize_lighting(cleaned):
+    """Polish each item — contrast + saturation boost to look like product photos."""
+    result = []
+    for item, img, slot in cleaned:
+        adjusted = img
+        # Contrast boost — makes items pop
+        adjusted = ImageEnhance.Contrast(adjusted).enhance(1.06)
+        # Saturation boost — vivid colors
+        adjusted = ImageEnhance.Color(adjusted).enhance(1.15)
+        result.append((item, adjusted, slot))
+    return result
 
 
 def generate_outfit_collage(
@@ -107,6 +120,8 @@ def generate_outfit_collage(
 
     if not cleaned:
         return None
+
+    cleaned = _normalize_lighting(cleaned)
 
     # Layout items like a body silhouette
     positions = _layout_silhouette(cleaned)
@@ -253,7 +268,6 @@ def _layout_silhouette(
     else:
         bottom_of_torso = 160
 
-        # Top = HERO (centered, fully visible). Coat = ACCENT to one side.
         if has_outer:
             # Place top first as hero
             if has_top:
@@ -486,7 +500,7 @@ def _target_size(img: Image.Image, slot: str) -> Tuple[int, int]:
         "bottom": 0.36,
         "shoes": 0.25,
         "bag": 0.28,
-        "accessory": 0.20,
+        "accessory": 0.25,
     }
     max_h = int(CANVAS_H * max_h_frac.get(slot, 0.42))
     if h > max_h:
@@ -498,17 +512,31 @@ def _target_size(img: Image.Image, slot: str) -> Tuple[int, int]:
 
 
 def _crop_hanger(img: Image.Image, slot: Optional[str]) -> Image.Image:
-    """Crop hanger region from garments (top 12% for hung items)."""
+    """Crop hanger by finding where garment body starts in alpha channel."""
     if slot not in HANGER_SLOTS:
         return img
     if img.mode != "RGBA":
         return img
 
-    crop_h = int(img.height * 0.12)
-    if crop_h < 10:
+    alpha = img.split()[3]
+    width = img.width
+    threshold = width * 0.30
+    garment_start = 0
+    for row_y in range(img.height):
+        row_data = list(alpha.crop((0, row_y, width, row_y + 1)).getdata())
+        opaque_count = sum(1 for px in row_data if px > 128)
+        if opaque_count >= threshold:
+            garment_start = row_y
+            break
+
+    crop_y = max(garment_start - 5, 0)
+    max_crop = int(img.height * 0.25)
+    crop_y = min(crop_y, max_crop)
+
+    if crop_y < 10:
         return img
 
-    return img.crop((0, crop_h, img.width, img.height))
+    return img.crop((0, crop_y, img.width, img.height))
 
 
 def _fallback_download(items: List[dict], user_id: str = "") -> List[Tuple[dict, Image.Image]]:
@@ -534,6 +562,14 @@ def _fallback_download(items: List[dict], user_id: str = "") -> List[Tuple[dict,
     return results
 
 
+def _color_grade(canvas: Image.Image) -> Image.Image:
+    """Subtle editorial color grading — warm tone, slight desaturation."""
+    img = ImageEnhance.Color(canvas).enhance(0.92)
+    warm = Image.new("RGBA", canvas.size, (255, 248, 235, 14))
+    img = Image.alpha_composite(img, warm)
+    return img
+
+
 def _render(
     positions: List[Tuple[dict, Image.Image, int, int]],
 ) -> Image.Image:
@@ -549,6 +585,7 @@ def _render(
         _safe_paste(canvas, shadow, x + SHADOW_OFFSET[0], y + SHADOW_OFFSET[1])
         _safe_paste(canvas, img, x, y)
 
+    canvas = _color_grade(canvas)
     return canvas
 
 

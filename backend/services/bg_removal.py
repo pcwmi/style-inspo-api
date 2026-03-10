@@ -13,7 +13,7 @@ from io import BytesIO
 from typing import List, Optional, Tuple
 
 import requests
-from PIL import Image
+from PIL import Image, ImageFilter
 
 logger = logging.getLogger(__name__)
 
@@ -34,6 +34,7 @@ def remove_background(image: Image.Image) -> Image.Image:
 
         output_bytes = remove(input_bytes)
         result = Image.open(BytesIO(output_bytes)).convert("RGBA")
+        result = _clean_alpha(result)
         return result
 
     except Exception as e:
@@ -41,9 +42,21 @@ def remove_background(image: Image.Image) -> Image.Image:
         return image.convert("RGBA")
 
 
+def _clean_alpha(img: Image.Image) -> Image.Image:
+    """Clean up alpha channel after bg removal — threshold, erode, feather."""
+    if img.mode != "RGBA":
+        return img
+    alpha = img.split()[3]
+    alpha = alpha.point(lambda x: 0 if x < 25 else (255 if x > 230 else x))
+    alpha = alpha.filter(ImageFilter.MinFilter(3))
+    alpha = alpha.filter(ImageFilter.GaussianBlur(radius=1))
+    img.putalpha(alpha)
+    return img
+
+
 def _url_to_cache_key(image_url: str) -> str:
     """Generate a stable cache key from an image URL."""
-    return hashlib.sha256(image_url.encode()).hexdigest()[:16]
+    return hashlib.sha256(image_url.encode()).hexdigest()[:16] + "_v2"
 
 
 def _download_image(url: str, user_id: Optional[str] = None) -> Optional[Image.Image]:
