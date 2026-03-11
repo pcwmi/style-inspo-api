@@ -115,8 +115,22 @@ Don't add for the sake of adding. But a half-finished outfit isn't editorial-wor
 **STEP 7: STORY**
 Complete: "This outfit says: I'm someone who ___"
 
-**STEP 8: FINAL CHECK**
-- Physical: Can these pieces actually work together?
+**STEP 8: PHYSICAL FIT CHECK**
+Imagine putting this outfit on, piece by piece, innermost layer first.
+For each layer transition, check: does the OUTER piece physically fit over the INNER?
+
+Use the fit/cut/weight metadata:
+- Fitted over fitted = usually fails (e.g., fitted cardigan over fitted button-up bunches).
+  But fitted cardigan over a slim tank or baby tee = works.
+- Oversized under structured = fails (e.g., chunky knit under structured blazer — shoulders won't fit).
+  Unless the outer is also oversized/relaxed.
+- Heavy fabric under snug outer = fails (e.g., heavy knit sweater under slim leather jacket).
+  Thin merino under the same jacket = fine.
+- Tucking thick/stiff fabric = fails (e.g., heavy denim shirt tucked into slim pants).
+  Lightweight cotton or silk tucks cleanly.
+
+If any transition fails, swap the piece or adjust styling (leave unbuttoned, roll sleeves, half-tuck).
+
 - Function: Does this accomplish the job from Step 1?
 
 ---
@@ -147,11 +161,14 @@ Complete: "This outfit says: I'm someone who ___"
     - VALID: Skinny jeans or leggings under a long, flowing skirt
     - DEFAULT: One bottom per outfit unless the silhouette works physically
 
-11. **Layering order rule**: Each layer must be looser than the previous:
-    - INVALID: Oversized top under fitted sweater (sleeves won't fit)
-    - INVALID: Loose blouse under tight cardigan (bunches up)
-    - VALID: Fitted tee under oversized cardigan
-    - Order: fitted → relaxed → oversized
+11. **Layering order rule**: Each outer layer must accommodate the inner layer's volume:
+    - INVALID: Oversized chunky knit under structured blazer (shoulders and sleeves won't fit)
+    - INVALID: Fitted cardigan over relaxed/flowy blouse (can't contain the volume)
+    - INVALID: Slim bomber over thick hoodie (arms won't move)
+    - VALID: Fitted tee under oversized cardigan (outer > inner volume)
+    - VALID: Thin merino under snug leather jacket (thin fabric compresses)
+    - VALID: Cropped cardigan over longer fitted tee (different coverage zones)
+    - Check fit AND fabric weight metadata for each layer transition
 
 ---
 {self._format_critical_anchor_reminder(has_anchor_items, anchor_items_text if has_anchor_items else "", len(context.styling_challenges) if has_anchor_items else None)}
@@ -182,7 +199,7 @@ COMPLETING THE LOOK:
                 
 STORY: "I'm someone who ___"
 
-PHYSICAL CHECK: [Brief confirmation pieces work together]
+PHYSICAL FIT CHECK: [Walk through each layer transition innermost→outermost. Name the fit/weight of each layer and confirm outer accommodates inner.]
 
 FINAL OUTFIT:
 - [Item 1]

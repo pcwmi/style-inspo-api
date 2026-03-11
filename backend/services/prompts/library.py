@@ -9,6 +9,7 @@ from .chain_of_thought_streaming_v1 import ChainOfThoughtStreamingV1
 from .chain_of_thought_reasoning_v1 import ChainOfThoughtReasoningV1
 from .vision_v1 import VisionPromptV1
 from .vision_cot_v1 import VisionChainOfThoughtV1
+from .physical_fit_v1 import PhysicalFitPromptV1
 
 
 class PromptLibrary:
@@ -28,6 +29,7 @@ class PromptLibrary:
         "chain_of_thought_reasoning_v1": ChainOfThoughtReasoningV1,
         "vision_v1": VisionPromptV1,
         "vision_cot_v1": VisionChainOfThoughtV1,
+        "physical_fit_v1": PhysicalFitPromptV1,
     }
 
     @classmethod
