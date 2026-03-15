@@ -39,7 +39,7 @@ def _run_agent_sync(request: AgentRunRequest) -> dict:
     """Run agent synchronously (called via run_in_threadpool)."""
     from agent.agent import StylingAgent
     from agent.output import APIOutput
-    from api.sms import preload_user_context
+    from agent.context import preload_user_context
 
     user_id = request.user_id
     logger.info(f"Agent API: starting for user={user_id}, message={request.message[:100]}")
@@ -70,6 +70,28 @@ def _run_agent_sync(request: AgentRunRequest) -> dict:
 
     response = agent.run(request.message)
     logger.info(f"Agent API: completed for user={user_id}, {len(output.outfits)} outfits")
+
+    # Log agent turn for eval/replay
+    try:
+        from services.agent_logger import log_agent_turn
+        conversation_length = len(conversation_context.get("messages", [])) if conversation_context else 0
+        log_agent_turn(
+            user_id=user_id,
+            channel="api",
+            user_message=request.message,
+            image_urls=None,
+            agent_response=response,
+            turn_log=agent.turn_log,
+            model=agent.model,
+            conversation_length=conversation_length,
+            token_usage={
+                "input": agent.total_input_tokens,
+                "output": agent.total_output_tokens,
+                "cached": agent.total_cached_tokens,
+            },
+        )
+    except Exception as e:
+        logger.warning(f"Agent API: failed to log agent turn: {e}")
 
     # Save assistant response to conversation state
     if state_manager and response:

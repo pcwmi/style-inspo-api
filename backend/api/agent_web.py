@@ -42,16 +42,20 @@ async def generate_outfits_agent_stream(
             try:
                 from agent.agent import StylingAgent
                 from agent.output import WebOutput
+                from agent.context import preload_user_context
 
                 web_output = WebOutput(
                     user_id=user_id,
                     outfit_queue=outfit_queue,
                 )
 
+                preloaded = preload_user_context(user_id)
+
                 agent = StylingAgent(
                     user_id=user_id,
                     provider="openai",
                     output=web_output,
+                    preloaded_context=preloaded,
                 )
 
                 message = _build_agent_message(
@@ -60,8 +64,29 @@ async def generate_outfits_agent_stream(
                 )
 
                 logger.info(f"Agent-web starting for {user_id}: {message[:100]}")
-                agent.run(message)
+                response = agent.run(message)
                 logger.info(f"Agent-web completed for {user_id}, {len(web_output.outfits)} outfits produced")
+
+                # Log agent turn for eval/replay
+                try:
+                    from services.agent_logger import log_agent_turn
+                    log_agent_turn(
+                        user_id=user_id,
+                        channel="web",
+                        user_message=message,
+                        image_urls=None,
+                        agent_response=response,
+                        turn_log=agent.turn_log,
+                        model=agent.model,
+                        conversation_length=0,
+                        token_usage={
+                            "input": agent.total_input_tokens,
+                            "output": agent.total_output_tokens,
+                            "cached": agent.total_cached_tokens,
+                        },
+                    )
+                except Exception as log_err:
+                    logger.warning(f"Failed to log agent turn: {log_err}")
 
             except Exception as e:
                 agent_error[0] = str(e)

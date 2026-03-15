@@ -12,6 +12,7 @@ The magic is in the system prompt, not the loop.
 import os
 import json
 import logging
+import random
 from typing import Optional, Literal
 
 from agent.tools import TOOLS, TOOLS_OPENAI
@@ -20,6 +21,27 @@ from agent.prompts import STYLING_SYSTEM_PROMPT
 logger = logging.getLogger(__name__)
 
 Provider = Literal["anthropic", "openai"]
+
+
+def get_compact_items(items: list, include_image_url: bool = True) -> list:
+    """Build compact item list for agent consumption, shuffled to prevent positional bias.
+
+    Single source of truth for item formatting — used by both _execute_tool
+    and preload_user_context so all channels get identical behavior.
+    """
+    compact = [
+        {
+            "id": item["id"],
+            "name": item.get("styling_details", {}).get("name", ""),
+            "category": item.get("styling_details", {}).get("category", ""),
+            "colors": item.get("styling_details", {}).get("colors", []),
+            "style": item.get("styling_details", {}).get("style", ""),
+            **({"image_url": item.get("system_metadata", {}).get("image_url", "")} if include_image_url else {}),
+        }
+        for item in items
+    ]
+    random.shuffle(compact)
+    return compact
 
 
 class StylingAgent:
@@ -362,18 +384,7 @@ class StylingAgent:
                 filter_type = tool_input.get("filter_type", "all")
                 manager = WardrobeManager(user_id=self.user_id)
                 items = manager.get_wardrobe_items(filter_type=filter_type)
-                # Return compact format for agent (less tokens)
-                compact_items = [
-                    {
-                        "id": item["id"],
-                        "name": item.get("styling_details", {}).get("name", ""),
-                        "category": item.get("styling_details", {}).get("category", ""),
-                        "colors": item.get("styling_details", {}).get("colors", []),
-                        "style": item.get("styling_details", {}).get("style", ""),
-                        "image_url": item.get("system_metadata", {}).get("image_url", ""),
-                    }
-                    for item in items
-                ]
+                compact_items = get_compact_items(items)
                 return {"items": compact_items, "count": len(compact_items)}
 
             elif tool_name == "get_item":

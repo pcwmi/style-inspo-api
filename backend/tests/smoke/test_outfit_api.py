@@ -7,13 +7,13 @@ import pytest
 from unittest.mock import patch, MagicMock
 
 
-def test_outfit_stream_endpoint_exists(client):
+def test_outfit_agent_stream_endpoint_exists(client):
     """
-    GET /api/outfits/generate/stream endpoint is registered.
+    GET /api/outfits/generate/agent-stream endpoint is registered.
     This is a quick check - full streaming test would be more complex.
     """
     # Just check the endpoint exists (will fail without required params)
-    response = client.get("/api/outfits/generate/stream")
+    response = client.get("/api/outfits/generate/agent-stream")
 
     # Should return 422 (missing required params), not 404
     assert response.status_code == 422, f"Expected 422 for missing params, got {response.status_code}"

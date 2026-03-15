@@ -26,12 +26,11 @@ Key decisions captured in ROADMAP.md:
 
 **Core Components:**
 - **`app.py`** - Main Streamlit application with UI layout and navigation
-- **`style_engine.py`** - AI-powered outfit generation engine using OpenAI GPT
+- **`agent/agent.py`** - StylingAgent - the single outfit generation path (all channels)
+- **`agent/output.py`** - Channel-specific output handlers (SMS, Web SSE, API JSON)
+- **`agent/context.py`** - Pre-loads user context to eliminate LLM round-trips
 - **`wardrobe_manager.py`** - Photo upload, storage, and wardrobe item management
 - **`style_profile.py`** - User style profile collection (three-word method + daily emotions)
-- **`outfit_visualizer.py`** - Magazine-style outfit presentation and visualization
-- **`ai_detection.py`** - AI content detection for uploaded images
-- **`mock_wardrobe.py`** - Sample data for testing and fallback scenarios
 
 **Data Management:**
 - **`wardrobe_photos/`** - User-uploaded clothing photos organized by category
@@ -55,7 +54,7 @@ python3 test_styling.py         # Test styling engine with sample data
 python3 -c "import streamlit; print(streamlit.__version__)"  # Check Streamlit version
 
 # Direct module testing
-python3 -c "from style_engine import StyleGenerationEngine; print('Engine loaded')"
+python3 -c "from main import app; print('App loaded')"
 ```
 
 ## E2E Testing with Playwright

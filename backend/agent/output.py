@@ -5,6 +5,7 @@ This is DETERMINISTIC. No AI. Just rendering + delivery.
 The agent decides WHAT to send, this layer decides HOW to render it.
 """
 
+import re
 import logging
 from abc import ABC, abstractmethod
 from typing import List, Optional
@@ -12,8 +13,12 @@ from typing import List, Optional
 logger = logging.getLogger(__name__)
 
 
-def resolve_items_metadata(user_id: str, image_urls: List[str]) -> List[dict]:
-    """Map image URLs to wardrobe item metadata for collage layout."""
+def resolve_items_from_urls(user_id: str, image_urls: List[str]) -> List[dict]:
+    """Map image URLs to full wardrobe item metadata. Single source of truth.
+
+    Returns list of dicts with: {id, name, category, sub_category, image_url}
+    Falls back to generic placeholders for unmatched URLs.
+    """
     try:
         from services.wardrobe_manager import WardrobeManager
         wm = WardrobeManager(user_id=user_id)
@@ -26,21 +31,58 @@ def resolve_items_metadata(user_id: str, image_urls: List[str]) -> List[dict]:
                 url_to_item[url] = item
 
         result = []
-        for url in image_urls:
+        for i, url in enumerate(image_urls):
             item = url_to_item.get(url)
             if item:
                 sd = item.get("styling_details", {})
                 result.append({
-                    "image_url": url,
+                    "id": item.get("id", ""),
+                    "name": sd.get("name", ""),
                     "category": sd.get("category", "unknown"),
                     "sub_category": sd.get("sub_category", ""),
+                    "image_url": url,
                 })
             else:
-                result.append({"image_url": url, "category": "unknown", "sub_category": ""})
+                result.append({
+                    "id": "",
+                    "name": f"Item {i + 1}",
+                    "category": "unknown",
+                    "sub_category": "",
+                    "image_url": url,
+                })
         return result
     except Exception as e:
-        logger.warning(f"resolve_items_metadata failed for {user_id}: {e}")
-        return [{"image_url": url, "category": "unknown", "sub_category": ""} for url in image_urls]
+        logger.warning(f"resolve_items_from_urls failed for {user_id}: {e}")
+        return [{"id": "", "name": f"Item {i + 1}", "category": "unknown", "sub_category": "", "image_url": url}
+                for i, url in enumerate(image_urls)]
+
+
+def parse_outfit_text(text: Optional[str]) -> dict:
+    """Parse agent outfit text into structured sections.
+
+    Returns: {magic: str, identity: str, full: str}
+    - magic = "The magic:" content (styling notes, markdown stripped)
+    - identity = "This outfit says:" content (markdown stripped)
+    - full = original text
+    """
+    if not text:
+        return {"magic": "", "identity": "", "full": ""}
+
+    # Extract "The magic:" section
+    magic_match = re.search(
+        r'\*{0,2}The magic:?\*{0,2}\s*(.+?)(?=\*{0,2}This outfit says|\Z)',
+        text, re.DOTALL | re.IGNORECASE
+    )
+    # Extract "This outfit says:" section
+    identity_match = re.search(
+        r'\*{0,2}This outfit says:?\*{0,2}\s*(.+)',
+        text, re.DOTALL | re.IGNORECASE
+    )
+
+    magic = re.sub(r'\*+', '', magic_match.group(1)).strip() if magic_match else text.strip()
+    identity = re.sub(r'\*+', '', identity_match.group(1)).strip() if identity_match else ""
+
+    return {"magic": magic, "identity": identity, "full": text}
 
 
 class OutputHandler(ABC):
@@ -64,35 +106,6 @@ class SMSOutput(OutputHandler):
         self.phone = phone
         self.user_id = user_id
 
-    def _split_message_sections(self, text: str) -> tuple[Optional[str], Optional[str]]:
-        """
-        Split message into magic/identity sections for 3-part SMS flow.
-
-        Returns (before_image, after_image) where:
-        - before_image = "The magic:" section
-        - after_image = "This outfit says:" section
-
-        If text doesn't match the expected format, returns (text, None).
-        """
-        if not text:
-            return None, None
-
-        # Look for the "This outfit says:" marker (case insensitive, with or without bold)
-        import re
-        # Match **This outfit says:** or This outfit says: (with optional whitespace)
-        pattern = r'(\*{0,2}This outfit says:?\*{0,2})'
-        match = re.search(pattern, text, re.IGNORECASE)
-
-        if match:
-            before_image = text[:match.start()].strip()
-            after_image = text[match.start():].strip()
-            return before_image if before_image else None, after_image if after_image else None
-
-        # No marker found - send all text before image
-        return text, None
-
-    def _resolve_items_metadata(self, image_urls: List[str]) -> List[dict]:
-        return resolve_items_metadata(self.user_id, image_urls)
 
     def send(self, text: Optional[str], images: List[str]):
         """Send text and/or images as-is. No collage. Each image sent individually."""
@@ -131,7 +144,7 @@ class SMSOutput(OutputHandler):
         import time
 
         # Resolve item metadata so collage knows categories for silhouette layout
-        items_metadata = self._resolve_items_metadata(images)
+        items_metadata = resolve_items_from_urls(self.user_id, images)
 
         # Split images into chunks of 6 for collage generation
         chunks = [images[i:i+6] for i in range(0, len(images), 6)]
@@ -150,8 +163,10 @@ class SMSOutput(OutputHandler):
                 send_sms(self.phone, "Here are your items (images unavailable)")
             return
 
-        # Split text into before/after image sections
-        before_image, after_image = self._split_message_sections(text)
+        # Split text into magic/identity sections for 3-part SMS flow
+        parsed = parse_outfit_text(text)
+        before_image = parsed["magic"] if parsed["magic"] else (text if text else None)
+        after_image = f"This outfit says: {parsed['identity']}" if parsed["identity"] else None
 
         # Send: text → collage(s) → after-image text
         if before_image:
@@ -194,7 +209,8 @@ class StatefulSMSOutput(SMSOutput):
 
         # Capture outfit state + trigger visualization
         if visualize and images:
-            items_with_names = self._lookup_item_names(images)
+            resolved = resolve_items_from_urls(self.user_id, images)
+            items_with_names = [{"image_path": r["image_url"], "name": r["name"]} for r in resolved]
 
             outfit_data = {
                 "items": items_with_names,
@@ -208,57 +224,8 @@ class StatefulSMSOutput(SMSOutput):
             send_sms(self.phone, "Generating a styled version for you... (~15 more seconds)")
             logger.info(f"StatefulSMSOutput: sent visualization expectation message to {self.phone}")
 
-            styling_hint = self._extract_magic_section(text)
+            styling_hint = parse_outfit_text(text)["magic"][:150]
             self._trigger_background_visualization(images, styling_hint)
-
-    def _lookup_item_names(self, image_urls: List[str]) -> List[dict]:
-        """Reverse-lookup item names from image URLs.
-
-        Maps URLs back to wardrobe items so SESSION_STATE shows real names
-        like "Grey cashmere sweater" instead of "Item 1".
-        """
-        try:
-            from services.wardrobe_manager import WardrobeManager
-            wm = WardrobeManager(user_id=self.user_id)
-            all_items = wm.get_wardrobe_items(filter_type="all")
-
-            # Build URL -> item name mapping
-            url_to_name = {}
-            for item in all_items:
-                # URL is stored as image_path, not image_url
-                url = item.get("system_metadata", {}).get("image_path", "")
-                name = item.get("styling_details", {}).get("name", "")
-                if url and name:
-                    url_to_name[url] = name
-
-            # Map each image URL to its name (fallback to generic if not found)
-            result = []
-            for i, url in enumerate(image_urls):
-                name = url_to_name.get(url, f"Item {i+1}")
-                result.append({"image_path": url, "name": name})
-
-            logger.info(f"_lookup_item_names: matched {sum(1 for r in result if not r['name'].startswith('Item '))} of {len(image_urls)} items")
-            return result
-
-        except Exception as e:
-            logger.warning(f"_lookup_item_names failed: {e}, using generic names")
-            return [{"image_path": url, "name": f"Item {i+1}"} for i, url in enumerate(image_urls)]
-
-    def _extract_magic_section(self, text: str) -> str:
-        """Extract 'The magic:' section from outfit text for Runway styling hints."""
-        if not text:
-            return ""
-
-        import re
-        # Find "The magic:" or "**The magic:**" section
-        match = re.search(r'\*{0,2}The magic:?\*{0,2}\s*(.+?)(?:\n\n|\*{0,2}This outfit says|\Z)', text, re.IGNORECASE | re.DOTALL)
-        if match:
-            magic = match.group(1).strip()
-            # Clean up markdown formatting
-            magic = re.sub(r'\*+', '', magic)
-            # Limit to 150 chars for Runway prompt budget
-            return magic[:150] if len(magic) > 150 else magic
-        return ""
 
     def _trigger_background_visualization(self, images: List[str], styling_notes: str = ""):
         """Spawn background thread to generate and send visualization."""
@@ -340,10 +307,13 @@ class WebOutput(OutputHandler):
         import hashlib
 
         # Reverse-lookup image URLs to wardrobe items
-        enriched_items = self._resolve_items_from_urls(images)
+        resolved = resolve_items_from_urls(self.user_id, images)
+        # Frontend expects image_path key
+        enriched_items = [{**r, "image_path": r["image_url"]} for r in resolved]
 
         # Parse agent text into styling_notes and why_it_works
-        styling_notes, why_it_works = self._parse_agent_text(text)
+        parsed = parse_outfit_text(text)
+        styling_notes, why_it_works = parsed["magic"], parsed["identity"]
 
         outfit = {
             "items": enriched_items,
@@ -365,69 +335,10 @@ class WebOutput(OutputHandler):
             outfit["viz_key"] = viz_key
             outfit["viz_pending"] = True
 
-            from api.outfits import _trigger_visualization_by_key
-            _trigger_visualization_by_key(self.user_id, viz_key, garment_images)
+            from services.visualization.viz_trigger import trigger_visualization_by_key
+            trigger_visualization_by_key(self.user_id, viz_key, garment_images)
 
         return outfit
-
-    def _resolve_items_from_urls(self, image_urls: List[str]) -> list:
-        """Map image URLs back to full wardrobe item data."""
-        try:
-            from services.wardrobe_manager import WardrobeManager
-            wm = WardrobeManager(user_id=self.user_id)
-            all_items = wm.get_wardrobe_items(filter_type="all")
-
-            url_to_item = {}
-            for item in all_items:
-                url = item.get("system_metadata", {}).get("image_path", "")
-                if url:
-                    url_to_item[url] = item
-
-            enriched = []
-            for url in image_urls:
-                item = url_to_item.get(url)
-                if item:
-                    enriched.append({
-                        "id": item.get("id"),
-                        "name": item.get("styling_details", {}).get("name", ""),
-                        "category": item.get("styling_details", {}).get("category", ""),
-                        "sub_category": item.get("styling_details", {}).get("sub_category", ""),
-                        "image_path": url,
-                    })
-                else:
-                    enriched.append({"name": "Unknown item", "category": "unknown", "sub_category": "", "image_path": url})
-            return enriched
-
-        except Exception as e:
-            logger.warning(f"WebOutput._resolve_items_from_urls failed: {e}")
-            return [{"name": f"Item {i+1}", "category": "unknown", "sub_category": "", "image_path": url} for i, url in enumerate(image_urls)]
-
-    def _parse_agent_text(self, text: Optional[str]) -> tuple:
-        """Split agent text into (styling_notes, why_it_works)."""
-        if not text:
-            return "", ""
-
-        import re
-
-        # Extract "The magic:" section
-        magic_match = re.search(
-            r'\*{0,2}The magic:?\*{0,2}\s*(.+?)(?=\*{0,2}This outfit says|\Z)',
-            text, re.DOTALL | re.IGNORECASE
-        )
-        # Extract "This outfit says:" section
-        identity_match = re.search(
-            r'\*{0,2}This outfit says:?\*{0,2}\s*(.+)',
-            text, re.DOTALL | re.IGNORECASE
-        )
-
-        styling = magic_match.group(1).strip() if magic_match else text.strip()
-        why = identity_match.group(1).strip() if identity_match else ""
-
-        # Clean markdown bold markers
-        styling = re.sub(r'\*+', '', styling).strip()
-        why = re.sub(r'\*+', '', why).strip()
-
-        return styling, why
 
 
 class APIOutput(OutputHandler):
@@ -440,16 +351,14 @@ class APIOutput(OutputHandler):
 
     def send(self, text: Optional[str], images: List[str]):
         msg = {"text": text, "images": images or []}
-        self.outfits.append(msg)
-        if text:
-            self.messages.append(text)
+        self.messages.append(msg)
         logger.info(f"APIOutput: collected message with {len(images)} images")
 
     def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False):
         outfit = {"text": text, "images": images or []}
 
         if images:
-            items_meta = self._resolve_items_metadata(images)
+            items_meta = resolve_items_from_urls(self.user_id, images)
             from services.collage import generate_outfit_collage
             collage_url = generate_outfit_collage(self.user_id, images, items=items_meta)
             outfit["collage_url"] = collage_url
@@ -468,9 +377,6 @@ class APIOutput(OutputHandler):
         if text:
             self.messages.append(text)
         logger.info(f"APIOutput: collected outfit with {len(images)} images, visualize={visualize}")
-
-    def _resolve_items_metadata(self, image_urls: List[str]) -> List[dict]:
-        return resolve_items_metadata(self.user_id, image_urls)
 
 
 class MockOutput(OutputHandler):
