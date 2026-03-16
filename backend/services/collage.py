@@ -115,9 +115,47 @@ def _normalize_lighting(cleaned):
         except Exception:
             pass  # Fall back to unadjusted image
 
-        # Step 2: Uniform contrast + saturation boost
-        adjusted = ImageEnhance.Contrast(adjusted).enhance(1.06)
-        adjusted = ImageEnhance.Color(adjusted).enhance(1.15)
+        # Step 2: Auto white balance — neutralize color casts
+        try:
+            if adjusted.mode == "RGBA":
+                alpha_wb = adjusted.split()[3]
+                rgb_wb = adjusted.convert("RGB")
+            else:
+                alpha_wb = None
+                rgb_wb = adjusted
+
+            arr_wb = np.array(rgb_wb).astype(np.float32)
+            if alpha_wb:
+                mask_wb = np.array(alpha_wb) > 128
+            else:
+                mask_wb = np.ones(arr_wb.shape[:2], dtype=bool)
+
+            if mask_wb.any():
+                # Gray world assumption: average of each channel should be equal
+                for c in range(3):
+                    channel_mean = arr_wb[:,:,c][mask_wb].mean()
+                    if channel_mean > 10:
+                        # Scale toward neutral gray (128)
+                        wb_scale = 128.0 / channel_mean
+                        # Gentle: clamp to 0.85-1.15 to avoid extreme shifts
+                        wb_scale = max(0.85, min(wb_scale, 1.15))
+                        arr_wb[:,:,c] = arr_wb[:,:,c] * wb_scale
+
+                arr_wb = np.clip(arr_wb, 0, 255)
+                adjusted = Image.fromarray(arr_wb.astype(np.uint8), "RGB")
+                if alpha_wb:
+                    adjusted = adjusted.convert("RGBA")
+                    adjusted.putalpha(alpha_wb)
+        except Exception:
+            pass
+
+        # Step 3: Contrast + saturation boost for product-photo feel
+        adjusted = ImageEnhance.Contrast(adjusted).enhance(1.08)
+        adjusted = ImageEnhance.Color(adjusted).enhance(1.12)
+
+        # Step 4: Sharpen — make details crisp like studio photos
+        adjusted = ImageEnhance.Sharpness(adjusted).enhance(1.3)
+
         result.append((item, adjusted, slot))
     return result
 
