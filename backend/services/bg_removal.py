@@ -43,20 +43,32 @@ def remove_background(image: Image.Image) -> Image.Image:
 
 
 def _clean_alpha(img: Image.Image) -> Image.Image:
-    """Clean up alpha channel after bg removal — threshold, erode, feather."""
+    """Clean up alpha channel after bg removal — threshold, erode, feather.
+
+    Two-pass approach:
+    1. Hard threshold to kill semi-transparent fringe
+    2. Morphological erosion (2px) to eat into halo edges
+    3. Gentle feather to smooth jagged edges without reintroducing halo
+    """
     if img.mode != "RGBA":
         return img
     alpha = img.split()[3]
-    alpha = alpha.point(lambda x: 0 if x < 25 else (255 if x > 230 else x))
+    # Pass 1: hard threshold — kill semi-transparent fringe
+    alpha = alpha.point(lambda x: 0 if x < 30 else (255 if x > 220 else x))
+    # Pass 2: erode mask inward by 2px to eat halo remnants
     alpha = alpha.filter(ImageFilter.MinFilter(3))
-    alpha = alpha.filter(ImageFilter.GaussianBlur(radius=1))
+    alpha = alpha.filter(ImageFilter.MinFilter(3))
+    # Pass 3: gentle feather for smooth edges (not enough to reintroduce halo)
+    alpha = alpha.filter(ImageFilter.GaussianBlur(radius=0.8))
+    # Final threshold to keep edges crisp after blur
+    alpha = alpha.point(lambda x: 0 if x < 20 else 255)
     img.putalpha(alpha)
     return img
 
 
 def _url_to_cache_key(image_url: str) -> str:
     """Generate a stable cache key from an image URL."""
-    return hashlib.sha256(image_url.encode()).hexdigest()[:16] + "_v2"
+    return hashlib.sha256(image_url.encode()).hexdigest()[:16] + "_v3"
 
 
 def _download_image(url: str, user_id: Optional[str] = None) -> Optional[Image.Image]:

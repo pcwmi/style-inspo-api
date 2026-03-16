@@ -512,7 +512,13 @@ def _target_size(img: Image.Image, slot: str) -> Tuple[int, int]:
 
 
 def _crop_hanger(img: Image.Image, slot: Optional[str]) -> Image.Image:
-    """Crop hanger by finding where garment body starts in alpha channel."""
+    """Crop hanger by finding where garment body starts in alpha channel.
+
+    Hangers are narrow protrusions at the top of the image. We scan down
+    from the top looking for the first row where opaque pixels span at
+    least 20% of the image width — that's where the garment body begins.
+    Everything above is hanger/hook.
+    """
     if slot not in HANGER_SLOTS:
         return img
     if img.mode != "RGBA":
@@ -520,7 +526,8 @@ def _crop_hanger(img: Image.Image, slot: Optional[str]) -> Image.Image:
 
     alpha = img.split()[3]
     width = img.width
-    threshold = width * 0.30
+    # Lower threshold (20% vs 30%) to catch wider hangers
+    threshold = width * 0.20
     garment_start = 0
     for row_y in range(img.height):
         row_data = list(alpha.crop((0, row_y, width, row_y + 1)).getdata())
@@ -530,7 +537,8 @@ def _crop_hanger(img: Image.Image, slot: Optional[str]) -> Image.Image:
             break
 
     crop_y = max(garment_start - 5, 0)
-    max_crop = int(img.height * 0.25)
+    # Allow up to 30% crop (was 25%) — some hangers + hooks extend further
+    max_crop = int(img.height * 0.30)
     crop_y = min(crop_y, max_crop)
 
     if crop_y < 10:
