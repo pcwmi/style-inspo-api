@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 CANVAS_W = 1200
 CANVAS_H = 1600
-BACKGROUND_COLOR = (245, 243, 240)
+BACKGROUND_COLOR = (248, 248, 248)  # Clean neutral gray-white, not warm
 SPINE_X = 560  # 40px left of true center for asymmetric editorial feel
 
 # Slot -> fraction of canvas width for sizing
@@ -43,9 +43,9 @@ SLOT_SIZE = {
 }
 DEFAULT_SIZE = 0.38
 
-SHADOW_OFFSET = (6, 10)
-SHADOW_BLUR = 14
-SHADOW_COLOR = (0, 0, 0, 35)
+SHADOW_OFFSET = (8, 12)
+SHADOW_BLUR = 18
+SHADOW_COLOR = (0, 0, 0, 55)
 
 # Rotation ranges per slot type (min_degrees, max_degrees)
 # Only bags and accessories rotate — garments and shoes stay upright
@@ -681,10 +681,12 @@ def _fallback_download(items: List[dict], user_id: str = "") -> List[Tuple[dict,
 
 
 def _color_grade(canvas: Image.Image) -> Image.Image:
-    """Subtle editorial color grading — warm tone, slight desaturation."""
-    img = ImageEnhance.Color(canvas).enhance(0.92)
-    warm = Image.new("RGBA", canvas.size, (255, 248, 235, 14))
-    img = Image.alpha_composite(img, warm)
+    """Editorial color grading — clean, slightly cool tone like magazine print."""
+    # Slight contrast lift for crisp editorial feel
+    img = ImageEnhance.Contrast(canvas).enhance(1.04)
+    # Very subtle cool overlay — shifts away from warm/cozy toward clean/editorial
+    cool = Image.new("RGBA", canvas.size, (240, 245, 250, 8))
+    img = Image.alpha_composite(img, cool)
     return img
 
 
