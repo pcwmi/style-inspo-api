@@ -285,12 +285,13 @@ def _layout_silhouette(
                 hero_center_y = y + h // 2
                 hero_right_edge = x + w
 
-            # Outerwear: accent to the RIGHT, ~15% overlap with top's right shoulder
+            # Outerwear: accent to the RIGHT, ~35% overlap with top's right shoulder
+            # More overlap = items feel grouped, less "floating to the side"
             item, img = by_slot["outer_layer"][0]
             w, h = _target_size(img, "outer_layer")
             ref_tw = top_w or int(CANVAS_W * 0.46)
-            # Position so only ~15% of coat overlaps the top's right edge
-            overlap_px = int(ref_tw * 0.15)
+            # 35% overlap creates tighter grouping like a real flat-lay
+            overlap_px = int(ref_tw * 0.35)
             x = _jitter(SPINE_X + ref_tw // 2 - overlap_px, n, 0)
             # Clamp so outerwear right edge stays within canvas (30px margin)
             max_x = CANVAS_W - w - 30
@@ -382,12 +383,12 @@ def _layout_silhouette(
         w, h = _target_size(img, "shoes")
         # Offset slightly LEFT of spine (body silhouette feel)
         shoe_x = _jitter(SPINE_X - w // 2 - 30, n, 10)
-        shoe_y = bottom_of_torso + 30  # 30px gap below bottom, clear separation
-        shoe_y = max(shoe_y, bottom_of_torso + 20)  # enforce minimum gap
+        shoe_y = bottom_of_torso + 15  # Tighter gap — shoes closer to outfit
+        shoe_y = max(shoe_y, bottom_of_torso + 10)
         if has_dress:
             shoe_y = max(shoe_y, int(CANVAS_H * 0.78))
         shoe_y = _jitter(shoe_y, n, 11, amplitude=5)  # tiny jitter
-        shoe_y = max(shoe_y, bottom_of_torso + 20)  # re-enforce gap after jitter
+        shoe_y = max(shoe_y, bottom_of_torso + 10)  # re-enforce gap after jitter
         # Hard ceiling: shoes must fit on canvas — this always wins
         shoe_y = min(shoe_y, CANVAS_H - h - 40)
         _place(item, img, "shoes", shoe_x, shoe_y, 5, slot_idx)
@@ -406,7 +407,8 @@ def _layout_silhouette(
         raw_bag_y = min(raw_bag_y, CANVAS_H - h - 60)
         bag_y = _jitter(raw_bag_y, n, 13, amplitude=15)
         bag_y = min(bag_y, CANVAS_H - h - 40)
-        bag_x = _jitter(hero_right_edge + 20, n, 12, amplitude=15)
+        # Bag closer to garments — slight overlap with outfit cluster
+        bag_x = _jitter(hero_right_edge - 20, n, 12, amplitude=15)
         bag_x = max(10, min(bag_x, CANVAS_W - w - 10))
         _place(item, img, "bag", bag_x, bag_y, 6, slot_idx)
         slot_idx += 1
@@ -451,7 +453,8 @@ def _layout_silhouette(
                 else:
                     ideal_y = waist_junction
                     z = 6
-                acc_x = _jitter(left_edge_x - w + 10, n, 20 + idx, amplitude=15)
+                # Place accessories closer to garments — overlap slightly for cohesion
+                acc_x = _jitter(left_edge_x - w // 2, n, 20 + idx, amplitude=15)
                 acc_x = max(10, acc_x)
                 left_items.append((ideal_y, idx, item, img, w, h, z, "accessory", acc_x))
 
