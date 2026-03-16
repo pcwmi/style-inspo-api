@@ -63,11 +63,24 @@ def preload_user_context(user_id: str) -> str:
         logger.warning(f"Failed to preload profile: {e}")
 
     # Wardrobe items (compact format, shuffled to prevent positional bias)
+    # Filter out recently-used items to force variety
+    recently_used_names = set()
+    try:
+        for outfit_names in get_recent_generations(user_id):
+            recently_used_names.update(outfit_names)
+    except Exception:
+        pass
+
     try:
         from agent.agent import get_compact_items
         items = WardrobeManager(user_id=user_id).get_wardrobe_items(filter_type="all")
         compact = get_compact_items(items, include_image_url=False)
-        sections.append(f"Wardrobe ({len(compact)} items): {json.dumps(compact)}")
+        if recently_used_names and len(compact) > 20:
+            filtered = [c for c in compact if c.get("name") not in recently_used_names]
+            excluded = len(compact) - len(filtered)
+            sections.append(f"Wardrobe ({len(filtered)} items, {excluded} recently-used items hidden for freshness): {json.dumps(filtered)}")
+        else:
+            sections.append(f"Wardrobe ({len(compact)} items): {json.dumps(compact)}")
     except Exception as e:
         logger.warning(f"Failed to preload items: {e}")
 
