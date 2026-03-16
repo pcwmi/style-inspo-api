@@ -149,12 +149,38 @@ def _normalize_lighting(cleaned):
         except Exception:
             pass
 
-        # Step 3: Contrast + saturation boost for product-photo feel
-        adjusted = ImageEnhance.Contrast(adjusted).enhance(1.08)
+        # Step 3: CLAHE-like local contrast — flatten dynamic range like HDR
+        # Makes shadows brighter and highlights softer = even studio lighting feel
+        try:
+            if adjusted.mode == "RGBA":
+                alpha_cl = adjusted.split()[3]
+                rgb_cl = adjusted.convert("RGB")
+            else:
+                alpha_cl = None
+                rgb_cl = adjusted
+
+            arr_cl = np.array(rgb_cl).astype(np.float32)
+            # Per-channel histogram stretching toward middle range
+            for c in range(3):
+                ch = arr_cl[:,:,c]
+                p_low, p_high = np.percentile(ch[ch > 0] if ch.any() else ch, [5, 95])
+                if p_high - p_low > 20:
+                    # Stretch 5th-95th percentile to 30-240 range (compress extremes)
+                    ch = np.clip((ch - p_low) / (p_high - p_low) * 210 + 30, 0, 255)
+                    arr_cl[:,:,c] = ch
+            adjusted = Image.fromarray(arr_cl.astype(np.uint8), "RGB")
+            if alpha_cl:
+                adjusted = adjusted.convert("RGBA")
+                adjusted.putalpha(alpha_cl)
+        except Exception:
+            pass
+
+        # Step 4: Contrast + saturation for product-photo pop
+        adjusted = ImageEnhance.Contrast(adjusted).enhance(1.10)
         adjusted = ImageEnhance.Color(adjusted).enhance(1.12)
 
-        # Step 4: Sharpen — make details crisp like studio photos
-        adjusted = ImageEnhance.Sharpness(adjusted).enhance(1.3)
+        # Step 5: Unsharp mask — crisp details without noise amplification
+        adjusted = adjusted.filter(ImageFilter.UnsharpMask(radius=2, percent=120, threshold=3))
 
         result.append((item, adjusted, slot))
     return result
@@ -367,15 +393,15 @@ def _layout_silhouette(
                 hero_center_y = y + h // 2
                 hero_right_edge = x + w
 
-            # Outerwear: BEHIND the top, offset right — like laying clothes on a bed
-            # The jacket frames the top, peeking out at the shoulders and sides
+            # Outerwear: accent to the RIGHT, ~15% overlap with top's right shoulder
             item, img = by_slot["outer_layer"][0]
             w, h = _target_size(img, "outer_layer")
             ref_tw = top_w or int(CANVAS_W * 0.46)
-            # Center on spine but offset right so jacket peeks from behind the top
-            x = _jitter(SPINE_X - w // 2 + int(ref_tw * 0.25), n, 0)
-            y = _jitter(60, n, 1)  # Slightly above top so collar peeks
-            _place(item, img, "outer_layer", x, y, 1, slot_idx)  # z=1: behind the top
+            # Position so only ~15% of coat overlaps the top's right edge
+            overlap_px = int(ref_tw * 0.15)
+            x = _jitter(SPINE_X + ref_tw // 2 - overlap_px, n, 0)
+            y = _jitter(80, n, 1)
+            _place(item, img, "outer_layer", x, y, 4, slot_idx)
             slot_idx += 1
             # Only use outer for torso reference if no top/mid to define waist
             if not has_top and not has_mid:
