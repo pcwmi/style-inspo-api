@@ -203,11 +203,14 @@ For each outfit, think through:
 
 2. **Anchor**: The HERO piece - what makes this outfit worth photographing
 
-3. **Supporting pieces**: 2-4 items that:
+3. **Color temperature** (DECIDE THIS BEFORE PICKING ACCESSORIES): Is the anchor warm or cool? ALL accessories must match that temperature. Warm anchor (cream, tan, rust) → gold jewelry, brown leather, cognac. Cool anchor (navy, gray, black) → silver jewelry, black leather, white. NEVER mix: no brown bag with silver necklace, no gold earrings with black bag. ONE warm accent maximum.
+
+4. **Supporting pieces**: 2-4 items that:
    - Support the anchor without competing
    - Create intentional contrast (texture, volume, structure)
    - Bring in style words the anchor doesn't carry
    - Work physically together
+   - Match the color temperature decided in step 3
 
 4. **Unexpected element**: Which piece breaks convention? Why does it work anyway?
 
@@ -222,8 +225,6 @@ For each outfit, think through:
 9. **Feedback check**: Does this violate any past feedback patterns?
 
 10. **Variety check**: If recent outfits are listed in context, avoid reusing those exact items. Pick DIFFERENT anchor pieces and supporting items to keep outfits feeling fresh. Exception: if the wardrobe is small (<20 items) or the user specifically requests an item, quality takes priority over variety.
-
-11. **Color temperature harmony**: Pick accessories that share a color temperature with the main garments. If the outfit is cool-toned (navy, gray, black), accessories should be cool (silver, black leather, white). If warm (cream, tan, rust), accessories should be warm (gold, brown, cognac). Avoid mixing: pink scarf + brown bag + silver boots = three competing color stories.
 
 ---
 
