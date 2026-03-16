@@ -27,8 +27,9 @@ def remove_background(image: Image.Image) -> Image.Image:
     """
     try:
         from rembg import remove, new_session
-        # Use isnet-general-use for better edge precision on garments
-        session = new_session("isnet-general-use")
+        # u2net is the best general model for wardrobe photos
+        # (isnet-general-use tested — worse on messy backgrounds)
+        session = new_session("u2net")
 
         input_buf = BytesIO()
         image.save(input_buf, format="PNG")
@@ -70,7 +71,7 @@ def _clean_alpha(img: Image.Image) -> Image.Image:
 
 def _url_to_cache_key(image_url: str) -> str:
     """Generate a stable cache key from an image URL."""
-    return hashlib.sha256(image_url.encode()).hexdigest()[:16] + "_v4"
+    return hashlib.sha256(image_url.encode()).hexdigest()[:16] + "_v3"
 
 
 def _download_image(url: str, user_id: Optional[str] = None) -> Optional[Image.Image]:
@@ -221,7 +222,7 @@ def warm_up_model():
     """
     try:
         from rembg import new_session
-        session = new_session("isnet-general-use")
+        session = new_session("u2net")
         logger.info("rembg model warmed up successfully")
     except Exception as e:
         logger.warning(f"rembg warm-up failed (will load on first use): {e}")
