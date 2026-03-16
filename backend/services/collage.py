@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 CANVAS_W = 1200
 CANVAS_H = 1600
-BACKGROUND_COLOR = (248, 248, 248)  # Clean neutral gray-white, not warm
+BACKGROUND_COLOR = (245, 243, 240)
 SPINE_X = 560  # 40px left of true center for asymmetric editorial feel
 
 # Slot -> fraction of canvas width for sizing
@@ -43,9 +43,9 @@ SLOT_SIZE = {
 }
 DEFAULT_SIZE = 0.38
 
-SHADOW_OFFSET = (8, 12)
-SHADOW_BLUR = 18
-SHADOW_COLOR = (0, 0, 0, 55)
+SHADOW_OFFSET = (6, 10)
+SHADOW_BLUR = 14
+SHADOW_COLOR = (0, 0, 0, 35)
 
 # Rotation ranges per slot type (min_degrees, max_degrees)
 # Only bags and accessories rotate — garments and shoes stay upright
@@ -66,122 +66,14 @@ HANGER_SLOTS = {"base_top", "mid_layer", "outer_layer", "dress", "bottom"}
 
 
 def _normalize_lighting(cleaned):
-    """Normalize lighting across items so they look shot under the same light.
-
-    Two-step approach:
-    1. Per-item brightness normalization: adjust each item's brightness toward
-       a common target (L=180 in LAB space) so dark/bright items converge
-    2. Uniform contrast + saturation boost for product-photo feel
-    """
-    import numpy as np
-
-    TARGET_L = 180  # Target brightness in LAB L channel (0-255 scale)
-
+    """Polish each item — contrast + saturation boost to look like product photos."""
     result = []
     for item, img, slot in cleaned:
         adjusted = img
-
-        # Step 1: Per-item brightness normalization via LAB
-        try:
-            if img.mode == "RGBA":
-                # Work on RGB channels only, preserve alpha
-                alpha = img.split()[3]
-                rgb = img.convert("RGB")
-            else:
-                alpha = None
-                rgb = img
-
-            arr = np.array(rgb).astype(np.float32)
-            # Compute mean brightness of non-transparent pixels
-            if alpha:
-                mask = np.array(alpha) > 128
-                if mask.any():
-                    # Simple luminance: 0.299R + 0.587G + 0.114B
-                    lum = arr[:,:,0] * 0.299 + arr[:,:,1] * 0.587 + arr[:,:,2] * 0.114
-                    mean_lum = lum[mask].mean()
-
-                    if mean_lum > 10:  # Avoid division by zero for very dark items
-                        # Scale factor to bring mean luminance toward target
-                        scale = TARGET_L / mean_lum
-                        # Clamp scale to avoid extreme adjustments
-                        scale = max(0.7, min(scale, 1.4))
-                        arr = arr * scale
-                        arr = np.clip(arr, 0, 255)
-
-            adjusted = Image.fromarray(arr.astype(np.uint8), "RGB")
-            if alpha:
-                adjusted = adjusted.convert("RGBA")
-                adjusted.putalpha(alpha)
-        except Exception:
-            pass  # Fall back to unadjusted image
-
-        # Step 2: Auto white balance — neutralize color casts
-        try:
-            if adjusted.mode == "RGBA":
-                alpha_wb = adjusted.split()[3]
-                rgb_wb = adjusted.convert("RGB")
-            else:
-                alpha_wb = None
-                rgb_wb = adjusted
-
-            arr_wb = np.array(rgb_wb).astype(np.float32)
-            if alpha_wb:
-                mask_wb = np.array(alpha_wb) > 128
-            else:
-                mask_wb = np.ones(arr_wb.shape[:2], dtype=bool)
-
-            if mask_wb.any():
-                # Gray world assumption: average of each channel should be equal
-                for c in range(3):
-                    channel_mean = arr_wb[:,:,c][mask_wb].mean()
-                    if channel_mean > 10:
-                        # Scale toward neutral gray (128)
-                        wb_scale = 128.0 / channel_mean
-                        # Gentle: clamp to 0.85-1.15 to avoid extreme shifts
-                        wb_scale = max(0.85, min(wb_scale, 1.15))
-                        arr_wb[:,:,c] = arr_wb[:,:,c] * wb_scale
-
-                arr_wb = np.clip(arr_wb, 0, 255)
-                adjusted = Image.fromarray(arr_wb.astype(np.uint8), "RGB")
-                if alpha_wb:
-                    adjusted = adjusted.convert("RGBA")
-                    adjusted.putalpha(alpha_wb)
-        except Exception:
-            pass
-
-        # Step 3: CLAHE-like local contrast — flatten dynamic range like HDR
-        # Makes shadows brighter and highlights softer = even studio lighting feel
-        try:
-            if adjusted.mode == "RGBA":
-                alpha_cl = adjusted.split()[3]
-                rgb_cl = adjusted.convert("RGB")
-            else:
-                alpha_cl = None
-                rgb_cl = adjusted
-
-            arr_cl = np.array(rgb_cl).astype(np.float32)
-            # Per-channel histogram stretching toward middle range
-            for c in range(3):
-                ch = arr_cl[:,:,c]
-                p_low, p_high = np.percentile(ch[ch > 0] if ch.any() else ch, [5, 95])
-                if p_high - p_low > 20:
-                    # Stretch 5th-95th percentile to 30-240 range (compress extremes)
-                    ch = np.clip((ch - p_low) / (p_high - p_low) * 210 + 30, 0, 255)
-                    arr_cl[:,:,c] = ch
-            adjusted = Image.fromarray(arr_cl.astype(np.uint8), "RGB")
-            if alpha_cl:
-                adjusted = adjusted.convert("RGBA")
-                adjusted.putalpha(alpha_cl)
-        except Exception:
-            pass
-
-        # Step 4: Contrast + saturation for product-photo pop
-        adjusted = ImageEnhance.Contrast(adjusted).enhance(1.10)
-        adjusted = ImageEnhance.Color(adjusted).enhance(1.12)
-
-        # Step 5: Unsharp mask — crisp details without noise amplification
-        adjusted = adjusted.filter(ImageFilter.UnsharpMask(radius=2, percent=120, threshold=3))
-
+        # Contrast boost — makes items pop
+        adjusted = ImageEnhance.Contrast(adjusted).enhance(1.06)
+        # Saturation boost — vivid colors
+        adjusted = ImageEnhance.Color(adjusted).enhance(1.15)
         result.append((item, adjusted, slot))
     return result
 
@@ -681,12 +573,10 @@ def _fallback_download(items: List[dict], user_id: str = "") -> List[Tuple[dict,
 
 
 def _color_grade(canvas: Image.Image) -> Image.Image:
-    """Editorial color grading — clean, slightly cool tone like magazine print."""
-    # Slight contrast lift for crisp editorial feel
-    img = ImageEnhance.Contrast(canvas).enhance(1.04)
-    # Very subtle cool overlay — shifts away from warm/cozy toward clean/editorial
-    cool = Image.new("RGBA", canvas.size, (240, 245, 250, 8))
-    img = Image.alpha_composite(img, cool)
+    """Subtle editorial color grading — warm tone, slight desaturation."""
+    img = ImageEnhance.Color(canvas).enhance(0.92)
+    warm = Image.new("RGBA", canvas.size, (255, 248, 235, 14))
+    img = Image.alpha_composite(img, warm)
     return img
 
 
