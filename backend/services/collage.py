@@ -583,6 +583,30 @@ def _color_grade(canvas: Image.Image) -> Image.Image:
     return img
 
 
+def _add_vignette(canvas: Image.Image) -> Image.Image:
+    """Subtle radial vignette — darkens edges, draws eye to center.
+
+    Creates a shared "spotlight" feel that unifies items visually,
+    making them feel like they exist in the same space.
+    """
+    import numpy as np
+
+    w, h = canvas.size
+    # Create radial gradient: bright center, dark edges
+    Y, X = np.ogrid[:h, :w]
+    cx, cy = w / 2, h / 2
+    # Normalized distance from center (0 at center, 1 at corners)
+    dist = np.sqrt((X - cx) ** 2 / (cx ** 2) + (Y - cy) ** 2 / (cy ** 2))
+    # Vignette strength: 0 at center, up to ~15% darkening at edges
+    vignette = np.clip(dist * 0.12, 0, 0.15)
+    # Apply as darkening overlay
+    arr = np.array(canvas).astype(np.float32)
+    for c in range(3):  # RGB only, not alpha
+        arr[:, :, c] = arr[:, :, c] * (1 - vignette)
+    arr = np.clip(arr, 0, 255)
+    return Image.fromarray(arr.astype(np.uint8), canvas.mode)
+
+
 def _render(
     positions: List[Tuple[dict, Image.Image, int, int]],
 ) -> Image.Image:
@@ -599,6 +623,7 @@ def _render(
         _safe_paste(canvas, img, x, y)
 
     canvas = _color_grade(canvas)
+    canvas = _add_vignette(canvas)
     return canvas
 
 
