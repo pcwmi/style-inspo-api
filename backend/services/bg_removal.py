@@ -189,9 +189,14 @@ def remove_backgrounds_parallel(
         url = item.get("image_url") or item.get("image_path", "")
         if not url:
             return None
-        # Use enhanced path for garments (studio-ifies via fal.ai)
+        # Use enhanced path for garments + scarves (studio-ifies via fal.ai)
         category = item.get("category", "")
-        img = remove_background_enhanced(url, user_id, category=category)
+        sub_category = item.get("sub_category", "")
+        item_name = item.get("name", "")
+        img = remove_background_enhanced(
+            url, user_id, category=category,
+            sub_category=sub_category, item_name=item_name,
+        )
         if img:
             return (item, img)
         return None
@@ -260,23 +265,33 @@ def _enhance_garment_fal(image_bytes: bytes) -> Optional[bytes]:
     return None
 
 
-# Categories that benefit from AI enhancement (garments on hangers)
-ENHANCE_CATEGORIES = {"tops", "bottoms", "dresses", "outerwear", "one-pieces"}
+# Categories that benefit from AI enhancement
+# Garments + scarves (fabric items that look better as studio flat-lays)
+# NOT shoes or jewelry (AI distorts logos/small details)
+ENHANCE_CATEGORIES = {"tops", "bottoms", "dresses", "outerwear", "one-pieces", "scarves"}
 
 
 def remove_background_enhanced(
-    image_url: str, user_id: str, category: str = ""
+    image_url: str, user_id: str, category: str = "",
+    sub_category: str = "", item_name: str = "",
 ) -> Optional[Image.Image]:
     """Remove background with optional AI enhancement for garments.
 
-    For garment categories: enhance with fal.ai first (studio-ify), then rembg.
-    For shoes/accessories: standard rembg only (AI distorts logos/details).
+    For garment categories + scarves: enhance with fal.ai first (studio-ify), then rembg.
+    For shoes/other accessories: standard rembg only (AI distorts logos/details).
     Results cached separately from standard bg removal.
     """
     from services.storage_manager import StorageManager
 
-    # Only enhance garments, not shoes/accessories
-    should_enhance = category.lower() in ENHANCE_CATEGORIES
+    # Enhance garments + scarves, not shoes/jewelry
+    cat_lower = category.lower()
+    sub_lower = (sub_category or "").lower()
+    name_lower = (item_name or "").lower()
+    should_enhance = (
+        cat_lower in ENHANCE_CATEGORIES
+        or "scarf" in sub_lower
+        or "scarf" in name_lower
+    )
 
     if not should_enhance:
         return remove_background_cached(image_url, user_id)
