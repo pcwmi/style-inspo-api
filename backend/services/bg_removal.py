@@ -189,7 +189,9 @@ def remove_backgrounds_parallel(
         url = item.get("image_url") or item.get("image_path", "")
         if not url:
             return None
-        img = remove_background_cached(url, user_id)
+        # Use enhanced path for garments (studio-ifies via fal.ai)
+        category = item.get("category", "")
+        img = remove_background_enhanced(url, user_id, category=category)
         if img:
             return (item, img)
         return None
@@ -213,6 +215,128 @@ def remove_backgrounds_parallel(
     results.sort(key=lambda r: url_order.get(r[0].get("image_url") or r[0].get("image_path", ""), 999))
 
     return results
+
+
+def _enhance_garment_fal(image_bytes: bytes) -> Optional[bytes]:
+    """Use fal.ai Flux 2 Pro to transform a phone photo into studio product shot.
+
+    Only call for garments (tops, bottoms, dresses, outerwear) — NOT shoes
+    or accessories (generative models distort logos/text).
+
+    Returns enhanced JPEG bytes, or None on failure.
+    Cost: ~$0.05 per call. Results are cached, so one-time per item.
+    """
+    try:
+        import fal_client
+        fal_key = os.getenv("FAL_KEY")
+        if not fal_key:
+            return None
+
+        fal_url = fal_client.upload(image_bytes, content_type="image/jpeg")
+        result = fal_client.run(
+            "fal-ai/flux-2-pro/edit",
+            arguments={
+                "prompt": (
+                    "Professional fashion product photography of this exact garment @1, "
+                    "perfectly laid flat on pure white seamless background, "
+                    "soft even studio lighting from above, no shadows, no wrinkles, "
+                    "no hanger, crisp sharp details, high-end e-commerce catalog style"
+                ),
+                "image_urls": [fal_url],
+                "image_size": "portrait_4_3",
+                "output_format": "jpeg",
+            },
+        )
+        images = result.get("images", [])
+        if images:
+            enhanced_url = images[0].get("url", "")
+            if enhanced_url:
+                resp = requests.get(enhanced_url, timeout=30)
+                resp.raise_for_status()
+                logger.info(f"fal.ai enhancement succeeded ({len(resp.content)} bytes)")
+                return resp.content
+    except Exception as e:
+        logger.warning(f"fal.ai enhancement failed, using original: {e}")
+    return None
+
+
+# Categories that benefit from AI enhancement (garments on hangers)
+ENHANCE_CATEGORIES = {"tops", "bottoms", "dresses", "outerwear", "one-pieces"}
+
+
+def remove_background_enhanced(
+    image_url: str, user_id: str, category: str = ""
+) -> Optional[Image.Image]:
+    """Remove background with optional AI enhancement for garments.
+
+    For garment categories: enhance with fal.ai first (studio-ify), then rembg.
+    For shoes/accessories: standard rembg only (AI distorts logos/details).
+    Results cached separately from standard bg removal.
+    """
+    from services.storage_manager import StorageManager
+
+    # Only enhance garments, not shoes/accessories
+    should_enhance = category.lower() in ENHANCE_CATEGORIES
+
+    if not should_enhance:
+        return remove_background_cached(image_url, user_id)
+
+    # Check enhanced cache
+    cache_key = _url_to_cache_key(image_url)
+    cache_filename = f"{cache_key}_enhanced.png"
+
+    storage = StorageManager(
+        storage_type=os.getenv("STORAGE_TYPE", "local"),
+        user_id=user_id,
+    )
+
+    if storage.storage_type == "s3":
+        cache_url = f"{storage.get_base_url()}/{user_id}/bg_removed/{cache_filename}"
+        if storage.file_exists(cache_url):
+            logger.info(f"enhanced bg_removal cache hit: {cache_key}")
+            try:
+                cached_bytes = storage.load_file(cache_url)
+                if cached_bytes:
+                    return Image.open(BytesIO(cached_bytes)).convert("RGBA")
+            except Exception as e:
+                logger.warning(f"Enhanced cache read failed: {e}")
+
+    # Cache miss — download, enhance, then bg-remove
+    original = _download_image(image_url, user_id=user_id)
+    if not original:
+        return None
+
+    # Try AI enhancement
+    buf = BytesIO()
+    original.save(buf, format="JPEG", quality=90)
+    enhanced_bytes = _enhance_garment_fal(buf.getvalue())
+
+    if enhanced_bytes:
+        enhanced_img = Image.open(BytesIO(enhanced_bytes))
+        result = remove_background(enhanced_img)
+    else:
+        # Fallback to standard bg removal
+        result = remove_background(original)
+
+    # Cache result
+    try:
+        out_buf = BytesIO()
+        result.save(out_buf, format="PNG")
+        out_buf.seek(0)
+
+        if storage.storage_type == "s3":
+            s3_key = f"{user_id}/bg_removed/{cache_filename}"
+            storage.s3_client.upload_fileobj(
+                out_buf,
+                storage.bucket_name,
+                s3_key,
+                ExtraArgs={"ContentType": "image/png"},
+            )
+            logger.info(f"Cached enhanced bg-removed image: {s3_key}")
+    except Exception as e:
+        logger.warning(f"Failed to cache enhanced image: {e}")
+
+    return result
 
 
 def warm_up_model():
