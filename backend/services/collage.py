@@ -66,13 +66,57 @@ HANGER_SLOTS = {"base_top", "mid_layer", "outer_layer", "dress", "bottom"}
 
 
 def _normalize_lighting(cleaned):
-    """Polish each item — contrast + saturation boost to look like product photos."""
+    """Normalize lighting across items so they look shot under the same light.
+
+    Two-step approach:
+    1. Per-item brightness normalization: adjust each item's brightness toward
+       a common target (L=180 in LAB space) so dark/bright items converge
+    2. Uniform contrast + saturation boost for product-photo feel
+    """
+    import numpy as np
+
+    TARGET_L = 180  # Target brightness in LAB L channel (0-255 scale)
+
     result = []
     for item, img, slot in cleaned:
         adjusted = img
-        # Contrast boost — makes items pop
+
+        # Step 1: Per-item brightness normalization via LAB
+        try:
+            if img.mode == "RGBA":
+                # Work on RGB channels only, preserve alpha
+                alpha = img.split()[3]
+                rgb = img.convert("RGB")
+            else:
+                alpha = None
+                rgb = img
+
+            arr = np.array(rgb).astype(np.float32)
+            # Compute mean brightness of non-transparent pixels
+            if alpha:
+                mask = np.array(alpha) > 128
+                if mask.any():
+                    # Simple luminance: 0.299R + 0.587G + 0.114B
+                    lum = arr[:,:,0] * 0.299 + arr[:,:,1] * 0.587 + arr[:,:,2] * 0.114
+                    mean_lum = lum[mask].mean()
+
+                    if mean_lum > 10:  # Avoid division by zero for very dark items
+                        # Scale factor to bring mean luminance toward target
+                        scale = TARGET_L / mean_lum
+                        # Clamp scale to avoid extreme adjustments
+                        scale = max(0.7, min(scale, 1.4))
+                        arr = arr * scale
+                        arr = np.clip(arr, 0, 255)
+
+            adjusted = Image.fromarray(arr.astype(np.uint8), "RGB")
+            if alpha:
+                adjusted = adjusted.convert("RGBA")
+                adjusted.putalpha(alpha)
+        except Exception:
+            pass  # Fall back to unadjusted image
+
+        # Step 2: Uniform contrast + saturation boost
         adjusted = ImageEnhance.Contrast(adjusted).enhance(1.06)
-        # Saturation boost — vivid colors
         adjusted = ImageEnhance.Color(adjusted).enhance(1.15)
         result.append((item, adjusted, slot))
     return result
