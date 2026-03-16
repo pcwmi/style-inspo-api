@@ -28,18 +28,28 @@ def get_compact_items(items: list, include_image_url: bool = True) -> list:
 
     Single source of truth for item formatting — used by both _execute_tool
     and preload_user_context so all channels get identical behavior.
+
+    Includes cut/fit/texture/sub_category so the agent can reason about
+    silhouette, proportions, and layering (garment physics).
     """
-    compact = [
-        {
+    compact = []
+    for item in items:
+        sd = item.get("styling_details", {})
+        entry = {
             "id": item["id"],
-            "name": item.get("styling_details", {}).get("name", ""),
-            "category": item.get("styling_details", {}).get("category", ""),
-            "colors": item.get("styling_details", {}).get("colors", []),
-            "style": item.get("styling_details", {}).get("style", ""),
-            **({"image_url": item.get("system_metadata", {}).get("image_url", "")} if include_image_url else {}),
+            "name": sd.get("name", ""),
+            "category": sd.get("category", ""),
+            "colors": sd.get("colors", []),
+            "style": sd.get("style", ""),
         }
-        for item in items
-    ]
+        # Garment physics fields — only include if present
+        for field in ("cut", "fit", "texture", "sub_category"):
+            val = sd.get(field, "")
+            if val:
+                entry[field] = val
+        if include_image_url:
+            entry["image_url"] = item.get("system_metadata", {}).get("image_url", "")
+        compact.append(entry)
     random.shuffle(compact)
     return compact
 
