@@ -458,8 +458,10 @@ def _layout_silhouette(
                 acc_x = max(10, acc_x)
                 left_items.append((ideal_y, idx, item, img, w, h, z, "accessory", acc_x))
 
-        # Sort by ideal_y (top to bottom)
+        # Sort by ideal_y (top to bottom), cap at 3 to avoid crowding
         left_items.sort(key=lambda e: e[0])
+        if len(left_items) > 3:
+            left_items = left_items[:3]
 
         # Single placement pass with one occupied_bottom tracker
         occupied_bottom = 0
@@ -470,7 +472,7 @@ def _layout_silhouette(
             y = _jitter(ideal_y, n, jitter_idx, amplitude=jitter_amp)
             y = max(y, top_y)                       # never above garments
             if occupied_bottom > 0:
-                y = max(y, occupied_bottom + 15)     # never overlap previous item
+                y = max(y, occupied_bottom + 35)     # 35px gap between accessories (was 15 — too crowded)
             y = min(y, CANVAS_H - h - 40)            # fit on canvas
             _place(item, img, slot_name, item_x, y, z, slot_idx)
             slot_idx += 1
