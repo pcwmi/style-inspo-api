@@ -9,6 +9,38 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+MAX_RECENT_GENERATIONS = 3
+RECENT_GENERATIONS_FILE = "recent_generations.json"
+
+
+def record_generated_outfit(user_id: str, item_names: list[str]):
+    """Record an outfit that was just generated (not necessarily saved).
+
+    Called by output handlers after present_outfit to track what the agent
+    suggested, so future generations can avoid repeating items.
+    """
+    from services.storage_manager import StorageManager
+    sm = StorageManager(storage_type="s3", user_id=user_id)
+    try:
+        data = sm.load_json(RECENT_GENERATIONS_FILE)
+    except Exception:
+        data = {"outfits": []}
+
+    data["outfits"].append(item_names)
+    data["outfits"] = data["outfits"][-MAX_RECENT_GENERATIONS:]
+    sm.save_json(data, RECENT_GENERATIONS_FILE)
+
+
+def get_recent_generations(user_id: str) -> list[list[str]]:
+    """Read recently generated outfit item names for variety context."""
+    from services.storage_manager import StorageManager
+    sm = StorageManager(storage_type="s3", user_id=user_id)
+    try:
+        data = sm.load_json(RECENT_GENERATIONS_FILE)
+        return data.get("outfits", [])
+    except Exception:
+        return []
+
 
 def preload_user_context(user_id: str) -> str:
     """Pre-fetch profile, wardrobe items, and feedback patterns.
@@ -65,26 +97,15 @@ def preload_user_context(user_id: str) -> str:
     except Exception as e:
         logger.warning(f"Failed to preload feedback: {e}")
 
-    # Recent outfits (for variety — avoid repeating items)
+    # Recent generations (for variety — avoid repeating items)
     try:
-        from services.saved_outfits_manager import SavedOutfitsManager
-        saved = SavedOutfitsManager(user_id=user_id).get_saved_outfits(
-            enrich_with_current_images=False
-        )
-        recent = saved[-3:] if len(saved) > 3 else saved
-        if recent:
-            recent_items = []
-            for outfit in recent:
-                items_data = outfit.get("outfit_data", {}).get("items", [])
-                names = [i.get("name", "") for i in items_data if i.get("name")]
-                if names:
-                    recent_items.append(names)
-            if recent_items:
-                sections.append(
-                    f"Recent outfits ({len(recent_items)} most recent — AVOID reusing these items): "
-                    f"{json.dumps(recent_items)}"
-                )
+        recent_items = get_recent_generations(user_id)
+        if recent_items:
+            sections.append(
+                f"Recent outfits ({len(recent_items)} most recent — AVOID reusing these items): "
+                f"{json.dumps(recent_items)}"
+            )
     except Exception as e:
-        logger.warning(f"Failed to preload recent outfits: {e}")
+        logger.warning(f"Failed to preload recent generations: {e}")
 
     return "\n\n".join(sections)

@@ -98,6 +98,17 @@ class OutputHandler(ABC):
         """Present a new outfit with editorial collage."""
         pass
 
+    @staticmethod
+    def _record_for_variety(user_id: str, resolved_items: List[dict]):
+        """Record generated outfit item names for variety tracking."""
+        try:
+            from agent.context import record_generated_outfit
+            names = [r["name"] for r in resolved_items if r.get("name")]
+            if names:
+                record_generated_outfit(user_id, names)
+        except Exception as e:
+            logger.warning(f"Failed to record generation for variety: {e}")
+
 
 class SMSOutput(OutputHandler):
     """SMS/WhatsApp output via Twilio."""
@@ -145,6 +156,7 @@ class SMSOutput(OutputHandler):
 
         # Resolve item metadata so collage knows categories for silhouette layout
         items_metadata = resolve_items_from_urls(self.user_id, images)
+        self._record_for_variety(self.user_id, items_metadata)
 
         # Split images into chunks of 6 for collage generation
         chunks = [images[i:i+6] for i in range(0, len(images), 6)]
@@ -308,6 +320,7 @@ class WebOutput(OutputHandler):
 
         # Reverse-lookup image URLs to wardrobe items
         resolved = resolve_items_from_urls(self.user_id, images)
+        self._record_for_variety(self.user_id, resolved)
         # Frontend expects image_path key
         enriched_items = [{**r, "image_path": r["image_url"]} for r in resolved]
 
@@ -359,6 +372,7 @@ class APIOutput(OutputHandler):
 
         if images:
             items_meta = resolve_items_from_urls(self.user_id, images)
+            self._record_for_variety(self.user_id, items_meta)
             from services.collage import generate_outfit_collage
             collage_url = generate_outfit_collage(self.user_id, images, items=items_meta)
             outfit["collage_url"] = collage_url
