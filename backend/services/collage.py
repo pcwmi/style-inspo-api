@@ -32,7 +32,7 @@ SPINE_X = 560  # 40px left of true center for asymmetric editorial feel
 
 # Slot -> fraction of canvas width for sizing
 SLOT_SIZE = {
-    "outer_layer": 0.68,
+    "outer_layer": 0.55,
     "dress": 0.52,
     "mid_layer": 0.48,
     "base_top": 0.46,
@@ -292,6 +292,9 @@ def _layout_silhouette(
             # Position so only ~15% of coat overlaps the top's right edge
             overlap_px = int(ref_tw * 0.15)
             x = _jitter(SPINE_X + ref_tw // 2 - overlap_px, n, 0)
+            # Clamp so outerwear right edge stays within canvas (30px margin)
+            max_x = CANVAS_W - w - 30
+            x = min(x, max_x)
             y = _jitter(80, n, 1)
             _place(item, img, "outer_layer", x, y, 4, slot_idx)
             slot_idx += 1
