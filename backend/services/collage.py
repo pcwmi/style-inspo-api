@@ -539,10 +539,10 @@ def _crop_hanger(img: Image.Image, slot: Optional[str]) -> Image.Image:
             content_start = row_y
             break
 
-    # Crop: start of content + 15% of total height to clear the hanger
+    # Crop: start of content + 18% of total height to clear the hanger
     # Wooden hangers on blazers/jackets extend ~20% of photo height,
-    # 15% from content start reliably clears hook + bar
-    hanger_height = int(img.height * 0.15)
+    # 18% from content start clears hook + bar for most garments
+    hanger_height = int(img.height * 0.18)
     crop_y = content_start + hanger_height
 
     # Safety: don't crop more than 28% of the image
