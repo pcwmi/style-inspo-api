@@ -26,13 +26,15 @@ def remove_background(image: Image.Image) -> Image.Image:
     Falls back to original (converted to RGBA) on failure.
     """
     try:
-        from rembg import remove
-        # Convert to bytes for rembg
+        from rembg import remove, new_session
+        # Use isnet-general-use for better edge precision on garments
+        session = new_session("isnet-general-use")
+
         input_buf = BytesIO()
         image.save(input_buf, format="PNG")
         input_bytes = input_buf.getvalue()
 
-        output_bytes = remove(input_bytes)
+        output_bytes = remove(input_bytes, session=session)
         result = Image.open(BytesIO(output_bytes)).convert("RGBA")
         result = _clean_alpha(result)
         return result
@@ -68,7 +70,7 @@ def _clean_alpha(img: Image.Image) -> Image.Image:
 
 def _url_to_cache_key(image_url: str) -> str:
     """Generate a stable cache key from an image URL."""
-    return hashlib.sha256(image_url.encode()).hexdigest()[:16] + "_v3"
+    return hashlib.sha256(image_url.encode()).hexdigest()[:16] + "_v4"
 
 
 def _download_image(url: str, user_id: Optional[str] = None) -> Optional[Image.Image]:
@@ -219,7 +221,7 @@ def warm_up_model():
     """
     try:
         from rembg import new_session
-        session = new_session("u2net")
+        session = new_session("isnet-general-use")
         logger.info("rembg model warmed up successfully")
     except Exception as e:
         logger.warning(f"rembg warm-up failed (will load on first use): {e}")
