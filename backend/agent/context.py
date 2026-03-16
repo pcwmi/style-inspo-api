@@ -65,4 +65,26 @@ def preload_user_context(user_id: str) -> str:
     except Exception as e:
         logger.warning(f"Failed to preload feedback: {e}")
 
+    # Recent outfits (for variety — avoid repeating items)
+    try:
+        from services.saved_outfits_manager import SavedOutfitsManager
+        saved = SavedOutfitsManager(user_id=user_id).get_saved_outfits(
+            enrich_with_current_images=False
+        )
+        recent = saved[-3:] if len(saved) > 3 else saved
+        if recent:
+            recent_items = []
+            for outfit in recent:
+                items_data = outfit.get("outfit_data", {}).get("items", [])
+                names = [i.get("name", "") for i in items_data if i.get("name")]
+                if names:
+                    recent_items.append(names)
+            if recent_items:
+                sections.append(
+                    f"Recent outfits ({len(recent_items)} most recent — AVOID reusing these items): "
+                    f"{json.dumps(recent_items)}"
+                )
+    except Exception as e:
+        logger.warning(f"Failed to preload recent outfits: {e}")
+
     return "\n\n".join(sections)

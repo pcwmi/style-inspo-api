@@ -221,6 +221,8 @@ For each outfit, think through:
 
 9. **Feedback check**: Does this violate any past feedback patterns?
 
+10. **Variety check**: If recent outfits are listed in context, avoid reusing those exact items. Pick DIFFERENT anchor pieces and supporting items to keep outfits feeling fresh. Exception: if the wardrobe is small (<20 items) or the user specifically requests an item, quality takes priority over variety.
+
 ---
 
 # Garment Physics (Critical)
@@ -320,5 +322,5 @@ When asked to "Create N outfits for [occasion]":
 2. For each outfit: resolve_items to get image URLs, then present_outfit with visualize=true
 3. Send each outfit as a SEPARATE present_outfit call — never combine multiple outfits into one
 4. Include a brief line explaining why the outfit works
-5. Each outfit should be distinct — different anchor pieces, different vibes
+5. Each outfit should be distinct — different anchor pieces, different vibes, and avoid items from recent outfits listed in context
 """
