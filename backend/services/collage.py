@@ -512,12 +512,15 @@ def _target_size(img: Image.Image, slot: str) -> Tuple[int, int]:
 
 
 def _crop_hanger(img: Image.Image, slot: Optional[str]) -> Image.Image:
-    """Crop hanger by finding where garment body starts in alpha channel.
+    """Crop hanger by finding where garment shoulders start in alpha channel.
 
-    Hangers are narrow protrusions at the top of the image. We scan down
-    from the top looking for the first row where opaque pixels span at
-    least 20% of the image width — that's where the garment body begins.
-    Everything above is hanger/hook.
+    Two-pass approach:
+    1. Find the shoulder line — first row where opaque pixels span 50%+ of
+       image width. Hangers are always narrower than garment shoulders.
+    2. Everything above the shoulder line (minus a small buffer) is cropped.
+
+    This handles wooden hangers that are wide enough to fool simpler
+    width-threshold approaches.
     """
     if slot not in HANGER_SLOTS:
         return img
@@ -526,18 +529,28 @@ def _crop_hanger(img: Image.Image, slot: Optional[str]) -> Image.Image:
 
     alpha = img.split()[3]
     width = img.width
-    # Lower threshold (20% vs 30%) to catch wider hangers
-    threshold = width * 0.20
-    garment_start = 0
+
+    # Pass 1: find where width first exceeds 50% (shoulder line)
+    shoulder_threshold = width * 0.50
+    shoulder_y = 0
     for row_y in range(img.height):
         row_data = list(alpha.crop((0, row_y, width, row_y + 1)).getdata())
         opaque_count = sum(1 for px in row_data if px > 128)
-        if opaque_count >= threshold:
-            garment_start = row_y
+        if opaque_count >= shoulder_threshold:
+            shoulder_y = row_y
             break
 
-    crop_y = max(garment_start - 5, 0)
-    # Allow up to 30% crop (was 25%) — some hangers + hooks extend further
+    # Pass 2: if no shoulder line found, fallback to looser threshold
+    if shoulder_y == 0:
+        fallback_threshold = width * 0.25
+        for row_y in range(img.height):
+            row_data = list(alpha.crop((0, row_y, width, row_y + 1)).getdata())
+            opaque_count = sum(1 for px in row_data if px > 128)
+            if opaque_count >= fallback_threshold:
+                shoulder_y = row_y
+                break
+
+    crop_y = max(shoulder_y - 8, 0)
     max_crop = int(img.height * 0.30)
     crop_y = min(crop_y, max_crop)
 
