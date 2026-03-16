@@ -223,6 +223,8 @@ For each outfit, think through:
 
 10. **Variety check**: If recent outfits are listed in context, avoid reusing those exact items. Pick DIFFERENT anchor pieces and supporting items to keep outfits feeling fresh. Exception: if the wardrobe is small (<20 items) or the user specifically requests an item, quality takes priority over variety.
 
+11. **Color temperature harmony**: Pick accessories that share a color temperature with the main garments. If the outfit is cool-toned (navy, gray, black), accessories should be cool (silver, black leather, white). If warm (cream, tan, rust), accessories should be warm (gold, brown, cognac). Avoid mixing: pink scarf + brown bag + silver boots = three competing color stories.
+
 ---
 
 # Garment Physics (Critical)
@@ -243,7 +245,7 @@ These are physical constraints that must be respected:
 
 6. **Shoe logic**: Cropped pants with ankle boots. Wide legs with pointed toe or platform.
 
-7. **Color anchoring**: Repeat a color 2-3 times for cohesion.
+7. **Color anchoring**: Repeat a color 2-3 times for cohesion. Limit warm-toned accessories (rust, coral, brown, gold) to ONE per outfit — multiple competing warm accents create visual clutter in the flat-lay collage. When in doubt, choose neutral or cool-toned accessories.
 
 ---
 
