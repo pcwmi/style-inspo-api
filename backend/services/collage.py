@@ -329,15 +329,15 @@ def _layout_silhouette(
                 hero_center_y = y + h // 2
                 hero_right_edge = x + w
 
-            # Outerwear: accent to the RIGHT, ~15% overlap with top's right shoulder
+            # Outerwear: BEHIND the top, offset right — like laying clothes on a bed
+            # The jacket frames the top, peeking out at the shoulders and sides
             item, img = by_slot["outer_layer"][0]
             w, h = _target_size(img, "outer_layer")
             ref_tw = top_w or int(CANVAS_W * 0.46)
-            # Position so only ~15% of coat overlaps the top's right edge
-            overlap_px = int(ref_tw * 0.15)
-            x = _jitter(SPINE_X + ref_tw // 2 - overlap_px, n, 0)
-            y = _jitter(80, n, 1)
-            _place(item, img, "outer_layer", x, y, 4, slot_idx)
+            # Center on spine but offset right so jacket peeks from behind the top
+            x = _jitter(SPINE_X - w // 2 + int(ref_tw * 0.25), n, 0)
+            y = _jitter(60, n, 1)  # Slightly above top so collar peeks
+            _place(item, img, "outer_layer", x, y, 1, slot_idx)  # z=1: behind the top
             slot_idx += 1
             # Only use outer for torso reference if no top/mid to define waist
             if not has_top and not has_mid:
