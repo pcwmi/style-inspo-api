@@ -556,15 +556,12 @@ def _target_size(img: Image.Image, slot: str) -> Tuple[int, int]:
 
 
 def _crop_hanger(img: Image.Image, slot: Optional[str]) -> Image.Image:
-    """Remove hanger from garment images.
+    """Crop the thin hanger hook above the garment — preserve the garment itself.
 
-    Strategy: find the first row where opaque content starts, then crop
-    an additional 10% of image height beyond that. This aggressive crop
-    removes the hanger bar and hook at the cost of slightly cropping the
-    collar/neckline — an acceptable trade-off since visible hangers are
-    the #1 quality issue.
-
-    For items not typically on hangers (shoes, accessories), this is skipped.
+    Only crops the narrow hook/wire above the garment shoulders. Does NOT
+    aggressively crop into the garment — cropped clothing looks worse than
+    a visible hanger. The hanger bar (if present) stays; it's a lesser evil
+    than cutting off collars and necklines.
     """
     if slot not in HANGER_SLOTS:
         return img
@@ -574,23 +571,20 @@ def _crop_hanger(img: Image.Image, slot: Optional[str]) -> Image.Image:
     alpha = img.split()[3]
     width = img.width
 
-    # Find where any opaque content starts (even the hanger hook)
-    content_start = 0
+    # Find where garment body starts (20%+ of width is opaque = shoulder line)
+    garment_threshold = width * 0.20
+    garment_start = 0
     for row_y in range(img.height):
         row_data = list(alpha.crop((0, row_y, width, row_y + 1)).getdata())
         opaque_count = sum(1 for px in row_data if px > 128)
-        if opaque_count > 3:  # At least a few pixels (not noise)
-            content_start = row_y
+        if opaque_count >= garment_threshold:
+            garment_start = row_y
             break
 
-    # Crop: start of content + 18% of total height to clear the hanger
-    # Wooden hangers on blazers/jackets extend ~20% of photo height,
-    # 18% from content start clears hook + bar for most garments
-    hanger_height = int(img.height * 0.18)
-    crop_y = content_start + hanger_height
-
-    # Safety: don't crop more than 28% of the image
-    max_crop = int(img.height * 0.28)
+    # Only crop the hook ABOVE the garment shoulders — small buffer
+    crop_y = max(garment_start - 5, 0)
+    # Safety: never crop more than 15%
+    max_crop = int(img.height * 0.15)
     crop_y = min(crop_y, max_crop)
 
     if crop_y < 10:
