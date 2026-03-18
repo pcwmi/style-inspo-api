@@ -337,9 +337,14 @@ def _layout_silhouette(
                 y = _jitter(140, n, 7)
                 z = 1
             elif has_top:
-                # Over top, offset right along diagonal
-                x = _jitter(SPINE_X - w // 2 + 100, n, 6)
-                y = _jitter(80, n, 7)
+                # Over top, offset right (same side-by-side approach as outer_layer)
+                ref_tw = top_w or int(CANVAS_W * 0.46)
+                overlap_px = int(ref_tw * 0.30)
+                x = _jitter(SPINE_X + ref_tw // 2 - overlap_px, n, 6)
+                # Clamp so mid-layer right edge stays on canvas
+                max_x = CANVAS_W - w - 30
+                x = min(x, max_x)
+                y = _jitter(100, n, 7)
                 z = 4
             else:
                 # Solo hero
