@@ -3,7 +3,7 @@
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import Link from 'next/link'
-import { isOnboardingComplete, getOnboardingStep } from '@/lib/onboarding'
+import { checkOnboardingComplete, getOnboardingStepFromData } from '@/lib/onboarding'
 import { useWardrobe, useProfile, useSavedOutfits, useDislikedOutfits, useNotWornOutfits } from '@/lib/queries'
 import { ReadyToWearCarousel } from '@/components/ReadyToWearCarousel'
 import { WardrobePreviewCarousel } from '@/components/WardrobePreviewCarousel'
@@ -43,42 +43,32 @@ export function DashboardClient() {
   if (wardrobeError) console.error('Wardrobe error:', wardrobeError)
   if (profileError) console.error('Profile error:', profileError)
 
-  // Check onboarding and redirect if needed
+  // Check onboarding and redirect if needed (uses already-fetched React Query data)
   useEffect(() => {
-    async function checkOnboarding() {
-      // Wait for auth check to complete
-      if (authLoading) return
+    // Wait for auth check to complete
+    if (authLoading) return
 
-      // If no user (neither authenticated nor URL param), showcase is rendered inline
-      if (!authUser && !userParam) {
-        return
+    // If no user (neither authenticated nor URL param), showcase is rendered inline
+    if (!authUser && !userParam) return
+
+    // Wait for data to load before checking onboarding
+    if (wardrobeLoading || profileLoading) return
+
+    const onboardingComplete = checkOnboardingComplete(profile, wardrobe)
+    if (!onboardingComplete) {
+      const step = getOnboardingStepFromData(profile, wardrobe)
+      const stepMap: Record<string, string> = {
+        welcome: '/welcome',
+        words: '/words',
+        upload: '/upload',
+        complete: '/' // Already complete, shouldn't happen
       }
-
-      // Wait for wardrobe data to load before checking onboarding
-      if (wardrobeLoading) return
-
-      try {
-        const onboardingComplete = await isOnboardingComplete(user)
-        if (!onboardingComplete) {
-          const step = await getOnboardingStep(user)
-          const stepMap: Record<string, string> = {
-            welcome: '/welcome',
-            words: '/words',
-            upload: '/upload',
-            complete: '/' // Already complete, shouldn't happen
-          }
-          const redirectPath = stepMap[step] || '/welcome'
-          // Include user param for legacy mode, or just redirect for auth mode
-          const redirectUrl = authUser ? redirectPath : `${redirectPath}?user=${user}`
-          router.push(redirectUrl)
-        }
-      } catch (error) {
-        console.error('Error checking onboarding:', error)
-        // On error, default to showing dashboard (safer than blocking)
-      }
+      const redirectPath = stepMap[step] || '/welcome'
+      // Include user param for legacy mode, or just redirect for auth mode
+      const redirectUrl = authUser ? redirectPath : `${redirectPath}?user=${user}`
+      router.push(redirectUrl)
     }
-    checkOnboarding()
-  }, [user, userParam, authUser, authLoading, wardrobeLoading, router])
+  }, [user, userParam, authUser, authLoading, wardrobeLoading, profileLoading, profile, wardrobe, router])
 
   // If no user param, wait for auth to resolve before deciding what to show
   if (!userParam) {
