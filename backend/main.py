@@ -71,6 +71,7 @@ CORS_ORIGINS = [
     "https://styleinspo.vercel.app",  # Production (legacy)
     "https://peichin.me",  # Production (custom domain)
     "https://www.peichin.me",  # Production (custom domain www)
+    "https://styling-agent.peichin.me",  # Production (styling-agent subdomain)
 ]
 app.add_middleware(
     CORSMiddleware,
