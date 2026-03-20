@@ -259,7 +259,7 @@ def generate_user_digest(
 
             if was_saved:
                 # Include link to saved outfits page
-                saved_url = f"https://styleinspo.vercel.app/saved?user={user_id}"
+                saved_url = f"https://peichin.me/saved?user={user_id}"
                 if save_feedback:
                     output.append(f"      ✅ SAVED - \"{save_feedback}\"")
                 else:

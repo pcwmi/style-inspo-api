@@ -280,7 +280,7 @@ async def incoming_sms(
         return Response(
             content="""<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Message>Hi! I don't recognize this number. Please sign up at styleinspo.vercel.app first.</Message>
+    <Message>Hi! I don't recognize this number. Please sign up at peichin.me first.</Message>
 </Response>""",
             media_type="application/xml"
         )

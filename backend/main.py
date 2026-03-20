@@ -68,7 +68,9 @@ app = FastAPI(
 CORS_ORIGINS = [
     "http://localhost:3003",  # Local frontend
     "http://localhost:3000",  # Alternate local port
-    "https://styleinspo.vercel.app",  # Production
+    "https://styleinspo.vercel.app",  # Production (legacy)
+    "https://peichin.me",  # Production (custom domain)
+    "https://www.peichin.me",  # Production (custom domain www)
 ]
 app.add_middleware(
     CORSMiddleware,
