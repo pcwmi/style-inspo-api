@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 RESEND_API_KEY = os.getenv("RESEND_API_KEY")
 RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "Style Inspo <noreply@styleinspo.vercel.app>")
-FRONTEND_URL = os.getenv("FRONTEND_URL", "https://styleinspo.vercel.app")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://peichin.me")
 
 
 class EmailService:
