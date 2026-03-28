@@ -53,6 +53,7 @@ def enhance_user_wardrobe(user_id: str, force: bool = False, dry_run: bool = Fal
     logger.info(f"Found {len(garments)} garment items out of {len(items)} total for {user_id}")
 
     enhanced_count = 0
+    updated_count = 0
     skipped_count = 0
     failed_count = 0
 
@@ -69,19 +70,62 @@ def enhance_user_wardrobe(user_id: str, force: bool = False, dry_run: bool = Fal
         # Check if enhanced cache already exists
         cache_key = _url_to_cache_key(image_url)
         cache_filename = f"{cache_key}_enhanced.png"
+        has_cache = False
 
-        if not force and storage.storage_type == "s3":
+        if storage.storage_type == "s3":
             cache_url = f"{storage.get_base_url()}/{user_id}/bg_removed/{cache_filename}"
-            if storage.file_exists(cache_url):
-                logger.info(f"  CACHED {item_name}")
-                skipped_count += 1
-                continue
+            has_cache = storage.file_exists(cache_url)
 
         if dry_run:
-            logger.info(f"  WOULD ENHANCE {item_name} ({item_id})")
+            if has_cache and not force:
+                logger.info(f"  CACHED {item_name} (will update closet image)")
+            else:
+                logger.info(f"  WOULD ENHANCE {item_name} ({item_id})")
             enhanced_count += 1
             continue
 
+        from PIL import Image
+
+        if has_cache and not force:
+            # Already enhanced — update closet image from cached bg-removed PNG
+            logger.info(f"  UPDATING CLOSET from cache: {item_name}...")
+            try:
+                cached_bytes = storage.load_file(cache_url)
+                if cached_bytes:
+                    # Composite transparent PNG onto white background for closet
+                    rgba = Image.open(BytesIO(cached_bytes)).convert("RGBA")
+                    white_bg = Image.new("RGB", rgba.size, (255, 255, 255))
+                    white_bg.paste(rgba, mask=rgba.split()[3])
+
+                    img_buf = BytesIO()
+                    white_bg.save(img_buf, format="JPEG", quality=92)
+                    img_buf.seek(0)
+                    img_buf.name = f"{item_name.replace(' ', '_')}_enhanced.jpg"
+
+                    new_path = wm.update_item_image(item_id, img_buf)
+                    if new_path:
+                        # Also cache bg-removed under the new URL
+                        new_cache_key = _url_to_cache_key(new_path)
+                        s3_key = f"{user_id}/bg_removed/{new_cache_key}_enhanced.png"
+                        png_buf = BytesIO(cached_bytes)
+                        storage.s3_client.upload_fileobj(
+                            png_buf, storage.bucket_name, s3_key,
+                            ExtraArgs={"ContentType": "image/png"},
+                        )
+                        logger.info(f"    Updated closet image -> {new_path}")
+                        updated_count += 1
+                    else:
+                        logger.info(f"    WARNING: failed to update wardrobe image")
+                        failed_count += 1
+                else:
+                    logger.info(f"    WARNING: cache file empty")
+                    failed_count += 1
+            except Exception as e:
+                logger.info(f"    ERROR updating from cache: {e}")
+                failed_count += 1
+            continue
+
+        # Cache miss — run fal.ai enhancement
         logger.info(f"  ENHANCING {item_name}...")
 
         try:
@@ -103,7 +147,6 @@ def enhance_user_wardrobe(user_id: str, force: bool = False, dry_run: bool = Fal
                 continue
 
             # 1. Update wardrobe item image (visible in closet)
-            from PIL import Image
             enhanced_img = Image.open(BytesIO(enhanced_bytes))
             img_buf = BytesIO()
             enhanced_img.save(img_buf, format="JPEG", quality=92)
@@ -123,8 +166,6 @@ def enhance_user_wardrobe(user_id: str, force: bool = False, dry_run: bool = Fal
             out_buf.seek(0)
 
             if storage.storage_type == "s3":
-                # Cache under BOTH old and new image URLs
-                # (old URL for existing references, new URL for future)
                 for url in [image_url, new_path]:
                     if url:
                         key = _url_to_cache_key(url)
@@ -143,7 +184,7 @@ def enhance_user_wardrobe(user_id: str, force: bool = False, dry_run: bool = Fal
             logger.info(f"    ERROR: {e}")
             failed_count += 1
 
-    logger.info(f"\nSummary: {enhanced_count} enhanced, {skipped_count} skipped (cached), {failed_count} failed")
+    logger.info(f"\nSummary: {enhanced_count} new enhancements, {updated_count} closet images updated from cache, {failed_count} failed")
 
 
 if __name__ == "__main__":
