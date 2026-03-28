@@ -234,57 +234,67 @@ class StylingAgent:
             "items_per_outfit": [len(o.get("items", [])) for o in outfits],
         })
 
-        # Deterministic pipeline: resolve → validate → collage → send
+        # Deterministic pipeline: resolve all → validate → collage (parallel) → send
         from primitives.matching import match_items_to_wardrobe
         from services.outfit_validator import validate_outfit
 
-        all_styling_texts = []
-        outfits_sent = 0
-
+        # Phase 1: Resolve and validate all outfits (fast, sequential)
+        resolve_start = time.perf_counter()
+        valid_outfits = []  # [(styling_text, image_urls, resolved_items)]
         for i, outfit in enumerate(outfits):
             item_names = outfit.get("items", [])
             styling_text = outfit.get("styling_text", "")
-
             if not item_names:
                 continue
 
-            # Resolve item names to wardrobe images
-            resolve_start = time.perf_counter()
             matched = match_items_to_wardrobe(self.user_id, item_names)
             resolved = [m for m in matched if m.get("matched")]
             image_urls = [m["image_path"] for m in resolved if m.get("image_path")]
-            resolve_ms = int((time.perf_counter() - resolve_start) * 1000)
-            self.timing["tool_calls"].append({"tool": "resolve_items", "ms": resolve_ms})
 
             if len(resolved) < 2:
                 logger.warning(f"Fast path outfit {i+1}: only {len(resolved)}/{len(item_names)} resolved, skipping")
                 continue
 
-            # Validate physical plausibility
             is_valid, rejection = validate_outfit(resolved)
             if not is_valid:
                 logger.warning(f"Fast path outfit {i+1} filtered: {rejection}")
                 continue
 
-            # Send via output handler
-            if self.output:
-                send_start = time.perf_counter()
-                self.output.present_outfit(text=styling_text, images=image_urls, visualize=True)
-                send_ms = int((time.perf_counter() - send_start) * 1000)
-                self.timing["tool_calls"].append({"tool": "present_outfit", "ms": send_ms})
+            valid_outfits.append((styling_text, image_urls, resolved))
 
-            all_styling_texts.append(styling_text)
-            outfits_sent += 1
+        resolve_ms = int((time.perf_counter() - resolve_start) * 1000)
+        self.timing["tool_calls"].append({"tool": "resolve_all", "ms": resolve_ms})
 
-        # If no outfits made it through, fall back to agent loop
-        if outfits_sent == 0:
+        if not valid_outfits:
             logger.warning("Fast path: all outfits failed validation, falling back to agent loop")
             self.timing["mode"] = "fast→agent_fallback"
             return self.run(user_message)
 
+        # Phase 2: Generate collages + send (parallel for multiple outfits)
+        from concurrent.futures import ThreadPoolExecutor
+
+        send_start = time.perf_counter()
+
+        def _present_one(args):
+            styling_text, image_urls, _ = args
+            if self.output:
+                self.output.present_outfit(text=styling_text, images=image_urls, visualize=True)
+            return styling_text
+
+        if len(valid_outfits) == 1:
+            # Single outfit — no threading overhead needed
+            all_styling_texts = [_present_one(valid_outfits[0])]
+        else:
+            # Multiple outfits — generate collages in parallel
+            with ThreadPoolExecutor(max_workers=len(valid_outfits)) as pool:
+                all_styling_texts = list(pool.map(_present_one, valid_outfits))
+
+        send_ms = int((time.perf_counter() - send_start) * 1000)
+        self.timing["tool_calls"].append({"tool": "present_outfits_parallel", "ms": send_ms, "count": len(valid_outfits)})
+
         self.timing["total_ms"] = int((time.perf_counter() - self.timing["run_start"]) * 1000)
-        logger.info(f"Fast path complete: {outfits_sent} outfits in {self.timing['total_ms']}ms "
-                     f"(LLM: {llm_ms}ms, {len(self.timing['llm_calls'])} calls)")
+        logger.info(f"Fast path complete: {len(valid_outfits)} outfits in {self.timing['total_ms']}ms "
+                     f"(LLM: {llm_ms}ms, collages: {send_ms}ms, {len(self.timing['llm_calls'])} calls)")
 
         return "\n\n".join(all_styling_texts)
 
