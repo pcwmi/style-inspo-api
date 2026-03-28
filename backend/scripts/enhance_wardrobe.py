@@ -129,12 +129,13 @@ def enhance_user_wardrobe(user_id: str, force: bool = False, dry_run: bool = Fal
         logger.info(f"  ENHANCING {item_name}...")
 
         try:
-            # Download original
+            # Download original and fully decode (detach from S3 BytesIO)
             original = _download_image(image_url, user_id=user_id)
             if not original:
                 logger.info(f"    FAILED: could not download image")
                 failed_count += 1
                 continue
+            original = original.copy()  # Detach from source buffer
 
             # Run fal.ai enhancement
             buf = BytesIO()
@@ -185,6 +186,7 @@ def enhance_user_wardrobe(user_id: str, force: bool = False, dry_run: bool = Fal
             failed_count += 1
 
     logger.info(f"\nSummary: {enhanced_count} new enhancements, {updated_count} closet images updated from cache, {failed_count} failed")
+    return {"enhanced": enhanced_count, "updated_from_cache": updated_count, "failed": failed_count}
 
 
 if __name__ == "__main__":

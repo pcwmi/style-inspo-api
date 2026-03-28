@@ -276,3 +276,17 @@ async def rotate_item(user_id: str, item_id: str, degrees: int = 90):
         logger.error(f"Error rotating item {item_id} for {user_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@router.post("/wardrobe/{user_id}/enhance")
+async def enhance_wardrobe(user_id: str, force: bool = False):
+    """Enhance all garment images with fal.ai studio quality.
+
+    Updates closet images AND caches bg-removed versions for fast collages.
+    Cached items just get their closet image updated (no fal.ai cost).
+    """
+    from fastapi.concurrency import run_in_threadpool
+    from scripts.enhance_wardrobe import enhance_user_wardrobe
+
+    result = await run_in_threadpool(enhance_user_wardrobe, user_id, force=force)
+    return {"status": "complete", "user_id": user_id}
+
