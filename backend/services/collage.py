@@ -285,13 +285,12 @@ def _layout_silhouette(
                 hero_center_y = y + h // 2
                 hero_right_edge = x + w
 
-            # Outerwear: accent to the RIGHT, ~35% overlap with top's right shoulder
-            # More overlap = items feel grouped, less "floating to the side"
+            # Outerwear: accent to the RIGHT, slight overlap with top's right shoulder
             item, img = by_slot["outer_layer"][0]
             w, h = _target_size(img, "outer_layer")
             ref_tw = top_w or int(CANVAS_W * 0.46)
-            # 35% overlap creates tighter grouping like a real flat-lay
-            overlap_px = int(ref_tw * 0.35)
+            # 15% overlap — enough to feel grouped without hiding the top
+            overlap_px = int(ref_tw * 0.15)
             x = _jitter(SPINE_X + ref_tw // 2 - overlap_px, n, 0)
             # Clamp so outerwear right edge stays within canvas (30px margin)
             max_x = CANVAS_W - w - 30
