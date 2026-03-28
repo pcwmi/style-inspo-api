@@ -148,7 +148,7 @@ def enhance_user_wardrobe(user_id: str, force: bool = False, dry_run: bool = Fal
                 continue
 
             # 1. Update wardrobe item image (visible in closet)
-            enhanced_img = Image.open(BytesIO(enhanced_bytes))
+            enhanced_img = Image.open(BytesIO(enhanced_bytes)).copy()  # .copy() detaches from BytesIO
             img_buf = BytesIO()
             enhanced_img.save(img_buf, format="JPEG", quality=92)
             img_buf.seek(0)
