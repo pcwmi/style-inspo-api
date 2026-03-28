@@ -68,7 +68,11 @@ def _run_agent_sync(request: AgentRunRequest) -> dict:
         preloaded_context=preloaded,
     )
 
-    response = agent.run(request.message)
+    # Fast path for simple requests (no conversation history)
+    if not conversation_context:
+        response = agent.fast_generate(request.message)
+    else:
+        response = agent.run(request.message)
     logger.info(f"Agent API: completed for user={user_id}, {len(output.outfits)} outfits")
 
     # Log agent turn for eval/replay
@@ -89,6 +93,7 @@ def _run_agent_sync(request: AgentRunRequest) -> dict:
                 "output": agent.total_output_tokens,
                 "cached": agent.total_cached_tokens,
             },
+            timing=agent.timing,
         )
     except Exception as e:
         logger.warning(f"Agent API: failed to log agent turn: {e}")

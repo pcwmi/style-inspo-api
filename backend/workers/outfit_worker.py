@@ -88,7 +88,7 @@ def generate_consider_buying_job(
         )
 
         message = f"Create 3 outfits featuring: {', '.join(anchor_names)}"
-        response = agent.run(message)
+        response = agent.fast_generate(message)
 
         if job:
             job.meta['progress'] = 90
