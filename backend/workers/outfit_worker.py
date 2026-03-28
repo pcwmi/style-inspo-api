@@ -186,6 +186,50 @@ def analyze_item_job(user_id, file_path, filename, use_real_ai=True):
         except Exception as e:
             logger.warning(f"Failed to cleanup staged file {file_path}: {e}")
 
+        # Post-upload: enhance garment images with fal.ai (studio-ify)
+        # Runs in-band so the item image is upgraded before the user sees it.
+        # Also caches bg-removed version for fast collage generation.
+        ENHANCE_CATS = {"tops", "bottoms", "dresses", "outerwear", "one-pieces", "scarves"}
+        item_cat = analysis.get("category", "").lower()
+        item_name = analysis.get("name", "")
+        if item_data and item_cat in ENHANCE_CATS:
+            try:
+                from services.bg_removal import _enhance_garment_fal, _url_to_cache_key, remove_background
+                from PIL import Image
+
+                image_url = item_data.get("system_metadata", {}).get("image_url", "")
+                if image_url:
+                    # Download the just-uploaded image
+                    img_data = storage.load_file(image_url)
+                    if img_data:
+                        enhanced_bytes = _enhance_garment_fal(img_data)
+                        if enhanced_bytes:
+                            # Update wardrobe image (visible in closet)
+                            enhanced_buf = BytesIO(enhanced_bytes)
+                            enhanced_buf.name = f"{item_name.replace(' ', '_')}_enhanced.jpg"
+                            new_path = wardrobe_manager.update_item_image(item_data["id"], enhanced_buf)
+                            logger.info(f"Enhanced wardrobe image for '{item_name}' -> {new_path}")
+
+                            # Cache bg-removed version for fast collages
+                            enhanced_img = Image.open(BytesIO(enhanced_bytes))
+                            bg_removed = remove_background(enhanced_img)
+                            bg_buf = BytesIO()
+                            bg_removed.save(bg_buf, format="PNG")
+                            bg_buf.seek(0)
+
+                            for url in [image_url, new_path]:
+                                if url:
+                                    cache_key = _url_to_cache_key(url)
+                                    s3_key = f"{user_id}/bg_removed/{cache_key}_enhanced.png"
+                                    bg_buf.seek(0)
+                                    storage.s3_client.upload_fileobj(
+                                        bg_buf, storage.bucket_name, s3_key,
+                                        ExtraArgs={"ContentType": "image/png"},
+                                    )
+                            logger.info(f"Cached bg-removed version for '{item_name}'")
+            except Exception as e:
+                logger.warning(f"Post-upload enhancement failed for '{item_name}': {e}")
+
         return {
             "item_id": item_data["id"] if item_data else None,
             "analysis": analysis,
