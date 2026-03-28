@@ -201,12 +201,19 @@ async def process_outfit_request(user_id: str, phone: str, message: str, image_u
             preloaded_context=preloaded
         )
 
-        # Run agent - it will call resolve_items + send_message as needed
-        # Photos from prior turns are in conversation_context["messages"]
-        response = agent.run(
-            message,
-            image_urls=image_data_uris,
+        # Fast path: single-call structured output for simple outfit requests
+        # Use when: no prior conversation, no images attached
+        use_fast_path = (
+            not image_data_uris
+            and len(state.messages) <= 1  # First message (just recorded above)
         )
+
+        if use_fast_path:
+            logger.info(f"Using fast path for {user_id}")
+            response = agent.fast_generate(message)
+        else:
+            logger.info(f"Using agent loop for {user_id} (images={bool(image_data_uris)}, history={len(state.messages)})")
+            response = agent.run(message, image_urls=image_data_uris)
         logger.info(f"Agent completed. Response: {response[:200] if response else '(none)'}...")
 
         # Send text response to user ONLY if agent didn't already send via send_message tool
@@ -237,6 +244,7 @@ async def process_outfit_request(user_id: str, phone: str, message: str, image_u
                     "output": agent.total_output_tokens,
                     "cached": agent.total_cached_tokens,
                 },
+                timing=agent.timing,
             )
         except Exception as e:
             logger.warning(f"Failed to log agent turn: {e}")

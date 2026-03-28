@@ -6,6 +6,7 @@ Shared across all channels (SMS, web, API).
 
 import json
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -42,49 +43,33 @@ def get_recent_generations(user_id: str) -> list[list[str]]:
         return []
 
 
-def preload_user_context(user_id: str) -> str:
-    """Pre-fetch profile, wardrobe items, and feedback patterns.
-
-    Injected into the system prompt to eliminate the first LLM round-trip
-    where the agent would call get_profile + get_items + get_feedback_patterns.
-    """
-    from services.wardrobe_manager import WardrobeManager
+def _fetch_profile(user_id: str) -> str | None:
+    """Fetch user profile section."""
     from services.user_profile_manager import UserProfileManager
-    from services.disliked_outfits_manager import DislikedOutfitsManager
-
-    sections = []
-
-    # Profile
     try:
         profile = UserProfileManager(user_id=user_id).get_profile(user_id)
         if profile:
-            sections.append(f"Profile: {json.dumps(profile, default=str)}")
+            return f"Profile: {json.dumps(profile, default=str)}"
     except Exception as e:
         logger.warning(f"Failed to preload profile: {e}")
+    return None
 
-    # Wardrobe items (compact format, shuffled to prevent positional bias)
-    # Filter out recently-used items to force variety
-    recently_used_names = set()
-    try:
-        for outfit_names in get_recent_generations(user_id):
-            recently_used_names.update(outfit_names)
-    except Exception:
-        pass
 
+def _fetch_items(user_id: str) -> list:
+    """Fetch compact wardrobe items."""
+    from services.wardrobe_manager import WardrobeManager
+    from agent.agent import get_compact_items
     try:
-        from agent.agent import get_compact_items
         items = WardrobeManager(user_id=user_id).get_wardrobe_items(filter_type="all")
-        compact = get_compact_items(items, include_image_url=False)
-        if recently_used_names and len(compact) > 20:
-            filtered = [c for c in compact if c.get("name") not in recently_used_names]
-            excluded = len(compact) - len(filtered)
-            sections.append(f"Wardrobe ({len(filtered)} items, {excluded} recently-used items hidden for freshness): {json.dumps(filtered)}")
-        else:
-            sections.append(f"Wardrobe ({len(compact)} items): {json.dumps(compact)}")
+        return get_compact_items(items, include_image_url=False)
     except Exception as e:
         logger.warning(f"Failed to preload items: {e}")
+        return []
 
-    # Feedback patterns (same filtering as get_feedback_patterns tool)
+
+def _fetch_feedback(user_id: str) -> str | None:
+    """Fetch actionable feedback patterns section."""
+    from services.disliked_outfits_manager import DislikedOutfitsManager
     try:
         USELESS = {
             "the outfit doesn't make sense", "not my style",
@@ -106,19 +91,73 @@ def preload_user_context(user_id: str) -> str:
             item_names = [i.get("name", "Unknown") for i in items_data]
             actionable.append({"items": item_names, "reason": reason})
         if actionable:
-            sections.append(f"Feedback patterns ({len(actionable)} actionable): {json.dumps(actionable)}")
+            return f"Feedback patterns ({len(actionable)} actionable): {json.dumps(actionable)}"
     except Exception as e:
         logger.warning(f"Failed to preload feedback: {e}")
+    return None
 
-    # Recent generations (for variety — avoid repeating items)
+
+def _fetch_recent(user_id: str) -> list[list[str]]:
+    """Fetch recent generation item names."""
     try:
-        recent_items = get_recent_generations(user_id)
-        if recent_items:
-            sections.append(
-                f"Recent outfits ({len(recent_items)} most recent — AVOID reusing these items): "
-                f"{json.dumps(recent_items)}"
-            )
+        return get_recent_generations(user_id)
     except Exception as e:
         logger.warning(f"Failed to preload recent generations: {e}")
+        return []
 
+
+def preload_user_context(user_id: str) -> str:
+    """Pre-fetch profile, wardrobe items, and feedback patterns.
+
+    Injected into the system prompt to eliminate the first LLM round-trip
+    where the agent would call get_profile + get_items + get_feedback_patterns.
+
+    All four fetches run concurrently via ThreadPoolExecutor.
+    """
+    from concurrent.futures import ThreadPoolExecutor
+
+    preload_start = time.perf_counter()
+
+    # Run all four fetches in parallel
+    with ThreadPoolExecutor(max_workers=4) as pool:
+        profile_fut = pool.submit(_fetch_profile, user_id)
+        items_fut = pool.submit(_fetch_items, user_id)
+        feedback_fut = pool.submit(_fetch_feedback, user_id)
+        recent_fut = pool.submit(_fetch_recent, user_id)
+
+    profile_section = profile_fut.result()
+    compact_items = items_fut.result()
+    feedback_section = feedback_fut.result()
+    recent_items = recent_fut.result()
+
+    # Assemble sections
+    sections = []
+
+    if profile_section:
+        sections.append(profile_section)
+
+    # Filter recently-used items from wardrobe for variety
+    if compact_items:
+        recently_used_names = set()
+        for outfit_names in recent_items:
+            recently_used_names.update(outfit_names)
+
+        if recently_used_names and len(compact_items) > 20:
+            filtered = [c for c in compact_items if c.get("name") not in recently_used_names]
+            excluded = len(compact_items) - len(filtered)
+            sections.append(f"Wardrobe ({len(filtered)} items, {excluded} recently-used items hidden for freshness): {json.dumps(filtered)}")
+        else:
+            sections.append(f"Wardrobe ({len(compact_items)} items): {json.dumps(compact_items)}")
+
+    if feedback_section:
+        sections.append(feedback_section)
+
+    if recent_items:
+        sections.append(
+            f"Recent outfits ({len(recent_items)} most recent — AVOID reusing these items): "
+            f"{json.dumps(recent_items)}"
+        )
+
+    preload_ms = int((time.perf_counter() - preload_start) * 1000)
+    logger.info(f"Context preload: {preload_ms}ms (parallel), {len(sections)} sections, {sum(len(s) for s in sections)} chars")
     return "\n\n".join(sections)

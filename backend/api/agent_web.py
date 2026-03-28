@@ -64,7 +64,8 @@ async def generate_outfits_agent_stream(
                 )
 
                 logger.info(f"Agent-web starting for {user_id}: {message[:100]}")
-                response = agent.run(message)
+                # Use fast path for standard generation (no conversation context)
+                response = agent.fast_generate(message)
                 logger.info(f"Agent-web completed for {user_id}, {len(web_output.outfits)} outfits produced")
 
                 # Log agent turn for eval/replay
@@ -84,6 +85,7 @@ async def generate_outfits_agent_stream(
                             "output": agent.total_output_tokens,
                             "cached": agent.total_cached_tokens,
                         },
+                        timing=agent.timing,
                     )
                 except Exception as log_err:
                     logger.warning(f"Failed to log agent turn: {log_err}")

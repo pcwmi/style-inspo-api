@@ -13,10 +13,11 @@ import os
 import json
 import logging
 import random
+import time
 from typing import Optional, Literal
 
 from agent.tools import TOOLS, TOOLS_OPENAI
-from agent.prompts import STYLING_SYSTEM_PROMPT
+from agent.prompts import STYLING_SYSTEM_PROMPT, FAST_OUTFIT_PROMPT
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +77,7 @@ class StylingAgent:
         self.total_input_tokens = 0
         self.total_output_tokens = 0
         self.total_cached_tokens = 0
+        self.timing = {"llm_calls": [], "tool_calls": []}  # Per-step latency tracking
 
         # Set default model per provider
         if model:
@@ -154,10 +156,137 @@ class StylingAgent:
             user_message: Current turn's text message
             image_urls: Current turn's images (base64 data URIs from Twilio)
         """
+        self.timing["run_start"] = time.perf_counter()
         if self.provider == "anthropic":
-            return self._run_anthropic(user_message, image_urls=image_urls)
+            result = self._run_anthropic(user_message, image_urls=image_urls)
         else:
-            return self._run_openai(user_message, image_urls=image_urls)
+            result = self._run_openai(user_message, image_urls=image_urls)
+        self.timing["total_ms"] = int((time.perf_counter() - self.timing["run_start"]) * 1000)
+        logger.info(f"Agent timing: {self.timing['total_ms']}ms total, "
+                     f"{len(self.timing['llm_calls'])} LLM calls, "
+                     f"{len(self.timing['tool_calls'])} tool calls")
+        return result
+
+    def fast_generate(self, user_message: str) -> str:
+        """Single-call outfit generation with structured JSON output.
+
+        Makes 1 LLM call instead of 3, then handles resolve + collage + send
+        deterministically. Falls back to full agent loop on failure.
+
+        Returns the styling text from the generated outfit(s).
+        """
+        self.timing["run_start"] = time.perf_counter()
+        self.timing["mode"] = "fast"
+
+        # Build system prompt with preloaded context
+        system_prompt = FAST_OUTFIT_PROMPT
+        if self.preloaded_context:
+            system_prompt += "\n\n# User Context\n\n" + self.preloaded_context
+
+        # Single LLM call with structured JSON output
+        llm_start = time.perf_counter()
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_message},
+                ],
+                response_format={"type": "json_object"},
+            )
+        except Exception as e:
+            logger.warning(f"Fast path LLM call failed: {e}, falling back to agent loop")
+            self.timing["mode"] = "fast→agent_fallback"
+            return self.run(user_message)
+
+        llm_ms = int((time.perf_counter() - llm_start) * 1000)
+        self.timing["llm_calls"].append({"turn": 1, "model": self.model, "ms": llm_ms})
+
+        # Track tokens
+        if hasattr(response, 'usage') and response.usage:
+            usage = response.usage
+            cached = getattr(usage, 'prompt_tokens_details', None)
+            cached_tokens = cached.cached_tokens if cached and hasattr(cached, 'cached_tokens') else 0
+            self.total_input_tokens += usage.prompt_tokens
+            self.total_output_tokens += usage.completion_tokens
+            self.total_cached_tokens += cached_tokens
+            logger.info(f"Fast path LLM: {llm_ms}ms, {usage.prompt_tokens} in ({cached_tokens} cached), {usage.completion_tokens} out")
+
+        # Parse structured output
+        raw = response.choices[0].message.content or ""
+        try:
+            result = json.loads(raw)
+        except json.JSONDecodeError:
+            logger.warning(f"Fast path JSON parse failed, falling back to agent loop")
+            self.timing["mode"] = "fast→agent_fallback"
+            return self.run(user_message)
+
+        outfits = result.get("outfits", [])
+        if not outfits:
+            logger.warning("Fast path returned no outfits, falling back to agent loop")
+            self.timing["mode"] = "fast→agent_fallback"
+            return self.run(user_message)
+
+        # Log the structured output to turn trace
+        self.turn_log.append({
+            "type": "fast_path_output",
+            "outfit_count": len(outfits),
+            "items_per_outfit": [len(o.get("items", [])) for o in outfits],
+        })
+
+        # Deterministic pipeline: resolve → validate → collage → send
+        from primitives.matching import match_items_to_wardrobe
+        from services.outfit_validator import validate_outfit
+
+        all_styling_texts = []
+        outfits_sent = 0
+
+        for i, outfit in enumerate(outfits):
+            item_names = outfit.get("items", [])
+            styling_text = outfit.get("styling_text", "")
+
+            if not item_names:
+                continue
+
+            # Resolve item names to wardrobe images
+            resolve_start = time.perf_counter()
+            matched = match_items_to_wardrobe(self.user_id, item_names)
+            resolved = [m for m in matched if m.get("matched")]
+            image_urls = [m["image_path"] for m in resolved if m.get("image_path")]
+            resolve_ms = int((time.perf_counter() - resolve_start) * 1000)
+            self.timing["tool_calls"].append({"tool": "resolve_items", "ms": resolve_ms})
+
+            if len(resolved) < 2:
+                logger.warning(f"Fast path outfit {i+1}: only {len(resolved)}/{len(item_names)} resolved, skipping")
+                continue
+
+            # Validate physical plausibility
+            is_valid, rejection = validate_outfit(resolved)
+            if not is_valid:
+                logger.warning(f"Fast path outfit {i+1} filtered: {rejection}")
+                continue
+
+            # Send via output handler
+            if self.output:
+                send_start = time.perf_counter()
+                self.output.present_outfit(text=styling_text, images=image_urls, visualize=True)
+                send_ms = int((time.perf_counter() - send_start) * 1000)
+                self.timing["tool_calls"].append({"tool": "present_outfit", "ms": send_ms})
+
+            all_styling_texts.append(styling_text)
+            outfits_sent += 1
+
+        # If no outfits made it through, fall back to agent loop
+        if outfits_sent == 0:
+            logger.warning("Fast path: all outfits failed validation, falling back to agent loop")
+            self.timing["mode"] = "fast→agent_fallback"
+            return self.run(user_message)
+
+        self.timing["total_ms"] = int((time.perf_counter() - self.timing["run_start"]) * 1000)
+        logger.info(f"Fast path complete: {outfits_sent} outfits in {self.timing['total_ms']}ms "
+                     f"(LLM: {llm_ms}ms, {len(self.timing['llm_calls'])} calls)")
+
+        return "\n\n".join(all_styling_texts)
 
     def _run_anthropic(self, user_message: str, image_urls: list[str] = None) -> str:
         """Anthropic/Claude agent loop."""
@@ -282,12 +411,16 @@ class StylingAgent:
         for turn in range(self.max_turns):
             logger.info(f"Agent turn {turn + 1} (openai/{self.model})")
 
+            llm_start = time.perf_counter()
             response = self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
                 tools=TOOLS_OPENAI,
                 tool_choice="auto"
             )
+            llm_ms = int((time.perf_counter() - llm_start) * 1000)
+            self.timing["llm_calls"].append({"turn": turn + 1, "model": self.model, "ms": llm_ms})
+            logger.info(f"LLM call {turn + 1}: {llm_ms}ms")
 
             # Log token usage including cache status
             if hasattr(response, 'usage') and response.usage:
@@ -344,10 +477,14 @@ class StylingAgent:
                 for tool_call in choice.message.tool_calls:
                     tool_args = json.loads(tool_call.function.arguments)
                     tool_args_clean = {k: v for k, v in tool_args.items() if k != "reasoning"}
+                    tool_start = time.perf_counter()
                     result = self._execute_tool(
                         tool_call.function.name,
                         tool_args
                     )
+                    tool_ms = int((time.perf_counter() - tool_start) * 1000)
+                    self.timing["tool_calls"].append({"tool": tool_call.function.name, "ms": tool_ms})
+                    logger.info(f"Tool {tool_call.function.name}: {tool_ms}ms")
                     # Log tool result to turn trace
                     self.turn_log.append({
                         "type": "tool_result",
