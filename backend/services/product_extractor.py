@@ -17,7 +17,14 @@ class ProductExtractor:
 
     def __init__(self):
         self.headers = {
-            'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15'
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1',
+            'Upgrade-Insecure-Requests': '1',
         }
 
     def extract_from_url(self, url: str) -> Tuple[bool, Optional[Dict], Optional[str]]:
@@ -229,12 +236,20 @@ class ProductExtractor:
         return None
 
     def _parse_price(self, price_text: str) -> Optional[float]:
-        """Parse price string to float"""
+        """Parse price string to float, handling European format (160,00)"""
         if not price_text:
             return None
-        # Remove currency symbols and whitespace
         import re
-        # Extract numbers and decimal point
+        # European format: "160,00" or "1.299,00" (comma = decimal separator)
+        euro_match = re.search(r'([\d.]+),(\d{2})\b', price_text.strip())
+        if euro_match:
+            whole = euro_match.group(1).replace('.', '')
+            decimal = euro_match.group(2)
+            try:
+                return float(f"{whole}.{decimal}")
+            except ValueError:
+                pass
+        # Standard format: strip commas (thousand separators), parse normally
         price_match = re.search(r'[\d,]+\.?\d*', price_text.replace(',', ''))
         if price_match:
             try:

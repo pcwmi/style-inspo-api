@@ -86,9 +86,9 @@ function ConsiderBuyingContent() {
 
             // Check success field instead of response status
             if (!extractData.success) {
-                // If extraction fails (e.g. Sezane, Reformation), show screenshot upload
+                // If extraction fails, show screenshot upload with actionable message
                 console.log("Extraction failed, showing screenshot upload", extractData.error)
-                setError(extractData.error || 'Could not extract product details automatically.')
+                setError("Couldn't extract from this link automatically. Take a screenshot of the product page and upload it instead.")
                 setShowScreenshotUpload(true)
                 setLoading(false)
                 return
