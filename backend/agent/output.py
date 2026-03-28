@@ -324,12 +324,21 @@ class WebOutput(OutputHandler):
         # Frontend expects image_path key
         enriched_items = [{**r, "image_path": r["image_url"]} for r in resolved]
 
+        # Generate editorial collage (same as SMS/API flows)
+        collage_url = None
+        try:
+            from services.collage import generate_outfit_collage
+            collage_url = generate_outfit_collage(self.user_id, images, items=resolved)
+        except Exception as e:
+            logger.warning(f"WebOutput: collage generation failed: {e}")
+
         # Parse agent text into styling_notes and why_it_works
         parsed = parse_outfit_text(text)
         styling_notes, why_it_works = parsed["magic"], parsed["identity"]
 
         outfit = {
             "items": enriched_items,
+            "collage_url": collage_url,
             "styling_notes": styling_notes,
             "why_it_works": why_it_works,
             "confidence_level": "medium",

@@ -41,6 +41,7 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
     const [vizError, setVizError] = useState<string | null>(null)
     const [showDescriptorModal, setShowDescriptorModal] = useState(false)
     const [imageExpanded, setImageExpanded] = useState(false)
+    const [collageExpanded, setCollageExpanded] = useState(false)
     const [reasoningExpanded, setReasoningExpanded] = useState(false)
 
     // Poll for viz status if outfit has viz_key (auto-generated on reveal page)
@@ -234,66 +235,76 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
         <div className="bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-4 md:p-6 mb-4 md:mb-6 shadow-sm">
             <h2 className="text-lg md:text-xl font-semibold mb-3 md:mb-4">Outfit {index}</h2>
 
-            {/* Outfit images */}
-            <div className="grid grid-cols-3 gap-2 mb-4">
-                {outfit.items.map((item: any, idx: number) => {
-                    const imagePath = item.system_metadata?.image_path || item.image_path
-                    const isConsidering = item.id?.startsWith('consider_')
-                    const isSynthetic = !imagePath && item.category === "unknown"
-                    const itemName = item.name || `Item ${idx + 1}`
+            {/* Outfit image: collage hero or fallback grid */}
+            {outfit.collage_url ? (
+                <div
+                    className="aspect-[3/4] rounded-lg overflow-hidden mb-4 cursor-pointer relative bg-sand"
+                    onClick={() => setCollageExpanded(true)}
+                >
+                    <img
+                        src={outfit.collage_url}
+                        alt={`Outfit ${index} collage`}
+                        className="w-full h-full object-cover"
+                    />
+                </div>
+            ) : (
+                <div className="grid grid-cols-3 gap-2 mb-4">
+                    {outfit.items.map((item: any, idx: number) => {
+                        const imagePath = item.system_metadata?.image_path || item.image_path
+                        const isConsidering = item.id?.startsWith('consider_')
+                        const isSynthetic = !imagePath && item.category === "unknown"
+                        const itemName = item.name || `Item ${idx + 1}`
 
-                    return (
-                        <div key={idx} className={`relative aspect-square rounded overflow-hidden ${
-                            isSynthetic
-                                ? 'bg-gradient-to-br from-sand to-bone border-2 border-dashed border-terracotta/30'
-                                : 'bg-sand'
-                        }`}>
-                            {/* Considering badge */}
-                            {isConsidering && (
-                                <div className="absolute top-2 right-2 bg-terracotta backdrop-blur-sm px-2 py-0.5 rounded-full z-10">
-                                    <span className="text-xs font-medium text-white">Considering</span>
-                                </div>
-                            )}
-                            {isSynthetic ? (
-                                <>
-                                    {/* "Suggested" badge */}
-                                    <div className="absolute top-2 left-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md shadow-sm">
-                                        <div className="flex items-center gap-1.5 justify-center">
-                                            <svg className="w-3 h-3 text-terracotta" viewBox="0 0 24 24" fill="currentColor">
-                                                <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z"/>
-                                            </svg>
-                                            <span className="text-[10px] font-medium text-terracotta uppercase tracking-wide">
-                                                Suggested
-                                            </span>
+                        return (
+                            <div key={idx} className={`relative aspect-square rounded overflow-hidden ${
+                                isSynthetic
+                                    ? 'bg-gradient-to-br from-sand to-bone border-2 border-dashed border-terracotta/30'
+                                    : 'bg-sand'
+                            }`}>
+                                {isConsidering && (
+                                    <div className="absolute top-2 right-2 bg-terracotta backdrop-blur-sm px-2 py-0.5 rounded-full z-10">
+                                        <span className="text-xs font-medium text-white">Considering</span>
+                                    </div>
+                                )}
+                                {isSynthetic ? (
+                                    <>
+                                        <div className="absolute top-2 left-2 right-2 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md shadow-sm">
+                                            <div className="flex items-center gap-1.5 justify-center">
+                                                <svg className="w-3 h-3 text-terracotta" viewBox="0 0 24 24" fill="currentColor">
+                                                    <path d="M12 0L14.59 8.41L23 11L14.59 13.59L12 22L9.41 13.59L1 11L9.41 8.41L12 0Z"/>
+                                                </svg>
+                                                <span className="text-[10px] font-medium text-terracotta uppercase tracking-wide">
+                                                    Suggested
+                                                </span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    {/* Item name */}
-                                    <div className="absolute inset-0 flex items-center justify-center p-3 pt-10">
-                                        <p className="text-center text-sm font-medium text-ink leading-tight">
-                                            {itemName}
-                                        </p>
-                                    </div>
-                                </>
-                            ) : imagePath ? (
-                                imagePath.startsWith('http') ? (
-                                    <img
-                                        src={imagePath}
-                                        alt={itemName}
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <Image
-                                        src={imagePath.startsWith('/') ? imagePath : `/${imagePath}`}
-                                        alt={itemName}
-                                        fill
-                                        className="object-cover"
-                                    />
-                                )
-                            ) : null}
-                        </div>
-                    )
-                })}
-            </div>
+                                        <div className="absolute inset-0 flex items-center justify-center p-3 pt-10">
+                                            <p className="text-center text-sm font-medium text-ink leading-tight">
+                                                {itemName}
+                                            </p>
+                                        </div>
+                                    </>
+                                ) : imagePath ? (
+                                    imagePath.startsWith('http') ? (
+                                        <img
+                                            src={imagePath}
+                                            alt={itemName}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <Image
+                                            src={imagePath.startsWith('/') ? imagePath : `/${imagePath}`}
+                                            alt={itemName}
+                                            fill
+                                            className="object-cover"
+                                        />
+                                    )
+                                ) : null}
+                            </div>
+                        )
+                    })}
+                </div>
+            )}
 
             {/* Styling notes - hide if empty or just an item list */}
             {outfit.styling_notes && !outfit.styling_notes.match(/^Outfit \d+.*:.*\+/) && (
@@ -589,7 +600,27 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
                 onSaved={handleDescriptorSaved}
             />
 
-            {/* Fullscreen Image Modal */}
+            {/* Fullscreen Collage Modal */}
+            {collageExpanded && outfit.collage_url && (
+                <div
+                    className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+                    onClick={() => setCollageExpanded(false)}
+                >
+                    <button
+                        className="absolute top-4 right-4 text-white text-2xl z-10"
+                        onClick={() => setCollageExpanded(false)}
+                    >
+                        ✕
+                    </button>
+                    <img
+                        src={outfit.collage_url}
+                        alt="Outfit collage fullscreen"
+                        className="max-w-full max-h-full object-contain"
+                    />
+                </div>
+            )}
+
+            {/* Fullscreen Visualization Modal */}
             {imageExpanded && vizUrl && (
                 <div
                     className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
