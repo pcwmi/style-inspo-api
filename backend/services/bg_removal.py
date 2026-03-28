@@ -8,6 +8,7 @@ Caches results in S3 to avoid re-processing the same items.
 import hashlib
 import logging
 import os
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from io import BytesIO
 from typing import List, Optional, Tuple
@@ -189,7 +190,7 @@ def remove_backgrounds_parallel(
         url = item.get("image_url") or item.get("image_path", "")
         if not url:
             return None
-        # Use enhanced path for garments + scarves (studio-ifies via fal.ai)
+        item_start = time.perf_counter()
         category = item.get("category", "")
         sub_category = item.get("sub_category", "")
         item_name = item.get("name", "")
@@ -197,6 +198,8 @@ def remove_backgrounds_parallel(
             url, user_id, category=category,
             sub_category=sub_category, item_name=item_name,
         )
+        item_ms = int((time.perf_counter() - item_start) * 1000)
+        logger.info(f"bg_removal item: {item_name or 'unknown'} {item_ms}ms ({category})")
         if img:
             return (item, img)
         return None

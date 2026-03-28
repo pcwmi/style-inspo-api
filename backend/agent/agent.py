@@ -282,10 +282,8 @@ class StylingAgent:
             return styling_text
 
         if len(valid_outfits) == 1:
-            # Single outfit — no threading overhead needed
             all_styling_texts = [_present_one(valid_outfits[0])]
         else:
-            # Multiple outfits — generate collages in parallel
             with ThreadPoolExecutor(max_workers=len(valid_outfits)) as pool:
                 all_styling_texts = list(pool.map(_present_one, valid_outfits))
 

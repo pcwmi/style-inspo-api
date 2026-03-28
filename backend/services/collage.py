@@ -13,6 +13,7 @@ Output: 1200x1600 portrait canvas (3:4), uploaded to S3.
 
 import logging
 import os
+import time
 import uuid
 from io import BytesIO
 from typing import Dict, List, Optional, Tuple
@@ -98,8 +99,12 @@ def generate_outfit_collage(
             if not item.get("image_url") and i < len(urls):
                 item["image_url"] = urls[i]
 
+    t0 = time.perf_counter()
+
     from services.bg_removal import remove_backgrounds_parallel
     processed = remove_backgrounds_parallel(items, user_id)
+
+    t_bg = time.perf_counter()
 
     if not processed:
         logger.warning("All bg removals failed, trying raw download fallback")
@@ -126,8 +131,12 @@ def generate_outfit_collage(
     # Layout items like a body silhouette
     positions = _layout_silhouette(cleaned)
 
+    t_layout = time.perf_counter()
+
     # Render
     canvas = _render(positions)
+
+    t_render = time.perf_counter()
 
     # Save at high quality
     storage = StorageManager(
@@ -152,6 +161,15 @@ def generate_outfit_collage(
     else:
         url = storage.save_image(rgb, filename, subfolder="collages")
 
+    t_upload = time.perf_counter()
+
+    logger.info(
+        f"Collage timing: bg_removal={int((t_bg-t0)*1000)}ms, "
+        f"layout={int((t_layout-t_bg)*1000)}ms, "
+        f"render={int((t_render-t_layout)*1000)}ms, "
+        f"upload={int((t_upload-t_render)*1000)}ms, "
+        f"total={int((t_upload-t0)*1000)}ms ({len(cleaned)} items)"
+    )
     logger.info(f"Generated flat-lay collage: {url} ({len(cleaned)} items)")
     return url
 
