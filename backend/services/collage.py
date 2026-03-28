@@ -84,6 +84,7 @@ def generate_outfit_collage(
     image_urls: List[str],
     items: Optional[List[dict]] = None,
     max_images: int = 8,
+    skip_enhance: bool = False,
 ) -> Optional[str]:
     if not image_urls:
         logger.warning("No image URLs provided for collage")
@@ -102,7 +103,7 @@ def generate_outfit_collage(
     t0 = time.perf_counter()
 
     from services.bg_removal import remove_backgrounds_parallel
-    processed = remove_backgrounds_parallel(items, user_id)
+    processed = remove_backgrounds_parallel(items, user_id, skip_enhance=skip_enhance)
 
     t_bg = time.perf_counter()
 

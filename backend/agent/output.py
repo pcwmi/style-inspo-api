@@ -94,7 +94,7 @@ class OutputHandler(ABC):
         pass
 
     @abstractmethod
-    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False):
+    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False, skip_enhance: bool = False):
         """Present a new outfit with editorial collage."""
         pass
 
@@ -141,7 +141,7 @@ class SMSOutput(OutputHandler):
 
         logger.info(f"SMSOutput: sent {len(images)} individual image(s) to {self.phone}")
 
-    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False):
+    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False, skip_enhance: bool = False):
         """Present a new outfit with editorial collage."""
         from services.twilio_service import send_sms, send_mms
         from services.collage import generate_outfit_collage
@@ -163,7 +163,7 @@ class SMSOutput(OutputHandler):
         items_chunks = [items_metadata[i:i+6] for i in range(0, len(items_metadata), 6)]
         collage_urls = []
         for chunk, items_chunk in zip(chunks, items_chunks):
-            url = generate_outfit_collage(self.user_id, chunk, items=items_chunk)
+            url = generate_outfit_collage(self.user_id, chunk, items=items_chunk, skip_enhance=skip_enhance)
             if url:
                 collage_urls.append(url)
 
@@ -213,11 +213,11 @@ class StatefulSMSOutput(SMSOutput):
         self.message_sent = True
         super().send(text, images)
 
-    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False):
+    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False, skip_enhance: bool = False):
         self.message_sent = True
 
         # Send via parent class (collage + text)
-        super().present_outfit(text, images, visualize)
+        super().present_outfit(text, images, visualize, skip_enhance=skip_enhance)
 
         # Capture outfit state + trigger visualization
         if visualize and images:
@@ -307,14 +307,14 @@ class WebOutput(OutputHandler):
         # Non-outfit messages (browse results, text-only) — log but don't queue as outfit
         logger.info(f"WebOutput: non-outfit message ({len(images)} images)")
 
-    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False):
+    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False, skip_enhance: bool = False):
         if images:
-            enriched = self._enrich_outfit(text, images, visualize)
+            enriched = self._enrich_outfit(text, images, visualize, skip_enhance=skip_enhance)
             self.outfits.append(enriched)
             if self.outfit_queue:
                 self.outfit_queue.put_nowait(enriched)
 
-    def _enrich_outfit(self, text: Optional[str], images: List[str], visualize: bool) -> dict:
+    def _enrich_outfit(self, text: Optional[str], images: List[str], visualize: bool, skip_enhance: bool = False) -> dict:
         """Convert agent send_message into web outfit format."""
         import hashlib
 
@@ -328,7 +328,7 @@ class WebOutput(OutputHandler):
         collage_url = None
         try:
             from services.collage import generate_outfit_collage
-            collage_url = generate_outfit_collage(self.user_id, images, items=resolved)
+            collage_url = generate_outfit_collage(self.user_id, images, items=resolved, skip_enhance=skip_enhance)
         except Exception as e:
             logger.warning(f"WebOutput: collage generation failed: {e}")
 
@@ -376,14 +376,14 @@ class APIOutput(OutputHandler):
         self.messages.append(msg)
         logger.info(f"APIOutput: collected message with {len(images)} images")
 
-    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False):
+    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False, skip_enhance: bool = False):
         outfit = {"text": text, "images": images or []}
 
         if images:
             items_meta = resolve_items_from_urls(self.user_id, images)
             self._record_for_variety(self.user_id, items_meta)
             from services.collage import generate_outfit_collage
-            collage_url = generate_outfit_collage(self.user_id, images, items=items_meta)
+            collage_url = generate_outfit_collage(self.user_id, images, items=items_meta, skip_enhance=skip_enhance)
             outfit["collage_url"] = collage_url
 
             if visualize:
@@ -416,7 +416,7 @@ class MockOutput(OutputHandler):
         })
         logger.info(f"MockOutput: captured send_message with {len(images)} images")
 
-    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False):
+    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False, skip_enhance: bool = False):
         self.messages.append({
             "tool": "present_outfit",
             "text": text,

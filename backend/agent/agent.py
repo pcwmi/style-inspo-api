@@ -278,7 +278,7 @@ class StylingAgent:
         def _present_one(args):
             styling_text, image_urls, _ = args
             if self.output:
-                self.output.present_outfit(text=styling_text, images=image_urls, visualize=True)
+                self.output.present_outfit(text=styling_text, images=image_urls, visualize=True, skip_enhance=True)
             return styling_text
 
         if len(valid_outfits) == 1:

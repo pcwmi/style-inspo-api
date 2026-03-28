@@ -172,6 +172,7 @@ def remove_backgrounds_parallel(
     items: List[dict],
     user_id: str,
     max_workers: int = 4,
+    skip_enhance: bool = False,
 ) -> List[Tuple[dict, Image.Image]]:
     """
     Remove backgrounds from multiple items in parallel.
@@ -180,6 +181,9 @@ def remove_backgrounds_parallel(
         items: List of item dicts, each with 'image_url' (or 'image_path') key.
         user_id: For S3 cache path.
         max_workers: Thread pool size.
+        skip_enhance: If True, use fast rembg-only path (no fal.ai enhancement).
+            Use for latency-critical paths — avoids 20-30s fal.ai API calls on cache miss.
+            Enhanced cache is still checked first (free speedup when available).
 
     Returns:
         List of (item_dict, RGBA_image) tuples for successfully processed items.
@@ -194,12 +198,19 @@ def remove_backgrounds_parallel(
         category = item.get("category", "")
         sub_category = item.get("sub_category", "")
         item_name = item.get("name", "")
-        img = remove_background_enhanced(
-            url, user_id, category=category,
-            sub_category=sub_category, item_name=item_name,
-        )
+        if skip_enhance:
+            # Fast path: use cached enhanced if available, otherwise plain rembg (no fal.ai)
+            img = _remove_background_fast(
+                url, user_id, category=category,
+                sub_category=sub_category, item_name=item_name,
+            )
+        else:
+            img = remove_background_enhanced(
+                url, user_id, category=category,
+                sub_category=sub_category, item_name=item_name,
+            )
         item_ms = int((time.perf_counter() - item_start) * 1000)
-        logger.info(f"bg_removal item: {item_name or 'unknown'} {item_ms}ms ({category})")
+        logger.info(f"bg_removal item: {item_name or 'unknown'} {item_ms}ms ({category}, {'fast' if skip_enhance else 'enhanced'})")
         if img:
             return (item, img)
         return None
@@ -272,6 +283,49 @@ def _enhance_garment_fal(image_bytes: bytes) -> Optional[bytes]:
 # Garments + scarves (fabric items that look better as studio flat-lays)
 # NOT shoes or jewelry (AI distorts logos/small details)
 ENHANCE_CATEGORIES = {"tops", "bottoms", "dresses", "outerwear", "one-pieces", "scarves"}
+
+
+def _remove_background_fast(
+    image_url: str, user_id: str, category: str = "",
+    sub_category: str = "", item_name: str = "",
+) -> Optional[Image.Image]:
+    """Fast bg-removal: check enhanced cache first, fall back to plain rembg.
+
+    Never calls fal.ai. If the enhanced version was previously cached, uses it
+    (free quality). Otherwise uses standard rembg (fast, ~1-2s on cache miss).
+    """
+    from services.storage_manager import StorageManager
+
+    cat_lower = category.lower()
+    sub_lower = (sub_category or "").lower()
+    name_lower = (item_name or "").lower()
+    should_check_enhanced = (
+        cat_lower in ENHANCE_CATEGORIES
+        or "scarf" in sub_lower
+        or "scarf" in name_lower
+    )
+
+    # Check enhanced cache first (free quality if available)
+    if should_check_enhanced:
+        cache_key = _url_to_cache_key(image_url)
+        cache_filename = f"{cache_key}_enhanced.png"
+        storage = StorageManager(
+            storage_type=os.getenv("STORAGE_TYPE", "local"),
+            user_id=user_id,
+        )
+        if storage.storage_type == "s3":
+            cache_url = f"{storage.get_base_url()}/{user_id}/bg_removed/{cache_filename}"
+            if storage.file_exists(cache_url):
+                logger.info(f"fast path enhanced cache hit: {cache_key}")
+                try:
+                    cached_bytes = storage.load_file(cache_url)
+                    if cached_bytes:
+                        return Image.open(BytesIO(cached_bytes)).convert("RGBA")
+                except Exception:
+                    pass
+
+    # Fall back to standard rembg (cached or fresh, no fal.ai)
+    return remove_background_cached(image_url, user_id)
 
 
 def remove_background_enhanced(
