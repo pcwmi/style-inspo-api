@@ -195,9 +195,9 @@ async def process_outfit_request(user_id: str, phone: str, message: str, image_u
             and len(state.messages) <= 1  # First message (just recorded above)
         )
 
-        # Pre-load user context (capped wardrobe for fast path to reduce LLM tokens)
-        preloaded = preload_user_context(user_id, max_items=50 if use_fast_path else 0)
-        logger.info(f"Preloaded context: {len(preloaded)} chars (fast={use_fast_path})")
+        # Pre-load user context
+        preloaded = preload_user_context(user_id)
+        logger.info(f"Preloaded context: {len(preloaded)} chars")
 
         # Create agent with output handler and conversation context
         agent = StylingAgent(

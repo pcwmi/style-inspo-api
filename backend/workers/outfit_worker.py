@@ -78,7 +78,7 @@ def generate_consider_buying_job(
 
         start_time = time.time()
         output = APIOutput(user_id=user_id)
-        preloaded = preload_user_context(user_id, max_items=50)
+        preloaded = preload_user_context(user_id)
 
         agent = StylingAgent(
             user_id=user_id,

@@ -59,7 +59,7 @@ def _run_agent_sync(request: AgentRunRequest) -> dict:
 
     output = APIOutput(user_id=user_id)
     use_fast = not conversation_context
-    preloaded = preload_user_context(user_id, max_items=50 if use_fast else 0)
+    preloaded = preload_user_context(user_id)
 
     agent = StylingAgent(
         user_id=user_id,
