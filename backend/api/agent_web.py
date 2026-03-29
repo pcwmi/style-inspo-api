@@ -49,7 +49,7 @@ async def generate_outfits_agent_stream(
                     outfit_queue=outfit_queue,
                 )
 
-                preloaded = preload_user_context(user_id)
+                preloaded = preload_user_context(user_id, max_items=50)
 
                 agent = StylingAgent(
                     user_id=user_id,

@@ -188,9 +188,16 @@ async def process_outfit_request(user_id: str, phone: str, message: str, image_u
         # Create stateful output handler that captures outfits
         output = StatefulSMSOutput(phone=phone, user_id=user_id, state_manager=state_manager)
 
-        # Pre-load user context to eliminate context-gathering LLM round-trip
-        preloaded = preload_user_context(user_id)
-        logger.info(f"Preloaded context: {len(preloaded)} chars")
+        # Fast path: single-call structured output for simple outfit requests
+        # Use when: no prior conversation, no images attached
+        use_fast_path = (
+            not image_data_uris
+            and len(state.messages) <= 1  # First message (just recorded above)
+        )
+
+        # Pre-load user context (capped wardrobe for fast path to reduce LLM tokens)
+        preloaded = preload_user_context(user_id, max_items=50 if use_fast_path else 0)
+        logger.info(f"Preloaded context: {len(preloaded)} chars (fast={use_fast_path})")
 
         # Create agent with output handler and conversation context
         agent = StylingAgent(
@@ -199,13 +206,6 @@ async def process_outfit_request(user_id: str, phone: str, message: str, image_u
             output=output,
             conversation_context=conversation_context,
             preloaded_context=preloaded
-        )
-
-        # Fast path: single-call structured output for simple outfit requests
-        # Use when: no prior conversation, no images attached
-        use_fast_path = (
-            not image_data_uris
-            and len(state.messages) <= 1  # First message (just recorded above)
         )
 
         if use_fast_path:

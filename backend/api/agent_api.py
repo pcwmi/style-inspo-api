@@ -58,7 +58,8 @@ def _run_agent_sync(request: AgentRunRequest) -> dict:
             logger.warning(f"Agent API: failed to load conversation state: {e}")
 
     output = APIOutput(user_id=user_id)
-    preloaded = preload_user_context(user_id)
+    use_fast = not conversation_context
+    preloaded = preload_user_context(user_id, max_items=50 if use_fast else 0)
 
     agent = StylingAgent(
         user_id=user_id,
@@ -69,7 +70,7 @@ def _run_agent_sync(request: AgentRunRequest) -> dict:
     )
 
     # Fast path for simple requests (no conversation history)
-    if not conversation_context:
+    if use_fast:
         response = agent.fast_generate(request.message)
     else:
         response = agent.run(request.message)
