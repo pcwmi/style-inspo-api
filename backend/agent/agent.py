@@ -178,8 +178,21 @@ class StylingAgent:
         self.timing["run_start"] = time.perf_counter()
         self.timing["mode"] = "fast"
 
-        # Build system prompt with preloaded context
-        system_prompt = FAST_OUTFIT_PROMPT
+        # Build system prompt — use the FULL styling prompt (same quality as agent loop)
+        # plus a JSON output instruction appended at the end
+        json_instruction = """
+
+---
+
+# Output Format (CRITICAL)
+
+You MUST respond with valid JSON. For each outfit requested, return:
+
+{"outfits": [{"items": ["Exact Item Name 1", "Exact Item Name 2", ...], "styling_text": "Your styling advice — same warmth and personality as a text to a friend. Include the why.", "occasion": "what this outfit is for"}]}
+
+Use EXACT item names from the wardrobe list. Include 3-6 items per outfit (top + bottom + shoes minimum, plus layers/accessories).
+"""
+        system_prompt = STYLING_SYSTEM_PROMPT + json_instruction
         if self.preloaded_context:
             system_prompt += "\n\n# User Context\n\n" + self.preloaded_context
 
