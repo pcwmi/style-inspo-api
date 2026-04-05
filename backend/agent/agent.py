@@ -942,9 +942,14 @@ Use EXACT item names from the wardrobe list. Include 3-6 items per outfit (top +
                 item_id = tool_input.get("item_id")
                 decision = tool_input.get("decision")
                 reason = tool_input.get("reason")
-                manager.record_decision(item_id, decision, reason)
+                result = manager.execute_decision(item_id, decision, reason)
                 logger.info(f"decide_considering_item: {decision} on {item_id}")
-                return {"success": True, "item_id": item_id, "decision": decision}
+                return {
+                    "success": True,
+                    "item_id": item_id,
+                    "decision": decision,
+                    "wardrobe_item_id": result["wardrobe_item"]["id"] if result.get("wardrobe_item") else None,
+                }
 
             elif tool_name == "delete_considering_item":
                 from services.consider_buying_manager import ConsiderBuyingManager

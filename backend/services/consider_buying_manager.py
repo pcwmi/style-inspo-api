@@ -315,6 +315,94 @@ class ConsiderBuyingManager:
 
         return decision_record
 
+    def execute_decision(self, item_id: str, decision: str, reason: Optional[str] = None) -> Dict:
+        """
+        Execute a buying decision with all side effects.
+
+        "bought"  → record decision, move image + metadata to wardrobe, delete from considering
+        "passed"  → record decision, delete from considering
+        "later"   → record decision, item stays with status "considering"
+
+        Returns {"decision_record": ..., "wardrobe_item": ... (bought only), "stats": ...}
+        """
+        consider_item = next(
+            (i for i in self.consider_buying_data["items"] if i["id"] == item_id), None
+        )
+        if not consider_item:
+            raise ValueError(f"Item {item_id} not found")
+
+        decision_record = self.record_decision(item_id, decision, reason)
+        wardrobe_item = None
+
+        if decision == "bought":
+            from services.wardrobe_manager import WardrobeManager
+            from io import BytesIO
+            import requests as _requests
+
+            image_path = consider_item.get("image_path")
+            if not image_path:
+                raise ValueError(f"Item {item_id} has no image path")
+
+            if image_path.startswith("http"):
+                resp = _requests.get(image_path)
+                resp.raise_for_status()
+                image_file = BytesIO(resp.content)
+            else:
+                if hasattr(self.storage, 'base_path'):
+                    full_path = os.path.join(
+                        self.storage.base_path, "consider_buying", os.path.basename(image_path)
+                    )
+                else:
+                    full_path = os.path.join(
+                        "wardrobe_photos", self.user_id, "consider_buying",
+                        os.path.basename(image_path)
+                    )
+                image_file = open(full_path, "rb")
+
+            sd = consider_item.get("styling_details", {})
+            sa = consider_item.get("structured_attrs", {})
+            analysis_data = {
+                "name": sd.get("name", "Unnamed Item"),
+                "category": sd.get("category", "tops"),
+                "sub_category": sd.get("sub_category", "Unknown"),
+                "colors": sd.get("colors", []),
+                "cut": sd.get("cut", "Unknown"),
+                "texture": sd.get("texture", "Unknown"),
+                "style": sd.get("style", "casual"),
+                "fit": sd.get("fit", "Unknown"),
+                "brand": sd.get("brand"),
+                "trend_status": sd.get("trend_status", "Unknown"),
+                "styling_notes": sd.get("styling_notes", ""),
+                "fabric": sa.get("fabric", "unknown"),
+                "sleeve_length": sa.get("sleeve_length"),
+                "waist_level": sa.get("waist_level"),
+            }
+
+            wardrobe_manager = WardrobeManager(user_id=self.user_id)
+            wardrobe_item = wardrobe_manager.add_wardrobe_item(
+                uploaded_file=image_file,
+                analysis_data=analysis_data,
+                is_styling_challenge=False,
+            )
+            if not wardrobe_item:
+                raise RuntimeError("Failed to add item to wardrobe")
+
+            # Remove from considering list
+            items = self.consider_buying_data["items"]
+            items.remove(consider_item)
+            self._save_consider_buying_data()
+            logger.info(f"execute_decision: moved {item_id} to wardrobe as {wardrobe_item['id']}")
+
+        elif decision == "passed":
+            self.delete_item(item_id)
+            logger.info(f"execute_decision: deleted passed item {item_id}")
+
+        return {
+            "decision_record": decision_record,
+            "wardrobe_item": wardrobe_item,
+            "stats": self.get_stats(),
+        }
+
     def get_items(self, status: Optional[str] = None) -> List[Dict]:
         """Get items, optionally filtered by status"""
         items = self.consider_buying_data.get("items", [])

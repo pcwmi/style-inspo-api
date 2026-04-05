@@ -22,6 +22,7 @@ function ItemDetailContent() {
     const [saving, setSaving] = useState(false)
     const [isConsideringItem, setIsConsideringItem] = useState(false)
     const [deleting, setDeleting] = useState(false)
+    const [deciding, setDeciding] = useState<string | null>(null)
 
     // Edit form state
     const [formData, setFormData] = useState({
@@ -135,6 +136,19 @@ function ItemDetailContent() {
             router.push(`/closet?user=${user}&category=Considering`)
         } else {
             router.push(`/closet?user=${user}`)
+        }
+    }
+
+    const handleDecide = async (decision: 'bought' | 'passed') => {
+        try {
+            setDeciding(decision)
+            await api.decideConsideringItem(user, itemId, decision)
+            router.push(`/closet?user=${user}&category=Considering`)
+        } catch (err) {
+            console.error('Failed to record decision:', err)
+            alert(`Failed to mark as ${decision}`)
+        } finally {
+            setDeciding(null)
         }
     }
 
@@ -480,15 +494,41 @@ function ItemDetailContent() {
                                 </div>
                             )}
 
-                            {/* Delete Button - only for considering items */}
+                            {/* Decision Buttons - only for considering items */}
                             {isConsideringItem && (
-                                <button
-                                    onClick={() => setShowDeleteModal(true)}
-                                    disabled={deleting}
-                                    className="w-full py-3 text-red-600 font-medium border border-red-100 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
-                                >
-                                    {deleting ? 'Deleting...' : 'Delete from Considering'}
-                                </button>
+                                <div className="space-y-3">
+                                    <div className="flex gap-3">
+                                        <button
+                                            onClick={() => handleDecide('bought')}
+                                            disabled={deciding !== null}
+                                            className="flex-1 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                        >
+                                            {deciding === 'bought' ? (
+                                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                            ) : (
+                                                <>Bought it</>
+                                            )}
+                                        </button>
+                                        <button
+                                            onClick={() => handleDecide('passed')}
+                                            disabled={deciding !== null}
+                                            className="flex-1 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                        >
+                                            {deciding === 'passed' ? (
+                                                <div className="w-5 h-5 border-2 border-gray-400/30 border-t-gray-400 rounded-full animate-spin" />
+                                            ) : (
+                                                <>Not interested</>
+                                            )}
+                                        </button>
+                                    </div>
+                                    <button
+                                        onClick={() => setShowDeleteModal(true)}
+                                        disabled={deleting}
+                                        className="w-full py-2.5 text-red-500 text-sm border border-red-100 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
                             )}
                             
                             {/* Delete Button - for wardrobe items */}

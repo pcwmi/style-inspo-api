@@ -240,107 +240,40 @@ async def record_decision(request: DecisionRequest, user_id: str = Query(...)):
     """
     try:
         cb_manager = ConsiderBuyingManager(user_id=user_id)
-        
-        # Get item info before recording decision (item might be removed after decision)
-        consider_item = next((i for i in cb_manager.get_items() if i["id"] == request.item_id), None)
+
+        # Grab name/price for activity log before execution removes the item
+        consider_item = next(
+            (i for i in cb_manager.get_items() if i["id"] == request.item_id), None
+        )
         if not consider_item:
             raise HTTPException(status_code=404, detail="Item not found in consider_buying")
-        
-        item_name = consider_item.get('styling_details', {}).get('name', 'Item')
-        item_price = consider_item.get('price', 0)
-        
-        decision_record = cb_manager.record_decision(
+
+        item_name = consider_item.get("styling_details", {}).get("name", "Item")
+        item_price = consider_item.get("price", 0)
+
+        result = cb_manager.execute_decision(
             item_id=request.item_id,
             decision=request.decision,
-            reason=request.reason
+            reason=request.reason,
         )
 
-        # If bought, move to wardrobe
-        if request.decision == "bought":
-            from services.wardrobe_manager import WardrobeManager
-            from services.image_analyzer import create_image_analyzer
-            from io import BytesIO
-            import requests
-            from PIL import Image
-            
-            # Download the image from storage (consider_item already fetched above)
-            image_path = consider_item.get("image_path")
-            if not image_path:
-                raise HTTPException(status_code=400, detail="Item has no image path")
-            
-            # Download image (works for both S3 URLs and local paths)
-            if image_path.startswith("http"):
-                # S3 URL - download it
-                import requests
-                img_response = requests.get(image_path)
-                img_response.raise_for_status()
-                image_file = BytesIO(img_response.content)
-            else:
-                # Local path - open it
-                storage = StorageManager(storage_type=os.getenv("STORAGE_TYPE", "local"), user_id=user_id)
-                # For local storage, construct the full path
-                if hasattr(storage, 'base_path'):
-                    full_path = os.path.join(storage.base_path, "consider_buying", os.path.basename(image_path))
-                else:
-                    full_path = os.path.join("wardrobe_photos", user_id, "consider_buying", os.path.basename(image_path))
-                image_file = open(full_path, 'rb')
-            
-            # Convert to analysis_data format
-            analysis_data = {
-                'name': consider_item.get('styling_details', {}).get('name', 'Unnamed Item'),
-                'category': consider_item.get('styling_details', {}).get('category', 'tops'),
-                'sub_category': consider_item.get('styling_details', {}).get('sub_category', 'Unknown'),
-                'colors': consider_item.get('styling_details', {}).get('colors', []),
-                'cut': consider_item.get('styling_details', {}).get('cut', 'Unknown'),
-                'texture': consider_item.get('styling_details', {}).get('texture', 'Unknown'),
-                'style': consider_item.get('styling_details', {}).get('style', 'casual'),
-                'fit': consider_item.get('styling_details', {}).get('fit', 'Unknown'),
-                'brand': consider_item.get('styling_details', {}).get('brand'),
-                'trend_status': consider_item.get('styling_details', {}).get('trend_status', 'Unknown'),
-                'styling_notes': consider_item.get('styling_details', {}).get('styling_notes', ''),
-                'fabric': consider_item.get('structured_attrs', {}).get('fabric', 'unknown'),
-                'sleeve_length': consider_item.get('structured_attrs', {}).get('sleeve_length'),
-                'waist_level': consider_item.get('structured_attrs', {}).get('waist_level'),
-            }
-            
-            # Add to wardrobe (as regular wear, not styling challenge)
-            wardrobe_manager = WardrobeManager(user_id=user_id)
-            wardrobe_item = wardrobe_manager.add_wardrobe_item(
-                uploaded_file=image_file,
-                analysis_data=analysis_data,
-                is_styling_challenge=False
-            )
-            
-            if not wardrobe_item:
-                raise HTTPException(status_code=500, detail="Failed to add item to wardrobe")
-            
-            # Remove from consider_buying (or mark as moved)
-            items = cb_manager.consider_buying_data.get("items", [])
-            items.remove(consider_item)
-            cb_manager._save_consider_buying_data()
-            
-            logger.info(f"Moved item {request.item_id} from consider_buying to wardrobe as {wardrobe_item['id']}")
-
-        # Log activity
         log_activity(user_id, "consider_buying_decided", {
             "item_id": request.item_id,
             "name": item_name,
             "decision": request.decision,
             "reason": request.reason,
-            "price": item_price
+            "price": item_price,
         })
 
-        # Return decision with item info for all decisions
         return {
             "success": True,
-            "decision": decision_record,
-            "stats": cb_manager.get_stats(),
-            "item": {
-                "name": item_name,
-                "price": item_price
-            }
+            "decision": result["decision_record"],
+            "stats": result["stats"],
+            "item": {"name": item_name, "price": item_price},
         }
 
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         logger.error(f"Error recording decision: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))

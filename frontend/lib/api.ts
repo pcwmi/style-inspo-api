@@ -203,6 +203,16 @@ export const api = {
     return res.json()
   },
 
+  async decideConsideringItem(userId: string, itemId: string, decision: 'bought' | 'passed' | 'later', reason?: string) {
+    const res = await fetch(`${API_URL}/api/consider-buying/decide?user_id=${userId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ item_id: itemId, decision, reason })
+    })
+    if (!res.ok) throw new Error('Failed to record decision')
+    return res.json()
+  },
+
   // Visualization
   async generateVisualization(request: {
     user_id: string
