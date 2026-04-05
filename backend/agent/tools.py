@@ -315,7 +315,7 @@ TOOLS = [
     # --- WEB SEARCH & BROWSING ---
     {
         "name": "web_search",
-        "description": "Search the web for fashion items, shopping recommendations, or style inspiration. Use this to find specific products you'd recommend but the user doesn't own — e.g. 'olive linen wide leg pants women under $100' or 'best black leather belt silver buckle'. Returns titles, URLs, descriptions, and thumbnails.",
+        "description": "Search the web for any real-world information — fashion items, weather, local events, shopping recommendations, or style inspiration. Use for: (1) finding specific products to recommend, (2) current weather to factor into outfit suggestions, (3) upcoming events or occasions, (4) any query requiring current/external info. Returns titles, URLs, descriptions, and thumbnails.",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -378,7 +378,7 @@ TOOLS = [
     },
     {
         "name": "add_considering_item",
-        "description": "Save a product the user is considering buying. Downloads the product image and stores it. Use this when recommending specific products from browse_url so they can be included in outfit collages later via resolve_items.",
+        "description": "Save a product to the user's item list — either something they're considering OR something they already bought. When the user says 'I bought X, add it to my wardrobe/closet' with a URL, use this followed immediately by decide_considering_item(decision='bought') to move it into their wardrobe. Also use when recommending products from browse_url so they can be included in outfit collages.",
         "input_schema": {
             "type": "object",
             "properties": {

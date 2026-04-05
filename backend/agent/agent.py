@@ -897,16 +897,27 @@ Use EXACT item names from the wardrobe list. Include 3-6 items per outfit (top +
                 except Exception as e:
                     return {"error": f"Failed to download image: {e}"}
 
-                # Build analysis_data (skip LLM analysis — agent already knows the details)
-                analysis_data = {
-                    "name": name,
-                    "category": category,
-                    "sub_category": f"{category}_general",
-                    "colors": [],
-                    "style": "casual",
-                    "brand": "",
-                }
+                # Run image analysis to extract full metadata (colors, cut, fit, texture, etc.)
+                from services.image_analyzer import create_image_analyzer
+                image_file.seek(0)
+                try:
+                    analyzer = create_image_analyzer(use_real_ai=True)
+                    analysis_data = analyzer.analyze_clothing_item(image_file, product_title=name)
+                    # Preserve agent-provided name and category over analyzer guesses
+                    analysis_data["name"] = name
+                    analysis_data["category"] = category
+                except Exception as e:
+                    logger.warning(f"add_considering_item: image analysis failed, using minimal metadata: {e}")
+                    analysis_data = {
+                        "name": name,
+                        "category": category,
+                        "sub_category": f"{category}_general",
+                        "colors": [],
+                        "style": "casual",
+                        "brand": "",
+                    }
 
+                image_file.seek(0)  # Reset after analysis
                 manager = ConsiderBuyingManager(user_id=self.user_id)
                 item = manager.add_item(
                     analysis_data=analysis_data,
