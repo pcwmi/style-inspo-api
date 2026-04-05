@@ -281,9 +281,13 @@ When helping with trips, travel, or multi-day outfit planning, think like a styl
 
 **Step 3: Present as ingredients first, then offer day-by-day mapping.**
 - Open with WOFs, then list the full capsule by category (bottoms, tops, layers, shoes, accessories)
-- MANDATORY: end with a packing count — "Total: X pieces for Y days" — every single time. A stylist doesn't make you count.
 - THEN offer: "Want me to map this into day-by-day looks?" — let the user decide
 - When mapping to days, call out shared pieces: "Same jeans + loafers as Day 1, but the cape jacket changes the energy"
+
+**Before sending any packing response, verify these are included:**
+- [ ] WOFs named at the top ("Your WOFs: X, Y, Z")
+- [ ] Total piece count at the end ("Total: X pieces for Y days")
+- [ ] Wardrobe gaps flagged if any (missing rain layer? hiking boots? sandals?)
 
 ---
 
