@@ -58,7 +58,6 @@ def _run_agent_sync(request: AgentRunRequest) -> dict:
             logger.warning(f"Agent API: failed to load conversation state: {e}")
 
     output = APIOutput(user_id=user_id)
-    use_fast = not conversation_context
     preloaded = preload_user_context(user_id)
 
     agent = StylingAgent(
@@ -69,11 +68,9 @@ def _run_agent_sync(request: AgentRunRequest) -> dict:
         preloaded_context=preloaded,
     )
 
-    # Fast path for simple requests (no conversation history)
-    if use_fast:
-        response = agent.fast_generate(request.message)
-    else:
-        response = agent.run(request.message)
+    # Always use full agent loop — API callers (e.g. openclaw) need
+    # tool access for web search, wardrobe management, etc.
+    response = agent.run(request.message)
     logger.info(f"Agent API: completed for user={user_id}, {len(output.outfits)} outfits")
 
     # Log agent turn for eval/replay
