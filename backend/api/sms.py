@@ -209,10 +209,11 @@ async def process_outfit_request(user_id: str, phone: str, message: str, image_u
         response = agent.run(message, image_urls=image_data_uris)
         logger.info(f"Agent completed. Response: {response[:200] if response else '(none)'}...")
 
-        # Send text response to user ONLY if agent didn't already send via send_message tool
-        # This handles text-only responses like answering questions about style patterns
-        # but avoids duplicate sends when agent used send_message for outfit delivery
-        if response and not output.message_sent:
+        # Always send the agent's text response if it exists.
+        # send_message/present_outfit deliver per-outfit content (collages + styling text).
+        # The final response is the wrap-up (packing summary, WOFs, follow-up questions) —
+        # complementary content, not a duplicate.
+        if response:
             send_sms(phone, response)
             logger.info(f"Sent agent text response to {phone}")
 
