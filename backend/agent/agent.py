@@ -17,7 +17,7 @@ import time
 from typing import Optional, Literal
 
 from agent.tools import TOOLS, TOOLS_OPENAI
-from agent.prompts import STYLING_SYSTEM_PROMPT, FAST_OUTFIT_PROMPT
+from agent.prompts import STYLING_SYSTEM_PROMPT, FAST_OUTFIT_PROMPT, get_system_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -192,7 +192,7 @@ You MUST respond with valid JSON. For each outfit requested, return:
 
 Use EXACT item names from the wardrobe list. Include 3-6 items per outfit (top + bottom + shoes minimum, plus layers/accessories).
 """
-        system_prompt = STYLING_SYSTEM_PROMPT + json_instruction
+        system_prompt = get_system_prompt() + json_instruction
         if self.preloaded_context:
             system_prompt += "\n\n# User Context\n\n" + self.preloaded_context
 
@@ -336,7 +336,7 @@ Use EXACT item names from the wardrobe list. Include 3-6 items per outfit (top +
             response = self.client.messages.create(
                 model=self.model,
                 max_tokens=4096,
-                system=STYLING_SYSTEM_PROMPT,
+                system=get_system_prompt(),
                 tools=TOOLS,
                 messages=messages
             )
@@ -398,7 +398,7 @@ Use EXACT item names from the wardrobe list. Include 3-6 items per outfit (top +
     def _run_openai(self, user_message: str, image_urls: list[str] = None) -> str:
         """OpenAI agent loop."""
         # Start with system prompt (+ preloaded context if available)
-        system_prompt = STYLING_SYSTEM_PROMPT
+        system_prompt = get_system_prompt()
         if self.preloaded_context:
             system_prompt += (
                 "\n\n---\n\n# User Context (pre-loaded)\n\n"
