@@ -283,12 +283,17 @@ TOOLS = [
                     "items": {"type": "string"},
                     "description": "Image URLs from resolve_items for the outfit pieces"
                 },
+                "item_names": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Exact wardrobe item names (same order as images). REQUIRED — these persist in conversation history so you can reference the outfit's composition later (e.g. when building a pack list, regenerating a day, or answering follow-up questions). Use the exact names from get_items."
+                },
                 "visualize": {
                     "type": "boolean",
                     "description": "Generate a styled model visualization. Set true for complete outfits."
                 }
             },
-            "required": ["reasoning", "images"]
+            "required": ["reasoning", "images", "item_names"]
         }
     },
     {

@@ -840,15 +840,27 @@ Use EXACT item names from the wardrobe list. Include 3-6 items per outfit (top +
             elif tool_name == "present_outfit":
                 text = tool_input.get("text")
                 images = tool_input.get("images", [])
+                item_names = tool_input.get("item_names", [])
                 visualize = tool_input.get("visualize", False)
 
                 if self.output:
                     self.output.present_outfit(text=text, images=images, visualize=visualize)
-                    logger.info(f"present_outfit: sent {len(images)} images, visualize={visualize}")
-                    return {"status": "sent", "images_count": len(images), "visualize": visualize}
+                    logger.info(f"present_outfit: sent {len(images)} images, item_names={item_names}, visualize={visualize}")
+                    return {
+                        "status": "sent",
+                        "images_count": len(images),
+                        "visualize": visualize,
+                        "item_names": item_names,
+                        "label": text,
+                    }
                 else:
-                    logger.info(f"present_outfit (no handler): text={text[:50] if text else None}..., {len(images)} images")
-                    return {"status": "no_output_handler", "would_send": {"text": text, "images": images, "visualize": visualize}}
+                    logger.info(f"present_outfit (no handler): text={text[:50] if text else None}..., {len(images)} images, item_names={item_names}")
+                    return {
+                        "status": "no_output_handler",
+                        "would_send": {"text": text, "images": images, "visualize": visualize},
+                        "item_names": item_names,
+                        "label": text,
+                    }
 
             elif tool_name == "send_message":
                 text = tool_input.get("text")

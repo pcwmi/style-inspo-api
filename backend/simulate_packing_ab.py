@@ -112,13 +112,22 @@ class SimAgent:
                                 keys = list(result.keys())[:3]
                                 print(f"  ← {{{', '.join(keys)}...}}")
                     elif fn == "present_outfit":
-                        items = args.get("items", [])
-                        label = args.get("label", "")
+                        images = args.get("images", [])
+                        item_names = args.get("item_names", [])
+                        label = args.get("text", "")
                         viz = args.get("visualize", False)
-                        print(f"  ← [COLLAGE] {label or 'outfit'}: {', '.join(items[:4])}{'...' if len(items)>4 else ''}")
+                        print(f"  ← [COLLAGE] {label or 'outfit'}: {', '.join(item_names[:5])}{'...' if len(item_names)>5 else ''}")
                         if viz:
                             print(f"  ← [VISUALIZATION requested]")
-                        result = {"success": True, "message_sent": True}
+                        # Mirror production agent.py: echo item_names + label in the tool result
+                        # so the agent can reconstruct outfit composition later (e.g. for pack lists).
+                        result = {
+                            "status": "sent",
+                            "images_count": len(images),
+                            "visualize": viz,
+                            "item_names": item_names,
+                            "label": label,
+                        }
                     elif fn == "send_message":
                         body = args.get("body", "")
                         media = args.get("media_urls", [])
