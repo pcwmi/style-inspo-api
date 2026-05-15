@@ -1,0 +1,74 @@
+{
+  "brand": "J.Crew",
+  "brand_slug": "jcrew",
+  "item": "Cashmere Crewneck Sweater",
+  "item_slug": "cashmere-crewneck",
+  "price_usd": 198,
+  "category": "knitwear",
+  "image_url": "",
+  "affiliate_url": "",
+  "one_line_summary": "A medium-gauge, 100% cashmere, classic-fit crewneck that J.Crew has refined across two decades and still puts on sale every six weeks.",
+  "energy": "American prep, mellowed — the sweater of someone who has a leather-bound planner and reads on Sundays",
+  "pull_quote": "Buy on sale ($90-120) — it's the best entry-level cashmere in the category. Pass at full price — the materials don't justify $198 when J.Crew's own sale cycle is so reliable.",
+  "verdicts": [
+    {
+      "archetype": "classic / preppy / restrained",
+      "label": "polished / quiet / camel",
+      "verdict": "BUY",
+      "reasoning": "These were made for your wardrobe. The classic fit is true — not boxy, not slim — and the neutrals (camel, oatmeal, charcoal, navy, claret) cover every base. Buy 2-3 on sale and they become a uniform. The cashmere quality is appropriate for the price tier, not premium."
+    },
+    {
+      "archetype": "easy / oversized / lived-in",
+      "label": "soft / generous / undone",
+      "verdict": "PASS",
+      "reasoning": "The classic fit will read too neat for your aesthetic. You want J.Crew's Cashmere Oversized Crewneck (same brand, baggier silhouette) or Quince's Mongolian Cashmere Oversized Crew. The standard Crewneck has a buttoned-up energy that fights what you're building."
+    },
+    {
+      "archetype": "investment / quality-first",
+      "label": "considered / minimal / forever-piece",
+      "verdict": "PASS",
+      "reasoning": "J.Crew cashmere is a 2-ply, medium-gauge construction made overseas at price-point scale. Quality is fine for the cost but won't last 10 years. You want Alex Mill, Brora, or Naadam if cashmere is a category you care about. Spend $300-450 and own them for a decade."
+    },
+    {
+      "archetype": "minimal budget / want the fiber",
+      "label": "smart-shopper / sale-aware",
+      "verdict": "BUY",
+      "reasoning": "Wait for the 40-50% off sale that hits 4-6 times a year. At $90-120, this is genuinely the best cashmere-per-dollar in mass market. Get on the email list, ignore full-price stretches, pounce on sales. That's the actual J.Crew cashmere strategy."
+    }
+  ],
+  "why_people_love_it": [
+    "The fit is rare in cashmere — not too slim like designer, not boxy like the cheap dupes. Hits the middle ground",
+    "Color range is the broadest in the price tier — 15-20 colorways per season including the unusual ones (mossy green, mulberry, dusk blue)",
+    "Returns are easy and the quality replacement guarantee is real if you push for it"
+  ],
+  "where_it_falls_flat": [
+    "Pills along the underarms and waist hem by month 6 — cashmere physics, but more pronounced than premium versions",
+    "Sleeves run long on petite frames. The Petite size exists but isn't stocked in every colorway",
+    "Full-price is bad value. If you've paid full, you've waited the wrong number of weeks"
+  ],
+  "alternatives": [
+    {
+      "if_you_lean": "want better cashmere at the same price",
+      "name": "Quince Mongolian Cashmere Crewneck",
+      "price_usd": 60,
+      "url": "",
+      "reasoning": "30% the price, comparable or slightly better fiber quality. Lacks J.Crew's fit range and color depth, but if you only need one or two crewnecks, this is unbeatable value."
+    },
+    {
+      "if_you_lean": "investment piece / forever",
+      "name": "Brora Cashmere Crew Neck",
+      "price_usd": 350,
+      "url": "",
+      "reasoning": "Scottish cashmere, thicker gauge, will outlast J.Crew by a factor of 3. Worth it if you wear cashmere weekly through cold months. The texture and weight are noticeably superior."
+    },
+    {
+      "if_you_lean": "more oversized / contemporary",
+      "name": "Alex Mill Cashmere Crewneck",
+      "price_usd": 295,
+      "url": "",
+      "reasoning": "Similar quality to J.Crew but in a slightly looser, more modern cut. The brand has positioned itself as 'updated American basics' and it shows."
+    }
+  ],
+  "tags": ["sweater", "cashmere", "knitwear", "jcrew", "classic"],
+  "last_updated": "2026-05-15"
+}

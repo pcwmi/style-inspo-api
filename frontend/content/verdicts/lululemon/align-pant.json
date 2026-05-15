@@ -1,0 +1,74 @@
+{
+  "brand": "Lululemon",
+  "brand_slug": "lululemon",
+  "item": "Align Pant (25\")",
+  "item_slug": "align-pant",
+  "price_usd": 128,
+  "category": "activewear",
+  "image_url": "",
+  "affiliate_url": "",
+  "one_line_summary": "A high-rise, Nulu-fabric, buttery-soft legging engineered for yoga that became the dominant 'I'm running errands' pant of the late 2010s and still hasn't yielded.",
+  "energy": "off-duty competence — the legging of someone who has a Pilates membership and a green smoothie habit",
+  "pull_quote": "Buy if you actually move in them (yoga, walks, errands) and you've never owned a pair. Pass if you already own activewear and want fashion-forward — these are uniform, not statement.",
+  "verdicts": [
+    {
+      "archetype": "active / wellness / wear-everywhere",
+      "label": "soft / practical / off-duty",
+      "verdict": "BUY",
+      "reasoning": "These are the legging benchmark for a reason. The Nulu fabric has the right ratio of buttery-soft and compressive — you forget you're wearing them within an hour. The 25\" inseam hits at the right spot for most heights. Buy one black pair, wear them three times a week."
+    },
+    {
+      "archetype": "performance / serious athlete",
+      "label": "technical / high-impact",
+      "verdict": "PASS",
+      "reasoning": "Align fabric is too soft for serious running, lifting, or anything with bounce — they don't hold you in. You want the Lululemon Fast & Free or the Wunder Train instead. Align is for yoga and low-impact movement, despite what its marketing implies."
+    },
+    {
+      "archetype": "fashion-forward / activewear-as-streetwear",
+      "label": "current / styled-out / trend-aware",
+      "verdict": "MAYBE",
+      "reasoning": "The Align is the safest, most-saturated legging in the category. Wearing them now reads more 'mom' than 'editor.' If you want activewear that signals taste, look at Beyond Yoga Spacedye or Alo's Airbrush — same fabric quality, less ubiquitous. Or commit fully to a SET legging."
+    },
+    {
+      "archetype": "petite / small frame",
+      "label": "delicate / scaled / shorter-inseam",
+      "verdict": "BUY",
+      "reasoning": "The 25\" inseam was designed for you. The 28\" hits weird on shorter heights. Go down a size from your usual — Align stretches significantly after the first wear. If you're under 5'2\", try the 23\" inseam first."
+    }
+  ],
+  "why_people_love_it": [
+    "The Nulu fabric is the only legging material most wearers can't feel against their skin after putting them on — that's the entire pitch and it's real",
+    "The four-way stretch and rise mean they actually stay up during movement, unlike most leggings under $100",
+    "Massive color and inseam variety; restocks are reliable enough that your 'size + color' will come back if currently sold out"
+  ],
+  "where_it_falls_flat": [
+    "Pilling on the inner thigh starts around month 4 of regular wear — Lululemon's quality guarantee will replace, but you have to push for it",
+    "The Nulu fabric is sheer in lighter colors during deep squats — black, navy, or dark wine are the only sensible workout choices",
+    "Resale is so saturated that selling used pairs nets you almost nothing; treat the $128 as fully consumed"
+  ],
+  "alternatives": [
+    {
+      "if_you_lean": "want it for less",
+      "name": "CRZ Yoga Naked Feeling Legging",
+      "price_usd": 32,
+      "url": "",
+      "reasoning": "Quarter the price, ~85% of the feel. Amazon's best-rated Align dupe with 100k+ reviews. Won't last as long but at the price point you can replace 3x before matching one Align cost."
+    },
+    {
+      "if_you_lean": "more compression / performance",
+      "name": "Lululemon Wunder Train Legging",
+      "price_usd": 108,
+      "url": "",
+      "reasoning": "Same brand, different fabric. Holds you in during running, lifting, HIIT. The right pick if 'workout legging' is the actual use case."
+    },
+    {
+      "if_you_lean": "less ubiquitous / fashion-forward",
+      "name": "Beyond Yoga Spacedye Caught in the Midi Legging",
+      "price_usd": 99,
+      "url": "",
+      "reasoning": "Same softness, more interesting color palette (heathers, dusty pastels), $30 cheaper. The activewear of people who don't want to be wearing Lululemon."
+    }
+  ],
+  "tags": ["leggings", "activewear", "yoga", "lululemon", "viral"],
+  "last_updated": "2026-05-15"
+}

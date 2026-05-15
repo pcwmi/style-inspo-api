@@ -1,0 +1,74 @@
+{
+  "brand": "Aritzia",
+  "brand_slug": "aritzia",
+  "item": "Effortless Maxine Wide Leg Pant",
+  "item_slug": "maxine-wide-leg-pant",
+  "price_usd": 148,
+  "category": "trousers",
+  "image_url": "",
+  "affiliate_url": "",
+  "one_line_summary": "A high-rise, wide-leg, twill trouser with a flat-front waist and a long, drapey leg — the pant that taught a generation of 20-somethings that office clothes can look like this.",
+  "energy": "the new business casual — equal parts Hannah from Industry and Sunday brunch at a wine bar",
+  "pull_quote": "Buy if you want one pant that works for the office, dinner, and travel. Pass if you're under 5'3\" and don't want to hem — the leg is long and the wrong height will look like a swallowing-you-whole situation.",
+  "verdicts": [
+    {
+      "archetype": "polished / office / tailored",
+      "label": "structured / clean / sharp",
+      "verdict": "BUY",
+      "reasoning": "These are the most-worn pant in your closet within a month. The twill has enough weight to hold its shape, the high rise reads intentional, and the leg drape is the look right now. The black, navy, and stone colorways are all correct — pick whichever your top half lives in most."
+    },
+    {
+      "archetype": "easy / undone / oversized",
+      "label": "soft / relaxed / lived-in",
+      "verdict": "MAYBE",
+      "reasoning": "The Maxine is structured by design — the twill is crisp, the silhouette controlled. If you live in linen or cotton, this will read more 'event' than 'everyday' on you. The Aritzia Mara Pant or Wilfred Free Conan Trouser are softer and likely better for your default vibe."
+    },
+    {
+      "archetype": "petite / under 5'4\"",
+      "label": "delicate / scaled / shorter-inseam",
+      "verdict": "MAYBE",
+      "reasoning": "There's a Short inseam that works, but the silhouette is designed for visual length — even hemmed, the proportions can feel off on smaller frames. Try in store before committing online. If between two sizes, go DOWN; the cut is generous through the hip."
+    },
+    {
+      "archetype": "minimal budget / want the look",
+      "label": "smart-shopper / dupe-aware",
+      "verdict": "PASS",
+      "reasoning": "Old Navy's Extra High-Waisted StretchTech Wide-Leg ($55) and Banana Republic Factory's Wide-Leg Trouser ($75) both nail the silhouette at half the price. The fabric quality on the Maxine is genuinely better, but if budget is real, the cheaper version is 80% there."
+    }
+  ],
+  "why_people_love_it": [
+    "The twill drapes like a much more expensive pant — most people guess these are $300+ on first sight",
+    "Available in petite, regular, and tall — rare in this silhouette and a real reason to pay full price",
+    "Pairs with literally anything on the top — tee, tank, button-down, blazer, knit. Outfit math is easy"
+  ],
+  "where_it_falls_flat": [
+    "Wrinkles aggressively — the price of the drape. Steam or iron before any event you're showing up to",
+    "The inseam runs long; most heights need ~1-2 inches taken off. Budget $20 for tailoring",
+    "The waistband is unforgiving across the hip — sizing up if between is the safer play"
+  ],
+  "alternatives": [
+    {
+      "if_you_lean": "softer / less structured",
+      "name": "Aritzia Wilfred Free Conan Trouser",
+      "price_usd": 128,
+      "url": "",
+      "reasoning": "Same brand, softer fabric, similar silhouette but more drape and less structure. Better for casual aesthetic. $20 less."
+    },
+    {
+      "if_you_lean": "want the look for less",
+      "name": "Banana Republic Factory Wide-Leg Trouser",
+      "price_usd": 75,
+      "url": "",
+      "reasoning": "Half the price, ~80% of the silhouette. Fabric is thinner and wrinkles more, but the proportions are correct. Worth it if you want to test the cut before committing $148."
+    },
+    {
+      "if_you_lean": "more luxury / wear forever",
+      "name": "Toteme Wide Twill Trousers",
+      "price_usd": 460,
+      "url": "",
+      "reasoning": "3x the price, but the wool-cotton twill is materially better and the cut has been refined over five seasons. Lasts a decade. Worth it only if you wear wide-leg trousers as a default."
+    }
+  ],
+  "tags": ["trousers", "wide-leg", "workwear", "aritzia", "viral"],
+  "last_updated": "2026-05-15"
+}

@@ -1,0 +1,74 @@
+{
+  "brand": "Madewell",
+  "brand_slug": "madewell",
+  "item": "Perfect Vintage Jean",
+  "item_slug": "perfect-vintage-jean",
+  "price_usd": 138,
+  "category": "denim",
+  "image_url": "",
+  "affiliate_url": "",
+  "one_line_summary": "A high-rise, slightly tapered, vintage-styled jean with a comfortable amount of stretch and a worn-in finish — the gateway pair that introduced a generation to 'real' denim.",
+  "energy": "everywoman uniform — the jean of someone whose closet is mostly correct without being interesting",
+  "pull_quote": "Buy if you want one good pair of jeans, don't care about denim purism, and can't or won't spend $200 on AGOLDE. Pass if you're after that slouchy 90s look — the stretch and rise are wrong for it.",
+  "verdicts": [
+    {
+      "archetype": "classic / everyday / polished",
+      "label": "considered / mainstream / tidy",
+      "verdict": "BUY",
+      "reasoning": "These are the safest 'good jeans' purchase in their price tier. The cut flatters most bodies, the wash holds color for years, and the stretch means they pull on easily and don't bag out at the knees. This is the jean for someone who wants jeans handled."
+    },
+    {
+      "archetype": "easy / slouchy / 90s-aesthetic",
+      "label": "relaxed / vintage / lived-in",
+      "verdict": "PASS",
+      "reasoning": "The Perfect Vintage is a slightly tapered, stretch-blend jean. The 90s look requires a straight or wide leg in 100% cotton. You want AGOLDE 90s Pinch Waist, Levi's 501 '90s, or Madewell's own Baggy Straight instead. The Perfect Vintage is too polished for the slouchy reference."
+    },
+    {
+      "archetype": "denim-purist / 100%-cotton-only",
+      "label": "raw / unprocessed / forever",
+      "verdict": "PASS",
+      "reasoning": "There's elastane in these. That disqualifies them for purists. You want raw selvedge from 3sixteen, Tellason, or A.P.C. — same price tier as Madewell, completely different category of garment. The Perfect Vintage will sag at the knee within a year; raw denim will outlast you."
+    },
+    {
+      "archetype": "first-real-jeans / upgrading from fast fashion",
+      "label": "investment / step-up / committed",
+      "verdict": "BUY",
+      "reasoning": "If you've been buying $30 jeans from Old Navy or Zara, this is the right step up. You'll notice the difference immediately — fit retention, fabric weight, button quality. Use Madewell's Insider rewards (20% off after $250 spent annually) to make it $110."
+    }
+  ],
+  "why_people_love_it": [
+    "The wash variety is genuinely good — they've nailed multiple vintage-blue tones that don't look prematurely faded or cosplay",
+    "Madewell's return policy is friendly — try home, return what doesn't work, no hassle",
+    "Sizing is consistent across seasons — if you know your Perfect Vintage size, you can re-order without trying"
+  ],
+  "where_it_falls_flat": [
+    "The stretch fabric loses recovery after ~18 months of regular wear — they bag at the knee and pelvis",
+    "The 'vintage' wash is uniform across pairs — these don't develop personal fades the way 100% cotton does. They look the same on day 400 as day 4",
+    "Inseam options exist (Petite, Regular, Tall) but aren't stocked in every wash; popular washes sell out fast in non-standard inseams"
+  ],
+  "alternatives": [
+    {
+      "if_you_lean": "more slouchy / vintage-correct",
+      "name": "AGOLDE 90s Pinch Waist Jean",
+      "price_usd": 198,
+      "url": "",
+      "reasoning": "100% cotton, true vintage cut, ages into your body. $60 more but worth it if you want the slouchy 90s silhouette and plan to wear them for 5+ years."
+    },
+    {
+      "if_you_lean": "wider leg / current silhouette",
+      "name": "Madewell Baggy Straight Jean",
+      "price_usd": 138,
+      "url": "",
+      "reasoning": "Same brand, same price, completely different fit. The Baggy Straight reads more current than the Perfect Vintage. Try both in store before deciding."
+    },
+    {
+      "if_you_lean": "investment / want denim that lasts",
+      "name": "A.P.C. Petit New Standard",
+      "price_usd": 245,
+      "url": "",
+      "reasoning": "Raw selvedge Japanese denim, slim straight cut, develops fade patterns specific to your body. A real denim purchase that ages over years. Different category of garment."
+    }
+  ],
+  "tags": ["denim", "jeans", "madewell", "everyday", "classic"],
+  "last_updated": "2026-05-15"
+}
