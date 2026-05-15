@@ -1,0 +1,74 @@
+{
+  "brand": "Loewe",
+  "brand_slug": "loewe",
+  "item": "Puzzle Bag (Small, Classic Calf)",
+  "item_slug": "puzzle-bag-small",
+  "price_usd": 2950,
+  "category": "bag",
+  "image_url": "",
+  "affiliate_url": "",
+  "one_line_summary": "A geometric, multi-way leather bag that converts between cross-body, shoulder, top-handle, and clutch through a system of straps.",
+  "energy": "quietly architectural — a bag that signals taste to people who know, and reads as 'just a nice bag' to people who don't",
+  "pull_quote": "If you want one bag for the next 10 years and you've got the budget, this is the safest expensive purchase in the category. If you're stretching, the answer is no — there are smarter $1,000 bags.",
+  "verdicts": [
+    {
+      "archetype": "high-budget / quality-first / one-bag-per-decade",
+      "label": "considered / minimal / investment",
+      "verdict": "BUY",
+      "reasoning": "The Puzzle has been in continuous production since 2014 and the silhouette has not aged. The leather softens beautifully, the hardware is corrosion-resistant, and the multi-way carry means it adapts to whatever your style does over the next decade. The cost-per-wear math works."
+    },
+    {
+      "archetype": "mid-budget / want the look",
+      "label": "stretching / first-luxury / aspirational",
+      "verdict": "PASS",
+      "reasoning": "$2,950 is not a 'stretch' purchase. If buying this means moving money from somewhere it's already needed, the answer is firmly no. The Puzzle holds resale value (~70% on The RealReal), but a bag that creates anxiety isn't a luxury — it's a tax."
+    },
+    {
+      "archetype": "trend-aware / loud / expressive",
+      "label": "bright / saturated / statement",
+      "verdict": "MAYBE",
+      "reasoning": "The classic calf in a neutral will feel quiet to you — go for one of the seasonal colorways (the brand drops 4-6 per year) or the embossed croc version. The shape is loud enough; you don't need to fight it."
+    },
+    {
+      "archetype": "small-frame / petite",
+      "label": "delicate / small-scale",
+      "verdict": "MAYBE",
+      "reasoning": "Even the small reads visually substantial on a frame under 5'4\". Try the Mini before committing — same DNA, ~70% scale, $400 cheaper. Carry both at the store and let the mirror decide."
+    }
+  ],
+  "why_people_love_it": [
+    "The geometric construction means it lies flat for storage and travel — rare in luxury bags",
+    "Four carry methods from one bag means it covers everything from work to dinner to weekend",
+    "Loewe's craftsmanship under Jonathan Anderson became one of the most respected in the category"
+  ],
+  "where_it_falls_flat": [
+    "The top handle is short and stiff — not comfortable for sustained over-the-shoulder carry",
+    "The classic calf shows scratches in the first month; if you want pristine, get the grained version",
+    "Authentication on resale is mandatory — fakes are now sophisticated enough to fool casual buyers"
+  ],
+  "alternatives": [
+    {
+      "if_you_lean": "want luxury for less",
+      "name": "Polène Numéro Un Nano",
+      "price_usd": 390,
+      "url": "",
+      "reasoning": "French quiet-luxury brand with comparable construction at one-eighth the price. Won't hold value the same way, but the day-to-day experience is 80% the same."
+    },
+    {
+      "if_you_lean": "smaller / more delicate",
+      "name": "Loewe Puzzle Mini",
+      "price_usd": 2550,
+      "url": "",
+      "reasoning": "Same bag, smaller scale. Better proportion under 5'4\". $400 cheaper. The only meaningful trade-off is fewer items fit."
+    },
+    {
+      "if_you_lean": "investment but different shape",
+      "name": "The Row Margaux 15",
+      "price_usd": 5550,
+      "url": "",
+      "reasoning": "Different category — soft, slouchy, no hardware. If you want a forever bag and the Puzzle's geometry feels too studied, this is the other end of the spectrum and likely your match."
+    }
+  ],
+  "tags": ["bag", "luxury", "leather", "loewe", "investment"],
+  "last_updated": "2026-05-15"
+}

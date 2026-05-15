@@ -1,0 +1,74 @@
+{
+  "brand": "Dôen",
+  "brand_slug": "doen",
+  "item": "The Ines Dress",
+  "item_slug": "the-ines-dress",
+  "price_usd": 348,
+  "category": "dress",
+  "image_url": "",
+  "affiliate_url": "",
+  "one_line_summary": "A floor-skimming, smocked-bodice cotton dress that reads romantic, slightly nostalgic, and warm-weather coded.",
+  "energy": "soft, sun-faded romance — feels like a Provence morning, not a city Tuesday",
+  "pull_quote": "If your closet runs warm, textured, and a little nostalgic, this earns its $348. If you live in tailoring or dark neutrals, it will hang unworn.",
+  "verdicts": [
+    {
+      "archetype": "soft / romantic / warm-toned",
+      "label": "easy / textured / honey",
+      "verdict": "BUY",
+      "reasoning": "This is exactly your dress. The smocking flatters bodies that already lean soft, the muted floral palette plays nice with the warm undertones in your skin, and the volume in the skirt rewards barefoot summer movement. You'll wear it 30+ times."
+    },
+    {
+      "archetype": "structured / minimal / cool-toned",
+      "label": "clean / sharp / chrome",
+      "verdict": "PASS",
+      "reasoning": "The prairie reference will fight everything else in your closet. You'll put it on, feel costume-y, and donate it by next spring. Dôen makes one or two pieces every season that work for minimalists — this isn't one of them."
+    },
+    {
+      "archetype": "bold / maximal / saturated",
+      "label": "loud / layered / electric",
+      "verdict": "MAYBE",
+      "reasoning": "The dress itself is too gentle for your wattage, but if you treat it as a base layer — heavy boots, oversized denim jacket, a clashing print scarf — it can carry your stack. You're buying it as a building block, not a hero."
+    },
+    {
+      "archetype": "classic / quiet / neutral",
+      "label": "polished / restrained / camel",
+      "verdict": "MAYBE",
+      "reasoning": "The cut and craftsmanship are aligned with your standards, but the floral print is louder than your usual register. If the brand offers it in a solid colorway, jump on that instead of the print."
+    }
+  ],
+  "why_people_love_it": [
+    "The smocked bodice gives shape without being constricting — rare in this length",
+    "The cotton is substantial, not sheer, so it survives more than one summer",
+    "The print sits in the small-scale-ditsy zone, which photographs well across body types"
+  ],
+  "where_it_falls_flat": [
+    "The neckline can swallow shorter torsos — try before you commit if you're under 5'4\"",
+    "The price-to-fabric ratio is high; you're paying for the brand reference and the cut, not the materials",
+    "Returns to Dôen are slow and sometimes contested — order your usual size, not your aspirational size"
+  ],
+  "alternatives": [
+    {
+      "if_you_lean": "more easy and want to spend less",
+      "name": "Reformation Bea Dress",
+      "price_usd": 248,
+      "url": "",
+      "reasoning": "Same silhouette family, similar cotton blend, $100 cheaper, and Reformation's returns are painless."
+    },
+    {
+      "if_you_lean": "warmer / more textured",
+      "name": "Christy Dawn The Dawn Dress",
+      "price_usd": 320,
+      "url": "",
+      "reasoning": "Heavier cotton, more saturated earth tones, deadstock fabric so each one reads slightly different. The richer hand-feel justifies the price."
+    },
+    {
+      "if_you_lean": "more polished / less prairie",
+      "name": "Posse Cassia Dress",
+      "price_usd": 290,
+      "url": "",
+      "reasoning": "Same length and feminine softness without the cottagecore reference. Reads more 'European linen holiday' than 'prairie picnic.'"
+    }
+  ],
+  "tags": ["dress", "summer", "romantic", "cotton", "floral"],
+  "last_updated": "2026-05-15"
+}

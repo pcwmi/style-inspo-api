@@ -1,0 +1,74 @@
+{
+  "brand": "AGOLDE",
+  "brand_slug": "agolde",
+  "item": "90s Pinch Waist High Rise Jean",
+  "item_slug": "90s-pinch-waist-jean",
+  "price_usd": 198,
+  "category": "denim",
+  "image_url": "",
+  "affiliate_url": "",
+  "one_line_summary": "A high-rise, straight-leg, 100% cotton jean with a slightly cinched waistband that creates the illusion of an inside-out pleat.",
+  "energy": "off-duty downtown — the jean a stylist would wear, not the jean a stylist would put you in",
+  "pull_quote": "Buy it if you want one pair of jeans you'll reach for on bad-skin days. Pass if your closet runs polished or you live in stretch denim.",
+  "verdicts": [
+    {
+      "archetype": "easy / relaxed / lived-in",
+      "label": "soft / textured / earth",
+      "verdict": "BUY",
+      "reasoning": "These are the closest thing to a uniform piece in current denim. The 100% cotton ages into your body, the rise is forgiving on a long torso, and the cut works with both flats and a chunky boot. Buy them in two washes."
+    },
+    {
+      "archetype": "polished / structured / cool-toned",
+      "label": "clean / sharp / chrome",
+      "verdict": "PASS",
+      "reasoning": "The slouch and the visible hardware will fight your aesthetic. You want a Toteme Twisted Seam or a Khaite Danielle, not these. The 90s pinch will read as casual when you want intentional."
+    },
+    {
+      "archetype": "petite / small-frame",
+      "label": "delicate / small-scale",
+      "verdict": "MAYBE",
+      "reasoning": "The leg opening can swallow a smaller frame. Try the Criss Cross from AGOLDE first — same family, narrower silhouette. If you commit to the 90s, get them hemmed before you wear them once."
+    },
+    {
+      "archetype": "tall / long-legged",
+      "label": "long lines / stretched proportions",
+      "verdict": "BUY",
+      "reasoning": "These are made for you. The rise actually hits where it's designed to, the inseam is long enough, and the volume in the leg balances long limbs. Don't bother trying anything else in this category until you've worn these."
+    }
+  ],
+  "why_people_love_it": [
+    "100% cotton — no spandex, so they get better with every wash",
+    "The pinched waistband sits flat against the body, eliminating the gap most high-rise jeans create",
+    "Available in 8+ washes, including a deeply satisfying near-black"
+  ],
+  "where_it_falls_flat": [
+    "Cotton means initial stretch, then a return to true size — size down ONE if you want them to stay fitted",
+    "The hem is too long on most heights; budget for tailoring",
+    "The wash variation between batches is real — order from a retailer with free returns"
+  ],
+  "alternatives": [
+    {
+      "if_you_lean": "smaller frame",
+      "name": "AGOLDE Criss Cross Jean",
+      "price_usd": 198,
+      "url": "",
+      "reasoning": "Same brand, narrower leg, twisted waistband detail. Better proportion balance under 5'5\"."
+    },
+    {
+      "if_you_lean": "more polished / sharper",
+      "name": "Toteme Twisted Seam Denim",
+      "price_usd": 350,
+      "url": "",
+      "reasoning": "Triple the price, but the rigid Japanese denim and the twisted side seam create a finished, intentional look the 90s pinch never will."
+    },
+    {
+      "if_you_lean": "want the look for less",
+      "name": "Madewell Perfect Vintage Wide Leg",
+      "price_usd": 138,
+      "url": "",
+      "reasoning": "Not as crisp, but 70% of the silhouette at 65% of the price. Good test pair before committing $200 to AGOLDE."
+    }
+  ],
+  "tags": ["denim", "jeans", "high-rise", "cotton", "everyday"],
+  "last_updated": "2026-05-15"
+}
