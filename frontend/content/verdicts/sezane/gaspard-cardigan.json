@@ -1,0 +1,74 @@
+{
+  "brand": "Sézane",
+  "brand_slug": "sezane",
+  "item": "Gaspard Cardigan",
+  "item_slug": "gaspard-cardigan",
+  "price_usd": 160,
+  "category": "knitwear",
+  "image_url": "",
+  "affiliate_url": "",
+  "one_line_summary": "A V-neck, ribbed-knit, button-front cardigan in a slim-but-not-fitted true-to-size cut — Sézane's most-restocked piece and a French-girl Pinterest staple.",
+  "energy": "Parisian uniform — the cardigan of someone who has a corner café and knows the staff by name",
+  "pull_quote": "Buy if you're under 5'5\" or you want a fitted cardigan that doesn't read as boxy or oversized. Pass if your default is generous proportions — the Gaspard is not the Frankie Bea; it's its cleaner-cut sister.",
+  "verdicts": [
+    {
+      "archetype": "petite / smaller-frame / fitted-preferred",
+      "label": "tailored / proportioned / scaled",
+      "verdict": "BUY",
+      "reasoning": "This is the cardigan for you. Where the Frankie Shop Bea swallows shorter frames, the Gaspard sits where it should. The wool blend has weight, the V-neck is the right depth, and the button placement falls naturally. Get one in cream or navy and you'll wear it every cool morning of the year."
+    },
+    {
+      "archetype": "oversized / generous-proportions / undone",
+      "label": "loose / drapey / lived-in",
+      "verdict": "PASS",
+      "reasoning": "The Gaspard is true to size, which for someone who lives in oversized will feel constraining. Even sizing up doesn't replicate the drama of an actually-oversized cut. The Frankie Shop Bea or Khaite Scarlet are designed for your aesthetic; this one isn't."
+    },
+    {
+      "archetype": "classic / French-aesthetic / restrained",
+      "label": "considered / quiet / capsule-builder",
+      "verdict": "BUY",
+      "reasoning": "Sézane is built for your wardrobe. The colorways (sage, ecru, brick, navy) are the colorways your closet already uses. The construction is appropriate for the price. The fit is engineered for European proportions. This is a default cardigan."
+    },
+    {
+      "archetype": "minimal budget",
+      "label": "smart-shopper",
+      "verdict": "MAYBE",
+      "reasoning": "$160 isn't expensive in absolute terms, but for a cardigan that does one specific thing, it's not the highest value either. H&M's Fine-Knit Cardigan and Cos's Wool-Mix V-Neck are both in the $30-80 zone and get you most of the way there. Save the difference for a Sézane piece in a category where they really shine — jackets, button-downs."
+    }
+  ],
+  "why_people_love_it": [
+    "The fit is intentionally fitted — finally a cardigan that doesn't drown you, designed for actual French sizing",
+    "Restocks are reliable and frequent; if your size sells out, it'll be back within weeks",
+    "The wool blend has memory — the elbows don't bag, the cuffs don't stretch, the front doesn't gape"
+  ],
+  "where_it_falls_flat": [
+    "Sizing runs European / smaller than US equivalent. Size UP one full size, especially through the bust",
+    "Pills more than expected for the price — it's wool blend, not pure wool, and the synthetic fibers shed",
+    "Returns to Sézane US are easy; returns to Sézane outside US can take 4-6 weeks to process"
+  ],
+  "alternatives": [
+    {
+      "if_you_lean": "want oversized instead",
+      "name": "The Frankie Shop Bea Cardigan",
+      "price_usd": 185,
+      "url": "/verdict/frankie-shop/bea-cardigan",
+      "reasoning": "Same era, same Pinterest moodboard, completely different fit. Oversized, dropped shoulder, generous body. Better for the slouchy aesthetic."
+    },
+    {
+      "if_you_lean": "want premium upgrade",
+      "name": "Brora Cashmere Cardigan",
+      "price_usd": 395,
+      "url": "",
+      "reasoning": "Scottish cashmere, similar fitted cut, will outlast the Gaspard by years. Worth it if cardigans are a daily category for you."
+    },
+    {
+      "if_you_lean": "want the look for less",
+      "name": "Quince Mongolian Cashmere V-Neck Cardigan",
+      "price_usd": 90,
+      "url": "",
+      "reasoning": "Actual cashmere at almost half the price. Cut runs slightly looser than the Gaspard, but the fiber upgrade is real."
+    }
+  ],
+  "tags": ["cardigan", "knitwear", "sezane", "french", "petite-friendly"],
+  "last_updated": "2026-05-15"
+}

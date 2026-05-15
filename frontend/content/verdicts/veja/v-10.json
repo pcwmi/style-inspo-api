@@ -1,0 +1,74 @@
+{
+  "brand": "Veja",
+  "brand_slug": "veja",
+  "item": "V-10 Sneaker",
+  "item_slug": "v-10",
+  "price_usd": 150,
+  "category": "sneakers",
+  "image_url": "",
+  "affiliate_url": "",
+  "one_line_summary": "A clean-lined, leather-and-rubber low-top sneaker made in Brazil with ethically sourced materials and a large embroidered V on the side.",
+  "energy": "considered casual — the sneaker of someone who cares but doesn't want you to notice they care",
+  "pull_quote": "Buy if you want a white sneaker with some character but minimal sportiness, and the sustainability story matters to you. Pass if you can't get past the big V — it's louder in person than in photos.",
+  "verdicts": [
+    {
+      "archetype": "considered / quietly-ethical / minimal",
+      "label": "clean / restrained / thoughtful",
+      "verdict": "BUY",
+      "reasoning": "The V-10 is the sweet spot between a Common Projects (too precious) and an Adidas Stan Smith (too generic). The wild rubber sole and sustainable materials are real — Veja's supply chain is one of the most transparent in footwear. The leather ages well, the silhouette holds up across seasons, and you'll wear them more than you'd guess."
+    },
+    {
+      "archetype": "polished / minimal / logo-averse",
+      "label": "clean / structured / restrained",
+      "verdict": "PASS",
+      "reasoning": "The V is large. It's not subtle. If your aesthetic is 'no visible branding,' look at the Veja Esplar (smaller V) or the Common Projects Achilles instead. The V-10 was designed to be recognizable; that's a feature for some, a bug for you."
+    },
+    {
+      "archetype": "easy / casual / off-duty",
+      "label": "soft / lived-in / undone",
+      "verdict": "MAYBE",
+      "reasoning": "The V-10 reads slightly fashion-coded — they look 'styled' rather than thrown-on. If your default is actually low-key, an Adidas Samba or a New Balance 530 will sit more naturally in your closet. The V-10 wants to be seen a little."
+    },
+    {
+      "archetype": "active / serious walker",
+      "label": "performance / durability-first",
+      "verdict": "MAYBE",
+      "reasoning": "The wild rubber sole grips well and the leather is hardier than Common Projects, but the cushioning is minimal — these are fashion sneakers with practical sole, not walking shoes. Fine for 2-3 miles a day; less fine for 6+ or city commuting in wet weather."
+    }
+  ],
+  "why_people_love_it": [
+    "Genuinely transparent supply chain — organic cotton, agroforestry rubber, traceable leather. Most 'sustainable' sneakers don't hold up to scrutiny; Veja does",
+    "The wild rubber sole develops light yellowing over years rather than crumbling — they age into character",
+    "Available in non-leather (CWL canvas) versions for $130; same silhouette, no animal products"
+  ],
+  "where_it_falls_flat": [
+    "Run a half-size large — the toe box is narrow. Order true to size only if you have a slim foot",
+    "The white leather creases visibly across the toe within 2 weeks; not damage, but you'll see it",
+    "The big V picks up scuffs more visibly than expected; in cream or white, expect noticeable wear by month 6"
+  ],
+  "alternatives": [
+    {
+      "if_you_lean": "more polished / less logo",
+      "name": "Common Projects Achilles Low",
+      "price_usd": 410,
+      "url": "/verdict/common-projects/achilles-low",
+      "reasoning": "No logo, premium Italian leather, much more expensive. The minimalist version of the same idea."
+    },
+    {
+      "if_you_lean": "want vegan version of this",
+      "name": "Veja Campo CWL",
+      "price_usd": 130,
+      "url": "",
+      "reasoning": "Same brand, corn-waste-leather upper, slightly different silhouette. $20 cheaper, no animal products, identical sustainability story."
+    },
+    {
+      "if_you_lean": "more casual / lower fashion",
+      "name": "Adidas Samba OG",
+      "price_usd": 100,
+      "url": "/verdict/adidas/samba-og",
+      "reasoning": "Different aesthetic register entirely — sits more naturally with denim and tees. $50 cheaper. Better if 'I want a casual sneaker' is the actual brief."
+    }
+  ],
+  "tags": ["sneakers", "sustainable", "leather", "veja", "white-sneaker"],
+  "last_updated": "2026-05-15"
+}

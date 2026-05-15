@@ -1,0 +1,74 @@
+{
+  "brand": "Polène",
+  "brand_slug": "polene",
+  "item": "Numéro Un Nano",
+  "item_slug": "numero-un-nano",
+  "price_usd": 390,
+  "category": "bag",
+  "image_url": "",
+  "affiliate_url": "",
+  "one_line_summary": "A sculptural, top-handle, French-designed leather bag with a distinctive curved silhouette — the most-photographed accessible-luxury bag of the late 2010s and 2020s.",
+  "energy": "Paris-with-a-budget — the bag of someone who shops thoughtfully and would rather have one good thing than three okay ones",
+  "pull_quote": "Buy if you want a beautifully made leather bag in the $400 zone that doesn't look like everyone else's. Pass only if you specifically need a large-capacity work bag — the Nano is small.",
+  "verdicts": [
+    {
+      "archetype": "considered / mid-budget / quality-first",
+      "label": "thoughtful / restrained / capsule-builder",
+      "verdict": "BUY",
+      "reasoning": "Polène hit a real sweet spot at this price point. The leather is genuinely smooth-grain Spanish or Italian, the construction is hand-finished, and the silhouette is unmistakable. For ~$400 you're getting a bag that looks $1,500 and earns the comparison. Get the textured (taupe or noir) version for daily use; smooth black for evenings."
+    },
+    {
+      "archetype": "high-budget / wants luxury status",
+      "label": "investment / brand-name / forever",
+      "verdict": "PASS",
+      "reasoning": "If brand prestige is part of the buying decision, Polène doesn't deliver it. The bag is gorgeous but the brand recognition is enthusiast-tier — most people won't know what it is. If 'people clock the bag' matters, you want a Loewe Puzzle, a Celine Triomphe, or a Bottega Cassette."
+    },
+    {
+      "archetype": "needs work-bag capacity",
+      "label": "practical / large / utility",
+      "verdict": "PASS",
+      "reasoning": "The Nano holds a phone, a small wallet, keys, and lipstick. That's it. If you need a laptop, a notebook, or a water bottle, you want the Numéro Un Mini (one size up, ~$450) or the Tonca tote (~$500). The Nano is a small bag by design."
+    },
+    {
+      "archetype": "trend-aware / wants the of-the-moment piece",
+      "label": "current / referential / now",
+      "verdict": "MAYBE",
+      "reasoning": "Polène hit critical Instagram mass around 2019-2021. The Numéro Un is still in production and still beautiful, but it's not 'discovery-tier' anymore — many people will already recognize it. If 'I found this before everyone else' matters to you, look at Manu Atelier or Studio Amelia instead."
+    }
+  ],
+  "why_people_love_it": [
+    "The sculpted curve and braided detail are genuinely distinctive — most accessible-luxury bags imitate brands; Polène created their own visual language",
+    "Leather quality is materially better than competitors in the $300-500 range — Mansur Gavriel, Cuyana, and Strathberry don't quite match",
+    "Available in textured, smooth, and embossed leathers — the textured versions hide scratches and are the smarter daily-use pick"
+  ],
+  "where_it_falls_flat": [
+    "Shipping from France can be slow if Polène's US warehouse is out of stock for your color — sometimes 2-3 weeks",
+    "Top handle is short and stiff — these are hand-carry only. No comfortable over-shoulder option",
+    "Smooth leather scratches easily in the first weeks; if pristine matters, go textured or accept patina"
+  ],
+  "alternatives": [
+    {
+      "if_you_lean": "want more capacity",
+      "name": "Polène Numéro Un Tonca",
+      "price_usd": 440,
+      "url": "",
+      "reasoning": "Same brand, similar silhouette, larger size. Holds a small laptop, notebook, etc. Better choice if 'work bag' is the actual use case."
+    },
+    {
+      "if_you_lean": "want luxury brand recognition",
+      "name": "Loewe Puzzle Bag (Small)",
+      "price_usd": 2950,
+      "url": "/verdict/loewe/puzzle-bag-small",
+      "reasoning": "7x the price, but actually-recognized luxury brand and the construction is materially superior. If brand matters, this is the next tier up."
+    },
+    {
+      "if_you_lean": "want the look for less",
+      "name": "Mansur Gavriel Mini Lady Bag",
+      "price_usd": 245,
+      "url": "",
+      "reasoning": "Italian-made leather at $145 less. Cleaner-lined, no sculptural detail, but similar daily-use philosophy and quality tier."
+    }
+  ],
+  "tags": ["bag", "leather", "polene", "mid-luxury", "french"],
+  "last_updated": "2026-05-15"
+}
