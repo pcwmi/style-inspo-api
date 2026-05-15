@@ -193,25 +193,27 @@ export default async function VerdictPage({ params }: Params) {
 
         <div className="bg-ink text-white rounded-xl p-6 md:p-8 text-center">
           <h3 className="text-xl md:text-2xl font-semibold mb-2">
-            Want a verdict on something you're considering?
+            Want a personal verdict on something you're considering?
           </h3>
           <p className="text-white/80 text-sm md:text-base mb-5 leading-relaxed">
-            Text a screenshot or link. Get a personalized buy / pass verdict in under a minute.
+            Send the item plus a few signals about your style. Personal buy / pass within 24
+            hours. $10. Refund if we don't deliver.
           </p>
-          {smsHref ? (
-            <a
-              href={smsHref}
-              className="inline-block bg-white text-ink px-6 py-3 rounded-lg font-medium hover:opacity-90"
-            >
-              Text us &rarr;
-            </a>
-          ) : (
-            <Link
-              href="/offer"
-              className="inline-block bg-white text-ink px-6 py-3 rounded-lg font-medium hover:opacity-90"
-            >
-              Get a personal verdict &rarr;
-            </Link>
+          <Link
+            href="/offer"
+            className="inline-block bg-white text-ink px-6 py-3 rounded-lg font-medium hover:opacity-90"
+          >
+            Get my verdict — $10 &rarr;
+          </Link>
+          {smsHref && (
+            <div className="mt-4">
+              <a
+                href={smsHref}
+                className="text-white/70 text-sm underline hover:text-white"
+              >
+                Or text us a quick free question
+              </a>
+            </div>
           )}
         </div>
 
