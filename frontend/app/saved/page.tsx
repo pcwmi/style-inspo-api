@@ -7,7 +7,9 @@ import { VisualizedOutfitCard } from '@/components/VisualizedOutfitCard'
 import { ModelDescriptorModal } from '@/components/ModelDescriptorModal'
 import { WornTrackingModal } from '@/components/WornTrackingModal'
 import { PhotoUploadModal } from '@/components/PhotoUploadModal'
+import { EnergyTipModal } from '@/components/EnergyTipModal'
 import { api } from '@/lib/api'
+import { canShowTipPrompt } from '@/lib/tip'
 
 type Tab = 'not_worn' | 'worn'
 
@@ -29,6 +31,7 @@ function SavedPageContent() {
   const [pendingPhotoOutfitId, setPendingPhotoOutfitId] = useState<string | null>(null)
   const [hasScrolledToOutfit, setHasScrolledToOutfit] = useState(false)
   const [undoToast, setUndoToast] = useState<{ outfitId: string; outfit: any; timer: ReturnType<typeof setTimeout> } | null>(null)
+  const [showTipModal, setShowTipModal] = useState(false)
   // Ref-backed map of pending deletes to avoid stale closure issues with rapid clicks
   const pendingDeletesRef = useRef<Map<string, { outfit: any; timer: ReturnType<typeof setTimeout> }>>(new Map())
 
@@ -143,6 +146,10 @@ function SavedPageContent() {
     setPendingWornOutfitId(null)
     // Switch to worn tab to show the outfit there
     setActiveTab('worn')
+    // Ask for a tip after the worn moment lands — this is the peak "energy through clothing" beat.
+    if (canShowTipPrompt()) {
+      setTimeout(() => setShowTipModal(true), 700)
+    }
   }
 
   // Handle upload photo button click
@@ -374,6 +381,13 @@ function SavedPageContent() {
           onComplete={(photoUrl) => handlePhotoComplete(pendingPhotoOutfitId, photoUrl)}
         />
       )}
+
+      {/* Energy Tip Modal — surfaces after a worn outfit is logged */}
+      <EnergyTipModal
+        isOpen={showTipModal}
+        reason="outfit_worn"
+        onClose={() => setShowTipModal(false)}
+      />
 
       {/* Undo Toast */}
       {undoToast && (

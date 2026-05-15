@@ -10,6 +10,8 @@ import { WardrobePreviewCarousel } from '@/components/WardrobePreviewCarousel'
 import { useAuth } from '@/lib/useAuth'
 import { buildUserUrl } from '@/lib/auth'
 import { ShowcaseLanding } from '@/components/ShowcaseLanding'
+import { SupportLink } from '@/components/EnergyTipModal'
+import { tipEnabled } from '@/lib/tip'
 
 export function DashboardClient() {
   const searchParams = useSearchParams()
@@ -185,6 +187,12 @@ export function DashboardClient() {
             Disliked ({dislikedLoading ? '...' : dislikedCount})
           </Link>
         </div>
+
+        {tipEnabled() && (
+          <div className="pt-3 mt-3 flex justify-center">
+            <SupportLink reason="dashboard_footer" />
+          </div>
+        )}
       </div>
     </div>
   )
