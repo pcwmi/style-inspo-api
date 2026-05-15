@@ -1,0 +1,51 @@
+{
+  "slug": "jeans",
+  "title": "The Best Jeans of 2026 — A Verdict for Every Style",
+  "headline": "We've reviewed every cult-status jean still in production. Here are the ones worth your money — by who you are, not by who reviewed them.",
+  "lede": "Jeans are the single most-considered category in fashion search. Three hundred million people Google 'best jeans' every year, and almost every list they find is either paid placement or written by someone who has never worn the pair they're recommending. We took the three jeans we have published full verdicts on — across the silhouettes that actually matter in 2026 — and matched each one to the kind of buyer it's right for.",
+  "category": "denim",
+  "entries": [
+    {
+      "verdict_brand": "agolde",
+      "verdict_slug": "90s-pinch-waist-jean",
+      "best_for": "If you want one slouchy, true-vintage cut",
+      "summary": "100% cotton, high-rise, straight-leg with a slightly cinched waist. Ages into your body. Worth the $198 if you want a uniform jean for the next five years and your aesthetic is lived-in."
+    },
+    {
+      "verdict_brand": "levis",
+      "verdict_slug": "501-original",
+      "best_for": "If you want the canonical American jean",
+      "summary": "The straight-leg, button-fly 501 has been in production since 1873. 100% cotton, mid rise, no stretch. The most-copied silhouette in denim — and few brands execute it as well at this $98 price."
+    },
+    {
+      "verdict_brand": "madewell",
+      "verdict_slug": "perfect-vintage-jean",
+      "best_for": "If you want one good, low-effort pair without thinking about it",
+      "summary": "A high-rise, slightly tapered, stretch-blend jean that looks correct on most bodies. $138. The right step up from fast-fashion denim if you've never paid more than $50 for jeans before."
+    }
+  ],
+  "how_to_pick": [
+    {
+      "if_you_lean": "polished / structured / cool-toned",
+      "pick": "Levi's 501 in a dark wash — straight, no slouch, reads intentional under tailoring"
+    },
+    {
+      "if_you_lean": "easy / lived-in / 90s-aesthetic",
+      "pick": "AGOLDE 90s Pinch Waist — the slouch is the point, 100% cotton ages with you"
+    },
+    {
+      "if_you_lean": "first real jeans / want low effort",
+      "pick": "Madewell Perfect Vintage — flatters most bodies, stretch makes them low-stakes"
+    },
+    {
+      "if_you_lean": "curvy / hip-to-waist ratio",
+      "pick": "Madewell Perfect Vintage (Curvy) — stretch and cut accommodate curves the 501 ignores"
+    }
+  ],
+  "honest_caveats": [
+    "We don't include every viral jean in this list — only the ones we've published full verdicts on. Verdicts coming for Khaite, Mother, A.P.C., and Toteme.",
+    "Affiliate links in this article earn us a small commission. The picks would be the same without them — see our verdict pages for the full reasoning, including what each jean does badly.",
+    "Pricing accurate as of last update. Sale cycles for these brands are reliable — Levi's and Madewell go on sale every 6-8 weeks; AGOLDE rarely discounts."
+  ],
+  "last_updated": "2026-05-15"
+}

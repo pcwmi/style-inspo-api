@@ -1,0 +1,51 @@
+{
+  "slug": "sneakers",
+  "title": "The Best Sneakers of 2026 — A Verdict for Every Style",
+  "headline": "Three sneakers, three completely different shoppers. Find yours.",
+  "lede": "The right sneaker depends entirely on what the rest of your closet looks like. A Common Projects works with tailoring and falls apart in a city commute; a Samba is downtown effortless but reads costume next to a suit; a Veja splits the difference and announces itself with a big embroidered V. We've published full verdicts on three of the most-considered sneakers in 2026 — here's which one is for which buyer.",
+  "category": "sneakers",
+  "entries": [
+    {
+      "verdict_brand": "adidas",
+      "verdict_slug": "samba-og",
+      "best_for": "If your style is jeans-and-tee dominant and you want one shoe for the next three years",
+      "summary": "$100, low-profile, gum sole, scuffs into character. The democratic answer — works with denim, with linen, with sweatpants. Reads off-duty, never polished."
+    },
+    {
+      "verdict_brand": "common-projects",
+      "verdict_slug": "achilles-low",
+      "best_for": "If you want one minimalist white sneaker that works with tailoring for the next five years",
+      "summary": "$410, full-grain Italian leather, no logo, gold serial number on the heel. Investment piece. Ages into a patina. Wrong for casual closets and wrong for daily heavy walking — right for everything in between."
+    },
+    {
+      "verdict_brand": "veja",
+      "verdict_slug": "v-10",
+      "best_for": "If you want a clean white sneaker with some character — and the sustainability story matters",
+      "summary": "$150, leather + wild rubber, ethically sourced supply chain that holds up to scrutiny. Sits between Samba and Common Projects in aesthetic and price. The large embroidered V is louder in person than in photos."
+    }
+  ],
+  "how_to_pick": [
+    {
+      "if_you_lean": "casual / lived-in / off-duty",
+      "pick": "Adidas Samba OG — cheapest, easiest, most versatile across casual outfits"
+    },
+    {
+      "if_you_lean": "polished / minimal / quality-first",
+      "pick": "Common Projects Achilles Low — the canonical minimalist white sneaker, pays itself back in years"
+    },
+    {
+      "if_you_lean": "considered / ethics-aware / mid-budget",
+      "pick": "Veja V-10 — the only one with a transparent supply chain; $150 is the right sweet spot"
+    },
+    {
+      "if_you_lean": "wide foot / needs comfort",
+      "pick": "None of these — get a New Balance 530 or a Hoka Bondi. Style is downstream of being able to walk."
+    }
+  ],
+  "honest_caveats": [
+    "Sambas and Common Projects both have wide-foot issues — order from somewhere with free returns or try in store first.",
+    "All three of these have peaked at different times. The Samba's cultural moment was 2023-25; Common Projects has been steady-state for a decade; the V-10 keeps slow-growing.",
+    "Verdicts coming for the New Balance 530, the Onitsuka Tiger Mexico 66, and the Adidas Gazelle."
+  ],
+  "last_updated": "2026-05-15"
+}
