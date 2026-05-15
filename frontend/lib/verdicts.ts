@@ -69,3 +69,26 @@ export function getAllVerdicts(): Verdict[] {
     .filter((v): v is Verdict => v !== null)
     .sort((a, b) => b.last_updated.localeCompare(a.last_updated))
 }
+
+export function getRelatedVerdicts(current: Verdict, max = 3): Verdict[] {
+  const all = getAllVerdicts().filter(
+    v => !(v.brand_slug === current.brand_slug && v.item_slug === current.item_slug)
+  )
+
+  const score = (v: Verdict) => {
+    let s = 0
+    if (v.category === current.category) s += 5
+    const tagOverlap = v.tags.filter(t => current.tags.includes(t)).length
+    s += tagOverlap * 2
+    const priceDelta = Math.abs(v.price_usd - current.price_usd)
+    if (priceDelta < 50) s += 2
+    else if (priceDelta < 150) s += 1
+    return s
+  }
+
+  return all
+    .map(v => ({ v, s: score(v) }))
+    .sort((a, b) => b.s - a.s)
+    .slice(0, max)
+    .map(x => x.v)
+}

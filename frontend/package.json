@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "new-verdict": "node scripts/new-verdict.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.11",

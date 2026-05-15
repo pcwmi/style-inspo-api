@@ -11,6 +11,14 @@ export const metadata: Metadata = {
   alternates: { canonical: `${SITE_URL}/verdict` },
 }
 
+function pinterestUrl(v: { brand: string; item: string; brand_slug: string; item_slug: string; pull_quote: string }) {
+  const url = `${SITE_URL}/verdict/${v.brand_slug}/${v.item_slug}`
+  const media = `${url}/opengraph-image`
+  const description = `Should you buy the ${v.brand} ${v.item}? ${v.pull_quote}`
+  const params = new URLSearchParams({ url, media, description })
+  return `https://www.pinterest.com/pin-builder/?${params.toString()}`
+}
+
 export default function VerdictIndex() {
   const verdicts = getAllVerdicts()
 
@@ -35,21 +43,34 @@ export default function VerdictIndex() {
         ) : (
           <div className="space-y-3">
             {verdicts.map(v => (
-              <Link
+              <div
                 key={`${v.brand_slug}-${v.item_slug}`}
-                href={`/verdict/${v.brand_slug}/${v.item_slug}`}
-                className="block bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-5 md:p-6 hover:border-terracotta transition"
+                className="relative bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-5 md:p-6 hover:border-terracotta transition"
               >
-                <p className="text-muted text-xs uppercase tracking-wide mb-1">
-                  {v.brand} · {v.category} · ${v.price_usd}
-                </p>
-                <p className="font-semibold text-lg md:text-xl mb-1">
-                  Should you buy the {v.item}?
-                </p>
-                <p className="text-ink/70 text-sm md:text-base leading-relaxed">
-                  {v.one_line_summary}
-                </p>
-              </Link>
+                <Link
+                  href={`/verdict/${v.brand_slug}/${v.item_slug}`}
+                  className="block"
+                >
+                  <p className="text-muted text-xs uppercase tracking-wide mb-1">
+                    {v.brand} · {v.category} · ${v.price_usd}
+                  </p>
+                  <p className="font-semibold text-lg md:text-xl mb-1 pr-20">
+                    Should you buy the {v.item}?
+                  </p>
+                  <p className="text-ink/70 text-sm md:text-base leading-relaxed">
+                    {v.one_line_summary}
+                  </p>
+                </Link>
+                <a
+                  href={pinterestUrl(v)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute top-4 right-4 text-xs text-muted hover:text-terracotta border border-[rgba(26,22,20,0.12)] hover:border-terracotta rounded px-2 py-1 transition"
+                  title="Open Pinterest pin builder for this verdict"
+                >
+                  Pin
+                </a>
+              </div>
             ))}
           </div>
         )}

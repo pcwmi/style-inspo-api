@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { getVerdict, getAllVerdictPaths } from '@/lib/verdicts'
+import { getVerdict, getAllVerdictPaths, getRelatedVerdicts } from '@/lib/verdicts'
 
 interface Params {
   params: Promise<{ brand: string; slug: string }>
@@ -216,6 +216,33 @@ export default async function VerdictPage({ params }: Params) {
             </div>
           )}
         </div>
+
+        {(() => {
+          const related = getRelatedVerdicts(v, 3)
+          if (related.length === 0) return null
+          return (
+            <div className="mt-12 pt-8 border-t border-[rgba(26,22,20,0.12)]">
+              <h2 className="text-xl md:text-2xl font-semibold mb-4">More verdicts you might want</h2>
+              <div className="space-y-3">
+                {related.map(r => (
+                  <Link
+                    key={`${r.brand_slug}-${r.item_slug}`}
+                    href={`/verdict/${r.brand_slug}/${r.item_slug}`}
+                    className="block bg-white border border-[rgba(26,22,20,0.12)] rounded-lg p-4 md:p-5 hover:border-terracotta transition"
+                  >
+                    <p className="text-muted text-xs uppercase tracking-wide mb-1">
+                      {r.brand} · {r.category} · ${r.price_usd}
+                    </p>
+                    <p className="font-medium text-base md:text-lg mb-1">
+                      Should you buy the {r.item}?
+                    </p>
+                    <p className="text-ink/70 text-sm leading-relaxed">{r.one_line_summary}</p>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )
+        })()}
 
         <p className="text-muted text-xs mt-10 leading-relaxed">
           Last updated {v.last_updated}. Some links are affiliate links — Style Inspo may earn a
