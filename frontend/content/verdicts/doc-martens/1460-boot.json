@@ -1,0 +1,74 @@
+{
+  "brand": "Dr. Martens",
+  "brand_slug": "doc-martens",
+  "item": "1460 Boot (Smooth Leather)",
+  "item_slug": "1460-boot",
+  "price_usd": 170,
+  "category": "boots",
+  "image_url": "",
+  "affiliate_url": "",
+  "one_line_summary": "The eight-eyelet, yellow-stitched, air-cushioned boot that has been in production since 1960 and somehow still looks the same in every era.",
+  "energy": "subcultural inheritance — a boot that signals you grew up listening to something specific, even if you didn't",
+  "pull_quote": "Buy if you wear boots all winter and want one workhorse pair. Pass if your aesthetic is delicate or your feet bruise easily — the break-in is real and lasts months.",
+  "verdicts": [
+    {
+      "archetype": "easy / textured / lived-in",
+      "label": "soft / honest / worn-in",
+      "verdict": "BUY",
+      "reasoning": "These are a uniform piece for you. They work with denim, with slip dresses, with oversized blazers. The cherry red and the classic black are both correct; if forced to pick one, black gets more wear. They take 2-3 months to break in fully but then they outlast everything else."
+    },
+    {
+      "archetype": "polished / minimal / sharp",
+      "label": "clean / structured / chrome",
+      "verdict": "PASS",
+      "reasoning": "The Docs will fight your aesthetic. You want a Lemaire derby, a Margiela tabi boot, or a Frye Veronica — same protective foot real estate, more controlled silhouette. The yellow stitching reads as costume next to anything tailored."
+    },
+    {
+      "archetype": "narrow foot / sensitive feet",
+      "label": "delicate / comfort-aware",
+      "verdict": "PASS",
+      "reasoning": "The break-in period is brutal. You will get blisters on the heel and the top of your foot for the first month minimum. The leather is stiff and unforgiving. If your tolerance for foot pain is low, get the 1460 Pascal (softer leather) or skip entirely. This is a 'pay your dues' shoe."
+    },
+    {
+      "archetype": "wet-climate / daily walker",
+      "label": "practical / weather-aware",
+      "verdict": "BUY",
+      "reasoning": "The smooth leather is naturally water-resistant once treated, the air-cushioned sole grips, and the construction takes a beating. For Pacific Northwest, UK, NYC winters — these are genuinely practical, not just stylistic. Treat the leather monthly with mink oil or Saphir."
+    }
+  ],
+  "why_people_love_it": [
+    "Genuinely lasts a decade with proper care — actual cost-per-wear math beats almost everything else in the category",
+    "The silhouette has been in continuous production since 1960 and has never been 'out' for long enough to look dated",
+    "Resole-able through Dr. Martens' own service or a local cobbler — these are repairable, not disposable"
+  ],
+  "where_it_falls_flat": [
+    "Break-in period is 6-12 weeks of real discomfort. Wear them around the house for hours at a time before walking distance in them",
+    "The 'Made in England' versions ($230+) use better leather and are worth the upgrade if you can find your size — the standard Vietnam-made ones are decent but feel different",
+    "Sizing runs large; size down one full size from your US sneaker size, half a size from your boot size"
+  ],
+  "alternatives": [
+    {
+      "if_you_lean": "polished / less subcultural",
+      "name": "Frye Veronica Combat Boot",
+      "price_usd": 358,
+      "url": "",
+      "reasoning": "Similar foot protection and durability with cleaner lines and no yellow stitching. Reads more 'considered classic' than 'punk inheritance.' Twice the price but the leather and finish are noticeably nicer."
+    },
+    {
+      "if_you_lean": "softer / faster break-in",
+      "name": "Dr. Martens 1460 Pascal",
+      "price_usd": 180,
+      "url": "",
+      "reasoning": "Same silhouette, virgin nappa leather instead of standard. Breaks in in days instead of months. $10 more but worth it for sensitive feet."
+    },
+    {
+      "if_you_lean": "want the silhouette but less weight",
+      "name": "Solovair 8 Eye Derby Boot",
+      "price_usd": 240,
+      "url": "",
+      "reasoning": "Made in England by the original UK manufacturer that produced Docs before they offshored. Lighter, softer, identical silhouette. The connoisseur's choice if you know enough to care."
+    }
+  ],
+  "tags": ["boots", "winter", "doc-martens", "punk", "everyday"],
+  "last_updated": "2026-05-15"
+}

@@ -1,0 +1,74 @@
+{
+  "brand": "Birkenstock",
+  "brand_slug": "birkenstock",
+  "item": "Boston Clog (Suede)",
+  "item_slug": "boston-clog",
+  "price_usd": 165,
+  "category": "shoes",
+  "image_url": "",
+  "affiliate_url": "",
+  "one_line_summary": "A backless, suede-uppered, cork-footbed clog that ate 2023-2025 fashion and still hasn't released its grip.",
+  "energy": "the shoe of someone who looks effortless but actually has a system — German engineering pretending to be lazy",
+  "pull_quote": "Buy if you want one shoe to wear with jeans, sweatpants, and dresses for the next three years. Pass if you're putting them on for an occasion — they're a uniform, not an outfit.",
+  "verdicts": [
+    {
+      "archetype": "easy / off-duty / oversized",
+      "label": "soft / lived-in / textured",
+      "verdict": "BUY",
+      "reasoning": "These are the shoe equivalent of your favorite t-shirt — a default. They work with the wide-leg jeans, the slip dress, the sweatpants you swore you'd only wear at home. Get the Taupe or Mocha suede; the contrast cork sole adds visual warmth. You will wear them more than any other shoe you own."
+    },
+    {
+      "archetype": "polished / structured / minimal",
+      "label": "clean / tailored / sharp",
+      "verdict": "MAYBE",
+      "reasoning": "The smooth leather (not suede) version in black or stone reads more controlled and works under tailored trousers in a way the suede doesn't. If you want one Birk, that's the one. But honestly, a loafer (Margaret Howell, Aeyde, even Sam Edelman) does this job better for your aesthetic."
+    },
+    {
+      "archetype": "fashion-trend-aware",
+      "label": "current / referential / loud",
+      "verdict": "PASS",
+      "reasoning": "The Boston peaked in 2024. Wearing them now is fine but doesn't signal 'I'm ahead' anymore — it signals 'I bought into the trend.' If staying ahead matters, look at the Birkenstock x Tekla or the resurgent Suicoke Bita-MAB instead."
+    },
+    {
+      "archetype": "narrow foot / petite",
+      "label": "small-scale / delicate",
+      "verdict": "MAYBE",
+      "reasoning": "Order the Narrow width — the Regular width is genuinely wide and the buckles will sit awkwardly past the foot's edge on smaller frames. Sizing runs European, so size down one full size from your US — confirm against the official chart, not the retailer's recommendation."
+    }
+  ],
+  "why_people_love_it": [
+    "The cork footbed actually does mold to your foot over a few weeks — most people report less foot fatigue than any other shoe they own",
+    "Suede uppers age beautifully and forgive scuffs in a way leather can't — every wear makes them look better, not worse",
+    "Backless construction means slip-on / slip-off, which compounds wear frequency"
+  ],
+  "where_it_falls_flat": [
+    "Suede + rain + salt = ruined. If you live somewhere wet, get the smooth leather Boston instead, or commit to suede protector spray on day one",
+    "The clog has zero ankle structure — they slap when you walk, especially loud on hard floors. If you hate that sound, this isn't your shoe",
+    "Resole cost is ~$70 every 2-3 years if you wear them daily; budget for it"
+  ],
+  "alternatives": [
+    {
+      "if_you_lean": "more polished",
+      "name": "Birkenstock Boston Smooth Leather (Black)",
+      "price_usd": 175,
+      "url": "",
+      "reasoning": "Same shoe, different upper. The smooth black reads more intentional under tailoring. Better if you want one Birk and your wardrobe runs sharper."
+    },
+    {
+      "if_you_lean": "narrower foot / want less width",
+      "name": "Aeyde Bibi Loafer",
+      "price_usd": 360,
+      "url": "",
+      "reasoning": "Different shoe family but similar 'effortless slip-on' role. Slimmer profile, premium leather, more grown-up. Worth it if loafer-shaped feels more like you than clog-shaped."
+    },
+    {
+      "if_you_lean": "want the look for less",
+      "name": "Target Universal Thread Felicia Clog",
+      "price_usd": 35,
+      "url": "",
+      "reasoning": "Honest dupe — synthetic suede, no footbed magic, but visually 80% there. Good test pair to confirm the shape works for you before committing $165."
+    }
+  ],
+  "tags": ["clogs", "shoes", "everyday", "birkenstock", "viral"],
+  "last_updated": "2026-05-15"
+}

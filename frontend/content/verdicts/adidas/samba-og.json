@@ -1,0 +1,74 @@
+{
+  "brand": "Adidas",
+  "brand_slug": "adidas",
+  "item": "Samba OG",
+  "item_slug": "samba-og",
+  "price_usd": 100,
+  "category": "sneakers",
+  "image_url": "",
+  "affiliate_url": "",
+  "one_line_summary": "A low-profile, gum-soled, suede-toed soccer-derived sneaker that became the dominant unisex shoe of the early 2020s and has refused to leave.",
+  "energy": "downtown effortless — a shoe that looks better with wear and signals taste without trying",
+  "pull_quote": "Buy if your wardrobe is jeans-and-tee dominant and you want one sneaker for the next three years. Pass if your style runs polished or your foot needs structured support — these are flat as paper.",
+  "verdicts": [
+    {
+      "archetype": "easy / casual / lived-in",
+      "label": "soft / textured / honest",
+      "verdict": "BUY",
+      "reasoning": "These are the closest thing to a default sneaker for your aesthetic. They work with denim, with linen pants, with the dress you keep almost not wearing. They get better looking the more scuffed they get. One pair, classic colorway, done."
+    },
+    {
+      "archetype": "polished / minimal / sharp",
+      "label": "clean / structured / chrome",
+      "verdict": "PASS",
+      "reasoning": "The vintage soccer reference will fight your wardrobe. You want a Common Projects Achilles or an Adidas Stan Smith — same low profile, less character, reads as intentional rather than off-duty. The Samba's white stripes will always look slightly costume-y next to tailored pieces."
+    },
+    {
+      "archetype": "wide foot / needs support",
+      "label": "comfort-first / orthopedic-aware",
+      "verdict": "PASS",
+      "reasoning": "Sambas are flat, narrow in the toe box, and have almost no arch support. After two hours on concrete you'll regret it. New Balance 990 or Hoka Bondi are not as cool but won't hurt you. Style is downstream of being able to walk."
+    },
+    {
+      "archetype": "fashion-forward / trend-aware",
+      "label": "loud / referential / now",
+      "verdict": "MAYBE",
+      "reasoning": "The Samba already peaked in 2024-25. Wearing them now reads less 'I'm ahead' and more 'I'm in step.' That's fine — they're still good — but if you're someone who wants the next thing, look at Onitsuka Mexico 66 or Adidas Tobacco instead."
+    }
+  ],
+  "why_people_love_it": [
+    "The gum sole adds visual warmth that pure-white sneakers lack — easier to wear with warm-toned outfits",
+    "Available in dozens of colorways without losing the silhouette identity — the 'Cloud White' and 'Black/White Gum' are the safest first picks",
+    "Genuinely affordable at $100 — most fashion sneakers in the same conversation are $200+"
+  ],
+  "where_it_falls_flat": [
+    "Run a half-size large for most people; the toe box is narrow and the suede has no give",
+    "The white leather scuffs immediately and never looks 'new' again — buy that as a feature, not a defect",
+    "Stock is volatile; in-demand colorways resell at 1.5-2x retail. Don't pay above $130 for any standard colorway"
+  ],
+  "alternatives": [
+    {
+      "if_you_lean": "more polished / cleaner",
+      "name": "Common Projects Achilles Low",
+      "price_usd": 410,
+      "url": "",
+      "reasoning": "The minimalist white sneaker that ages into the same uniform role. Four times the price but the leather is materially better and reads as intentional with tailoring."
+    },
+    {
+      "if_you_lean": "want the look but cheaper",
+      "name": "Adidas Gazelle",
+      "price_usd": 100,
+      "url": "",
+      "reasoning": "Adidas's own near-substitute. Slightly slimmer profile, same gum sole, easier to find in stock. If your size is sold out in Sambas, default here."
+    },
+    {
+      "if_you_lean": "more current / trend-forward",
+      "name": "Onitsuka Tiger Mexico 66",
+      "price_usd": 110,
+      "url": "",
+      "reasoning": "The retro silhouette having its moment now (post-Samba peak). Slimmer profile, more interesting colorways, the Kill Bill association doesn't hurt."
+    }
+  ],
+  "tags": ["sneakers", "casual", "everyday", "adidas", "vintage"],
+  "last_updated": "2026-05-15"
+}

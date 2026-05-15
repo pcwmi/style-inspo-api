@@ -1,0 +1,74 @@
+{
+  "brand": "The Frankie Shop",
+  "brand_slug": "frankie-shop",
+  "item": "Bea Cardigan",
+  "item_slug": "bea-cardigan",
+  "price_usd": 185,
+  "category": "knitwear",
+  "image_url": "",
+  "affiliate_url": "",
+  "one_line_summary": "An oversized, ribbed, V-neck wool-blend cardigan with deep armholes and a generous body — the cardigan that launched a thousand IG saves and twice as many dupes.",
+  "energy": "off-duty model — the cardigan that looks like you stole it from someone whose style you envy",
+  "pull_quote": "Buy if you wear oversized as a default and your bottoms run slim. Pass if you're petite and dislike volume — this will swallow you, even in the smallest size.",
+  "verdicts": [
+    {
+      "archetype": "easy / oversized-default / lived-in",
+      "label": "soft / generous / undone",
+      "verdict": "BUY",
+      "reasoning": "This is the cardigan you keep saving on Pinterest. It does the over-the-shoulder thing, the buttoned-as-a-top thing, the layered-over-a-tee-and-jeans thing — all without looking like you tried. The wool blend has weight, so it drapes properly instead of sitting awkwardly. Worth the $185."
+    },
+    {
+      "archetype": "petite / small frame / under 5'4\"",
+      "label": "delicate / fitted / scaled",
+      "verdict": "PASS",
+      "reasoning": "Even the smallest size runs intentionally large. The deep armholes and dropped shoulders are designed for visual volume — on a smaller frame they read as 'borrowed from dad' rather than 'considered.' Look at Sézane Gaspard or Reformation Maddie cardigan instead — both come in true-to-size proportions."
+    },
+    {
+      "archetype": "polished / structured / cool-toned",
+      "label": "clean / sharp / restrained",
+      "verdict": "MAYBE",
+      "reasoning": "It can work as a layering piece over a button-down with tailored trousers, but only in the navy or chocolate colorways — the cream version is too undone for your register. If you want oversized knit but with more structure, the Khaite Scarlet is the move."
+    },
+    {
+      "archetype": "minimal-budget / want the look",
+      "label": "smart-shopper / dupe-aware",
+      "verdict": "PASS",
+      "reasoning": "There are 15+ near-identical cardigans at $40-80 across H&M, Mango, Cos, and Quince that get you 80% of the look. The Bea's quality is real but not 3x-the-price real. Buy the dupe, save the difference for a piece where the quality gap actually shows (knit dresses, wool coats)."
+    }
+  ],
+  "why_people_love_it": [
+    "The drape is the whole point — most knockoffs look right on the hanger but go limp when worn. The Bea's wool content keeps it sculptural",
+    "The neutrals (oat, chocolate, navy) are genuinely versatile — 3 of these in different colors can build a whole capsule",
+    "Buttons are sturdy enough to wear it as a top with nothing underneath, which doubles its outfits"
+  ],
+  "where_it_falls_flat": [
+    "Pills under the arms within the first season — that's wool blend physics, not a defect, but expect maintenance",
+    "Restocks are unpredictable; if your size is in stock, it won't be next week",
+    "The white/cream colorway shows everything; if you're a coffee-spiller, get the chocolate"
+  ],
+  "alternatives": [
+    {
+      "if_you_lean": "smaller frame",
+      "name": "Sézane Gaspard Cardigan",
+      "price_usd": 160,
+      "url": "",
+      "reasoning": "True-to-size cut with a similar V-neck and button placket. Slightly more polished, less Pinterest-girl. Better on shorter torsos."
+    },
+    {
+      "if_you_lean": "want the look for less",
+      "name": "Quince Mongolian Cashmere V-Neck Cardigan",
+      "price_usd": 90,
+      "url": "",
+      "reasoning": "Actual cashmere at half the price. Slightly less oversized cut, but the fiber upgrade matters more than the silhouette difference. Real dupe that's arguably better quality."
+    },
+    {
+      "if_you_lean": "more polished / structured",
+      "name": "Khaite Scarlet Cardigan",
+      "price_usd": 1280,
+      "url": "",
+      "reasoning": "Investment piece, very different price tier, but a fundamentally more refined garment — heavier knit, better shoulder construction, ages into a forever piece. Only worth it if knitwear is your category."
+    }
+  ],
+  "tags": ["cardigan", "knitwear", "oversized", "frankie-shop", "viral"],
+  "last_updated": "2026-05-15"
+}
