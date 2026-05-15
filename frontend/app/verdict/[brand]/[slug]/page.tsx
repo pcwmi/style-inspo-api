@@ -192,21 +192,18 @@ export default async function VerdictPage({ params }: Params) {
         </div>
 
         <div className="bg-ink text-white rounded-xl p-6 md:p-8 text-center">
-          <p className="text-white/70 text-xs uppercase tracking-wide mb-2">
-            Free this week
-          </p>
           <h3 className="text-xl md:text-2xl font-semibold mb-2">
-            Get your first verdict free.
+            Still not sure which one is right for you?
           </h3>
           <p className="text-white/80 text-sm md:text-base mb-5 leading-relaxed">
-            Send the item plus a few signals about your style. Personal buy / pass within 24
-            hours. Your first is on us.
+            Send the item you're eyeing plus a few notes on your style — get a personal
+            recommendation within 24 hours. Free.
           </p>
           <Link
             href="/offer"
             className="inline-block bg-white text-ink px-6 py-3 rounded-lg font-medium hover:opacity-90"
           >
-            Claim my free verdict &rarr;
+            Get a personal recommendation &rarr;
           </Link>
           {smsHref && (
             <div className="mt-4">

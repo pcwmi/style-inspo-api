@@ -67,15 +67,15 @@ Thanks!`
         </Link>
 
         <p className="text-muted text-sm uppercase tracking-wide mb-3">
-          Personal verdict · turnaround under 24 hours
+          Free personal recommendation · 24-hour turnaround
         </p>
         <h1 className="text-3xl md:text-4xl font-bold leading-tight mb-4">
           Should you buy <span className="italic">that</span> specific thing?
         </h1>
         <p className="text-ink/80 text-base md:text-lg leading-relaxed mb-8">
           Send a screenshot or link of the item you're considering, plus a few signals about
-          your style. You get back a personal buy / pass / wait verdict — grounded in your
-          taste, not generic praise — within 24 hours.
+          your style. You get back a personal buy / pass / wait recommendation — grounded in
+          your taste, not generic praise — within 24 hours. Free.
         </p>
 
         {/* --- FREE TRIAL CTA (primary) --- */}
@@ -118,16 +118,16 @@ Thanks!`
         </div>
 
         <div className="bg-sand/30 border border-[rgba(26,22,20,0.08)] rounded-lg p-5 md:p-6 mb-8">
-          <p className="font-medium text-ink mb-3">Why this works</p>
+          <p className="font-medium text-ink mb-3">Why this is free</p>
           <ul className="space-y-2 text-ink/80 text-sm md:text-base leading-relaxed">
             <li className="pl-4 relative">
               <span className="absolute left-0 top-1.5 w-1.5 h-1.5 bg-terracotta rounded-full" />
-              The piece you're considering is usually $50-$500. One mistake avoided pays this
-              back many times over.
+              When we recommend an alternative and you buy it, the retailer pays us — not you.
+              Our verdict is the same whether you click an affiliate link or not.
             </li>
             <li className="pl-4 relative">
               <span className="absolute left-0 top-1.5 w-1.5 h-1.5 bg-terracotta rounded-full" />
-              Most "style advice" online is paid placement. This isn't.
+              No paid placements. We never accept brand money to recommend a piece.
             </li>
             <li className="pl-4 relative">
               <span className="absolute left-0 top-1.5 w-1.5 h-1.5 bg-terracotta rounded-full" />
@@ -138,16 +138,16 @@ Thanks!`
           </ul>
         </div>
 
-        {/* --- PAID CTA (secondary, surfaced after free slots are exhausted or for return users) --- */}
+        {/* --- PAID CTA (deep secondary — only shown if explicitly configured) --- */}
         {paidReady ? (
           <a
             href={OFFER_URL}
             target="_blank"
             rel="noopener noreferrer"
             onClick={handlePaidClick}
-            className="block w-full bg-terracotta text-white text-center py-4 px-6 rounded-lg font-medium text-base hover:opacity-90 transition active:opacity-80 min-h-[52px] flex items-center justify-center"
+            className="block text-center text-muted hover:text-terracotta text-xs md:text-sm mt-6 underline"
           >
-            Or skip the queue — {OFFER_PRICE} for a guaranteed 24-hour verdict
+            In a hurry? Skip the queue — {OFFER_PRICE} for a same-day guaranteed reply
           </a>
         ) : !freeReady ? (
           <div className="bg-sand/40 border border-[rgba(26,22,20,0.12)] rounded-lg p-5 text-sm text-ink/70 leading-relaxed">
@@ -172,7 +172,9 @@ Thanks!`
         )}
 
         <p className="text-muted text-xs mt-6 leading-relaxed">
-          Personal verdicts are human-in-the-loop — me + the AI styling tool.
+          Personal recommendations are human-in-the-loop — me + the AI styling tool. We earn a
+          small commission when you buy through our affiliate links — never from brand
+          placements.
         </p>
       </div>
     </div>
