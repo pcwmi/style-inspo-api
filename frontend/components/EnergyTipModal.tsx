@@ -5,7 +5,6 @@ import {
   TIP_URL,
   TIP_AMOUNT_LABEL,
   tipEnabled,
-  markTipPromptShown,
   trackTipShown,
   trackTipClicked,
   trackTipDismissed,
@@ -29,7 +28,6 @@ export function EnergyTipModal({
   useEffect(() => {
     if (isOpen && tipEnabled()) {
       trackTipShown(reason)
-      markTipPromptShown()
     }
   }, [isOpen, reason])
 

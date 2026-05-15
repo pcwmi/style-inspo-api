@@ -9,7 +9,7 @@ import { WornTrackingModal } from '@/components/WornTrackingModal'
 import { PhotoUploadModal } from '@/components/PhotoUploadModal'
 import { EnergyTipModal } from '@/components/EnergyTipModal'
 import { api } from '@/lib/api'
-import { canShowTipPrompt } from '@/lib/tip'
+import { tryClaimTipPrompt } from '@/lib/tip'
 
 type Tab = 'not_worn' | 'worn'
 
@@ -147,7 +147,7 @@ function SavedPageContent() {
     // Switch to worn tab to show the outfit there
     setActiveTab('worn')
     // Ask for a tip after the worn moment lands — this is the peak "energy through clothing" beat.
-    if (canShowTipPrompt()) {
+    if (tryClaimTipPrompt()) {
       setTimeout(() => setShowTipModal(true), 700)
     }
   }

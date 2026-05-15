@@ -7,6 +7,8 @@ import Link from 'next/link'
 import { api } from '@/lib/api'
 import { posthog } from '@/lib/posthog'
 import { ModelDescriptorModal } from './ModelDescriptorModal'
+import { EnergyTipModal } from './EnergyTipModal'
+import { tryClaimTipPrompt } from '@/lib/tip'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -43,6 +45,16 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
     const [imageExpanded, setImageExpanded] = useState(false)
     const [collageExpanded, setCollageExpanded] = useState(false)
     const [reasoningExpanded, setReasoningExpanded] = useState(false)
+    const [showTipModal, setShowTipModal] = useState(false)
+    const [tipReason, setTipReason] = useState<string>('outfit_visualized')
+
+    const triggerTipPrompt = (reason: string) => {
+        if (tryClaimTipPrompt()) {
+            setTipReason(reason)
+            // Slight delay so the success state lands first.
+            setTimeout(() => setShowTipModal(true), 900)
+        }
+    }
 
     // Poll for viz status if outfit has viz_key (auto-generated on reveal page)
     useEffect(() => {
@@ -89,6 +101,13 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
         return () => clearInterval(pollInterval)
     }, [outfit.viz_key, vizUrl])
 
+    // Surface the tip ask after the runway visualization lands — strongest "wow" beat.
+    useEffect(() => {
+        if (vizState === 'complete') {
+            triggerTipPrompt('outfit_visualized')
+        }
+    }, [vizState])
+
     const handleSave = async () => {
         try {
             const feedback = feedbackText.trim() ? [feedbackText.trim()] : []
@@ -104,6 +123,7 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
             // Store the saved outfit ID to show visualization CTA
             setSavedOutfitId(response.outfit_id)
             setSaving(false)
+            triggerTipPrompt('outfit_saved')
         } catch (error) {
             console.error('Error saving outfit:', error)
             alert('Failed to save outfit')
@@ -598,6 +618,13 @@ export function OutfitCard({ outfit, user, index, allowSave = true, allowDislike
                 userId={user}
                 onClose={() => setShowDescriptorModal(false)}
                 onSaved={handleDescriptorSaved}
+            />
+
+            {/* Energy Tip Modal — fires once per cooldown across all surfaces */}
+            <EnergyTipModal
+                isOpen={showTipModal}
+                reason={tipReason}
+                onClose={() => setShowTipModal(false)}
             />
 
             {/* Fullscreen Collage Modal */}

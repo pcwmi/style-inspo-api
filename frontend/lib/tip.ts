@@ -33,6 +33,13 @@ export function markTipPromptShown(): void {
   }
 }
 
+// Atomic claim: returns true once per cooldown window, then locks out other surfaces.
+export function tryClaimTipPrompt(): boolean {
+  if (!canShowTipPrompt()) return false
+  markTipPromptShown()
+  return true
+}
+
 export function trackTipShown(reason: string, extra: Record<string, any> = {}): void {
   posthog.capture('tip_shown', { reason, ...extra })
 }
