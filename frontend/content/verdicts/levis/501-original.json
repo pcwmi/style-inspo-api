@@ -1,0 +1,74 @@
+{
+  "brand": "Levi's",
+  "brand_slug": "levis",
+  "item": "501 Original Jean",
+  "item_slug": "501-original",
+  "price_usd": 98,
+  "category": "denim",
+  "image_url": "",
+  "affiliate_url": "",
+  "one_line_summary": "The straight-leg, button-fly, 100% cotton jean that Levi Strauss has been making since 1873 and that essentially every other jean references.",
+  "energy": "American canon — the jean that doesn't need to convince you of anything",
+  "pull_quote": "Buy if you want one jean that ages into your body and doesn't go out of style. Pass if you need stretch, prefer a high rise, or have a curvy hip-to-waist ratio that the 501 won't accommodate.",
+  "verdicts": [
+    {
+      "archetype": "easy / classic / lived-in",
+      "label": "vintage / honest / Americana",
+      "verdict": "BUY",
+      "reasoning": "This is the jean. 100% cotton means they age into your specific body — fade patterns develop where you bend, stretch where you sit. The mid rise and straight leg are flattering in a way trend-cuts can't be. Buy them in the medium wash and wear them for ten years."
+    },
+    {
+      "archetype": "curvy / hip-to-waist ratio",
+      "label": "fitted / shaped / contoured",
+      "verdict": "PASS",
+      "reasoning": "The 501 is cut straight from waist to hip with no curve allowance. If your waist is 6+ inches smaller than your hips, you'll have constant waistband gap or thigh pinch. Try the 501 Skinny or the Wedgie Straight (Levi's curve-cut alternatives) or look at Mother Tomcat for the same silhouette with curve-cut intelligence."
+    },
+    {
+      "archetype": "high-rise-preferred",
+      "label": "tucked-in / waist-defining",
+      "verdict": "PASS",
+      "reasoning": "The 501 is mid-rise. Specifically. The marketing calls it 'classic rise,' but it sits at the navel, not above. If you've been wearing high-rise for the last five years, these will feel too low. Try the 501 '90s instead (same brand, higher rise) or the Ribcage."
+    },
+    {
+      "archetype": "denim purist / want the canonical pair",
+      "label": "honest / unprocessed / forever",
+      "verdict": "BUY",
+      "reasoning": "These are the source. Every selvedge fan, every vintage collector, every denim head started with 501s. The Shrink-to-Fit version (sold unsanforized — they shrink ~10% in first wash) is the connoisseur pick. The standard sanforized version is what most people should buy."
+    }
+  ],
+  "why_people_love_it": [
+    "100% cotton means real fade patterns over years — the longer you wear them, the more personal they become",
+    "Mid rise + straight leg is the most-imitated silhouette in denim because it works on the widest range of bodies — but few brands execute it as well as Levi's",
+    "Genuinely affordable at $98 — most jeans this well-made are $200+"
+  ],
+  "where_it_falls_flat": [
+    "100% cotton means initial discomfort — break-in takes 2-3 weeks of regular wear before they soften",
+    "Sizing runs vintage / true — waist measurement is the actual measurement, not the modern 'vanity sizing.' Check the chart, don't assume",
+    "Levi's currency is denim consistency, but specific washes do come and go — if you find one you love, buy two"
+  ],
+  "alternatives": [
+    {
+      "if_you_lean": "higher rise / 90s look",
+      "name": "Levi's 501 '90s",
+      "price_usd": 98,
+      "url": "",
+      "reasoning": "Same brand, same fabric philosophy, higher rise and slightly slouchier through the leg. Better if you've been wearing high-rise and want the 501 DNA without lowering your waist."
+    },
+    {
+      "if_you_lean": "curvy / need shape",
+      "name": "Mother Tomcat",
+      "price_usd": 248,
+      "url": "",
+      "reasoning": "Straight-leg with curve-cut intelligence. The waist is engineered for hip-to-waist ratio variance the 501 ignores. Twice the price but the fit improvement is real."
+    },
+    {
+      "if_you_lean": "want raw / selvedge",
+      "name": "A.P.C. Petit New Standard",
+      "price_usd": 245,
+      "url": "",
+      "reasoning": "Slimmer straight cut, Japanese selvedge, raw indigo. The Levi's of someone who wants their jeans to develop more aggressive fade patterns over time."
+    }
+  ],
+  "tags": ["denim", "jeans", "classic", "levis", "100-cotton"],
+  "last_updated": "2026-05-15"
+}

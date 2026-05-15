@@ -1,0 +1,74 @@
+{
+  "brand": "Reformation",
+  "brand_slug": "reformation",
+  "item": "Bea Dress",
+  "item_slug": "bea-dress",
+  "price_usd": 248,
+  "category": "dress",
+  "image_url": "",
+  "affiliate_url": "",
+  "one_line_summary": "A floor-length, smocked-bodice, cap-sleeve cotton-poplin dress in Reformation's wide rotation of small prints and solid colors.",
+  "energy": "controlled romance — the dress of someone who reads on weekends and has a small but considered jewelry collection",
+  "pull_quote": "Buy if you want a foolproof warm-weather dress and live somewhere you'll actually wear it. Pass if you need it to do double duty for cold months — the bodice has no support and the fabric is summer-coded.",
+  "verdicts": [
+    {
+      "archetype": "easy / soft / warm-weather",
+      "label": "romantic / restrained / honey",
+      "verdict": "BUY",
+      "reasoning": "This is your dress. The smocking is forgiving without being shapeless, the cap sleeve covers without overheating, and Reformation's print library means you can find one in colors that already live in your closet. Buy a solid for events, a print for weekends."
+    },
+    {
+      "archetype": "minimal / structured / sharp",
+      "label": "clean / tailored / controlled",
+      "verdict": "MAYBE",
+      "reasoning": "The Bea reads soft and romantic — which can fight a sharper aesthetic. The solid black version works as a base for tailored layers, but the print versions will feel like costume. If you want a Reformation maxi, the Annita or the Cassia have cleaner lines."
+    },
+    {
+      "archetype": "petite / under 5'4\"",
+      "label": "delicate / scaled / shorter",
+      "verdict": "MAYBE",
+      "reasoning": "The Bea is a true maxi — designed to skim the floor at 5'7\". Petite needs hemming or you'll trip. Reformation does sell Petite sizing in some styles; check if Bea is included this season. If not, the alteration runs ~$30 and is worth it."
+    },
+    {
+      "archetype": "needs bra support",
+      "label": "practical / structured",
+      "verdict": "PASS",
+      "reasoning": "The smocked bodice provides zero support. If you can't go braless and you can't wear a regular bra (the cap sleeves are too narrow for most straps), this dress is functionally unwearable for you. Look at a dress with a built-in shelf bra or wider straps instead — Doen and Saltwater Luxe both have good options."
+    }
+  ],
+  "why_people_love_it": [
+    "Reformation's small-print library is genuinely good — they look photographed-styled without trying",
+    "Cotton poplin is breathable, machine-washable, and ages well — none of the silk-care hassle of more expensive dresses in this category",
+    "The smocked bodice fits a range of cup sizes well — rare in this silhouette"
+  ],
+  "where_it_falls_flat": [
+    "Wrinkles aggressively; you cannot pack this dress without a steamer at the destination",
+    "Cap sleeves run tight at the bicep — if your upper arms are muscular, size up or pick a different sleeve",
+    "Returns to Reformation are easy but the popular prints sell out before the return ships, so 'try a few' isn't really an option"
+  ],
+  "alternatives": [
+    {
+      "if_you_lean": "warmer / more textured",
+      "name": "Dôen The Ines Dress",
+      "price_usd": 348,
+      "url": "/verdict/doen/the-ines-dress",
+      "reasoning": "$100 more but materially heavier cotton, more interesting silhouette through the skirt, and Dôen's craftsmanship is a step above. Worth it if dresses are your category."
+    },
+    {
+      "if_you_lean": "more polished / less prairie",
+      "name": "Sézane Cassiopée Dress",
+      "price_usd": 220,
+      "url": "",
+      "reasoning": "Similar length, more European, less smocking. Reads more 'editor on holiday' and less 'cottagecore.' Cheaper too."
+    },
+    {
+      "if_you_lean": "need bra support",
+      "name": "Saltwater Luxe Tiered Maxi Dress",
+      "price_usd": 195,
+      "url": "",
+      "reasoning": "Built-in shelf bra, similar romantic energy, lower price. Less considered overall but solves the functional problem the Bea creates."
+    }
+  ],
+  "tags": ["dress", "summer", "romantic", "cotton", "reformation"],
+  "last_updated": "2026-05-15"
+}

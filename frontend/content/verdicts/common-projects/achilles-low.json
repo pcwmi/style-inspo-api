@@ -1,0 +1,74 @@
+{
+  "brand": "Common Projects",
+  "brand_slug": "common-projects",
+  "item": "Achilles Low",
+  "item_slug": "achilles-low",
+  "price_usd": 410,
+  "category": "sneakers",
+  "image_url": "",
+  "affiliate_url": "",
+  "one_line_summary": "A minimalist, Italian-made, full-grain leather low-top sneaker with no logo and a gold serial number stamped on the heel.",
+  "energy": "quiet money — the shoe of someone whose closet has fewer items than yours and looks twice as good",
+  "pull_quote": "Buy if you want one white sneaker that works with tailoring for the next 5+ years. Pass if you have a heavy walking commute — the leather is delicate and the soles wear unevenly.",
+  "verdicts": [
+    {
+      "archetype": "polished / minimal / quality-first",
+      "label": "clean / restrained / considered",
+      "verdict": "BUY",
+      "reasoning": "These are the canonical minimalist white sneaker. The leather is materially better than anything else in the category — softer, holds shape, ages into a patina rather than scuffing into damage. Wear them with trousers, with denim, with a suit. The $410 is justified if shoes-as-uniform is your style philosophy."
+    },
+    {
+      "archetype": "easy / casual / off-duty",
+      "label": "soft / textured / lived-in",
+      "verdict": "PASS",
+      "reasoning": "The Achilles will read too precious next to denim and a t-shirt. You want an Adidas Samba, a Veja V-10, or even a New Balance 530 — they earn their place in a casual wardrobe in a way the Achilles never quite does. Save the $300 difference."
+    },
+    {
+      "archetype": "heavy walker / commuter",
+      "label": "practical / durability-first",
+      "verdict": "PASS",
+      "reasoning": "The sole is thin, the leather is soft, and Common Projects offers no real waterproofing. Subway commute in rain will ruin them in three weeks. If you walk more than 4 miles a day, get a Veja Esplar (similar look, better sole) or just commit to a different category."
+    },
+    {
+      "archetype": "want the look for less",
+      "label": "smart-shopper / dupe-aware",
+      "verdict": "MAYBE",
+      "reasoning": "The Greats Royale and Oliver Cabell Low 1 both occupy the same 'minimal Italian-made leather' niche at $200-250. They're 80-90% there on construction and aesthetics. If you care about Common Projects specifically, only the real thing satisfies. If you care about the look, the dupes are real."
+    }
+  ],
+  "why_people_love_it": [
+    "The leather develops a personal patina over years that no synthetic alternative replicates",
+    "The silhouette has been unchanged since 2004 — these are not subject to trend cycles",
+    "Resole-able through cobblers experienced with Italian leather; expect to do it once around year 4"
+  ],
+  "where_it_falls_flat": [
+    "The white leather scuffs on day one and never returns to factory-fresh — you have to accept patina as part of the deal",
+    "Sizing runs Italian / large; size down a full size from your US sneaker size",
+    "Stock is volatile in standard sizes; if 9.5 is yours, you might be waiting weeks for restock"
+  ],
+  "alternatives": [
+    {
+      "if_you_lean": "more casual",
+      "name": "Adidas Samba OG",
+      "price_usd": 100,
+      "url": "/verdict/adidas/samba-og",
+      "reasoning": "Quarter the price, totally different aesthetic register. Works with what Achilles can't — denim, sweats, casual energy. Both can live in the same closet."
+    },
+    {
+      "if_you_lean": "want the look for less",
+      "name": "Oliver Cabell Low 1",
+      "price_usd": 218,
+      "url": "",
+      "reasoning": "Italian-made, full-grain leather, similar silhouette. About half the price. The construction is genuinely close and most observers can't tell the difference."
+    },
+    {
+      "if_you_lean": "need more durability",
+      "name": "Veja Esplar",
+      "price_usd": 150,
+      "url": "",
+      "reasoning": "More structured sole, wild rubber, weather-resistant. Lacks the buttery leather but holds up to daily commuting in a way the Achilles can't."
+    }
+  ],
+  "tags": ["sneakers", "minimal", "leather", "common-projects", "investment"],
+  "last_updated": "2026-05-15"
+}

@@ -1,0 +1,74 @@
+{
+  "brand": "The Row",
+  "brand_slug": "the-row",
+  "item": "Margaux 15",
+  "item_slug": "margaux-15",
+  "price_usd": 5550,
+  "category": "bag",
+  "image_url": "",
+  "affiliate_url": "",
+  "one_line_summary": "A soft, slouchy, no-hardware leather tote that the Olsens designed to look like a forever bag and managed to actually deliver on.",
+  "energy": "stealth wealth made literal — a bag that signals 'I don't need to prove anything' to a very small group of people",
+  "pull_quote": "Buy if you want one bag for the next twenty years and the budget is genuinely not the question. Pass for any other reason — the price is real, the cult is real, and the math only works at a particular income.",
+  "verdicts": [
+    {
+      "archetype": "high-budget / quality-first / forever-piece",
+      "label": "considered / minimal / investment",
+      "verdict": "BUY",
+      "reasoning": "If 'forever bag' is the actual brief and money is not a constraint, the Margaux is one of three or four bags in the world that delivers. The leather is treated to develop slouch over years (most leather goes the opposite direction). The lack of hardware means no piece can break, tarnish, or date the bag. It will look right in 2045."
+    },
+    {
+      "archetype": "stretching / first-luxury",
+      "label": "aspirational / saving-up",
+      "verdict": "PASS",
+      "reasoning": "$5,550 is not stretchable. The Margaux only makes sense at an income where this is comfortable. If you're saving for it, the savings are better spent on a Polène Numéro Un or a Cuyana Easy Tote — both deliver 80% of the daily experience for 1/15 the price, and you don't carry the anxiety of damaging a luxury item."
+    },
+    {
+      "archetype": "structured-bag-preferred",
+      "label": "tailored / sharp / architectural",
+      "verdict": "PASS",
+      "reasoning": "The Margaux has no internal structure — it slouches by design. If your wardrobe is tailored and you want a bag that complements that energy, you want a Loewe Puzzle, a Celine Triomphe, or a Hermès Constance. The Margaux's softness will fight your aesthetic."
+    },
+    {
+      "archetype": "wants the look for less",
+      "label": "smart-shopper / dupe-aware",
+      "verdict": "MAYBE",
+      "reasoning": "The Margaux's whole pitch is materials and construction that take decades to age — dupes can't replicate that, by definition. Polène's slouchier styles, Mansur Gavriel's lambskin totes, or Khaite's larger bags occupy adjacent territory at 10-20% the price. They look similar from across the room and feel completely different in hand."
+    }
+  ],
+  "why_people_love_it": [
+    "The leather is treated to slouch into the user — bags become personal in a way most luxury bags actively resist",
+    "Zero visible hardware means nothing to break, tarnish, or date. The minimalism is structural, not just aesthetic",
+    "Resale value holds at 60-75% on consignment platforms — among the highest in luxury soft-bags"
+  ],
+  "where_it_falls_flat": [
+    "No interior structure means everything inside slumps to the bottom and lives in chaos. Pouches and organizers are mandatory",
+    "The shoulder strap is short — these are hand-carry or arm-crook bags, not over-shoulder",
+    "The brand does no marketing, which means availability is opaque. Pieces sell out and don't restock; if you want a specific color, you may wait months"
+  ],
+  "alternatives": [
+    {
+      "if_you_lean": "structured bag instead",
+      "name": "Loewe Puzzle Bag (Small)",
+      "price_usd": 2950,
+      "url": "/verdict/loewe/puzzle-bag-small",
+      "reasoning": "Architectural where the Margaux is soft. Same forever-bag intent, completely different physical philosophy. Half the price."
+    },
+    {
+      "if_you_lean": "want similar shape for much less",
+      "name": "Polène Numéro Un Tonca",
+      "price_usd": 440,
+      "url": "",
+      "reasoning": "French quiet-luxury at 8% the price. Similar slouch, comparable leather feel, won't hold value the same way but the daily experience is 80% there."
+    },
+    {
+      "if_you_lean": "investment but want hardware",
+      "name": "Hermès Garden Party 36",
+      "price_usd": 2950,
+      "url": "",
+      "reasoning": "Same price tier as the Loewe Puzzle, different philosophy. Canvas + leather, top-handle, no waiting list for this model. The most accessible Hermès if that brand matters to you."
+    }
+  ],
+  "tags": ["bag", "luxury", "leather", "the-row", "forever"],
+  "last_updated": "2026-05-15"
+}
