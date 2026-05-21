@@ -326,6 +326,103 @@ problem, not a search-volume one.
 
 ---
 
+## Appendix A: Brand-Level vs Item-Level — Where Keyword Volume Actually Exists
+
+*Follow-up research, 2026-05-20.*
+
+### Direct answer: volume is measured per *exact query string* — and there are three tiers
+
+Keyword volume is **not inherently "brand level" or "item level."** A keyword
+tool reports a number for **whatever exact string you type**. `Quince review`
+and `Quince Mongolian cashmere crewneck review` are two *different keywords* with
+two *different volumes*. So the real question is: **at which level of specificity
+does measurable, targetable volume still exist?** There are three tiers:
+
+| Tier | Example query | Per-query volume | Shows up in keyword tools? | Intent | Competition |
+|------|---------------|------------------|----------------------------|--------|-------------|
+| **Category** | "best cashmere sweater", "wide-leg jeans" | High (~10K–100K+/mo) | Yes | Generic — no brand or item chosen yet | Brutal |
+| **Brand** | "Quince review", "is Sézane worth it", "Lululemon Align review", "Reformation vs Sézane" | Moderate (~100–10K/mo) | **Yes** | Brand-curious, item not yet chosen | Moderate |
+| **Item** | "Quince Mongolian cashmere crewneck review" | **Near-zero (~0–50/mo)** | **Mostly no** | **Precise — the "should I buy THIS" moment** | Low |
+
+### The key finding: volume *evaporates* at the item level
+
+- **91.8% of all distinct Google search queries are long-tail** — Backlinko's
+  study of 306M keywords (defining long-tail as 1–100 searches/mo). Item-level
+  review queries sit deep in that tail.
+- **~15% of all Google queries are brand-new** — never searched before, a
+  figure Google has publicly reconfirmed for over a decade. Most
+  `[brand] [exact item] worth it` strings live in this bucket: real human
+  intent, **zero recorded volume**.
+- Keyword tools **don't report** most item-level queries — they fall below the
+  reporting threshold (often <10/mo) and show as blank or "0".
+
+So the precise answer to your question: **measurable keyword volume exists at the
+category and brand level. At the item level — which is exactly where Style
+Inspo's "should I buy this?" operates — per-query volume collapses to near-zero
+and is effectively invisible to keyword tools.** Not because the demand isn't
+there (in aggregate, long-tail queries are 91.8% of all *distinct* searches —
+even though they're only a small slice of total search *volume*), but because
+it's shattered across millions of unique strings, each tiny.
+
+### What this means for Style Inspo
+
+1. **You cannot keyword-size or SEO-target the item-level moment.** There is no
+   per-query number to chase. Don't build a "should I buy [item]" SEO funnel —
+   the volume is real in aggregate but un-targetable query-by-query. This is the
+   mechanical reason §5 concluded it's not a search-acquisition channel.
+2. **The only keyword-targetable layer is brand-level.** `is [brand] worth it` /
+   `[brand] honest review` *do* have measurable, rankable volume. If Style Inspo
+   ever wants a content/SEO play, the shape is: **brand-level review content as
+   the funnel → the item-level tool as the conversion.** (Exactly the Wirecutter
+   shape — brand/category guides rank; specific product picks convert.)
+3. **Size the item-level moment with first-party data, not keyword tools.** Your
+   `consider_buying` events and `buying_decisions.json` stats *are* the
+   item-level volume measurement. Keyword tools will under-count this moment by
+   design — don't expect them to validate it.
+
+### The numbers I could (and couldn't) get
+
+Honest status: **exact monthly volumes are gated behind paid tools** (Ahrefs,
+Semrush) and can't be pulled reliably through web research. Two things web
+research *did* firmly establish:
+
+- **Tools disagree wildly.** Same keyword ("pet groomers near me"): Semrush
+  reported 33.1K US/mo, Ahrefs 15K US/mo — a 2× gap on a single term. Treat any
+  individual number as **±50%**.
+- **Order-of-magnitude anchor:** a moderately popular non-brand keyword runs
+  ~15–33K US searches/mo.
+
+Estimated ranges for representative DTC brands — **order-of-magnitude estimates,
+verify before using in any decision:**
+
+| Query | Est. US volume/mo | Notes |
+|-------|-------------------|-------|
+| "lululemon review" (+ variants) | ~5K–20K | Mass brand, heavy review demand |
+| "quince review" | ~2K–10K | Viral brand, high review curiosity |
+| "everlane review" | ~1K–5K | Established DTC |
+| "is sézane worth it" | ~200–1K | Mid DTC, narrower exact phrasing |
+| "[brand] [specific item] review" | ~0–100 | Long tail — usually unmeasured |
+
+Note: I checked this repo for your users' actual brand list to estimate against
+real data — `consider_buying.json` and wardrobe metadata live in `backend/data/`,
+which is gitignored, so the table above uses representative brands, not yours.
+
+### Get the real numbers yourself in ~20 minutes (free)
+
+1. **Google Keyword Planner** (free with a Google Ads account) → "Get search
+   volumes and forecasts" → paste 20–40 strings: `[brand] review`,
+   `is [brand] worth it`, `[brand] vs [brand]` for your top ~10 brands. Set
+   location = US.
+2. **Use your real brand list** — pull it from `backend/data/consider_buying.json`
+   (`styling_details.brand`) and wardrobe metadata. Don't guess; use what your
+   users actually own and consider.
+3. Add 5–10 **item-level** strings to the same query. Watch most come back
+   "10–100" or blank — *that blank is the empirical answer* to "is volume at the
+   item level?": no.
+4. Cross-check 3–5 keywords in a free Ahrefs/Semrush trial; expect ±50% spread.
+
+---
+
 ## Sources
 
 - [How Shoppers Really Search Before Buying — Nethority](https://www.nethority.com/blog/how-shoppers-really-search-before-buying/)
@@ -349,3 +446,6 @@ problem, not a search-volume one.
 - [Four Ways Wirecutter Is Growing Its Affiliate Revenue — Keywee](https://keywee.co/blog/four-ways-wirecutter-growing-affiliate-revenue/)
 - [TikTok Made Me Buy It: How To Use the Trend (2025) — Shopify](https://www.shopify.com/blog/tiktok-made-me-buy-it)
 - [Consumer Intent: What Search Queries Reveal About Buyers — Spate](https://www.spate.nyc/blog/understanding-consumer-intent-search-queries)
+- [We Analyzed 306M Keywords — Backlinko Google Keyword Study](https://backlinko.com/google-keyword-study)
+- [Google Reaffirms 15% of Searches Are New, Never Been Searched Before — Search Engine Land](https://searchengineland.com/google-reaffirms-15-searches-new-never-searched-273786)
+- [Keyword Volume: Google vs. Semrush vs. Ahrefs — Practical Ecommerce](https://www.practicalecommerce.com/keyword-volume-google-vs-semrush-vs-ahrefs)
