@@ -158,14 +158,10 @@ class SMSOutput(OutputHandler):
         items_metadata = resolve_items_from_urls(self.user_id, images)
         self._record_for_variety(self.user_id, items_metadata)
 
-        # Split images into chunks of 6 for collage generation
-        chunks = [images[i:i+6] for i in range(0, len(images), 6)]
-        items_chunks = [items_metadata[i:i+6] for i in range(0, len(items_metadata), 6)]
         collage_urls = []
-        for chunk, items_chunk in zip(chunks, items_chunks):
-            url = generate_outfit_collage(self.user_id, chunk, items=items_chunk, skip_enhance=skip_enhance)
-            if url:
-                collage_urls.append(url)
+        url = generate_outfit_collage(self.user_id, images, items=items_metadata, skip_enhance=skip_enhance)
+        if url:
+            collage_urls.append(url)
 
         if not collage_urls:
             logger.warning("SMSOutput: collage generation failed, sending text only")
@@ -233,13 +229,19 @@ class StatefulSMSOutput(SMSOutput):
             logger.info(f"StatefulSMSOutput: captured outfit with {len(images)} items to state")
 
             from services.twilio_service import send_sms
-            send_sms(self.phone, "Generating a styled version for you... (~15 more seconds)")
+            send_sms(self.phone, "Generating a styled version for you... this can take about a minute.")
             logger.info(f"StatefulSMSOutput: sent visualization expectation message to {self.phone}")
 
+            item_names = [r["name"] for r in resolved if r.get("name")]
             styling_hint = parse_outfit_text(text)["magic"][:150]
-            self._trigger_background_visualization(images, styling_hint)
+            self._trigger_background_visualization(images, styling_hint, item_names=item_names)
 
-    def _trigger_background_visualization(self, images: List[str], styling_notes: str = ""):
+    def _trigger_background_visualization(
+        self,
+        images: List[str],
+        styling_notes: str = "",
+        item_names: Optional[List[str]] = None,
+    ):
         """Spawn background thread to generate and send visualization."""
         import threading
 
@@ -253,11 +255,15 @@ class StatefulSMSOutput(SMSOutput):
                     logger.info(f"Styling hint for Runway: {styling_notes[:80]}...")
 
                 viz_manager = VisualizationManager(self.user_id)
-                result = viz_manager.visualize_from_images(images, styling_notes=styling_notes)
+                result = viz_manager.visualize_from_images(
+                    images,
+                    styling_notes=styling_notes,
+                    item_names=item_names or [],
+                )
 
                 if result and result.get("visualization_url"):
                     viz_url = result["visualization_url"]
-                    send_mms(self.phone, "Here's how it looks on you! 👗", [viz_url])
+                    send_mms(self.phone, "Here's how it looks on you.", [viz_url])
                     logger.info(f"StatefulSMSOutput: sent visualization to {self.phone}")
 
                     # Persist viz URL to conversation state for later save_outfit linkage
@@ -270,12 +276,23 @@ class StatefulSMSOutput(SMSOutput):
                     except Exception as e:
                         logger.warning(f"StatefulSMSOutput: failed to persist viz_url: {e}")
                 else:
-                    # Silent fail - don't bother user
-                    logger.warning(f"StatefulSMSOutput: visualization failed for {self.user_id}")
+                    error = (result or {}).get("error", "unknown error")
+                    logger.warning(f"StatefulSMSOutput: visualization failed for {self.user_id}: {error}")
+                    send_sms(
+                        self.phone,
+                        "I couldn't generate the on-person view this time, but the outfit collage above is ready."
+                    )
 
             except Exception as e:
-                # Silent fail
                 logger.error(f"StatefulSMSOutput: visualization error: {e}")
+                try:
+                    from services.twilio_service import send_sms
+                    send_sms(
+                        self.phone,
+                        "I couldn't generate the on-person view this time, but the outfit collage above is ready."
+                    )
+                except Exception:
+                    logger.exception("StatefulSMSOutput: failed to send visualization failure fallback")
 
         # Run in background thread
         thread = threading.Thread(target=run_visualization, daemon=True)

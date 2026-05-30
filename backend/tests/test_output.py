@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 os.environ.setdefault('STORAGE_TYPE', 'local')
 os.environ.setdefault('OPENAI_API_KEY', 'test-key')
 
-from agent.output import parse_outfit_text, resolve_items_from_urls, APIOutput
+from agent.output import parse_outfit_text, resolve_items_from_urls, APIOutput, SMSOutput
 
 
 # --- parse_outfit_text ---
@@ -157,6 +157,37 @@ class TestResolveItemsFromUrls:
 
 
 # --- APIOutput ---
+
+class TestSMSOutput:
+
+    def test_present_outfit_sends_one_collage_for_seven_items(self):
+        images = [f"https://example.com/item-{i}.jpg" for i in range(7)]
+        items = [
+            {
+                "id": f"item-{i}",
+                "name": f"Item {i}",
+                "category": "accessories" if i == 6 else "tops",
+                "sub_category": "accessories_earrings" if i == 6 else "",
+                "image_url": images[i],
+            }
+            for i in range(7)
+        ]
+
+        with patch("agent.output.resolve_items_from_urls", return_value=items), \
+             patch.object(SMSOutput, "_record_for_variety"), \
+             patch("services.collage.generate_outfit_collage", return_value="https://example.com/collage.jpg") as collage, \
+             patch("services.twilio_service.send_sms") as send_sms, \
+             patch("services.twilio_service.send_mms") as send_mms, \
+             patch("time.sleep"):
+            output = SMSOutput(phone="+15551234567", user_id="test")
+            output.present_outfit("Monday — Walking interview", images)
+
+        collage.assert_called_once()
+        assert collage.call_args.kwargs["items"] == items
+        assert collage.call_args.args[1] == images
+        send_mms.assert_called_once_with("+15551234567", " ", ["https://example.com/collage.jpg"])
+        send_sms.assert_called_once_with("+15551234567", "Monday — Walking interview")
+
 
 class TestAPIOutput:
 

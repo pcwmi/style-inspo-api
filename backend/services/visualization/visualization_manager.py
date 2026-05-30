@@ -253,6 +253,55 @@ class VisualizationManager:
         self.profile_manager = UserProfileManager(user_id=user_id)
         self.provider_factory = VisualizationProviderFactory()
 
+    def _provider_sequence(self, provider_name: str = None) -> List[str]:
+        """Return preferred provider plus fallbacks, preserving order."""
+        preferred = provider_name or self.provider_factory.get_default_provider()
+        sequence = [preferred]
+        for fallback in ("runway", "gpt_image", "flux2pro"):
+            if fallback not in sequence:
+                sequence.append(fallback)
+        return sequence
+
+    def _prepare_images_for_provider(self, image_urls: List[str], provider_name: str) -> List[str]:
+        """Use native multi-reference inputs when supported; collage for 3-slot providers."""
+        if provider_name == "flux2pro":
+            return image_urls[:9]
+        if provider_name == "gpt_image":
+            return image_urls[:10]
+
+        if len(image_urls) <= 3:
+            logger.info(f"Using all {len(image_urls)} images for {provider_name} visualization")
+            return image_urls
+
+        logger.info(f"Using MULTI-SLOT for {provider_name}: creating collages from {len(image_urls)} items")
+        collages = generate_multi_slot_collages(image_urls)
+        if not collages:
+            logger.warning("Multi-slot collage generation failed, falling back to first 3 images")
+            return image_urls[:3]
+
+        prepared = []
+        for i, collage in enumerate(collages):
+            collage_buffer = BytesIO()
+            collage.save(collage_buffer, format='JPEG', quality=90)
+            collage_buffer.seek(0)
+
+            collage_filename = f"collage_{uuid.uuid4().hex[:8]}_{i+1}.jpg"
+            collage_url = self.storage.save_file(collage_buffer, f"visualizations/{collage_filename}")
+            prepared.append(collage_url)
+            logger.info(f"Collage {i+1}/{len(collages)} uploaded: {collage_url}")
+
+        return prepared
+
+    def _load_generated_image(self, image_url: str) -> bytes:
+        """Load provider output from a temporary URL or a local temp file."""
+        if image_url.startswith(("http://", "https://")):
+            response = requests.get(image_url, timeout=30)
+            response.raise_for_status()
+            return response.content
+
+        with open(image_url, "rb") as f:
+            return f.read()
+
     def visualize_outfit(self, outfit_id: str, provider_name: str = "flux2pro") -> Dict:
         """
         Generate visualization for a saved outfit.
@@ -372,9 +421,7 @@ class VisualizationManager:
 
         # 5. Download from temporary URL
         logger.info("Downloading image from temporary URL...")
-        response = requests.get(result.image_url, timeout=30)
-        response.raise_for_status()
-        image_data = response.content
+        image_data = self._load_generated_image(result.image_url)
 
         logger.info(f"Downloaded {len(image_data)} bytes")
 
@@ -405,7 +452,13 @@ class VisualizationManager:
             'metadata': result.metadata
         }
 
-    def visualize_from_images(self, garment_images: list, provider_name: str = "flux2pro", styling_notes: str = "") -> Dict:
+    def visualize_from_images(
+        self,
+        garment_images: list,
+        provider_name: str = "flux2pro",
+        styling_notes: str = "",
+        item_names: Optional[List[str]] = None,
+    ) -> Dict:
         """
         Generate visualization directly from image URLs (for SMS flow).
 
@@ -420,8 +473,9 @@ class VisualizationManager:
 
         Args:
             garment_images: List of garment image URLs (all items supported)
-            provider_name: Visualization provider (default: "runway")
+            provider_name: Visualization provider (default: "flux2pro")
             styling_notes: Optional styling hint for Runway (e.g., "sweater draped over shoulders")
+            item_names: Optional wardrobe item names for the provider prompt
 
         Returns:
             Dict with:
@@ -435,35 +489,6 @@ class VisualizationManager:
             logger.warning("No garment images provided")
             return {"success": False, "error": "No garment images"}
 
-        # Store original images for reference
-        original_images = garment_images
-
-        # Multi-slot strategy: distribute items across up to 3 Runway slots
-        # This gives 52% higher per-item resolution (525px vs 346px)
-        if len(garment_images) > 3:
-            logger.info(f"Using MULTI-SLOT: creating collages from {len(garment_images)} items")
-            collages = generate_multi_slot_collages(garment_images)
-
-            if collages:
-                # Upload each collage to S3
-                garment_images = []
-                for i, collage in enumerate(collages):
-                    collage_buffer = BytesIO()
-                    collage.save(collage_buffer, format='JPEG', quality=90)
-                    collage_buffer.seek(0)
-
-                    collage_filename = f"collage_{uuid.uuid4().hex[:8]}_{i+1}.jpg"
-                    collage_url = self.storage.save_file(collage_buffer, f"visualizations/{collage_filename}")
-                    garment_images.append(collage_url)
-                    logger.info(f"Collage {i+1}/{len(collages)} uploaded: {collage_url}")
-
-                logger.info(f"Using {len(garment_images)} multi-slot collages")
-            else:
-                logger.warning("Multi-slot collage generation failed, falling back to first 3 images")
-                garment_images = original_images[:3]
-        else:
-            logger.info(f"Using all {len(garment_images)} images for visualization")
-
         # Fetch user's model descriptor
         profile = self.profile_manager.get_profile(self.user_id)
         model_descriptor = profile.get('model_descriptor', '') if profile else ''
@@ -476,35 +501,46 @@ class VisualizationManager:
         if styling_notes:
             logger.info(f"Styling notes for Runway: {styling_notes[:80]}...")
 
-        # Build request
-        request = ImageGenerationRequest(
-            garment_images=garment_images,
-            prompt_text="",  # No specific items, just visualize what's in images
-            style_profile=profile or {},
-            styling_notes=styling_notes,  # Pass styling hint to Runway prompt
-            mode="model"
-        )
+        prompt_text = ", ".join(item_names or [])
+        errors = []
+        result = None
+        provider_used = None
 
-        # Generate with provider
-        provider = self.provider_factory.create_provider(provider_name)
+        for candidate in self._provider_sequence(provider_name):
+            provider = self.provider_factory.create_provider(candidate)
+            if not provider:
+                errors.append(f"{candidate}: provider not found")
+                continue
+            if not provider.is_configured():
+                errors.append(f"{candidate}: provider not configured")
+                logger.warning(f"Provider {candidate} not configured, trying next provider")
+                continue
 
-        if not provider or not provider.is_configured():
-            logger.warning(f"Provider {provider_name} not available")
-            return {"success": False, "error": f"Provider {provider_name} not available"}
+            prepared_images = self._prepare_images_for_provider(garment_images, candidate)
+            request = ImageGenerationRequest(
+                garment_images=prepared_images,
+                prompt_text=prompt_text,
+                style_profile=profile or {},
+                styling_notes=styling_notes,
+                mode="model"
+            )
 
-        logger.info(f"Calling {provider.get_provider_name()} provider...")
-        result = provider.generate_image(request, model_descriptor=model_descriptor)
+            logger.info(f"Calling {provider.get_provider_name()} provider with {len(prepared_images)} image(s)...")
+            result = provider.generate_image(request, model_descriptor=model_descriptor)
+            if result.success:
+                provider_used = candidate
+                break
 
-        if not result.success:
-            logger.error(f"Visualization failed: {result.error_message}")
-            return {"success": False, "error": result.error_message}
+            errors.append(f"{candidate}: {result.error_message}")
+            logger.error(f"Visualization failed with {candidate}: {result.error_message}")
+
+        if not result or not result.success:
+            return {"success": False, "error": " | ".join(errors) if errors else "No provider attempted"}
 
         logger.info(f"Provider returned temporary URL")
 
         # Download from temporary URL
-        response = requests.get(result.image_url, timeout=30)
-        response.raise_for_status()
-        image_data = response.content
+        image_data = self._load_generated_image(result.image_url)
 
         # Compress image to reduce file size (prevents Twilio timeout on large files)
         from PIL import Image
@@ -537,5 +573,6 @@ class VisualizationManager:
             'success': True,
             'visualization_url': permanent_url,
             'generation_time': result.generation_time,
-            'provider': result.provider
+            'provider': result.provider,
+            'provider_key': provider_used,
         }
