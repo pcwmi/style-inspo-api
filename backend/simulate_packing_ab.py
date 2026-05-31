@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-Simulate the SF packing conversation with Variant B prompt.
+Simulate the SF packing conversation with the adaptive packing prompt.
 
 Replays the exact conversation from April 12, 2026:
   "Pack a Monday-Thursday SF trip, low-key working trip..."
 
 Usage:
     cd backend
-    PACKING_VARIANT=B python3 simulate_packing_ab.py
+    python3 simulate_packing_ab.py
 
 Outputs a transcript of what the agent would send over WhatsApp,
 showing tool calls + text for evaluation.
@@ -30,10 +30,9 @@ class SimAgent:
     """Minimal agent loop for simulation — same logic as StylingAgent but with
     clean tracing output for evaluating message structure."""
 
-    def __init__(self, user_id: str, variant: str = "A"):
+    def __init__(self, user_id: str):
         self.user_id = user_id
-        self.variant = variant
-        self.system_prompt = get_system_prompt(variant)
+        self.system_prompt = get_system_prompt()
         self.history = []
         self.turn_count = 0
         self.max_turns = 15
@@ -47,8 +46,7 @@ class SimAgent:
         self._executor = StylingAgent(user_id=user_id, provider="openai")
 
         print(f"\n{'='*60}")
-        print(f"Variant {variant} Simulation — user: {user_id}")
-        print(f"Packing section: {'Visual-First' if variant == 'B' else 'Ingredients-First'}")
+        print(f"Adaptive packing simulation - user: {user_id}")
         print(f"{'='*60}\n")
 
     def send(self, user_message: str):
@@ -129,15 +127,15 @@ class SimAgent:
                             "label": label,
                         }
                     elif fn == "send_message":
-                        body = args.get("body", "")
-                        media = args.get("media_urls", [])
+                        body = args.get("text", "")
+                        media = args.get("images", [])
                         if media:
                             print(f"  ← [SEND_MESSAGE with {len(media)} image(s)]: {body[:80]}")
                         else:
                             print(f"  ← [SEND_MESSAGE text]: {body[:120]}")
                         result = {"success": True}
                     elif fn == "resolve_items":
-                        names = args.get("item_names", [])
+                        names = args.get("descriptions", [])
                         print(f"  ← [RESOLVE] {len(names)} items")
                         result = {"items": {n: f"https://s3.example.com/{n}.jpg" for n in names}}
                     else:
@@ -156,8 +154,8 @@ class SimAgent:
         return ""
 
 
-def run_simulation(variant: str):
-    agent = SimAgent(user_id="peichin", variant=variant)
+def run_simulation():
+    agent = SimAgent(user_id="peichin")
 
     # Turn 1: Initial packing request
     agent.send("Pack a Monday-Thursday SF trip for me, look up the weather there. "
@@ -168,8 +166,8 @@ def run_simulation(variant: str):
     agent.send("Tmrw to Thursday. First day and last day will uber since I have luggage, "
                "other days walking")
 
-    # Turn 3: User asks to see outfits (only needed if agent didn't show them)
-    # (Variant B should show outfits immediately after turn 2 — if so this is a no-op)
+    # Turn 3: User asks to see outfits (only needed if the agent didn't show them)
+    # The adaptive packing prompt should show outfits immediately after turn 2.
     # agent.send("Great, show me what the outfits look like every day")
 
     # Turn 4: User feedback + remove an item
@@ -182,6 +180,5 @@ def run_simulation(variant: str):
 
 
 if __name__ == "__main__":
-    variant = os.getenv("PACKING_VARIANT", "B")
-    print(f"Running simulation with PACKING_VARIANT={variant}")
-    run_simulation(variant)
+    print("Running adaptive packing simulation")
+    run_simulation()

@@ -69,7 +69,7 @@ class StylingAgent:
     ):
         self.user_id = user_id
         self.provider = provider
-        self.max_turns = 10
+        self.max_turns = 15
         self.output = output  # Injected output handler (modality-aware)
         self.conversation_context = conversation_context  # For stateful SMS
         self.preloaded_context = preloaded_context  # Eliminates context-gathering round-trip
