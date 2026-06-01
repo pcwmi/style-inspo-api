@@ -31,6 +31,7 @@ class ConversationState:
     phone: str
     last_outfit: Dict[str, Any] = field(default_factory=dict)
     outfit_history: List[Dict[str, Any]] = field(default_factory=list)  # Previous outfits (max 3)
+    active_pack: Dict[str, Any] = field(default_factory=dict)
     messages: List[Dict[str, str]] = field(default_factory=list)
     image_descriptions: List[Dict[str, Any]] = field(default_factory=list)  # Analyzed images (reuse across turns)
     created_at: str = field(default_factory=lambda: datetime.utcnow().isoformat() + "Z")
@@ -46,6 +47,7 @@ class ConversationState:
             phone=data.get("phone", ""),
             last_outfit=data.get("last_outfit", {}),
             outfit_history=data.get("outfit_history", []),
+            active_pack=data.get("active_pack", {}),
             messages=data.get("messages", []),
             image_descriptions=data.get("image_descriptions", []),
             created_at=data.get("created_at", ""),
@@ -137,6 +139,61 @@ class ConversationStateManager:
             state.last_outfit = outfit
             return self.save_state(state)
         return False
+
+    def upsert_active_pack_outfit(self, outfit: Dict[str, Any]) -> bool:
+        """Persist a presented outfit inside the active multi-outfit pack.
+
+        Packing follow-ups need exact prior item names by day/context. The
+        legacy last_outfit field is still maintained for save/feedback flows,
+        while active_pack keeps the current set of presented outfits stable.
+        """
+        state = self.get_state()
+        if not state:
+            return False
+
+        active_pack = state.active_pack or {}
+        outfits = list(active_pack.get("outfits", []))
+        label = outfit.get("label") or f"Outfit {len(outfits) + 1}"
+
+        replaced = False
+        for idx, existing in enumerate(outfits):
+            if existing.get("label", "").lower() == label.lower():
+                outfits[idx] = outfit
+                replaced = True
+                break
+
+        if not replaced:
+            outfits.append(outfit)
+
+        active_pack["outfits"] = outfits[-8:]
+        active_pack["updated_at"] = datetime.utcnow().isoformat() + "Z"
+        state.active_pack = active_pack
+        return self.save_state(state)
+
+    def update_active_pack_visualization(self, outfit_key: str, visualization_url: str) -> bool:
+        """Attach a generated on-person visualization to an active pack outfit."""
+        state = self.get_state()
+        if not state or not state.active_pack:
+            return False
+
+        updated = False
+        for outfit in state.active_pack.get("outfits", []):
+            if outfit.get("key") == outfit_key:
+                outfit["visualization_url"] = visualization_url
+                updated = True
+                break
+
+        if updated:
+            return self.save_state(state)
+        return False
+
+    def clear_active_pack(self) -> bool:
+        """Clear the active multi-outfit pack when a new pack starts."""
+        state = self.get_state()
+        if not state:
+            return False
+        state.active_pack = {}
+        return self.save_state(state)
 
     def get_outfit_from_history(self, index: int = 0) -> Optional[Dict[str, Any]]:
         """Get an outfit from history by index.

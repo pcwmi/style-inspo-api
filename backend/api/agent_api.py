@@ -11,6 +11,7 @@ from typing import Optional
 
 from fastapi import APIRouter
 from fastapi.concurrency import run_in_threadpool
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 router = APIRouter()
@@ -31,8 +32,23 @@ async def agent_run(request: AgentRunRequest):
     Blocks ~35-40s (agent ~20s + optional viz ~15-20s).
     Designed for agent-to-agent calls, not browser clients.
     """
-    result = await run_in_threadpool(_run_agent_sync, request)
-    return result
+    try:
+        result = await run_in_threadpool(_run_agent_sync, request)
+        return result
+    except Exception as e:
+        from services.provider_errors import classify_provider_error
+        error_info = classify_provider_error(e)
+        logger.error(
+            "Agent API failed: provider=%s code=%s admin_message=%s",
+            error_info.provider,
+            error_info.code,
+            error_info.admin_message,
+            exc_info=True,
+        )
+        return JSONResponse(
+            status_code=error_info.http_status,
+            content={"error": error_info.to_dict()},
+        )
 
 
 def _run_agent_sync(request: AgentRunRequest) -> dict:
@@ -52,7 +68,12 @@ def _run_agent_sync(request: AgentRunRequest) -> dict:
             from services.conversation_state import ConversationStateManager
             state_manager = ConversationStateManager(request.conversation_id)
             state = state_manager.get_or_create_state(user_id)
-            conversation_context = {"messages": state.messages}
+            conversation_context = {
+                "messages": state.messages,
+                "last_outfit": state.last_outfit,
+                "outfit_history": state.outfit_history,
+                "active_pack": state.active_pack,
+            }
             state_manager.append_message("user", request.message)
         except Exception as e:
             logger.warning(f"Agent API: failed to load conversation state: {e}")

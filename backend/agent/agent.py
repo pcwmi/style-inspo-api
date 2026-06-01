@@ -18,6 +18,7 @@ from typing import Optional, Literal
 
 from agent.tools import TOOLS, TOOLS_OPENAI
 from agent.prompts import STYLING_SYSTEM_PROMPT, FAST_OUTFIT_PROMPT, get_system_prompt
+from agent.edit_intent import build_constrained_edit_hint
 
 logger = logging.getLogger(__name__)
 
@@ -148,6 +149,71 @@ class StylingAgent:
                 messages.append({"role": role, "content": content})
 
         return messages
+
+    def _build_state_context(self, user_message: str) -> str:
+        """Build structured SMS state context outside the prose transcript."""
+        if not self.conversation_context:
+            return ""
+
+        sections = []
+        active_pack = self.conversation_context.get("active_pack") or {}
+        outfits = active_pack.get("outfits") or []
+        if outfits:
+            lines = [
+                "# Active Pack State",
+                "Use this as the source of truth for packing follow-ups and edits.",
+            ]
+            for outfit in outfits:
+                label = outfit.get("label") or "Outfit"
+                item_names = outfit.get("item_names") or [
+                    item.get("name") for item in outfit.get("items", []) if item.get("name")
+                ]
+                if item_names:
+                    lines.append(f"- {label}: {', '.join(item_names)}")
+            sections.append("\n".join(lines))
+
+        last_outfit = self.conversation_context.get("last_outfit") or {}
+        last_item_names = last_outfit.get("item_names") or [
+            item.get("name") for item in last_outfit.get("items", []) if item.get("name")
+        ]
+        if last_item_names and not outfits:
+            sections.append("# Last Outfit State\n- " + ", ".join(last_item_names))
+
+        edit_hint = build_constrained_edit_hint(user_message, active_pack)
+        if edit_hint:
+            sections.append("# Edit Scope\n" + edit_hint)
+
+        if not sections:
+            return ""
+        return "\n\n---\n\n" + "\n\n".join(sections)
+
+    def _build_context_prefix(self) -> str:
+        """Backward-compatible text context summary for older tests/callers."""
+        if not self.conversation_context:
+            return ""
+
+        lines = ["[CONTEXT]"]
+        last_outfit = self.conversation_context.get("last_outfit") or {}
+        if last_outfit:
+            item_names = [
+                item.get("name") for item in last_outfit.get("items", []) if item.get("name")
+            ]
+            if item_names:
+                lines.append("Last outfit: " + ", ".join(item_names))
+            elif last_outfit.get("image_urls"):
+                lines.append(f"Last outfit: {len(last_outfit['image_urls'])} items")
+
+            notes = last_outfit.get("styling_notes")
+            if notes:
+                lines.append("Styling notes: " + notes)
+
+        for msg in self.conversation_context.get("messages", [])[-5:]:
+            role = msg.get("role", "message")
+            content = msg.get("content", "")
+            if content:
+                lines.append(f"{role}: {content}")
+
+        return "\n".join(lines) if len(lines) > 1 else ""
 
     def run(self, user_message: str, image_urls: list[str] = None) -> str:
         """Run the agent loop until completion.
@@ -289,9 +355,19 @@ Use EXACT item names from the wardrobe list. Include 3-6 items per outfit (top +
         send_start = time.perf_counter()
 
         def _present_one(args):
-            styling_text, image_urls, _ = args
+            styling_text, image_urls, resolved_items = args
             if self.output:
-                self.output.present_outfit(text=styling_text, images=image_urls, visualize=True, skip_enhance=True)
+                item_names = [
+                    item.get("styling_details", {}).get("name") or item.get("name", "")
+                    for item in resolved_items
+                ]
+                self.output.present_outfit(
+                    text=styling_text,
+                    images=image_urls,
+                    visualize=True,
+                    skip_enhance=True,
+                    item_names=item_names,
+                )
             return styling_text
 
         if len(valid_outfits) == 1:
@@ -333,10 +409,12 @@ Use EXACT item names from the wardrobe list. Include 3-6 items per outfit (top +
         for turn in range(self.max_turns):
             logger.info(f"Agent turn {turn + 1} (anthropic/{self.model})")
 
+            system_prompt = get_system_prompt() + self._build_state_context(user_message)
+
             response = self.client.messages.create(
                 model=self.model,
                 max_tokens=4096,
-                system=get_system_prompt(),
+                system=system_prompt,
                 tools=TOOLS,
                 messages=messages
             )
@@ -398,7 +476,7 @@ Use EXACT item names from the wardrobe list. Include 3-6 items per outfit (top +
     def _run_openai(self, user_message: str, image_urls: list[str] = None) -> str:
         """OpenAI agent loop."""
         # Start with system prompt (+ preloaded context if available)
-        system_prompt = get_system_prompt()
+        system_prompt = get_system_prompt() + self._build_state_context(user_message)
         if self.preloaded_context:
             system_prompt += (
                 "\n\n---\n\n# User Context (pre-loaded)\n\n"
@@ -844,7 +922,7 @@ Use EXACT item names from the wardrobe list. Include 3-6 items per outfit (top +
                 visualize = tool_input.get("visualize", False)
 
                 if self.output:
-                    self.output.present_outfit(text=text, images=images, visualize=visualize)
+                    self.output.present_outfit(text=text, images=images, visualize=visualize, item_names=item_names)
                     logger.info(f"present_outfit: sent {len(images)} images, item_names={item_names}, visualize={visualize}")
                     return {
                         "status": "sent",

@@ -91,8 +91,17 @@ async def generate_outfits_agent_stream(
                     logger.warning(f"Failed to log agent turn: {log_err}")
 
             except Exception as e:
-                agent_error[0] = str(e)
-                logger.error(f"Agent-web error for {user_id}: {e}", exc_info=True)
+                from services.provider_errors import classify_provider_error
+                error_info = classify_provider_error(e)
+                agent_error[0] = error_info.to_dict()
+                logger.error(
+                    "Agent-web error for %s: provider=%s code=%s admin_message=%s",
+                    user_id,
+                    error_info.provider,
+                    error_info.code,
+                    error_info.admin_message,
+                    exc_info=True,
+                )
             finally:
                 agent_done.set()
 

@@ -3,16 +3,14 @@ SMS API - Twilio webhook for incoming SMS/MMS.
 
 Agent-native architecture:
 1. User texts a request
-2. We send immediate ack: "Working on it..."
-3. Agent runs with SMSOutput handler
-4. Agent calls resolve_items (text → images) + send_message (images → user)
-5. Orchestration is just agent.run() - all logic is in agent + primitives
+2. Agent runs with SMSOutput handler
+3. Agent calls resolve_items (text → images) + send_message/present_outfit (images → user)
+4. Orchestration is just agent.run() - all logic is in agent + primitives
 """
 
 import os
 import json
 import logging
-import random
 import re
 import base64
 import uuid
@@ -179,6 +177,9 @@ async def process_outfit_request(user_id: str, phone: str, message: str, image_u
         # The conversation IS the state — agent reads messages + photos and reasons from there
         conversation_context = {
             "messages": state.messages,
+            "last_outfit": state.last_outfit,
+            "outfit_history": state.outfit_history,
+            "active_pack": state.active_pack,
         }
 
         # Import here to avoid circular imports
@@ -209,17 +210,18 @@ async def process_outfit_request(user_id: str, phone: str, message: str, image_u
         response = agent.run(message, image_urls=image_data_uris)
         logger.info(f"Agent completed. Response: {response[:200] if response else '(none)'}...")
 
-        # Always send the agent's text response if it exists.
-        # send_message/present_outfit deliver per-outfit content (collages + styling text).
-        # The final response is the wrap-up (packing summary, WOFs, follow-up questions) —
-        # complementary content, not a duplicate.
+        # If tools already sent SMS content, do not send a late final assistant
+        # response. Packing relies on send_message before present_outfit; sending
+        # final text afterward makes the capsule rationale arrive out of order.
         if response:
-            send_sms(phone, response)
-            logger.info(f"Sent agent text response to {phone}")
+            if output.message_sent:
+                logger.info("Skipped final text response because tool output already sent SMS content")
+            else:
+                send_sms(phone, response)
+                state_manager.append_message("assistant", response)
+                logger.info(f"Sent agent text response to {phone}")
 
-        # Always record agent response in conversation state
-        if response:
-            state_manager.append_message("assistant", response)
+        output.flush_pending_visualizations()
 
         # Persist agent conversation log for eval/replay
         try:
@@ -244,8 +246,16 @@ async def process_outfit_request(user_id: str, phone: str, message: str, image_u
             logger.warning(f"Failed to log agent turn: {e}")
 
     except Exception as e:
-        logger.error(f"Error processing request: {e}", exc_info=True)
-        send_sms(phone, "Sorry, I had trouble with that. Please try again!")
+        from services.provider_errors import classify_provider_error
+        error_info = classify_provider_error(e)
+        logger.error(
+            "Error processing SMS request: provider=%s code=%s admin_message=%s",
+            error_info.provider,
+            error_info.code,
+            error_info.admin_message,
+            exc_info=True,
+        )
+        send_sms(phone, error_info.user_message)
 
 
 @router.post("/incoming")
@@ -286,16 +296,6 @@ async def incoming_sms(
 </Response>""",
             media_type="application/xml"
         )
-
-    # Send immediate in-character acknowledgment
-    ack_messages = [
-        "Ooh, let me look at this...",
-        "Hmm, I have some ideas...",
-        "Give me a sec...",
-        "Let me think on this...",
-        "Oh I'm already seeing something...",
-    ]
-    send_sms(From, random.choice(ack_messages))
 
     # Queue background processing
     background_tasks.add_task(

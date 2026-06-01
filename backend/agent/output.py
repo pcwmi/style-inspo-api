@@ -7,8 +7,11 @@ The agent decides WHAT to send, this layer decides HOW to render it.
 
 import re
 import logging
+import uuid
 from abc import ABC, abstractmethod
 from typing import List, Optional
+
+from agent.edit_intent import infer_outfit_label
 
 logger = logging.getLogger(__name__)
 
@@ -89,12 +92,19 @@ class OutputHandler(ABC):
     """Base class for modality-specific output."""
 
     @abstractmethod
-    def send(self, text: Optional[str], images: List[str]):
+    def send(self, text: Optional[str], images: List[str], layout: Optional[str] = None):
         """Send text and/or images as-is. No collage processing."""
         pass
 
     @abstractmethod
-    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False, skip_enhance: bool = False):
+    def present_outfit(
+        self,
+        text: Optional[str],
+        images: List[str],
+        visualize: bool = False,
+        skip_enhance: bool = False,
+        item_names: Optional[List[str]] = None,
+    ):
         """Present a new outfit with editorial collage."""
         pass
 
@@ -118,7 +128,7 @@ class SMSOutput(OutputHandler):
         self.user_id = user_id
 
 
-    def send(self, text: Optional[str], images: List[str]):
+    def send(self, text: Optional[str], images: List[str], layout: Optional[str] = None):
         """Send text and/or images as-is. No collage. Each image sent individually."""
         from services.twilio_service import send_sms, send_mms
 
@@ -141,7 +151,14 @@ class SMSOutput(OutputHandler):
 
         logger.info(f"SMSOutput: sent {len(images)} individual image(s) to {self.phone}")
 
-    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False, skip_enhance: bool = False):
+    def present_outfit(
+        self,
+        text: Optional[str],
+        images: List[str],
+        visualize: bool = False,
+        skip_enhance: bool = False,
+        item_names: Optional[List[str]] = None,
+    ):
         """Present a new outfit with editorial collage."""
         from services.twilio_service import send_sms, send_mms
         from services.collage import generate_outfit_collage
@@ -204,43 +221,129 @@ class StatefulSMSOutput(SMSOutput):
         super().__init__(phone, user_id)
         self.state_manager = state_manager
         self.message_sent = False  # Track if send() was called (to avoid duplicate sends)
+        self._pending_visualizations = []
+        self._new_pack_pending = False
 
-    def send(self, text: Optional[str], images: List[str]):
+    def send(self, text: Optional[str], images: List[str], layout: Optional[str] = None):
         self.message_sent = True
-        super().send(text, images)
+        super().send(text, images, layout=layout)
+        if text:
+            self.state_manager.append_message("assistant", text)
+            lowered = text.lower()
+            if not images and ("wof" in lowered or "without fail" in lowered):
+                self._new_pack_pending = True
 
-    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False, skip_enhance: bool = False):
-        self.message_sent = True
-
-        # Send via parent class (collage + text)
-        super().present_outfit(text, images, visualize, skip_enhance=skip_enhance)
-
-        # Capture outfit state + trigger visualization
-        if visualize and images:
+        if images and (layout == "outfit" or len(images) > 1):
             resolved = resolve_items_from_urls(self.user_id, images)
-            items_with_names = [{"image_path": r["image_url"], "name": r["name"]} for r in resolved]
-
+            items_with_names = [
+                {
+                    "image_path": r["image_url"],
+                    "name": r.get("name", ""),
+                    "category": r.get("category", "unknown"),
+                    "sub_category": r.get("sub_category", ""),
+                }
+                for r in resolved
+            ]
             outfit_data = {
+                "key": str(uuid.uuid4()),
+                "label": infer_outfit_label(text, 1),
                 "items": items_with_names,
+                "item_names": [item["name"] for item in items_with_names if item.get("name")],
                 "image_urls": images,
                 "styling_notes": text,
             }
             self.state_manager.set_last_outfit(outfit_data)
+            self.state_manager.upsert_active_pack_outfit(outfit_data)
+
+    def present_outfit(
+        self,
+        text: Optional[str],
+        images: List[str],
+        visualize: bool = False,
+        skip_enhance: bool = False,
+        item_names: Optional[List[str]] = None,
+    ):
+        self.message_sent = True
+
+        # Send via parent class (collage + text)
+        super().present_outfit(text, images, visualize, skip_enhance=skip_enhance, item_names=item_names)
+
+        # Capture outfit state + trigger visualization
+        if visualize and images:
+            resolved = resolve_items_from_urls(self.user_id, images)
+            exact_names = item_names or [r["name"] for r in resolved if r.get("name")]
+            items_with_names = []
+            for idx, r in enumerate(resolved):
+                name = exact_names[idx] if idx < len(exact_names) else r.get("name", "")
+                items_with_names.append({
+                    "image_path": r["image_url"],
+                    "name": name,
+                    "category": r.get("category", "unknown"),
+                    "sub_category": r.get("sub_category", ""),
+                })
+
+            state = self.state_manager.get_state()
+            active_pack = state.active_pack if state and state.active_pack else {}
+            outfit_count = len(active_pack.get("outfits", []))
+            label = infer_outfit_label(text, outfit_count + 1)
+            if self._new_pack_pending:
+                self.state_manager.clear_active_pack()
+                active_pack = {}
+                outfit_count = 0
+                self._new_pack_pending = False
+                label = infer_outfit_label(text, outfit_count + 1)
+            outfit_key = str(uuid.uuid4())
+            outfit_data = {
+                "key": outfit_key,
+                "label": label,
+                "items": items_with_names,
+                "item_names": [item["name"] for item in items_with_names if item.get("name")],
+                "image_urls": images,
+                "styling_notes": text,
+            }
+            self.state_manager.set_last_outfit(outfit_data)
+            self.state_manager.upsert_active_pack_outfit(outfit_data)
+            if text:
+                self.state_manager.append_message("assistant", text)
             logger.info(f"StatefulSMSOutput: captured outfit with {len(images)} items to state")
 
-            from services.twilio_service import send_sms
-            send_sms(self.phone, "Generating a styled version for you... this can take about a minute.")
-            logger.info(f"StatefulSMSOutput: sent visualization expectation message to {self.phone}")
-
-            item_names = [r["name"] for r in resolved if r.get("name")]
             styling_hint = parse_outfit_text(text)["magic"][:150]
-            self._trigger_background_visualization(images, styling_hint, item_names=item_names)
+            self._pending_visualizations.append({
+                "images": images,
+                "styling_hint": styling_hint,
+                "item_names": outfit_data["item_names"],
+                "label": label,
+                "outfit_key": outfit_key,
+            })
+
+    def flush_pending_visualizations(self):
+        """Start queued on-person visualizations after outfit messages are sent."""
+        if not self._pending_visualizations:
+            return
+
+        if len(self._pending_visualizations) > 1:
+            from services.twilio_service import send_sms
+            send_sms(self.phone, "I'll send the on-person views as they're ready.")
+            logger.info(f"StatefulSMSOutput: sent batch visualization note to {self.phone}")
+
+        pending = list(self._pending_visualizations)
+        self._pending_visualizations = []
+        for request in pending:
+            self._trigger_background_visualization(
+                request["images"],
+                request["styling_hint"],
+                item_names=request["item_names"],
+                label=request["label"],
+                outfit_key=request["outfit_key"],
+            )
 
     def _trigger_background_visualization(
         self,
         images: List[str],
         styling_notes: str = "",
         item_names: Optional[List[str]] = None,
+        label: str = "",
+        outfit_key: str = "",
     ):
         """Spawn background thread to generate and send visualization."""
         import threading
@@ -263,7 +366,8 @@ class StatefulSMSOutput(SMSOutput):
 
                 if result and result.get("visualization_url"):
                     viz_url = result["visualization_url"]
-                    send_mms(self.phone, "Here's how it looks on you.", [viz_url])
+                    body = f"{label} on-person view" if label else "On-person view"
+                    send_mms(self.phone, body, [viz_url])
                     logger.info(f"StatefulSMSOutput: sent visualization to {self.phone}")
 
                     # Persist viz URL to conversation state for later save_outfit linkage
@@ -272,6 +376,8 @@ class StatefulSMSOutput(SMSOutput):
                         if state and state.last_outfit:
                             state.last_outfit["visualization_url"] = viz_url
                             self.state_manager.save_state(state)
+                            if outfit_key:
+                                self.state_manager.update_active_pack_visualization(outfit_key, viz_url)
                             logger.info(f"StatefulSMSOutput: persisted viz_url to conversation state")
                     except Exception as e:
                         logger.warning(f"StatefulSMSOutput: failed to persist viz_url: {e}")
@@ -280,6 +386,8 @@ class StatefulSMSOutput(SMSOutput):
                     logger.warning(f"StatefulSMSOutput: visualization failed for {self.user_id}: {error}")
                     send_sms(
                         self.phone,
+                        f"I couldn't generate the {label} on-person view this time, but the outfit collage above is ready."
+                        if label else
                         "I couldn't generate the on-person view this time, but the outfit collage above is ready."
                     )
 
@@ -289,6 +397,8 @@ class StatefulSMSOutput(SMSOutput):
                     from services.twilio_service import send_sms
                     send_sms(
                         self.phone,
+                        f"I couldn't generate the {label} on-person view this time, but the outfit collage above is ready."
+                        if label else
                         "I couldn't generate the on-person view this time, but the outfit collage above is ready."
                     )
                 except Exception:
@@ -320,11 +430,18 @@ class WebOutput(OutputHandler):
         if reasoning:
             self._pending_reasoning.append({"tool": tool_name, "reasoning": reasoning})
 
-    def send(self, text: Optional[str], images: List[str]):
+    def send(self, text: Optional[str], images: List[str], layout: Optional[str] = None):
         # Non-outfit messages (browse results, text-only) — log but don't queue as outfit
         logger.info(f"WebOutput: non-outfit message ({len(images)} images)")
 
-    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False, skip_enhance: bool = False):
+    def present_outfit(
+        self,
+        text: Optional[str],
+        images: List[str],
+        visualize: bool = False,
+        skip_enhance: bool = False,
+        item_names: Optional[List[str]] = None,
+    ):
         if images:
             enriched = self._enrich_outfit(text, images, visualize, skip_enhance=skip_enhance)
             self.outfits.append(enriched)
@@ -388,12 +505,19 @@ class APIOutput(OutputHandler):
         self.outfits = []
         self.messages = []
 
-    def send(self, text: Optional[str], images: List[str]):
+    def send(self, text: Optional[str], images: List[str], layout: Optional[str] = None):
         msg = {"text": text, "images": images or []}
         self.messages.append(msg)
         logger.info(f"APIOutput: collected message with {len(images)} images")
 
-    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False, skip_enhance: bool = False):
+    def present_outfit(
+        self,
+        text: Optional[str],
+        images: List[str],
+        visualize: bool = False,
+        skip_enhance: bool = False,
+        item_names: Optional[List[str]] = None,
+    ):
         outfit = {"text": text, "images": images or []}
 
         if images:
@@ -425,7 +549,7 @@ class MockOutput(OutputHandler):
     def __init__(self):
         self.messages = []
 
-    def send(self, text: Optional[str], images: List[str]):
+    def send(self, text: Optional[str], images: List[str], layout: Optional[str] = None):
         self.messages.append({
             "tool": "send_message",
             "text": text,
@@ -433,11 +557,19 @@ class MockOutput(OutputHandler):
         })
         logger.info(f"MockOutput: captured send_message with {len(images)} images")
 
-    def present_outfit(self, text: Optional[str], images: List[str], visualize: bool = False, skip_enhance: bool = False):
+    def present_outfit(
+        self,
+        text: Optional[str],
+        images: List[str],
+        visualize: bool = False,
+        skip_enhance: bool = False,
+        item_names: Optional[List[str]] = None,
+    ):
         self.messages.append({
             "tool": "present_outfit",
             "text": text,
             "images": images,
+            "item_names": item_names or [],
             "visualize": visualize,
         })
         logger.info(f"MockOutput: captured present_outfit with {len(images)} images, visualize={visualize}")
