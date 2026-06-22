@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+#
+# Pre-push eval gate for the SMS styling agent.
+#
+# - Always runs the free grader self-test (stdlib only, instant).
+# - If the push touches agent behavior (agent/, primitives/, api/sms.py,
+#   services/, or the eval fixtures), runs the full assertion suite.
+#     * exit 1  -> a GUARD regressed                -> BLOCK the push
+#     * exit 2  -> gate couldn't run (deps/creds)   -> WARN, allow the push
+#     * exit 0  -> guards green (targets may be open) -> allow
+#
+# Bypass: `git push --no-verify`  (one-off)  |  `SKIP_EVAL_GATE=1 git push`
+# Override the interpreter with EVAL_PYTHON=/path/to/python.
+
+set -uo pipefail
+
+if [ "${SKIP_EVAL_GATE:-}" = "1" ]; then
+  echo "pre-push: SKIP_EVAL_GATE=1 — skipping eval gate."
+  exit 0
+fi
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "$REPO_ROOT" || exit 0
+
+# --- pick a python interpreter ---
+PY=""
+for c in "${EVAL_PYTHON:-}" \
+         "$REPO_ROOT/backend/style_env/bin/python" \
+         "$REPO_ROOT/style_env/bin/python" \
+         python3 python; do
+  if [ -n "$c" ] && command -v "$c" >/dev/null 2>&1; then PY="$c"; break; fi
+done
+if [ -z "$PY" ]; then
+  echo "pre-push: WARNING — no python found; skipping eval gate."
+  exit 0
+fi
+
+# --- figure out what's being pushed ---
+default_ref="$(git symbolic-ref --quiet refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/@@')"
+default_ref="${default_ref:-origin/main}"
+changed=""
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ -z "${local_sha:-}" ] && continue
+  case "$local_sha" in *[!0]*) ;; *) continue ;; esac   # all-zero local = branch delete
+  case "$remote_sha" in
+    *[!0]*) range="$remote_sha..$local_sha" ;;          # existing remote branch
+    *)                                                   # new branch: diff from merge-base
+      base="$(git merge-base "$default_ref" "$local_sha" 2>/dev/null || true)"
+      range="${base:+$base..}$local_sha" ;;
+  esac
+  changed="$changed
+$(git diff --name-only $range 2>/dev/null)"
+done
+
+# --- free check: the graders themselves must be sane ---
+echo "pre-push: grader self-test..."
+if ! "$PY" backend/tests/sms_eval/scripts/grader.py --self-test >/dev/null; then
+  echo "pre-push: grader self-test FAILED — push blocked."
+  exit 1
+fi
+
+# --- only pay for the full suite when agent behavior changed ---
+if ! printf '%s\n' "$changed" | grep -qE 'backend/(agent/|primitives/|api/sms\.py|services/|tests/sms_eval/)'; then
+  echo "pre-push: no agent-behavior changes; skipping the full assertion suite."
+  exit 0
+fi
+
+echo "pre-push: running full SMS assertion suite (GUARD failures block the push)..."
+"$PY" backend/tests/sms_eval/scripts/run_assertions.py
+code=$?
+case "$code" in
+  1) echo "pre-push: GUARD regression — push blocked. Override: git push --no-verify"; exit 1 ;;
+  2) echo "pre-push: WARNING — eval gate could not run (missing deps/creds). Allowing push."; exit 0 ;;
+  *) exit 0 ;;
+esac
