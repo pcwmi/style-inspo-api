@@ -53,13 +53,34 @@ TOOLS = [
     # --- PROFILE ---
     {
         "name": "get_profile",
-        "description": "Get the user's style profile including their three style words (current, aspirational, feeling) and model descriptor.",
+        "description": "Get the user's style profile including their three style words (current, aspirational, feeling), home location, and model descriptor.",
         "input_schema": {
             "type": "object",
             "properties": {
                 **REASONING_FIELD
             },
             "required": ["reasoning"]
+        }
+    },
+    {
+        "name": "update_location",
+        "description": (
+            "Update the user's home location (city/region used for weather and local context). "
+            "Call this when the user tells you where they live or that they've moved "
+            "(e.g. 'I just moved to Portland', 'I'm based in NYC now'). Do NOT call it for a "
+            "one-off trip ('I'm in Chicago this weekend') — for those, just use that city for the "
+            "current request without changing their saved home location."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                **REASONING_FIELD,
+                "location": {
+                    "type": "string",
+                    "description": "The user's home location, e.g. 'Seattle, WA' or 'Portland, OR'."
+                }
+            },
+            "required": ["reasoning", "location"]
         }
     },
 

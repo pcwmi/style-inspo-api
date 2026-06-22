@@ -39,6 +39,8 @@ scenarios; grading a saved `raw_results.json` needs neither.
 | T1 | target | "too much **and** check weather" → honors **both** halves |
 | T2 | target | Same-day request → implicit weather lookup, **defaults to Seattle** |
 | T2b | target | Named city overrides the Seattle default |
+| T5 | target | "I moved to Portland" → `update_location` persists the new home |
+| T6 | target | "I'm in Chicago this weekend" → trip city used, home **not** changed |
 | T3 | target | **Every** outfit ships with surviving styling rationale |
 | T4 | target | First outfit matches brief + weather (not over-styled) |
 

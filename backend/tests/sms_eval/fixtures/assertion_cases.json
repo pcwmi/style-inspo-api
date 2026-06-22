@@ -164,6 +164,41 @@
     }
   },
   {
+    "id": "T5_update_location_on_move",
+    "name": "TARGET: Updates saved location when the user moves",
+    "user_id": "peichin",
+    "use_case": "occasion",
+    "description": "User states a permanent move. Agent should persist the new home location via update_location and use it for the weather lookup.",
+    "turns": [
+      {"turn": 1, "user_message": "I just moved to Portland. What should I wear today?", "image_url": null, "image_type": null}
+    ],
+    "expectations": {
+      "tier": "target",
+      "assertions": [
+        {"id": "T5a", "type": "tool_called", "tool": "update_location", "turn": 1},
+        {"id": "T5b", "type": "tool_arg_contains_any", "tool": "update_location", "turn": 1, "patterns": ["portland"]},
+        {"id": "T5c", "type": "tool_arg_contains_any", "tool": "web_search", "turn": 1, "patterns": ["portland"]}
+      ]
+    }
+  },
+  {
+    "id": "T6_no_update_on_trip",
+    "name": "TARGET: Does NOT change saved location for a one-off trip",
+    "user_id": "peichin",
+    "use_case": "occasion",
+    "description": "A temporary trip should use that city for the request but must NOT overwrite the saved home location.",
+    "turns": [
+      {"turn": 1, "user_message": "I'm in Chicago this weekend, what should I wear today?", "image_url": null, "image_type": null}
+    ],
+    "expectations": {
+      "tier": "target",
+      "assertions": [
+        {"id": "T6a", "type": "tool_not_called", "tool": "update_location", "turn": 1},
+        {"id": "T6b", "type": "tool_arg_contains_any", "tool": "web_search", "turn": 1, "patterns": ["chicago"]}
+      ]
+    }
+  },
+  {
     "id": "T3_rationale_survives",
     "name": "TARGET: Every outfit ships with surviving styling rationale",
     "user_id": "peichin",

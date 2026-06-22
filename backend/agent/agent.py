@@ -647,6 +647,14 @@ Use EXACT item names from the wardrobe list. Include 3-6 items per outfit (top +
                 profile = manager.get_profile(self.user_id)
                 return {"profile": profile}
 
+            elif tool_name == "update_location":
+                location = (tool_input.get("location") or "").strip()
+                if not location:
+                    return {"success": False, "error": "location is required"}
+                manager = UserProfileManager(user_id=self.user_id)
+                success = manager.save_profile({"location": location})
+                return {"success": success, "location": location}
+
             elif tool_name == "get_feedback":
                 manager = DislikedOutfitsManager(user_id=self.user_id)
                 feedback = manager.get_disliked_outfits(enrich_with_current_images=True)
