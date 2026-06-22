@@ -1,0 +1,201 @@
+[
+  {
+    "id": "G1_inspo_translation",
+    "name": "GUARD: Inspiration photo recreated from own wardrobe",
+    "user_id": "peichin",
+    "use_case": "inspiration_photo",
+    "description": "User sends an inspo photo; agent must recreate the vibe using the user's REAL wardrobe items, not generic suggestions.",
+    "turns": [
+      {"turn": 1, "user_message": "Create this look for me!", "image_url": "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600", "image_type": "inspiration"}
+    ],
+    "expectations": {
+      "tier": "guard",
+      "assertions": [
+        {"id": "G1a", "type": "outfit_present", "turn": 1},
+        {"id": "G1b", "type": "outfit_uses_wardrobe", "turn": 1},
+        {"id": "G1c", "type": "llm_judge", "turn": 1, "threshold": 4,
+         "rubric": "The agent recreated the vibe of the inspiration photo using the user's own wardrobe items (not generic shopping suggestions)."}
+      ]
+    }
+  },
+  {
+    "id": "G2_cross_turn_memory",
+    "name": "GUARD: Builds on the prior outfit across turns",
+    "user_id": "peichin",
+    "use_case": "occasion",
+    "description": "User refines a prior outfit; agent should build on it, not reset to an unrelated look.",
+    "turns": [
+      {"turn": 1, "user_message": "Give me a casual weekend outfit", "image_url": null, "image_type": null},
+      {"turn": 2, "user_message": "Love it, now make it more summery", "image_url": null, "image_type": null}
+    ],
+    "expectations": {
+      "tier": "guard",
+      "assertions": [
+        {"id": "G2a", "type": "outfit_present", "turn": 2},
+        {"id": "G2b", "type": "llm_judge", "turn": "any", "threshold": 4,
+         "rubric": "In turn 2 the agent built on the turn-1 outfit (kept anchors / acknowledged the prior look) rather than resetting to an unrelated outfit."}
+      ]
+    }
+  },
+  {
+    "id": "G3_weather_formatting",
+    "name": "GUARD: Weather answer is searched, factual, and well-formatted",
+    "user_id": "peichin",
+    "use_case": "occasion",
+    "description": "Direct weather question: must web_search (not hallucinate) and return temp/conditions concisely.",
+    "turns": [
+      {"turn": 1, "user_message": "Do you know the weather today?", "image_url": null, "image_type": null}
+    ],
+    "expectations": {
+      "tier": "guard",
+      "assertions": [
+        {"id": "G3a", "type": "tool_called", "tool": "web_search", "turn": 1},
+        {"id": "G3b", "type": "text_contains_any", "turn": 1,
+         "patterns": ["\\bdegree", "\\d0s\\b", "\\d{2}\\s*°", "forecast", "rain", "sunny", "cloud", "\\bhigh\\b", "\\blow\\b"]},
+        {"id": "G3c", "type": "text_not_matches", "turn": "any", "pattern": "\\*\\*"}
+      ]
+    }
+  },
+  {
+    "id": "G5_acknowledgment_minimal",
+    "name": "GUARD: Acknowledgments stay minimal (no tools, no new outfit)",
+    "user_id": "peichin",
+    "use_case": "occasion",
+    "description": "After an outfit, a 'thanks' must get one warm sentence — no tool calls, no images, no unsolicited new outfit.",
+    "turns": [
+      {"turn": 1, "user_message": "Give me an outfit for brunch this weekend", "image_url": null, "image_type": null},
+      {"turn": 2, "user_message": "thanks, love it!", "image_url": null, "image_type": null}
+    ],
+    "expectations": {
+      "tier": "guard",
+      "assertions": [
+        {"id": "G5a", "type": "no_tools", "turn": 2},
+        {"id": "G5b", "type": "max_length", "turn": 2, "chars": 240}
+      ]
+    }
+  },
+  {
+    "id": "G6_visualization_present",
+    "name": "GUARD: Outfit requests include the on-person visualization",
+    "user_id": "peichin",
+    "use_case": "occasion",
+    "description": "On-person view is a valued feature — every composed outfit should ship visualize=true.",
+    "turns": [
+      {"turn": 1, "user_message": "Put together an outfit for a coffee date", "image_url": null, "image_type": null}
+    ],
+    "expectations": {
+      "tier": "guard",
+      "assertions": [
+        {"id": "G6a", "type": "outfit_present", "turn": 1},
+        {"id": "G6b", "type": "outfit_visualized", "turn": 1}
+      ]
+    }
+  },
+  {
+    "id": "G7_sms_formatting_hygiene",
+    "name": "GUARD: SMS formatting hygiene (no markdown headers / bold-stars / walls)",
+    "user_id": "peichin",
+    "use_case": "occasion",
+    "description": "Replies must be phone-friendly: no '**' bold, no markdown headers, not a wall of text.",
+    "turns": [
+      {"turn": 1, "user_message": "Give me an outfit for a casual Friday at the office", "image_url": null, "image_type": null}
+    ],
+    "expectations": {
+      "tier": "guard",
+      "assertions": [
+        {"id": "G7a", "type": "text_not_matches", "turn": "any", "pattern": "\\*\\*"},
+        {"id": "G7b", "type": "text_not_matches", "turn": "any", "pattern": "(?m)^#{1,6}\\s"},
+        {"id": "G7c", "type": "max_length", "turn": "any", "chars": 1500}
+      ]
+    }
+  },
+  {
+    "id": "T1_compound_instruction",
+    "name": "TARGET: Honors BOTH halves of 'too much AND check the weather'",
+    "user_id": "peichin",
+    "use_case": "occasion",
+    "description": "Reproduces the coffee-shop transcript: a compound instruction where the weather half was dropped. Both must be honored in the same turn.",
+    "turns": [
+      {"turn": 1, "user_message": "Give me an outfit for today in Bellevue, going to a coffee shop with Andy to hangout and maybe walk around for a bit. I want a leisure but feminine vibe", "image_url": null, "image_type": null},
+      {"turn": 2, "user_message": "This is too much and check the weather", "image_url": null, "image_type": null}
+    ],
+    "expectations": {
+      "tier": "target",
+      "assertions": [
+        {"id": "T1a", "type": "tool_called", "tool": "web_search", "turn": 2},
+        {"id": "T1b", "type": "outfit_present", "turn": 2},
+        {"id": "T1c", "type": "tool_arg_contains_any", "tool": "web_search", "turn": 2, "patterns": ["bellevue"]}
+      ]
+    }
+  },
+  {
+    "id": "T2_implicit_weather_seattle_default",
+    "name": "TARGET: Implicit weather lookup, default location Seattle",
+    "user_id": "peichin",
+    "use_case": "occasion",
+    "description": "Same-day outfit request with NO weather word and NO location. Agent should proactively look up the weather and default the location to Seattle (the user's home) before composing.",
+    "turns": [
+      {"turn": 1, "user_message": "Give me an outfit for today", "image_url": null, "image_type": null}
+    ],
+    "expectations": {
+      "tier": "target",
+      "assertions": [
+        {"id": "T2a", "type": "tool_called", "tool": "web_search", "turn": 1},
+        {"id": "T2b", "type": "tool_order", "before": "web_search", "after": "present_outfit", "turn": 1},
+        {"id": "T2c", "type": "tool_arg_contains_any", "tool": "web_search", "turn": 1, "patterns": ["seattle"]}
+      ]
+    }
+  },
+  {
+    "id": "T2b_explicit_location_override",
+    "name": "TARGET: Explicit city overrides the Seattle default",
+    "user_id": "peichin",
+    "use_case": "occasion",
+    "description": "When the user names a city, the weather lookup must use THAT city, not the Seattle default.",
+    "turns": [
+      {"turn": 1, "user_message": "What should I wear today? I'm in Portland", "image_url": null, "image_type": null}
+    ],
+    "expectations": {
+      "tier": "target",
+      "assertions": [
+        {"id": "T2b1", "type": "tool_called", "tool": "web_search", "turn": 1},
+        {"id": "T2b2", "type": "tool_arg_contains_any", "tool": "web_search", "turn": 1, "patterns": ["portland"]}
+      ]
+    }
+  },
+  {
+    "id": "T3_rationale_survives",
+    "name": "TARGET: Every outfit ships with surviving styling rationale",
+    "user_id": "peichin",
+    "use_case": "occasion",
+    "description": "Catches the sms.py suppression bug: outfits sent as bare images with no 'why'. Every present_outfit must carry rationale text (own text, or a send_message immediately before it).",
+    "turns": [
+      {"turn": 1, "user_message": "Give me an outfit for a weekend coffee run", "image_url": null, "image_type": null}
+    ],
+    "expectations": {
+      "tier": "target",
+      "assertions": [
+        {"id": "T3a", "type": "outfit_present", "turn": 1},
+        {"id": "T3b", "type": "every_outfit_has_rationale", "turn": "any"}
+      ]
+    }
+  },
+  {
+    "id": "T4_first_outfit_brief_adherence",
+    "name": "TARGET: First outfit matches the brief + weather (not over-styled)",
+    "user_id": "peichin",
+    "use_case": "occasion",
+    "description": "'Leisure but feminine' on a mild/warm day should NOT open with a heavy structured jacket + boots. Judges the very first outfit against the stated brief and conditions.",
+    "turns": [
+      {"turn": 1, "user_message": "Give me an outfit for today, coffee and walking around. Leisure but feminine.", "image_url": null, "image_type": null}
+    ],
+    "expectations": {
+      "tier": "target",
+      "assertions": [
+        {"id": "T4a", "type": "outfit_present", "turn": 1},
+        {"id": "T4b", "type": "llm_judge", "turn": 1, "threshold": 4,
+         "rubric": "The FIRST outfit fits a 'leisure but feminine' coffee-and-walking brief for mild weather: relaxed and easy, not over-styled or heavy (e.g. avoids leading with a structured/heavy jacket plus statement boots when the weather is mild)."}
+      ]
+    }
+  }
+]

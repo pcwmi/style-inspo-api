@@ -194,6 +194,16 @@ def run_scenario(scenario: Dict, iteration: int, wardrobe_cache: Dict) -> Dict:
             success = False
             error = str(e)
 
+        # Capture the ordered tool-call timeline from the agent's turn_log.
+        # present_outfit / send_message / web_search / resolve_items all route
+        # through _execute_tool, so tool_result entries give one ordered timeline
+        # the assertion grader can reason about (e.g. "web_search before outfit").
+        tool_calls = [
+            {"tool": e["tool"], "args": e.get("args", {})}
+            for e in agent.turn_log
+            if e.get("type") == "tool_result" and e.get("tool")
+        ]
+
         # Capture turn result (including LLM turn count and token usage)
         turn_results.append({
             "turn": turn_num,
@@ -202,6 +212,7 @@ def run_scenario(scenario: Dict, iteration: int, wardrobe_cache: Dict) -> Dict:
             "image_type": turn_def.get("image_type"),
             "agent_text_response": response,
             "output_messages": output.messages,
+            "tool_calls": tool_calls,
             "latency_seconds": round(latency, 1),
             "llm_turns": len([e for e in agent.turn_log if e["type"] == "llm_response"]),
             "token_usage": {

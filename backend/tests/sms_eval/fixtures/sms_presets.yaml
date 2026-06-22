@@ -40,3 +40,11 @@ shopping-only:
   description: "Shopping advice scenarios only"
   use_case_filter: "shopping"
   iterations: 1
+
+# --- Assertion suite (pass/fail gate) ---
+# These run via scripts/run_assertions.py, not run_sms_eval.py. They grade the
+# `expectations` in fixtures/assertion_cases.json. GUARD = must-not-regress,
+# TARGET = in-progress fix. Listed here for discoverability:
+#   python scripts/run_assertions.py                 # full gate (run before shipping)
+#   python scripts/run_assertions.py --tier target   # only the open fixes
+#   python scripts/run_assertions.py --tier guard     # regression guards only
