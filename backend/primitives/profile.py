@@ -29,6 +29,7 @@ class ProfileUpdate(BaseModel):
     """Profile update fields"""
     three_words: Optional[ThreeWords] = None
     daily_emotion: Optional[Dict[str, str]] = None
+    location: Optional[str] = None  # User's home location (e.g., "Seattle, WA")
 
 
 class DescriptorUpdate(BaseModel):
@@ -89,6 +90,9 @@ async def update_profile(user_id: str, updates: ProfileUpdate) -> Dict[str, Any]
 
     if updates.daily_emotion:
         update_dict["daily_emotion"] = updates.daily_emotion
+
+    if updates.location is not None:
+        update_dict["location"] = updates.location.strip()
 
     if not update_dict:
         raise HTTPException(status_code=400, detail="No updates provided")

@@ -98,6 +98,7 @@ class ProfileUpdate(BaseModel):
     three_words: Optional[Dict[str, str]] = None
     daily_emotion: Optional[Dict[str, str]] = None
     display_name: Optional[str] = None  # User's preferred display name (e.g., "Dana")
+    location: Optional[str] = None  # User's home location (e.g., "Seattle, WA") for weather/local context
 
 
 class ProfileResponse(BaseModel):
@@ -106,6 +107,7 @@ class ProfileResponse(BaseModel):
     three_words: Optional[Dict[str, str]] = None
     daily_emotion: Optional[Dict[str, str]] = None
     display_name: Optional[str] = None  # User's preferred display name
+    location: Optional[str] = None  # User's home location for weather/local context
     model_descriptor: Optional[str] = None
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
