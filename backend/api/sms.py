@@ -210,13 +210,22 @@ async def process_outfit_request(user_id: str, phone: str, message: str, image_u
         response = agent.run(message, image_urls=image_data_uris)
         logger.info(f"Agent completed. Response: {response[:200] if response else '(none)'}...")
 
-        # If tools already sent SMS content, do not send a late final assistant
-        # response. Packing relies on send_message before present_outfit; sending
-        # final text afterward makes the capsule rationale arrive out of order.
+        # If tools already sent SMS content, normally don't send a late final
+        # assistant response — packing relies on send_message before
+        # present_outfit, and trailing text makes the capsule rationale arrive
+        # out of order.
+        #
+        # Exception: if an outfit went out BARE (present_outfit with no caption
+        # and no rationale send_message before it), the agent likely stashed the
+        # "why" in this final response. Recover it so the user isn't left with a
+        # silent image. all_outfits_have_rationale mirrors the T3 eval rule.
         if response:
-            if output.message_sent:
+            rationale_delivered = getattr(output, "all_outfits_have_rationale", True)
+            if output.message_sent and rationale_delivered:
                 logger.info("Skipped final text response because tool output already sent SMS content")
             else:
+                if output.message_sent:
+                    logger.info("Recovering final text as outfit rationale (an outfit shipped without a caption)")
                 send_sms(phone, response)
                 state_manager.append_message("assistant", response)
                 logger.info(f"Sent agent text response to {phone}")

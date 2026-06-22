@@ -297,7 +297,7 @@ TOOLS = [
                 **REASONING_FIELD,
                 "text": {
                     "type": "string",
-                    "description": "Text message to send with the outfit"
+                    "description": "The styling rationale shown WITH the outfit (delivered as the caption on the collage). REQUIRED and non-empty: 1-3 conversational sentences saying WHY this outfit works. This is the home for the 'why' — do NOT save it for a separate trailing message, which the user will never see. Exception: in a packing flow where you already sent the capsule rationale via send_message first."
                 },
                 "images": {
                     "type": "array",
@@ -314,7 +314,7 @@ TOOLS = [
                     "description": "Generate a styled model visualization. Set true for complete outfits."
                 }
             },
-            "required": ["reasoning", "images", "item_names"]
+            "required": ["reasoning", "text", "images", "item_names"]
         }
     },
     {

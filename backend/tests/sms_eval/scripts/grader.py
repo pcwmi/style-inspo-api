@@ -182,21 +182,25 @@ def _a_outfit_uses_wardrobe(a, result) -> Tuple[str, str]:
 def _a_every_outfit_has_rationale(a, result) -> Tuple[str, str]:
     """Every presented outfit must ship with surviving 'why' text.
 
-    Rationale survives if the present_outfit call itself carries text, OR a
-    send_message with text immediately precedes it (the packing pattern).
-    This is the assertion that catches the sms.py suppression bug.
+    Packing-safe rule (matches StatefulSMSOutput.all_outfits_have_rationale):
+    within a turn, rationale is delivered if every present_outfit carried its
+    own caption text, OR a send_message with text was sent earlier in the turn
+    (the packing capsule covers all days). This is the assertion that catches
+    the sms.py suppression / bare-image bug.
     """
     checked = 0
     for t in _select_turns(result, a.get("turn", "any")):
         msgs = t.get("output_messages", [])
+        seen_send_text = False
         for i, m in enumerate(msgs):
-            if m.get("tool") != "present_outfit":
+            tool = m.get("tool")
+            has_text = bool((m.get("text") or "").strip())
+            if tool == "send_message" and has_text:
+                seen_send_text = True
+            if tool != "present_outfit":
                 continue
             checked += 1
-            own = (m.get("text") or "").strip()
-            prev = msgs[i - 1] if i > 0 else {}
-            prev_text = prev.get("text") if prev.get("tool") == "send_message" else None
-            if not own and not (prev_text and prev_text.strip()):
+            if not has_text and not seen_send_text:
                 return FAIL, f"turn {t['turn']} outfit #{i} shipped with no rationale text"
     if checked == 0:
         return FAIL, "no outfits found to check"

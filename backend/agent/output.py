@@ -223,9 +223,29 @@ class StatefulSMSOutput(SMSOutput):
         self.message_sent = False  # Track if send() was called (to avoid duplicate sends)
         self._pending_visualizations = []
         self._new_pack_pending = False
+        # Ordered log of emitted messages as (kind, has_text) so we can tell
+        # whether the user actually received rationale for the outfits shown.
+        self._emit_log: List[tuple] = []
+
+    @property
+    def all_outfits_have_rationale(self) -> bool:
+        """True if the user received rationale for the outfit(s) shown this turn.
+
+        Conservative + packing-safe: rationale is considered delivered if every
+        presented outfit carried its own caption text, OR any rationale
+        send_message went out this turn (the packing capsule covers all days).
+        Only when an outfit shipped with no caption AND no rationale message
+        exists do we treat the rationale as lost — that's the bare-image bug,
+        and sms.py then recovers it from the final assistant text.
+        """
+        outfits = [has_text for kind, has_text in self._emit_log if kind == "outfit"]
+        if not outfits or all(outfits):
+            return True
+        return any(kind == "send" and has_text for kind, has_text in self._emit_log)
 
     def send(self, text: Optional[str], images: List[str], layout: Optional[str] = None):
         self.message_sent = True
+        self._emit_log.append(("send", bool(text and text.strip())))
         super().send(text, images, layout=layout)
         if text:
             self.state_manager.append_message("assistant", text)
@@ -264,6 +284,7 @@ class StatefulSMSOutput(SMSOutput):
         item_names: Optional[List[str]] = None,
     ):
         self.message_sent = True
+        self._emit_log.append(("outfit", bool(text and text.strip())))
 
         # Send via parent class (collage + text)
         super().present_outfit(text, images, visualize, skip_enhance=skip_enhance, item_names=item_names)
