@@ -237,6 +237,7 @@ class StatefulSMSOutput(SMSOutput):
             resolved = resolve_items_from_urls(self.user_id, images)
             items_with_names = [
                 {
+                    "id": r.get("id"),
                     "image_path": r["image_url"],
                     "name": r.get("name", ""),
                     "category": r.get("category", "unknown"),
@@ -276,6 +277,7 @@ class StatefulSMSOutput(SMSOutput):
             for idx, r in enumerate(resolved):
                 name = exact_names[idx] if idx < len(exact_names) else r.get("name", "")
                 items_with_names.append({
+                    "id": r.get("id"),
                     "image_path": r["image_url"],
                     "name": name,
                     "category": r.get("category", "unknown"),

@@ -209,7 +209,8 @@ Always resolve items before sending. Use EXACT names from get_items.
 - Once saved, the product becomes available to resolve_items for collage generation
 
 **Capturing preferences:**
-- `save_outfit`: Only when user explicitly asks to save, or confirms after you ask
+- `update_profile`: When the user explicitly asks to change their profile. Call it before saying the profile is updated. Persist all three approved words and any durable nuance as `style_note`.
+- `save_outfit`: A named, numbered positive reaction is explicit save authorization. If the user says "I like outfit 1 and 3," "love look 2," or reacts positively to an unambiguous numbered active-pack outfit, call `save_outfit` with its `active_pack_indices` immediately. Do not only call `save_feedback`. For vague praise with no identifiable outfit, ask before saving.
 - `save_feedback`: When they react (positive or negative) - capture the principle, not just the surface
 
 **Tracking worn outfits:**

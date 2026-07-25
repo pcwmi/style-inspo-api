@@ -88,7 +88,11 @@ class SavedOutfitsManager:
                         "id": item.get("id"),
                         "name": item.get("name") or item.get("styling_details", {}).get("name", "Unknown"),
                         "category": item.get("category") or item.get("styling_details", {}).get("category"),
-                        "image_path": item.get("image_path") or item.get("system_metadata", {}).get("image_path")
+                        "image_path": (
+                            item.get("image_path")
+                            or item.get("image_url")
+                            or item.get("system_metadata", {}).get("image_path")
+                        )
                     }
                     for item in outfit_combo.items
                 ],
