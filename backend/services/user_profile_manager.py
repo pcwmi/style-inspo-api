@@ -220,9 +220,8 @@ class UserProfileManager:
                     _safe_stderr_write(f"⚠️ User {self.user_id} not found in old format, returning empty profile\n")
                     return {}
             
-            # New single-user format: Check if it's a valid profile structure
-            # Profile is valid if it has style_words OR model_descriptor (or other profile fields)
-            if "style_words" in data or "model_descriptor" in data:
+            # New single-user format: accept every profile field agents can persist.
+            if any(key in data for key in ("style_words", "model_descriptor", "daily_emotion", "display_name", "style_notes")):
                 _safe_stderr_write(f"✅ Found profile for user {self.user_id}\n")
                 return data
 
@@ -310,5 +309,4 @@ class UserProfileManager:
             import traceback
             _safe_stderr_write(f"Traceback: {traceback.format_exc()}\n")
             # Don't raise - migration failure shouldn't break the app
-
 

@@ -62,6 +62,40 @@ TOOLS = [
             "required": ["reasoning"]
         }
     },
+    {
+        "name": "update_profile",
+        "description": "Persist user-approved changes to the style profile. Call this when the user explicitly asks to update their three words, daily mood, display name, or a durable style note. Do not claim the profile changed until this tool succeeds.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                **REASONING_FIELD,
+                "three_words": {
+                    "type": "object",
+                    "properties": {
+                        "current": {"type": "string"},
+                        "aspirational": {"type": "string"},
+                        "feeling": {"type": "string"}
+                    },
+                    "required": ["current", "aspirational", "feeling"],
+                    "description": "The user's three approved style words in their established order."
+                },
+                "daily_emotion": {
+                    "type": "object",
+                    "additionalProperties": {"type": "string"},
+                    "description": "Optional current and desired feeling fields."
+                },
+                "display_name": {
+                    "type": "string",
+                    "description": "Optional preferred display name."
+                },
+                "style_note": {
+                    "type": "string",
+                    "description": "Optional durable preference or nuance to retain alongside the three words, such as a preference about flowy silhouettes."
+                }
+            },
+            "required": ["reasoning"]
+        }
+    },
 
     # --- FEEDBACK ---
     {
@@ -197,11 +231,16 @@ TOOLS = [
     # --- OUTFIT ACTIONS ---
     {
         "name": "save_outfit",
-        "description": "Save an outfit to the user's saved outfits. Only call this when the user explicitly asks to save, or confirms after you offer. Never save silently. Returns the outfit_id needed for visualization.",
+        "description": "Save an outfit to the user's saved outfits. For a numbered outfit in Active Pack State, pass active_pack_indices (1-based) and do not reconstruct its items: the system will save the exact shown items, images, and on-person view. A positive reaction that names an outfit number (for example, 'I like outfit 1 and 3') is save authorization. For vague praise with no identifiable outfit, ask before saving.",
         "input_schema": {
             "type": "object",
             "properties": {
                 **REASONING_FIELD,
+                "active_pack_indices": {
+                    "type": "array",
+                    "items": {"type": "integer", "minimum": 1},
+                    "description": "One-based Active Pack State positions to save. Use this for every numbered outfit reference."
+                },
                 "items": {
                     "type": "array",
                     "items": {
@@ -229,7 +268,7 @@ TOOLS = [
                     "description": "Keywords describing the outfit vibe"
                 }
             },
-            "required": ["reasoning", "items", "styling_notes"]
+            "required": ["reasoning"]
         }
     },
     {

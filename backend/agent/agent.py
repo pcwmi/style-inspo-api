@@ -13,6 +13,7 @@ import os
 import json
 import logging
 import random
+import re
 import time
 from typing import Optional, Literal
 
@@ -23,6 +24,23 @@ from agent.edit_intent import build_constrained_edit_hint
 logger = logging.getLogger(__name__)
 
 Provider = Literal["anthropic", "openai"]
+
+
+def _positive_active_pack_indices(message: str, outfit_count: int) -> list[int]:
+    """Recognize explicit numbered liking as save authorization for an active pack."""
+    text = (message or "").lower()
+    if not text or re.search(r"\b(?:don't|do not|didn't|not)\s+(?:really\s+)?(?:like|love)\b", text):
+        return []
+    if not re.search(r"\b(?:like|liked|love|loved|adore)\b|[❤♥🩷💕]", text):
+        return []
+
+    indices = []
+    for match in re.finditer(r"\b(?:outfit|look)s?\s*([0-9][0-9, &and]*)", text):
+        for value in re.findall(r"\d+", match.group(1)):
+            index = int(value)
+            if 1 <= index <= outfit_count and index not in indices:
+                indices.append(index)
+    return indices
 
 
 def get_compact_items(items: list, include_image_url: bool = True) -> list:
@@ -161,16 +179,28 @@ class StylingAgent:
         if outfits:
             lines = [
                 "# Active Pack State",
-                "Use this as the source of truth for packing follow-ups and edits.",
+                "Use this as the source of truth for packing follow-ups, edits, and saves.",
             ]
-            for outfit in outfits:
+            for index, outfit in enumerate(outfits, start=1):
                 label = outfit.get("label") or "Outfit"
                 item_names = outfit.get("item_names") or [
                     item.get("name") for item in outfit.get("items", []) if item.get("name")
                 ]
                 if item_names:
-                    lines.append(f"- {label}: {', '.join(item_names)}")
+                    lines.append(f"- Outfit {index} ({label}): {', '.join(item_names)}")
+            lines.append(
+                "A positive reaction that names one or more outfit numbers is save authorization. "
+                "Call save_outfit with those one-based active_pack_indices; do not reconstruct items."
+            )
             sections.append("\n".join(lines))
+
+            liked_indices = _positive_active_pack_indices(user_message, len(outfits))
+            if liked_indices:
+                sections.append(
+                    "# Explicit Save Intent\n"
+                    f"The user explicitly liked active-pack outfit number(s) {', '.join(map(str, liked_indices))}. "
+                    "Call save_outfit with exactly these active_pack_indices before replying."
+                )
 
         last_outfit = self.conversation_context.get("last_outfit") or {}
         last_item_names = last_outfit.get("item_names") or [
@@ -607,6 +637,77 @@ Use EXACT item names from the wardrobe list. Include 3-6 items per outfit (top +
                 return block.text
         return ""
 
+    def _get_active_pack_outfits(self, indices: list) -> tuple[list, str | None]:
+        """Return the current, one-based active-pack selections for a numbered save."""
+        active_pack = (self.conversation_context or {}).get("active_pack") or {}
+        state_manager = getattr(self.output, "state_manager", None)
+        if state_manager:
+            state = state_manager.get_state()
+            if state and state.active_pack:
+                active_pack = state.active_pack
+
+        outfits = active_pack.get("outfits") or []
+        if not outfits:
+            return [], "There is no active outfit pack to save from."
+
+        selected = []
+        seen = set()
+        for index in indices:
+            if not isinstance(index, int) or isinstance(index, bool) or index < 1 or index > len(outfits):
+                return [], f"Outfit {index!r} is not in the active pack of {len(outfits)} outfit(s)."
+            if index not in seen:
+                selected.append(outfits[index - 1])
+                seen.add(index)
+        if not selected:
+            return [], "No active-pack outfit numbers were provided."
+        return selected, None
+
+    def _hydrate_active_pack_items(self, outfit: dict) -> tuple[list, str | None]:
+        """Build save-ready items from the exact record sent to the SMS user."""
+        from primitives.matching import match_items_to_wardrobe
+
+        source_items = outfit.get("items") or []
+        item_names = outfit.get("item_names") or [
+            item.get("name") for item in source_items if item.get("name")
+        ]
+        image_urls = outfit.get("image_urls") or []
+        if not item_names:
+            return [], "The selected active-pack outfit has no item names."
+
+        try:
+            matched_items = match_items_to_wardrobe(self.user_id, item_names)
+        except Exception as exc:
+            logger.warning("save_outfit: could not hydrate active-pack items: %s", exc)
+            return [], "I couldn't verify the selected outfit's wardrobe items, so I didn't save an incomplete version."
+
+        hydrated = []
+        invalid_names = []
+        for index, name in enumerate(item_names):
+            source = source_items[index] if index < len(source_items) else {}
+            matched = matched_items[index] if index < len(matched_items) else {}
+            item_id = source.get("id") or matched.get("id")
+            image_path = source.get("image_path") or source.get("image_url")
+            if not image_path and index < len(image_urls):
+                image_path = image_urls[index]
+            image_path = image_path or matched.get("image_path")
+            if not item_id or not image_path:
+                invalid_names.append(name)
+                continue
+            hydrated.append({
+                "id": item_id,
+                "name": name,
+                "category": source.get("category") or matched.get("category") or "unknown",
+                "image_path": image_path,
+            })
+
+        if invalid_names:
+            return [], (
+                "I couldn't verify complete item data for "
+                + ", ".join(invalid_names)
+                + ", so I didn't save a corrupted outfit."
+            )
+        return hydrated, None
+
     def _execute_tool(self, tool_name: str, tool_input: dict) -> dict:
         """
         Execute a tool by calling managers directly (no HTTP to avoid deadlock).
@@ -646,6 +747,35 @@ Use EXACT item names from the wardrobe list. Include 3-6 items per outfit (top +
                 manager = UserProfileManager(user_id=self.user_id)
                 profile = manager.get_profile(self.user_id)
                 return {"profile": profile}
+
+            elif tool_name == "update_profile":
+                manager = UserProfileManager(user_id=self.user_id)
+                profile_data = {}
+                for field in ("three_words", "daily_emotion", "display_name"):
+                    if tool_input.get(field):
+                        profile_data[field] = tool_input[field]
+
+                style_note = (tool_input.get("style_note") or "").strip()
+                if style_note:
+                    existing_profile = manager.get_profile(self.user_id) or {}
+                    existing_notes = list(existing_profile.get("style_notes") or [])
+                    if style_note not in existing_notes:
+                        existing_notes.append(style_note)
+                    profile_data["style_notes"] = existing_notes
+
+                if not profile_data:
+                    return {"error": "No profile fields were provided."}
+
+                if not manager.save_profile(profile_data):
+                    return {"error": "Profile update failed; do not tell the user it was saved."}
+
+                if tool_input.get("three_words"):
+                    from services.activity_logger import log_activity
+                    log_activity(self.user_id, "style_words_updated", tool_input["three_words"])
+                return {
+                    "success": True,
+                    "profile": manager.get_profile(self.user_id),
+                }
 
             elif tool_name == "get_feedback":
                 manager = DislikedOutfitsManager(user_id=self.user_id)
@@ -818,6 +948,56 @@ Use EXACT item names from the wardrobe list. Include 3-6 items per outfit (top +
 
             elif tool_name == "save_outfit":
                 manager = SavedOutfitsManager(user_id=self.user_id)
+
+                if "active_pack_indices" in tool_input:
+                    selected_outfits, selection_error = self._get_active_pack_outfits(
+                        tool_input.get("active_pack_indices") or []
+                    )
+                    if selection_error:
+                        return {"error": selection_error}
+
+                    prepared = []
+                    for outfit in selected_outfits:
+                        items, items_error = self._hydrate_active_pack_items(outfit)
+                        if items_error:
+                            return {"error": items_error}
+                        prepared.append((outfit, items))
+
+                    class OutfitCombo:
+                        def __init__(self, items, styling_notes, vibe_keywords):
+                            self.items = items
+                            self.styling_notes = styling_notes
+                            self.why_it_works = ""
+                            self.confidence_level = ""
+                            self.vibe_keywords = vibe_keywords
+
+                    saved = []
+                    for outfit, items in prepared:
+                        styling_notes = tool_input.get("styling_notes") or outfit.get("styling_notes", "")
+                        outfit_id = manager.save_outfit(
+                            outfit_combo=OutfitCombo(
+                                items=items,
+                                styling_notes=styling_notes,
+                                vibe_keywords=tool_input.get("vibe_keywords", []),
+                            ),
+                            reason=styling_notes,
+                            occasion=tool_input.get("occasion") or outfit.get("label", ""),
+                        )
+                        if not outfit_id:
+                            return {"error": "The selected outfit could not be saved."}
+
+                        visualization_url = outfit.get("visualization_url")
+                        if visualization_url:
+                            manager.update_outfit_visualization(outfit_id, visualization_url)
+                        saved.append({"outfit_id": outfit_id, "label": outfit.get("label", "Outfit")})
+
+                    logger.info("save_outfit: saved %d active-pack outfit(s)", len(saved))
+                    return {
+                        "status": "saved",
+                        "outfit_id": saved[0]["outfit_id"] if len(saved) == 1 else None,
+                        "outfit_ids": [entry["outfit_id"] for entry in saved],
+                        "saved_outfits": saved,
+                    }
 
                 # Debug: log what we received
                 items = tool_input.get("items", [])
